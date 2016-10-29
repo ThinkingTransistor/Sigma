@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,10 @@ namespace Sigma.Samples
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Test");
+			ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+			log.Info("Test");
+
 			Console.ReadKey();
 		}
 	}
