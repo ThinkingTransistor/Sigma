@@ -17,7 +17,7 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <param name="identifier">The identifier.</param>
 		/// <param name="value">The value to set.</param>
-		/// <param name="valueType">Optionally set the type subsequent values with this identifier should have, unless explicitly overwritten.</param>
+		/// <param name="valueType">Optionally set the type subsequent values associated with this identifier should have, unless explicitly overwritten.</param>
 		void Set(String identifier, object value, Type valueType = null);
 
 		/// <summary>
@@ -41,7 +41,7 @@ namespace Sigma.Core.Utils
 		/// <param name="matchIdentifier"></param>
 		/// <param name="matchType"></param>
 		/// <returns></returns>
-		object[] GetAll(String matchIdentifier, Type matchType = null);
+		object[] GetAllValues(String matchIdentifier, Type matchType = null);
 
 		/// <summary>
 		/// Get all values.
@@ -64,5 +64,25 @@ namespace Sigma.Core.Utils
 		{
 			get; set;
 		}
+
+		/// <summary>
+		/// Returns whether an identifier has a non-null value associated with it. 
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		/// <returns>A boolean, whether or not the identifier has a non-null value associated with it.</returns>
+		bool Contains(String identifier);
+
+		/// <summary>
+		/// Removes the identifier and the associated type-checked value.
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		/// <returns>The value previously associated with the identifier.</returns>
+		T Remove<T>(String identifier);
+
+		/// <summary>
+		/// Removes the identifier and the associated value.
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		void Remove(String identifier);
 	}
 }
