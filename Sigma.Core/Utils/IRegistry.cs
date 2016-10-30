@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Sigma.Core.Utils
 {
 	/// <summary>
-	/// A collection of keys and values with optional type checking.
+	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
 	/// </summary>
-	public interface IRegistry : ICollection, IEnumerable
+	public interface IRegistry : IDictionary<string, object>
 	{
 		/// <summary>
 		/// Set a value with a given identifier. 
@@ -44,35 +44,6 @@ namespace Sigma.Core.Utils
 		object[] GetAllValues(String matchIdentifier, Type matchType = null);
 
 		/// <summary>
-		/// Get all values.
-		/// </summary>
-		/// <returns>All values.</returns>
-		object[] GetAllValues();
-
-		/// <summary>
-		/// Get all keys.
-		/// </summary>
-		/// <returns>All keys.</returns>
-		string[] GetAllKeys();
-
-		/// <summary>
-		/// Quick hand operator overloaded syntax, <see cref="Get(String)" />
-		/// </summary>
-		/// <param name="identifier"></param>
-		/// <returns></returns>
-		object this[String identifier]
-		{
-			get; set;
-		}
-
-		/// <summary>
-		/// Returns whether an identifier has a non-null value associated with it. 
-		/// </summary>
-		/// <param name="identifier">The identifier.</param>
-		/// <returns>A boolean, whether or not the identifier has a non-null value associated with it.</returns>
-		bool Contains(String identifier);
-
-		/// <summary>
 		/// Removes the identifier and the associated type-checked value.
 		/// </summary>
 		/// <param name="identifier">The identifier.</param>
@@ -80,9 +51,15 @@ namespace Sigma.Core.Utils
 		T Remove<T>(String identifier);
 
 		/// <summary>
-		/// Removes the identifier and the associated value.
+		/// Returns an iterator over all keys.
 		/// </summary>
-		/// <param name="identifier">The identifier.</param>
-		void Remove(String identifier);
+		/// <returns>An iterator over all keys.</returns>
+		IEnumerator GetKeyIterator();
+
+		/// <summary>
+		/// Returns an iterator over all values.
+		/// </summary>
+		/// <returns>An iterator over all values.</returns>
+		IEnumerator GetValueIterator();
 	}
 }

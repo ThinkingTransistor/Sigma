@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core
 {
-	public partial class Sigma
+	public partial class SigmaEnvironment
 	{
 		internal IRegistry rootRegistry;
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -18,9 +18,10 @@ namespace Sigma.Core
 			get; internal set;
 		}
 
-		private Sigma(String name)
+		private SigmaEnvironment(String name)
 		{
 			this.Name = name;
+			this.rootRegistry = new Registry();
 		}
 
 		public void Prepare()
@@ -36,9 +37,9 @@ namespace Sigma.Core
 		internal static IRegistry activeSigmaEnvironments;
 		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		static Sigma()
-		{ 
-			
+		static SigmaEnvironment()
+		{
+			activeSigmaEnvironments = new Registry();
 		}
 
 		/// <summary>
@@ -46,14 +47,14 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="environmentName"></param>
 		/// <returns></returns>
-		public static Sigma Create(string environmentName)
+		public static SigmaEnvironment Create(string environmentName)
 		{
 			if (Exists(environmentName))
 			{
 				throw new ArgumentException($"Cannot create environment, environment {environmentName} already exists.");
 			}
 
-			Sigma environment = new Sigma(environmentName);
+			SigmaEnvironment environment = new SigmaEnvironment(environmentName);
 
 			//do environment initialisation and registration
 
@@ -69,7 +70,7 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="environmentName"></param>
 		/// <returns>A new environment with the given name or the environment already associated with the name.</returns>
-		public static Sigma GetOrCreate(string environmentName)
+		public static SigmaEnvironment GetOrCreate(string environmentName)
 		{
 			if (!Exists(environmentName))
 			{
@@ -86,7 +87,7 @@ namespace Sigma.Core
 		/// <returns>A boolean indicating if an environment with the given name exists.</returns>
 		public static bool Exists(String environmentName)
 		{
-			return activeSigmaEnvironments.Contains(environmentName);
+			return activeSigmaEnvironments.ContainsKey(environmentName);
 		}
 
 		/// <summary>
@@ -94,9 +95,9 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="environmentName">The environment name.</param>
 		/// <returns>The existing with the given name or null.</returns>
-		public static Sigma Get(string environmentName)
+		public static SigmaEnvironment Get(string environmentName)
 		{
-			return activeSigmaEnvironments.Get<Sigma>(environmentName);
+			return activeSigmaEnvironments.Get<SigmaEnvironment>(environmentName);
 		}
 
 		/// <summary>
