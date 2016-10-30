@@ -1,2 +1,8 @@
 language: csharp
 solution: Sigma.sln
+install:
+  - nuget restore Sigma.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=TravisBuild Sigma.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Sigma.Tests/bin/TravisBuild/Sigma.Tests.dll
