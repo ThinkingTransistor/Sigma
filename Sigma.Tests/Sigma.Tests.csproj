@@ -83,7 +83,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="TestCUDASetup.cs" />
+    <Compile Include="TestCUDAInstallation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

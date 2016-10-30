@@ -9,9 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sigma.Kernels", "Sigma.Kern
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Tests", "Sigma.Tests\Sigma.Tests.csproj", "{656F0373-6309-409B-BE43-9BEC8B0840AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Samples", "Sigma.Samples\Sigma.Samples.csproj", "{8788F52F-AF6A-46CD-87B9-E90F24A41668}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.VisualWPFMonitor", "Sigma.VisualWPFMonitor\Sigma.VisualWPFMonitor.csproj", "{C17762BF-9EC1-4530-A0BE-F2A117919733}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.WPGUIFMonitor", "Sigma.VisualWPFMonitor\Sigma.VisualWPFMonitor.csproj", "{C17762BF-9EC1-4530-A0BE-F2A117919733}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,18 +54,6 @@ Global
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x64.Build.0 = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.Build.0 = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|x64.Build.0 = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Debug|x86.Build.0 = Debug|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|x64.ActiveCfg = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|x64.Build.0 = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|x86.ActiveCfg = Release|Any CPU
-		{8788F52F-AF6A-46CD-87B9-E90F24A41668}.Release|x86.Build.0 = Release|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|x64.ActiveCfg = Debug|Any CPU
