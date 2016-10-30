@@ -6,7 +6,7 @@ using ManagedCuda.CudaBlas;
 namespace Sigma.Tests
 {
 	[TestClass]
-	public class TestCUDAInstallation
+	public class TestCUDASetup
 	{
 		[TestMethod]
 		public void TestCreateDefaultCUDAContext()
