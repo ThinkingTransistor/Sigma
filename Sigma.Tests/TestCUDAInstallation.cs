@@ -1,20 +1,19 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ManagedCuda;
 using ManagedCuda.CudaBlas;
+using NUnit.Framework;
 
 namespace Sigma.Tests
 {
-	[TestClass]
 	public class TestCUDAInstallation
 	{
-		[TestMethod]
+		[TestCase]
 		public void TestCreateDefaultCUDAContext()
 		{
 			CudaContext context = new CudaContext();
 		}
 
-		[TestMethod]
+		[TestCase]
 		public void TestCreateCudaBlas()
 		{
 			CudaBlas cublas = new CudaBlas();

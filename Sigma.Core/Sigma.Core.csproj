@@ -47,6 +47,12 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|AnyCPU'">
+    <OutputPath>bin\TravisBuild\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|x64'">
+    <OutputPath>bin\x64\TravisBuild\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.13\lib\net45\CudaBlas.dll</HintPath>

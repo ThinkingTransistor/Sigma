@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sigma.Kernels", "Sigma.Kern
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Tests", "Sigma.Tests\Sigma.Tests.csproj", "{656F0373-6309-409B-BE43-9BEC8B0840AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.WPGUIFMonitor", "Sigma.VisualWPFMonitor\Sigma.VisualWPFMonitor.csproj", "{C17762BF-9EC1-4530-A0BE-F2A117919733}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.VisualWPFMonitor", "Sigma.VisualWPFMonitor\Sigma.VisualWPFMonitor.csproj", "{C17762BF-9EC1-4530-A0BE-F2A117919733}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +19,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		TravisBuild|Any CPU = TravisBuild|Any CPU
+		TravisBuild|x64 = TravisBuild|x64
+		TravisBuild|x86 = TravisBuild|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Debug|Any CPU.ActiveCfg = Debug|x64
@@ -32,6 +35,12 @@ Global
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x64.Build.0 = Release|x64
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x86.ActiveCfg = Release|Any CPU
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x86.Build.0 = Release|Any CPU
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Any CPU
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.Build.0 = TravisBuild|Any CPU
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x64.ActiveCfg = TravisBuild|x64
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x64.Build.0 = TravisBuild|x64
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x86.Build.0 = TravisBuild|Any CPU
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Debug|x64.ActiveCfg = Debug|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Debug|x64.Build.0 = Debug|x64
@@ -42,6 +51,10 @@ Global
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x64.Build.0 = Release|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x86.ActiveCfg = Release|Win32
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x86.Build.0 = Release|Win32
+		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Win32
+		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x64.ActiveCfg = TravisBuild|x64
+		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x86.ActiveCfg = TravisBuild|Win32
+		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x86.Build.0 = TravisBuild|Win32
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -54,6 +67,12 @@ Global
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x64.Build.0 = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.Build.0 = Release|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.Build.0 = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x64.ActiveCfg = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x64.Build.0 = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x86.Build.0 = TravisBuild|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -66,6 +85,11 @@ Global
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Release|x64.Build.0 = Release|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Release|x86.ActiveCfg = Release|Any CPU
 		{C17762BF-9EC1-4530-A0BE-F2A117919733}.Release|x86.Build.0 = Release|Any CPU
+		{C17762BF-9EC1-4530-A0BE-F2A117919733}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Any CPU
+		{C17762BF-9EC1-4530-A0BE-F2A117919733}.TravisBuild|Any CPU.Build.0 = TravisBuild|Any CPU
+		{C17762BF-9EC1-4530-A0BE-F2A117919733}.TravisBuild|x64.ActiveCfg = TravisBuild|Any CPU
+		{C17762BF-9EC1-4530-A0BE-F2A117919733}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
+		{C17762BF-9EC1-4530-A0BE-F2A117919733}.TravisBuild|x86.Build.0 = TravisBuild|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

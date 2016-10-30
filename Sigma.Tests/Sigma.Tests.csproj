@@ -35,6 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|AnyCPU'">
+    <OutputPath>bin\TravisBuild\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.13\lib\net45\CudaBlas.dll</HintPath>
@@ -64,6 +67,10 @@
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\NPP.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NVRTC, Version=7.5.7.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\NVRTC.dll</HintPath>
       <Private>True</Private>
@@ -76,11 +83,7 @@
         <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
-      </ItemGroup>
-    </Otherwise>
+    <Otherwise />
   </Choose>
   <ItemGroup>
     <Compile Include="TestCUDAInstallation.cs" />
