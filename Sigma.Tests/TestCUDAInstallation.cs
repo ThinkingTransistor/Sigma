@@ -31,7 +31,7 @@ namespace Sigma.Tests
 
 			if (!cudaInstalled)
 			{
-				Assert.Ignore();
+				Assert.Ignore("CUDA installation not found or not working. As CUDA is optional, this test will be ignored.");
 			}
 		}
 
