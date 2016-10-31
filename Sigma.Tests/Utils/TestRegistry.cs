@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Sigma.Core.Utils;
 
-namespace Sigma.Tests
+namespace Sigma.Tests.Utils
 {
 	public class TestRegistry
 	{
