@@ -65,10 +65,14 @@ namespace Sigma.Tests.Utils
 			Registry root = new Registry();
 			Registry second = new Registry(root);
 			Registry third = new Registry(second);
+			Registry fourth = new Registry(third);
 
 			Assert.AreSame(root, third.Root);
+			Assert.AreSame(root, fourth.Root);
+
 			Assert.AreSame(root, second.Parent);
 			Assert.AreSame(second, third.Parent);
+			Assert.AreSame(third, fourth.Parent);
 		}
 	}
 }

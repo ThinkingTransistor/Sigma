@@ -63,7 +63,7 @@ namespace Sigma.Core.Utils
 			this.mappedValues = new Dictionary<string, object>();
 			this.associatedTypes = new Dictionary<string, Type>();
 			this.Parent = parent;
-			this.Root = Parent?.Parent;
+			this.Root = Parent?.Root == null ? Parent : Parent?.Root;
 		}
 
 		public object this[string identifier]
