@@ -35,8 +35,8 @@ Global
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x64.Build.0 = Release|x64
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x86.ActiveCfg = Release|Any CPU
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.Release|x86.Build.0 = Release|Any CPU
-		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Any CPU
-		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.Build.0 = TravisBuild|Any CPU
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|x64
+		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|Any CPU.Build.0 = TravisBuild|x64
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x64.ActiveCfg = TravisBuild|x64
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x64.Build.0 = TravisBuild|x64
 		{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
@@ -51,7 +51,7 @@ Global
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x64.Build.0 = Release|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x86.ActiveCfg = Release|Win32
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.Release|x86.Build.0 = Release|Win32
-		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Win32
+		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x64.ActiveCfg = TravisBuild|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x64.Deploy.0 = TravisBuild|x64
 		{AFEB081E-22CD-41BD-9EA2-71B4D83A6FFD}.TravisBuild|x86.ActiveCfg = TravisBuild|Win32
@@ -67,8 +67,8 @@ Global
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x64.Build.0 = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.ActiveCfg = Release|Any CPU
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.Release|x86.Build.0 = Release|Any CPU
-		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|Any CPU
-		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.Build.0 = TravisBuild|Any CPU
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|x64
+		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|Any CPU.Build.0 = TravisBuild|x64
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x64.ActiveCfg = TravisBuild|x64
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x64.Build.0 = TravisBuild|x64
 		{656F0373-6309-409B-BE43-9BEC8B0840AC}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
@@ -85,8 +85,7 @@ Global
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.Release|x64.Build.0 = Release|Any CPU
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.Release|x86.ActiveCfg = Release|Any CPU
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.Release|x86.Build.0 = Release|Any CPU
-		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|Any CPU.ActiveCfg = Release|Any CPU
-		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|Any CPU.Build.0 = Release|Any CPU
+		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|Any CPU.ActiveCfg = TravisBuild|x64
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|x64.ActiveCfg = Release|x64
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|x86.ActiveCfg = Release|Any CPU
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|x86.Build.0 = Release|Any CPU
