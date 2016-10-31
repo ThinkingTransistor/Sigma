@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sigma.VisualWPFMonitor.Properties
+namespace Sigma.Core.Monitors.WPF.Properties
 {
 
 
@@ -44,7 +44,7 @@ namespace Sigma.VisualWPFMonitor.Properties
 			{
 				if ((resourceMan == null))
 				{
-					global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sigma.VisualWPFMonitor.Properties.Resources", typeof(Resources).Assembly);
+					global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sigma.Core.Monitors.WPF.Properties.Resources", typeof(Resources).Assembly);
 					resourceMan = temp;
 				}
 				return resourceMan;

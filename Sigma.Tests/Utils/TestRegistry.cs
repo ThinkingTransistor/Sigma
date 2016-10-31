@@ -1,5 +1,4 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Utils

@@ -1,8 +1,6 @@
-﻿using System;
-using ManagedCuda;
+﻿using ManagedCuda;
 using ManagedCuda.CudaBlas;
 using NUnit.Framework;
-using System.Runtime.InteropServices;
 
 namespace Sigma.Tests
 {

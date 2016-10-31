@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sigma.VisualWPFMonitor.Properties
+namespace Sigma.Core.Monitors.WPF.Properties
 {
 
 
