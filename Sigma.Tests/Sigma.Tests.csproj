@@ -92,7 +92,7 @@
     <Compile Include="TestSigmaEnvironment.cs" />
     <Compile Include="TestCUDAInstallation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestRegistry.cs" />
+    <Compile Include="Utils\TestRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

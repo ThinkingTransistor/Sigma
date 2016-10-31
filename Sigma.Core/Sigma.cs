@@ -13,12 +13,12 @@ namespace Sigma.Core
 		internal IRegistry rootRegistry;
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public String Name
+		public string Name
 		{
 			get; internal set;
 		}
 
-		private SigmaEnvironment(String name)
+		private SigmaEnvironment(string name)
 		{
 			this.Name = name;
 			this.rootRegistry = new Registry();
@@ -85,7 +85,7 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="environmentName">The environment name.</param>
 		/// <returns>A boolean indicating if an environment with the given name exists.</returns>
-		public static bool Exists(String environmentName)
+		public static bool Exists(string environmentName)
 		{
 			return activeSigmaEnvironments.ContainsKey(environmentName);
 		}
