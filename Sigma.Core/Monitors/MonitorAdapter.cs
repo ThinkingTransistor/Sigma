@@ -4,14 +4,14 @@
 	{
 		public abstract void Initialise();
 
-		public virtual void Destroy()
+		public virtual void Dispose()
 		{
 
 		}
 
 		~MonitorAdapter()
 		{
-			Destroy();
+			Dispose();
 		}
 	}
 }
