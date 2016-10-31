@@ -9,6 +9,8 @@ namespace Sigma.Tests
 		[TestCase]
 		public void TestSigmaEnvironmentCreate()
 		{
+			SigmaEnvironment.Clear();
+
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			Assert.AreEqual("test", sigma.Name);

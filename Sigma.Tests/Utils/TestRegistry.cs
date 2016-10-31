@@ -15,6 +15,60 @@ namespace Sigma.Tests.Utils
 
 			Assert.AreEqual(registry["testkey1"], "testvalue1");
 			Assert.AreEqual(registry["testkey2"], "testvalue2");
+
+			Assert.Throws<System.ArgumentException>(() => registry.Add("testkey1", "anothertestvalue1"));
+		}
+
+		[TestCase]
+		public void TestRegistryTypeChecking()
+		{
+			Registry registry = new Registry();
+
+			registry.Set("checkedtestkey1", 0.0f, typeof(float));
+
+			Assert.Throws<System.ArgumentException>(() => registry.Set("checkedtestkey1", "invalidtype"));
+
+			registry.CheckTypes = false;
+
+			registry.Set("checkedtestkey1", "invalidtype");
+		}
+
+		[TestCase]
+		public void TestRegistryRemove()
+		{
+			Registry registry = new Registry();
+
+			registry.Set("testkey1", 1);
+
+			Assert.AreEqual(registry["testkey1"], 1);
+
+			registry.Remove("testkey1");
+
+			Assert.IsFalse(registry.ContainsKey("testkey1"));
+		}
+
+		[TestCase]
+		public void TestRegistryGetAll()
+		{
+			Registry registry = new Registry();
+
+			registry.Set("key1", "value1");
+			registry.Set("key22", "value2");
+			registry.Set("kay3", "value3");
+
+			Assert.AreEqual(registry.GetAllValues<string>("key.*", typeof(string)), new string[]{ "value1", "value2" });
+		}
+
+		[TestCase]
+		public void TestRegistryHierarchy()
+		{
+			Registry root = new Registry();
+			Registry second = new Registry(root);
+			Registry third = new Registry(second);
+
+			Assert.AreSame(root, third.Root);
+			Assert.AreSame(root, second.Parent);
+			Assert.AreSame(second, third.Parent);
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Sigma.Core.Utils
 {
@@ -9,6 +10,11 @@ namespace Sigma.Core.Utils
 	{
 		private Dictionary<string, object> mappedValues;
 		private Dictionary<string, Type> associatedTypes;
+
+		public bool CheckTypes
+		{
+			get; set;
+		} = true;
 
 		public Registry Parent
 		{
@@ -77,20 +83,39 @@ namespace Sigma.Core.Utils
 		{
 			if (valueType != null)
 			{
-				associatedTypes.Add(identifier, valueType);
+				if (!associatedTypes.ContainsKey(identifier))
+				{
+					associatedTypes.Add(identifier, valueType);
+				}
+				else
+				{
+					associatedTypes[identifier] = valueType;
+				}
 			}
 
-			mappedValues.Add(identifier, value);
+			if (CheckTypes && associatedTypes.ContainsKey(identifier) && (value.GetType() != associatedTypes[identifier] && !value.GetType().IsSubclassOf(associatedTypes[identifier])))
+			{
+				throw new ArgumentException($"Values for identifier {identifier} must be of type {associatedTypes[identifier]} (but given value {value} had type {value?.GetType()})");
+			}
+
+			if (!mappedValues.ContainsKey(identifier))
+			{
+				mappedValues.Add(identifier, value);
+			}
+			else
+			{
+				mappedValues[identifier] = value;
+			}
 		}
 
 		public void Add(string key, object value)
 		{
-			Set(key, value);
+			mappedValues.Add(key, value);
 		}
 
 		public void Add(KeyValuePair<string, object> item)
 		{
-			Set(item.Key, item.Value);
+			mappedValues.Add(item.Key, item.Value);
 		}
 
 		public T Get<T>(string identifier)
@@ -103,9 +128,21 @@ namespace Sigma.Core.Utils
 			return mappedValues[identifier];
 		}
 
-		public object[] GetAllValues(string matchIdentifier, Type matchType = null)
+		public T[] GetAllValues<T>(string matchIdentifier, Type matchType = null)
 		{
-			throw new NotImplementedException();
+			List<T> matchingValues = new List<T>();
+
+			Regex regex = new Regex(matchIdentifier);
+
+			foreach (string identifier in mappedValues.Keys)
+			{
+				if (regex.Match(identifier).Success && (matchType == null || matchType == mappedValues[identifier].GetType() || mappedValues[identifier].GetType().IsSubclassOf(matchType)))
+				{
+					matchingValues.Add((T) mappedValues[identifier]);
+				}
+			}
+
+			return matchingValues.ToArray<T>();
 		}
 
 		public bool TryGetValue(string key, out object value)
@@ -122,7 +159,11 @@ namespace Sigma.Core.Utils
 		{
 			associatedTypes.Remove(identifier);
 
-			return mappedValues.Remove(identifier);
+			object previousValue = mappedValues[identifier];
+
+			mappedValues.Remove(identifier);
+
+			return previousValue;
 		}
 
 		public bool Remove(KeyValuePair<string, object> item)

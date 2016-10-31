@@ -104,5 +104,13 @@ namespace Sigma.Core
 		{
 			activeSigmaEnvironments.Remove(environmentName);
 		}
+
+		/// <summary>
+		/// Removes all active environments.
+		/// </summary>
+		public static void Clear()
+		{
+			activeSigmaEnvironments.Clear();
+		}
 	}
 }

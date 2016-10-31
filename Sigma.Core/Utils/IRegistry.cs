@@ -33,12 +33,13 @@ namespace Sigma.Core.Utils
 		object Get(string identifier);
 
 		/// <summary>
-		/// 
+		/// Get all values of type T matching the identifier and optionally check if they match a certain type. 
 		/// </summary>
-		/// <param name="matchIdentifier"></param>
-		/// <param name="matchType"></param>
+		/// <typeparam name="T">The type.</typeparam>
+		/// <param name="matchIdentifier">The identifier to match.</param>
+		/// <param name="matchType">The type to match.</param>
 		/// <returns></returns>
-		object[] GetAllValues(string matchIdentifier, Type matchType = null);
+		T[] GetAllValues<T>(string matchIdentifier, Type matchType = null);
 
 		/// <summary>
 		/// Removes the identifier and the associated type-checked value.
