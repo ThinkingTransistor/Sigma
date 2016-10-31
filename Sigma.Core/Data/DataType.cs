@@ -38,7 +38,7 @@ namespace Sigma.Core.Data
 		public static readonly IDataType<byte> INT8 = new DataType<byte>(1);
 		public static readonly IDataType<short> INT16 = new DataType<short>(2);
 		public static readonly IDataType<int> INT32 = new DataType<int>(4);
-		public static readonly IDataType<long> INT64 = new DataType<long>(2);
+		public static readonly IDataType<long> INT64 = new DataType<long>(8);
 
 		public int SizeBytes
 		{
