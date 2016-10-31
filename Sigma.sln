@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Core", "Sigma.Core\Sigma.Core.csproj", "{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}"
 EndProject
@@ -94,8 +94,8 @@ Global
 		{614662B2-B353-4DEE-839B-5F00564C7B24}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x64.Build.0 = Debug|Any CPU
+		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x64.ActiveCfg = Debug|x64
+		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x64.Build.0 = Debug|x64
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Debug|x86.Build.0 = Debug|Any CPU
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -109,8 +109,8 @@ Global
 		{000F8DA2-B16B-4B4A-8D0F-ADD3CACD2F2E}.TravisBuild|x86.ActiveCfg = TravisBuild|Any CPU
 		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x64.ActiveCfg = Debug|x64
+		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x64.Build.0 = Debug|x64
 		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Debug|x86.Build.0 = Debug|Any CPU
 		{5C4ED7EC-24D7-43BA-9424-CADA167A3541}.Release|Any CPU.ActiveCfg = Release|Any CPU

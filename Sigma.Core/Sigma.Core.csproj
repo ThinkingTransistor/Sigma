@@ -100,6 +100,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\IDataBuffer.cs" />
+    <Compile Include="Data\DataType.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
@@ -109,7 +111,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Architecture\" />
-    <Folder Include="Data\" />
     <Folder Include="Layers\" />
     <Folder Include="Logging\" />
     <Folder Include="Math\" />
