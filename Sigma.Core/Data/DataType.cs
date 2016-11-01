@@ -46,17 +46,12 @@ namespace Sigma.Core.Data
 
 	public class DataType<T> : IDataType
 	{
-		private int sizeBytes;
-
 		public int SizeBytes
 		{
-			get
-			{
-				return sizeBytes;
-			}
+			get; private set;
 		}
 
-		public System.Type UnderlyingType
+		public Type UnderlyingType
 		{
 			get;
 		} = typeof(T);
@@ -68,7 +63,7 @@ namespace Sigma.Core.Data
 
 		public DataType(int sizeBytes)
 		{
-			this.sizeBytes = sizeBytes;
+			this.SizeBytes = sizeBytes;
 		}
 	}
 }
