@@ -30,7 +30,7 @@ namespace Sigma.Core.Data
 		T[] CreateArray(int length);
 	}
 
-	public class DataType<T> : IDataType<T>
+	public abstract class DataTypes
 	{
 		public static readonly IDataType<double> FLOAT64 = new DataType<double>(8);
 		public static readonly IDataType<float> FLOAT32 = new DataType<float>(4);
@@ -39,7 +39,10 @@ namespace Sigma.Core.Data
 		public static readonly IDataType<short> INT16 = new DataType<short>(2);
 		public static readonly IDataType<int> INT32 = new DataType<int>(4);
 		public static readonly IDataType<long> INT64 = new DataType<long>(8);
+	}
 
+	public class DataType<T> : DataTypes, IDataType<T>
+	{
 		public int SizeBytes
 		{
 			get
@@ -53,7 +56,7 @@ namespace Sigma.Core.Data
 			}
 		}
 
-		public System.Type UnderlyingType
+		public Type UnderlyingType
 		{
 			get;
 		} = typeof(T);
