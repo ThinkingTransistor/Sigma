@@ -101,13 +101,13 @@ namespace Sigma.Core.Data
 			}
 		}
 
-		public void FillWith<TOther>(LargeChunkedArray<TOther> data, long sourceStartIndex, long destStartIndex, long length)
+		public void FillWith<TOther>(ILargeChunkedArray<TOther> data, long sourceStartIndex, long destStartIndex, long length)
 		{
 			System.Type ownType = typeof(T);
 
 			for (long i = 0; i < length; i++)
 			{
-				this[i + destStartIndex] = (T) Convert.ChangeType(data[i + sourceStartIndex], ownType);
+				this[i + destStartIndex] = (T) Convert.ChangeType(data.GetValue(i + sourceStartIndex), ownType);
 			}
 		}
 

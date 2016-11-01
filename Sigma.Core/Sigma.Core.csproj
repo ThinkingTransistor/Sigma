@@ -103,6 +103,7 @@
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
+    <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />

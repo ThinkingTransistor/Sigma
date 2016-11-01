@@ -84,10 +84,6 @@
       <Project>{92b1bb1d-7f6a-4bd7-820c-46454f9af8b3}</Project>
       <Name>Sigma.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sigma.Kernels\Sigma.Kernels.vcxproj">
-      <Project>{afeb081e-22cd-41bd-9ea2-71b4d83a6ffd}</Project>
-      <Name>Sigma.Kernels</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

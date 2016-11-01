@@ -112,6 +112,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Data\TestLargeChunkedArray.cs" />
     <Compile Include="TestSigmaEnvironment.cs" />
     <Compile Include="TestCUDAInstallation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
