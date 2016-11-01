@@ -19,7 +19,7 @@ namespace Sigma.Core.Data
 		private IDataBuffer<T> underlyingBuffer;
 		private IDataBuffer<T> underlyingRootBuffer;
 
-		public long Count
+		public long Length
 		{
 			get { return length; }
 		}

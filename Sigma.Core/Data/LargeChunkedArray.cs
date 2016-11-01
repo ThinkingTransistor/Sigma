@@ -6,14 +6,35 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data
 {
+	/// <summary>
+	/// A (typically large) chunked array of any type. Behaves like an array but the data is actually split into chunks in a two-dimensional array. Typically used when the normal, one-dimensional array limit (2^32 / 2) is not enough or inconvenient. 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public interface ILargeChunkedArray<T>
 	{
+		/// <summary>
+		/// The chunked data. First dimension represents chunk index and second data index within chunk. 
+		/// Note: The last array should be clipped in size to the actual size for easier out of bounds check. 
+		/// </summary>
 		T[][] ChunkedData { get; }
 
+		/// <summary>
+		/// The total length of this array.
+		/// </summary>
 		long Length { get; }
 
+		/// <summary>
+		/// Get a value at a certain index.
+		/// </summary>
+		/// <param name="index">The value at the given index.</param>
+		/// <returns></returns>
 		T GetValue(long index);
 
+		/// <summary>
+		/// Sets a given value at a certain index.
+		/// </summary>
+		/// <param name="value">The value.</param>
+		/// <param name="index">The index.</param>
 		void SetValue(T value, long index);
 	}
 

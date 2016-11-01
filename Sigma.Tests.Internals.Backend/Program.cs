@@ -45,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
 				NDArray<float> _b = (NDArray<float>) b;
 				NDArray<float> result = _b; //CreateNDArray(...);
 
-				for (int i = 0; i < _a.data.Count; i++)
+				for (int i = 0; i < _a.data.Length; i++)
 				{
 					result.data.SetValue(_a.data.GetValue(i) + _b.data.GetValue(i), i);
 				}

@@ -15,7 +15,7 @@ namespace Sigma.Core.Data
 		/// <summary>
 		/// The number of elements in this data buffer.
 		/// </summary>
-		long Count { get; }
+		long Length { get; }
 
 		/// <summary>
 		/// The absolute offset to the underlying root data buffer. 
