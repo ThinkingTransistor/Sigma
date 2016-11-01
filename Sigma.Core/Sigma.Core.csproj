@@ -104,6 +104,7 @@
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
+    <Compile Include="Math\INDArray.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
@@ -115,7 +116,6 @@
     <Folder Include="Architecture\" />
     <Folder Include="Layers\" />
     <Folder Include="Logging\" />
-    <Folder Include="Math\" />
     <Folder Include="Persistence\" />
     <Folder Include="Training\" />
   </ItemGroup>
