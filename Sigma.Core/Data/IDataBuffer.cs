@@ -9,7 +9,7 @@ namespace Sigma.Core.Data
 	/// <summary>
 	/// A data buffer view with data of a certain type. Data buffers can be "stacked" hierarchically, meaning data buffers can represent a buffer view of their underlying data.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">The underlying data type.</typeparam>
 	public interface IDataBuffer<T> : IEnumerable<T>
 	{
 		/// <summary>
@@ -18,14 +18,16 @@ namespace Sigma.Core.Data
 		long Count { get; }
 
 		/// <summary>
-		/// The offset to the underlying root data buffer. 
+		/// The absolute offset to the underlying root data buffer. 
 		/// </summary>
 		long Offset { get; }
 
 		/// <summary>
 		/// The underlying data type to use (e.g. FLOAT32).
 		/// </summary>
-		IDataType<T> Type { get; }
+		IDataType Type { get; }
+
+		ILargeChunkedArray<T> Data { get; }
 
 		/// <summary>
 		/// Get the value at a certain index.
@@ -81,7 +83,7 @@ namespace Sigma.Core.Data
 		/// <param name="sourceStartIndex">Where to start copying in the source buffer, RELATIVE to the source buffer.</param>
 		/// <param name="destStartIndex">Where to paste within the destination, RELATIVE to the destination buffer (this data buffer).</param>
 		/// <param name="destLength">Starting at the source start index, how many elements to copy.</param>
-		void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long destLength);
+		void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length);
 
 		/// <summary>
 		/// Copies this the data buffer, keeping the same underlying data (underlying buffers are not copied).
