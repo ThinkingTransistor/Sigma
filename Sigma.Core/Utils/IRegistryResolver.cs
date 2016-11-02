@@ -32,7 +32,7 @@ namespace Sigma.Core.Utils
 		///		-	'*' indicates a wild-card mask, match any name - similar to regex's '.'
 		///			Example: "trainer*.training.accuracy" match all sub-registries whose name starts with trainer
 		///		-	'*<tag>' conditionally matching wild-card mask, match any name if the conditional tag
-		///			Example: "*<Trainer>.training.accuracy" match all sub-registries whose 
+		///			Example: "*<trainer>.training.accuracy" match all sub-registries whose tags include the tag "trainer"
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="matchIdentifier"></param>

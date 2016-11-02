@@ -57,7 +57,7 @@ namespace Sigma.Core.Data
 		{
 			if (underlyingBuffer == null)
 			{
-				throw new NullReferenceException("Underlying buffer cannot be null.");
+				throw new ArgumentNullException("Underlying buffer cannot be null.");
 			}
 
 			if (offset < 0)
@@ -89,7 +89,7 @@ namespace Sigma.Core.Data
 		{
 			if (data == null)
 			{
-				throw new NullReferenceException("Data cannot be null.");
+				throw new ArgumentNullException("Data cannot be null.");
 			}
 
 			if (offset < 0)

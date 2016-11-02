@@ -42,7 +42,7 @@ namespace Sigma.Tests
 		}
 
 		[TestCase]
-		public void TestCreateDefaultCUDAContext()
+		public void TestCUDAInstallationCreateContext()
 		{
 			AssertIgnoreIfCUDAUnavailable();
 
@@ -50,7 +50,7 @@ namespace Sigma.Tests
 		}
 
 		[TestCase]
-		public void TestCreateCUDABlas()
+		public void TestCUDAInstallationCreateCudaBlas()
 		{
 			AssertIgnoreIfCUDAUnavailable();
 

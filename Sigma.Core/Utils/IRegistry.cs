@@ -29,18 +29,17 @@ namespace Sigma.Core.Utils
 		/// <summary>
 		/// The property for the root registry. Return null, when the registry itself is null.
 		/// </summary>
-		IRegistry Root
-		{
-			get; set;
-		}
+		IRegistry Root { get; set; }
 
 		/// <summary>
 		/// A list of tags for this registry, used by registry resolvers (list may be empty). 
 		/// </summary>
-		string[] Tags
-		{
-			get;
-		}
+		ISet<string> Tags { get; }
+
+		/// <summary>
+		/// Holds all hierarchy change listeners, which get notified when a member of this registry with type IRegistry is added or changed. 
+		/// </summary>
+		ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners { get; }
 
 		/// <summary>
 		/// Set a value with a given identifier. 
@@ -92,5 +91,10 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>An iterator over all values.</returns>
 		IEnumerator GetValueIterator();
+	}
+
+	public interface IRegistryHierarchyChangeListener
+	{
+		void OnChildHierarchyChanged(string identifier, IRegistry previousChild, IRegistry newChild);
 	}
 }

@@ -67,17 +67,31 @@ namespace Sigma.Core.Utils
 			get; set;
 		}
 
-		public string[] Tags
+		public ISet<string> Tags
 		{
 			get; private set;
 		}
 
-		public Registry(IRegistry parent = null)
+		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
 		{
-			this.mappedValues = new Dictionary<string, object>();
-			this.associatedTypes = new Dictionary<string, Type>();
+			get; private set;
+		}
+
+		public Registry(IRegistry parent = null, string[] tags = null)
+		{
 			this.Parent = parent;
 			this.Root = Parent?.Root == null ? Parent : Parent?.Root;
+
+			this.mappedValues = new Dictionary<string, object>();
+			this.associatedTypes = new Dictionary<string, Type>();
+
+			if (tags == null)
+			{
+				tags = new string[0];
+			}
+
+			this.Tags = new HashSet<string>(tags);
+			this.HierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
 		}
 
 		public object this[string identifier]
@@ -112,13 +126,37 @@ namespace Sigma.Core.Utils
 				throw new ArgumentException($"Values for identifier {identifier} must be of type {associatedTypes[identifier]} (but given value {value} had type {value?.GetType()})");
 			}
 
+			//check if added object is another registry and if hierarchy listeners should be notified
+			IRegistry valueAsRegistry = value as IRegistry;
+
 			if (!mappedValues.ContainsKey(identifier))
 			{
-				mappedValues.Add(identifier, value);
+				Add(identifier, value);
+
+				//notify if value is of type IRegistry
+				if (valueAsRegistry != null) 
+				{
+					NotifyHierarchyChangeListeners(identifier, null, valueAsRegistry);
+				}
 			}
 			else
 			{
-				mappedValues[identifier] = value;
+				//notify if value is of type IRegistry and if value changed
+				if (valueAsRegistry != null)
+				{
+					IRegistry previousValue = this[identifier] as IRegistry;
+
+					mappedValues[identifier] = value;
+
+					if (previousValue != valueAsRegistry)
+					{
+						NotifyHierarchyChangeListeners(identifier, previousValue, valueAsRegistry);
+					}
+				}
+				else
+				{
+					mappedValues[identifier] = value;
+				}
 			}
 		}
 
@@ -129,7 +167,15 @@ namespace Sigma.Core.Utils
 
 		public void Add(KeyValuePair<string, object> item)
 		{
-			mappedValues.Add(item.Key, item.Value);
+			Add(item.Key, item.Value);
+		}
+
+		private void NotifyHierarchyChangeListeners(string identifier, IRegistry previousChild, IRegistry newChild)
+		{
+			foreach (IRegistryHierarchyChangeListener listener in HierarchyChangeListeners)
+			{
+				listener.OnChildHierarchyChanged(identifier, previousChild, newChild);
+			}
 		}
 
 		public T Get<T>(string identifier)

@@ -112,6 +112,7 @@
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\Registry.cs" />
+    <Compile Include="Utils\RegistryResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Architecture\" />
