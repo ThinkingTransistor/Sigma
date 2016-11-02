@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 namespace Sigma.Core.Math
 {
 	/// <summary>
-	/// An n-dimensional array of any data type. Includes convenience functions for scalar, vector and matrix manipulation. 
+	/// An n-dimensional array of any data type with C-like ordering. Includes utility functions for scalar, vector and matrix manipulation. 
 	/// 
 	/// Why does INDArray not expose the underlying data? 
-	/// Because it makes it easier to define the general workflow of how INDArrays should interact in an algorithm without having to think about underlying system data types. 
+	/// Not exposing the internal data directly makes it easier to define the general workflow of how INDArrays should interact in an algorithm without having to think about underlying system data types. 
 	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon, ...).
 	/// </summary>
 	/// <author>flo.caesar</author>
@@ -44,11 +44,6 @@ namespace Sigma.Core.Math
 		/// The strides of this ndarray. A stride at any dimension defines how many elements to skip to move to the next element along the same dimension.
 		/// </summary>
 		int[] Strides { get; }
-
-		/// <summary>
-		/// The stride per element in this ndarray (typically 1 for real numbers).
-		/// </summary>
-		int ElementStride { get; }
 
 		/// <summary>
 		/// Convenience flag indicating if this ndarray is a scalar (i.e. if its shape is {1})

@@ -31,10 +31,18 @@ namespace Sigma.Core.Data
 		long Offset { get; }
 
 		/// <summary>
+		/// The relative offset to the directly underlying root data buffer.
+		/// </summary>
+		long RelativeOffset { get; }
+
+		/// <summary>
 		/// The underlying data type to use (e.g. FLOAT32).
 		/// </summary>
 		IDataType Type { get; }
 
+		/// <summary>
+		/// THe underlying data array as a large chunked array (to ensure all data buffers support very large arrays). 
+		/// </summary>
 		ILargeChunkedArray<T> Data { get; }
 
 		/// <summary>
@@ -67,6 +75,22 @@ namespace Sigma.Core.Data
 		/// <param name="length">The length.</param>
 		/// <returns>A new data buffer of the given type with a COPY of the specified range.</returns>
 		IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length);
+
+		/// <summary>
+		/// Get a COPY of the underlying data within the given range. 
+		/// </summary>
+		/// <param name="startIndex">The start index referring to this buffer (not underlying).</param>
+		/// <param name="length">The length.</param>
+		/// <returns>A COPY of the underlying data within the given range.</returns>
+		ILargeChunkedArray<T> GetValuesArray(long startIndex, long length);
+
+		/// <summary>
+		/// Get a COPY of the underlying data within the given range as a given type (data may change as it has to be cast). 
+		/// </summary>
+		/// <param name="startIndex">The start index referring to this buffer (not underlying).</param>
+		/// <param name="length">The length.</param>
+		/// <returns>A COPY of the underlying data within the given range as the given type.</returns>
+		ILargeChunkedArray<TOther> GetValuesArrayAs<TOther>(long startIndex, long length);
 
 		/// <summary>
 		/// Set the value at the given index.

@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +20,7 @@ namespace Sigma.Core.Data
 	/// A (typically large) chunked array of any type. Behaves like an array but the data is actually split into chunks in a two-dimensional array. Typically used when the normal, one-dimensional array limit (2^32 / 2) is not enough or inconvenient. 
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public interface ILargeChunkedArray<T>
+	public interface ILargeChunkedArray<T> : IEnumerable<T>
 	{
 		/// <summary>
 		/// The chunked data. First dimension represents chunk index and second data index within chunk. 
@@ -44,6 +46,48 @@ namespace Sigma.Core.Data
 		/// <param name="value">The value.</param>
 		/// <param name="index">The index.</param>
 		void SetValue(T value, long index);
+
+		/// <summary>
+		/// Get a COPY of all values within a certain range as a single array.
+		/// </summary>
+		/// <param name="startIndex">The start index.</param>
+		/// <param name="length">The length.</param>
+		/// <returns>An array with a COPY of all values within a certain range.</returns>
+		T[] GetValuesPackedArray(long startIndex, int length);
+
+		/// <summary>
+		/// Attempt to get a COPY of all values starting at a certain index if they would fit inside a single one-dimensional (packed) array.
+		/// </summary>
+		/// <param name="startIndex">The optional start index (default: 0).</param>
+		/// <returns>An array with a COPY of all values within a certain range (if possible).</returns>
+		T[] TryGetValuesPackedArray(long startIndex = 0);
+
+		/// <summary>
+		/// Get a COPY of all values within a range as a chunked array.
+		/// </summary>
+		/// <param name="startIndex">The start index.</param>
+		/// <param name="length">The length.</param>
+		/// <returns>A COPY of all values within the given range as a chunked array.</returns>
+		ILargeChunkedArray<T> GetValuesChunkedArray(long startIndex, long length);
+
+		/// <summary>
+		/// Fill this chunked array with data from another chunked array of the same type within the given range. 
+		/// </summary>
+		/// <param name="data">Another chunked array to copy the data from.</param>
+		/// <param name="sourceStartIndex">The source start index (where to start copying in the source data).</param>
+		/// <param name="destStartIndex">The destination start index (where to start pasting in the destination data - this chunked array).</param>
+		/// <param name="length">The length (how many elements to copy).</param>
+		void FillWith(ILargeChunkedArray<T> data, long sourceStartIndex, long destStartIndex, long length);
+
+		/// <summary>
+		/// Fill this chunked array with data from another chunked array of another same type within the given range (data may have to be cast).
+		/// </summary>
+		/// <typeparam name="TOther">The type of the source data.</typeparam>
+		/// <param name="data">Another chunked array to copy the data from.</param>
+		/// <param name="sourceStartIndex">The source start index (where to start copying in the source data).</param>
+		/// <param name="destStartIndex">The destination start index (where to start pasting in the destination data - this chunked array).</param>
+		/// <param name="length">The length (how many elements to copy).</param>
+		void FillWith<TOther>(ILargeChunkedArray<TOther> data, long sourceStartIndex, long destStartIndex, long length);
 	}
 
 	/// <summary>
@@ -124,14 +168,20 @@ namespace Sigma.Core.Data
 
 		public void FillWith(ILargeChunkedArray<T> data, long sourceStartIndex, long destStartIndex, long length)
 		{
+			CheckLength(length);
+			CheckDestStartIndex(destStartIndex);
+
 			for (long i = 0; i < length; i++)
 			{
-				this[i + destStartIndex] = data.GetValue(i + destStartIndex);
+				this[i + destStartIndex] = data.GetValue(i + sourceStartIndex);
 			}
 		}
 
 		public void FillWith<TOther>(ILargeChunkedArray<TOther> data, long sourceStartIndex, long destStartIndex, long length)
 		{
+			CheckLength(length);
+			CheckDestStartIndex(destStartIndex);
+
 			System.Type ownType = typeof(T);
 
 			for (long i = 0; i < length; i++)
@@ -142,9 +192,84 @@ namespace Sigma.Core.Data
 
 		public void FillWith(T[] data, long sourceStartIndex, long destStartIndex, long length)
 		{
+			CheckLength(length);
+			CheckDestStartIndex(destStartIndex);
+
 			for (long i = 0; i < length; i++)
 			{
 				this[i + destStartIndex] = data[i + sourceStartIndex];
+			}
+		}
+
+		public T[] TryGetValuesPackedArray(long startIndex = 0)
+		{
+			if (Length - startIndex >= Int32.MaxValue / 2)
+			{
+				throw new ArgumentException($"Cannot pack all values of this array within a single one-dimensional array (too long with {Length - startIndex} elements).");
+			}
+
+			return GetValuesPackedArray(startIndex, (int) (Length - startIndex));
+		}
+
+		public T[] GetValuesPackedArray(long startIndex, int length)
+		{
+			CheckLength(length);
+
+			T[] array = new T[length];
+
+			for (long i = 0; i < length; i++)
+			{
+				array[i] = this[startIndex + i];
+			}
+
+			return array;
+		}
+
+		public ILargeChunkedArray<T> GetValuesChunkedArray(long startIndex, long length)
+		{
+			CheckLength(length);
+
+			LargeChunkedArray<T> array = new LargeChunkedArray<T>(length);
+
+			for (long i = 0; i < length; i++)
+			{
+				array[i] = this[i + startIndex];
+			}
+
+			return array;
+		}
+
+		private void CheckLength(long length)
+		{
+			if (length < 1)
+			{
+				throw new ArgumentException($"Length has to be >= 1 (but was {length}).");
+			}
+		}
+
+		private void CheckDestStartIndex(long startIndex)
+		{
+			if (startIndex < 0)
+			{
+				throw new ArgumentException($"Destination start index has to be >= 0 (but was {startIndex}).");
+			}
+		}
+
+		public IEnumerator<T> GetEnumerator()
+		{
+			long length = this.Length;
+			for (long i = 0; i < length; i++)
+			{
+				yield return this[i];
+			}
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			long length = this.Length;
+			for (long i = 0; i < length; i++)
+			{
+				yield return this[i];
 			}
 		}
 	}
