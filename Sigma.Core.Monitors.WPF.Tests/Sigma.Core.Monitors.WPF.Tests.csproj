@@ -80,7 +80,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Control\TabRegistryTest.cs" />
+    <Compile Include="Model\TabTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WPFMonitorTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sigma.Core.Monitors.WPF\Sigma.Core.Monitors.WPF.csproj">
@@ -92,10 +95,7 @@
       <Name>Sigma.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Control\" />
-    <Folder Include="Model\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />

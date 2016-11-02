@@ -6,10 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Threading;
-using Sigma.Core.Monitors.WPF.Control;
+using MahApps.Metro;
+using Sigma.Core.Monitors.WPF.Control.Tabs;
+using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -78,6 +80,16 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		public TabRegistry Tabs { get; private set; }
 
+
+		/// <summary>
+		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
+		/// </summary>
+		public IColorManager @ColorManager
+		{
+			get;
+			private set;
+		}
+
 		/// <summary>
 		/// The constructor for the WPF Monitor.
 		/// </summary>
@@ -85,6 +97,8 @@ namespace Sigma.Core.Monitors.WPF
 		public WPFMonitor(string title)
 		{
 			Title = title;
+
+			ColorManager = new ColorManager(MaterialDesignSwatches.BLUEGREY, MaterialDesignSwatches.AMBER);
 
 			waitForStart = new ManualResetEvent(false);
 		}
@@ -98,14 +112,17 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			Thread wpfThread = new Thread(() =>
 			{
-				window = new WPFWindow(title);
-				app = new App();
-				app.Run(window);
+				app = new App(this);
+				ColorManager.App = app;
 
-				waitForStart.Set();
+				window = new WPFWindow(this, app, title);
+
+				app.Startup += (sender, args) => waitForStart.Set();
+
+				app.Run(window);
 			});
 
-			//Start the new thread with the given priority and set it to a STAThread (required for some WPF windows)
+			//Start the new thread with the given priority and set it to a STAThread (required for WPF windows)
 			wpfThread.SetApartmentState(ApartmentState.STA);
 			wpfThread.Priority = Priority;
 			wpfThread.Start();

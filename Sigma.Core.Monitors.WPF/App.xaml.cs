@@ -7,18 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using MahApps.Metro;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -29,8 +20,15 @@ namespace Sigma.Core.Monitors.WPF
 	/// </summary>
 	public partial class App : Application
 	{
-		public App()
+		/// <summary>
+		/// The corresponding WPF monitor.
+		/// </summary>
+		protected WPFMonitor monitor;
+
+		public App(WPFMonitor monitor)
 		{
+			this.monitor = monitor;
+
 			InitializeComponent();
 		}
 	}

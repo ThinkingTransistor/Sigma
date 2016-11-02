@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Monitors.WPF.Model;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Monitors.WPF.Control
+namespace Sigma.Core.Monitors.WPF.Control.Tabs
 {
 	public class TabRegistry : Registry, IRegistry
 	{
@@ -19,9 +19,11 @@ namespace Sigma.Core.Monitors.WPF.Control
 		/// Add a single <see cref="Tab"/> to the <see cref="TabControl"/>.
 		/// </summary>
 		/// <param name="tab">The <see cref="Tab"/> to add.</param>
-		public void AddTab(Tab tab)
+		public Tab AddTab(Tab tab)
 		{
 			Set(tab.Title, tab, typeof(Tab));
+
+			return tab;
 		}
 
 		/// <summary>

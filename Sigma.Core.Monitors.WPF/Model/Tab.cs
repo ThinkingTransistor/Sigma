@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using Sigma.Core.Monitors.WPF.Panels;
 
 namespace Sigma.Core.Monitors.WPF.Model
 {
@@ -27,6 +28,12 @@ namespace Sigma.Core.Monitors.WPF.Model
 		public Tab(string name)
 		{
 			Title = name;
+		}
+
+		public IPanel AddPanel(IPanel panel)
+		{
+			//TODO: 
+			return panel;
 		}
 
 		#region IComparable
