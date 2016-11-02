@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Sigma.Core.Monitors.WPF.Control;
+using Sigma.Core.Monitors.WPF.Control.Tabs;
 
 namespace Sigma.Core.Monitors.WPF.Tests.Control
 {
