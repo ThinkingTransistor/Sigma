@@ -8,11 +8,12 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using log4net;
+using Sigma.Core.Monitors;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core
 {
-	public partial class SigmaEnvironment
+	public class SigmaEnvironment
 	{
 		internal IRegistry rootRegistry;
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -26,6 +27,17 @@ namespace Sigma.Core
 		{
 			this.Name = name;
 			this.rootRegistry = new Registry();
+		}
+
+		public T AddMonitor<T>(T monitor) where T : IMonitor
+		{
+			//TODO: 
+			monitor.Sigma = this;
+
+
+			monitor.Initialise();
+
+			return monitor;
 		}
 
 		public void Prepare()
@@ -119,6 +131,17 @@ namespace Sigma.Core
 		public static void Clear()
 		{
 			activeSigmaEnvironments.Clear();
+		}
+
+		/// <summary>
+		/// Returns the root registry of the Sigma environment. 
+		/// </summary>
+		public IRegistry Registry
+		{
+			get
+			{
+				return rootRegistry;
+			}
 		}
 	}
 }

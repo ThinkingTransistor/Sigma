@@ -22,5 +22,11 @@ namespace Sigma.Core.Monitors
 		/// If the <see cref="IMonitor"/> runs in a new <see cref="Thread"/> , this function should block until fully up and running. 
 		/// </summary>
 		void Start();
+
+		SigmaEnvironment Sigma
+		{
+			get;
+			set;
+		}
 	}
 }

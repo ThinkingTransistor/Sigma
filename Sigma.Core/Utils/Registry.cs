@@ -24,16 +24,6 @@ namespace Sigma.Core.Utils
 			get; set;
 		} = true;
 
-		public Registry Parent
-		{
-			get; private set;
-		}
-
-		public Registry Root
-		{
-			get; private set;
-		}
-
 		public ICollection<string> Keys
 		{
 			get
@@ -66,7 +56,19 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public Registry(Registry parent = null)
+		public IRegistry Parent
+		{
+			get;
+			set;
+		}
+
+		public IRegistry Root
+		{
+			get;
+			set;
+		}
+
+		public Registry(IRegistry parent = null)
 		{
 			this.mappedValues = new Dictionary<string, object>();
 			this.associatedTypes = new Dictionary<string, Type>();

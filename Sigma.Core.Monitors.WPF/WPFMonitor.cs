@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System.Threading;
 using Sigma.Core.Monitors.WPF.View;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -34,6 +35,16 @@ namespace Sigma.Core.Monitors.WPF
 		private WPFWindow window;
 
 		/// <summary>
+		/// This property returns the current window. 
+		/// 
+		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
+		/// </summary>
+		public WPFWindow Window
+		{
+			get { return window; }
+		}
+
+		/// <summary>
 		/// When the <see cref="Start"/> method is called, the thread should block
 		/// until WPF is up and running.
 		/// </summary>
@@ -45,14 +56,11 @@ namespace Sigma.Core.Monitors.WPF
 		private string title;
 
 		/// <summary>
-		/// Set or get the title of the window. 
+		/// Property for the title of the window. 
 		/// </summary>
 		public string Title
 		{
-			get
-			{
-				return title;
-			}
+			get { return title; }
 			set
 			{
 				title = value;
@@ -64,6 +72,8 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		private IRegistry tabs;
+
 		/// <summary>
 		/// The constructor for the WPF Monitor.
 		/// </summary>
@@ -73,6 +83,11 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 
 			waitForStart = new ManualResetEvent(false);
+		}
+
+		public override void Initialise()
+		{
+			tabs = new Registry(Sigma.Registry);
 		}
 
 		public override void Start()
@@ -86,10 +101,12 @@ namespace Sigma.Core.Monitors.WPF
 				waitForStart.Set();
 			});
 
+			//Start the new thread with the given priority and set it to a STAThread (required for some WPF windows)
 			wpfThread.SetApartmentState(ApartmentState.STA);
 			wpfThread.Priority = Priority;
 			wpfThread.Start();
 
+			//Wait until the thread has finished execution
 			waitForStart.WaitOne();
 			waitForStart.Reset();
 		}
