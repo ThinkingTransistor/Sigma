@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Sigma.Core.Monitors.WPF;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -10,6 +6,20 @@ namespace Sigma.Tests.Internals.WPF
 	{
 		static void Main(string[] args)
 		{
+			WPFMonitor guiMonitor = new WPFMonitor("Sigma GUI Demo");
+			guiMonitor.Priority = System.Threading.ThreadPriority.Highest;
+
+
+			//gui.DefaultGridSize = {3, 4};
+			//gui.AddTabs("Overview", "Data", "Tests");
+			//gui.PrimaryColor = Colors.GreyBlue;
+
+
+			//sigma.Prepare()
+			guiMonitor.Start();
+
+			//Console.WriteLine("Test");
+			//Console.ReadKey();
 		}
 	}
 }

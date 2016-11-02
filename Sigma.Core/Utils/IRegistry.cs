@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Utils
 {
@@ -67,5 +68,21 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>An iterator over all values.</returns>
 		IEnumerator GetValueIterator();
+
+		/// <summary>
+		/// The property for the registries parent. Returns null when no parent has been set.
+		/// </summary>
+		IRegistry Parent
+		{
+			get; set;
+		}
+
+		/// <summary>
+		/// The property for the root registry. Return null, when the registry itself is null.
+		/// </summary>
+		IRegistry Root
+		{
+			get; set;
+		}
 	}
 }
