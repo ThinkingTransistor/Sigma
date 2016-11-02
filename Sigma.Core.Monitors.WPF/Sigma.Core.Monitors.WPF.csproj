@@ -105,6 +105,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Sigma.Core.Monitors.WPF.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

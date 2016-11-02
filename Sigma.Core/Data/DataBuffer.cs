@@ -24,6 +24,7 @@ namespace Sigma.Core.Data
 		private LargeChunkedArray<T> data;
 		private long length;
 		private long offset;
+		private long relativeOffset;
 		private IDataBuffer<T> underlyingBuffer;
 		private IDataBuffer<T> underlyingRootBuffer;
 
@@ -35,6 +36,11 @@ namespace Sigma.Core.Data
 		public long Offset
 		{
 			get { return offset; }
+		}
+
+		public long RelativeOffset
+		{
+			get { return relativeOffset; }
 		}
 
 		public IDataType Type
@@ -70,6 +76,7 @@ namespace Sigma.Core.Data
 			}
 
 			this.length = length;
+			this.relativeOffset = offset;
 			this.offset = offset + underlyingBuffer.offset;
 
 			this.data = underlyingBuffer.data;
@@ -102,6 +109,7 @@ namespace Sigma.Core.Data
 
 			this.data = data;
 			this.length = length;
+			this.relativeOffset = offset;
 			this.offset = offset;
 
 			this.Type = InferDataType(underlyingType);
@@ -115,7 +123,6 @@ namespace Sigma.Core.Data
 			}
 
 			this.length = length;
-			this.offset = 0;
 			this.data = new LargeChunkedArray<T>(length);
 
 			this.Type = InferDataType(underlyingType);
@@ -167,6 +174,24 @@ namespace Sigma.Core.Data
 			otherData.FillWith<T>(this.data, this.offset + startIndex, 0L, length);
 
 			return new DataBuffer<TOther>(otherData, 0L, length);
+		}
+
+		public ILargeChunkedArray<T> GetValuesArray(long startIndex, long length)
+		{
+			LargeChunkedArray<T> valuesArray = new LargeChunkedArray<T>(length);
+
+			valuesArray.FillWith(this.data, this.offset + startIndex, 0L, length);
+
+			return valuesArray;
+		}
+
+		public ILargeChunkedArray<TOther> GetValuesArrayAs<TOther>(long startIndex, long length)
+		{
+			LargeChunkedArray<TOther> valuesArray = new LargeChunkedArray<TOther>(length);
+
+			valuesArray.FillWith<T>(this.data, this.offset + startIndex, 0L, length);
+
+			return valuesArray;
 		}
 
 		public void SetValue(T value, long index)

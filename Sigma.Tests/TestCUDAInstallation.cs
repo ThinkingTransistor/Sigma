@@ -17,7 +17,7 @@ namespace Sigma.Tests
 		static bool cudaInstalled;
 		static bool checkedCudaInstalled;
 
-		public static void AssertIgnoreIfCudaUnavailable()
+		public static void AssertIgnoreIfCUDAUnavailable()
 		{
 			if (!checkedCudaInstalled)
 			{
@@ -44,15 +44,15 @@ namespace Sigma.Tests
 		[TestCase]
 		public void TestCreateDefaultCUDAContext()
 		{
-			AssertIgnoreIfCudaUnavailable();
+			AssertIgnoreIfCUDAUnavailable();
 
 			CudaContext context = new CudaContext();
 		}
 
 		[TestCase]
-		public void TestCreateCudaBlas()
+		public void TestCreateCUDABlas()
 		{
-			AssertIgnoreIfCudaUnavailable();
+			AssertIgnoreIfCUDAUnavailable();
 
 			CudaBlas cublas = new CudaBlas();
 		}
