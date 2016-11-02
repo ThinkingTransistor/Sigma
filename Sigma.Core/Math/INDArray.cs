@@ -1,4 +1,12 @@
-﻿using Sigma.Core.Data;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using Sigma.Core.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +17,12 @@ namespace Sigma.Core.Math
 {
 	/// <summary>
 	/// An n-dimensional array of any data type. Includes convenience functions for scalar, vector and matrix manipulation. 
+	/// 
+	/// Why does INDArray not expose the underlying data? 
+	/// Because it makes it easier to define the general workflow of how INDArrays should interact in an algorithm without having to think about underlying system data types. 
+	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon, ...).
 	/// </summary>
+	/// <author>flo.caesar</author>
 	public interface INDArray
 	{
 		/// <summary>

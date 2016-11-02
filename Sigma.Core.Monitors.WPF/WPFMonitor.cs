@@ -1,4 +1,12 @@
-﻿using System.Threading;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Threading;
 using Sigma.Core.Monitors.WPF.View;
 
 namespace Sigma.Core.Monitors.WPF
