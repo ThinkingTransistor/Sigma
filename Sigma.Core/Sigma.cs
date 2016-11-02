@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using log4net;
 using Sigma.Core.Utils;
 

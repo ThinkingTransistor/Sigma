@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 ﻿using System.Threading;
 using Sigma.Core.Monitors.WPF.View;
+=======
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
+>>>>>>> 30ed6820f9dc7fd7879c493abc6ec5852bd210eb
 
 namespace Sigma.Core.Monitors.WPF
 {
