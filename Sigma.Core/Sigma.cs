@@ -15,7 +15,7 @@ namespace Sigma.Core
 {
 	public class SigmaEnvironment
 	{
-		internal IRegistry rootRegistry;
+		public readonly IRegistry rootRegistry;
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public string Name

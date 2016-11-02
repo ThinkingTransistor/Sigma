@@ -59,14 +59,17 @@ namespace Sigma.Core.Utils
 
 		public IRegistry Parent
 		{
-			get;
-			set;
+			get; set;
 		}
 
 		public IRegistry Root
 		{
-			get;
-			set;
+			get; set;
+		}
+
+		public string[] Tags
+		{
+			get; private set;
 		}
 
 		public Registry(IRegistry parent = null)

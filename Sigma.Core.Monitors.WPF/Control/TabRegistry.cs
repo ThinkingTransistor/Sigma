@@ -1,4 +1,12 @@
-﻿using Sigma.Core.Monitors.WPF.Model;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using Sigma.Core.Monitors.WPF.Model;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Control

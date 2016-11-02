@@ -19,6 +19,30 @@ namespace Sigma.Core.Utils
 	public interface IRegistry : IDictionary<string, object>
 	{
 		/// <summary>
+		/// The property for the registries parent. Returns null when no parent has been set.
+		/// </summary>
+		IRegistry Parent
+		{
+			get; set;
+		}
+
+		/// <summary>
+		/// The property for the root registry. Return null, when the registry itself is null.
+		/// </summary>
+		IRegistry Root
+		{
+			get; set;
+		}
+
+		/// <summary>
+		/// A list of tags for this registry, used by registry resolvers (list may be empty). 
+		/// </summary>
+		string[] Tags
+		{
+			get;
+		}
+
+		/// <summary>
 		/// Set a value with a given identifier. 
 		/// </summary>
 		/// <param name="identifier">The identifier.</param>
@@ -68,21 +92,5 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>An iterator over all values.</returns>
 		IEnumerator GetValueIterator();
-
-		/// <summary>
-		/// The property for the registries parent. Returns null when no parent has been set.
-		/// </summary>
-		IRegistry Parent
-		{
-			get; set;
-		}
-
-		/// <summary>
-		/// The property for the root registry. Return null, when the registry itself is null.
-		/// </summary>
-		IRegistry Root
-		{
-			get; set;
-		}
 	}
 }
