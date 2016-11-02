@@ -2,11 +2,15 @@
 {
 	public abstract class MonitorAdapter : IMonitor
 	{
-		public abstract void Initialise();
+		public void Initialise()
+		{
+
+		}
+
+		public abstract void Start();
 
 		public virtual void Dispose()
 		{
-
 		}
 
 		~MonitorAdapter()
