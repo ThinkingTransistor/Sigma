@@ -128,6 +128,21 @@ namespace Sigma.Core.Data
 			this.Type = InferDataType(underlyingType);
 		}
 
+		/// <summary>
+		/// Copy constructor.
+		/// </summary>
+		/// <param name="other">The buffer to copy.</param>
+		public DataBuffer(DataBuffer<T> other)
+		{
+			this.underlyingBuffer = other.underlyingBuffer;
+			this.underlyingRootBuffer = other.underlyingRootBuffer;
+			this.Type = other.Type;
+			this.data = other.data;
+			this.offset = other.offset;
+			this.relativeOffset = other.relativeOffset;
+			this.length = other.length;
+		}
+		
 		private IDataType InferDataType(IDataType givenType)
 		{
 			if (givenType != null)
@@ -147,7 +162,7 @@ namespace Sigma.Core.Data
 
 		public IDataBuffer<T> Copy()
 		{
-			return new DataBuffer<T>(this.data, this.offset, this.length);
+			return new DataBuffer<T>(this);
 		}
 
 		public T GetValue(long index)

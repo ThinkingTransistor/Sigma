@@ -51,6 +51,23 @@ namespace Sigma.Tests.Data
 		}
 
 		[TestCase]
+		public void TestDataBufferCopy()
+		{
+			long length = 400000L;
+			DataBuffer<double> rootBuffer = new DataBuffer<double>(length);
+			DataBuffer<double> childBufferL2 = new DataBuffer<double>(rootBuffer, 100L, length - 200L);
+
+			IDataBuffer<double> childBufferL2Copy = childBufferL2.Copy();
+
+			Assert.AreSame(childBufferL2.Data, childBufferL2Copy.Data);
+			Assert.AreSame(childBufferL2.GetUnderlyingBuffer(), childBufferL2Copy.GetUnderlyingBuffer());
+			Assert.AreSame(childBufferL2.GetUnderlyingRootBuffer(), childBufferL2Copy.GetUnderlyingRootBuffer());
+			Assert.AreEqual(childBufferL2.Length, childBufferL2Copy.Length);
+			Assert.AreEqual(childBufferL2.Offset, childBufferL2Copy.Offset);
+			Assert.AreEqual(childBufferL2.RelativeOffset, childBufferL2Copy.RelativeOffset);
+		}
+
+		[TestCase]
 		public void TestDataBufferModifySingle()
 		{
 			long length = 400000L;
