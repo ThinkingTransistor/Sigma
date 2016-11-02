@@ -134,7 +134,7 @@ namespace Sigma.Core.Utils
 				Add(identifier, value);
 
 				//notify if value is of type IRegistry
-				if (valueAsRegistry != null) 
+				if (valueAsRegistry != null)
 				{
 					NotifyHierarchyChangeListeners(identifier, null, valueAsRegistry);
 				}
@@ -295,6 +295,9 @@ namespace Sigma.Core.Utils
 		{
 			StringBuilder str = new StringBuilder();
 
+			str.Append("\n[Registry]");
+			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : (string.Join("", Tags))));
+
 			foreach (var mappedValue in mappedValues)
 			{
 				if (mappedValue.Value is IRegistry)
@@ -303,14 +306,11 @@ namespace Sigma.Core.Utils
 				}
 				else
 				{
-					str.Append($"[{mappedValue.Key}] = {mappedValue.Value}\n");
+					str.Append($"\n[{mappedValue.Key}] = {mappedValue.Value}");
 				}
 			}
 
-			string formattedString = str.ToString();
-			formattedString.Substring(0, formattedString.Length - 1);
-
-			return formattedString;
+			return str.ToString();
 		}
 	}
 }

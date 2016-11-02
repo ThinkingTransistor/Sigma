@@ -110,7 +110,7 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public string[] Resolve<T>(string matchIdentifier, ref T[] values)
+		private void CheckMatchIdentifier(String matchIdentifier)
 		{
 			if (matchIdentifier == null)
 			{
@@ -121,12 +121,64 @@ namespace Sigma.Core.Utils
 			{
 				throw new ArgumentException("Match identifier cannot be of length 0.");
 			}
+		}
 
-			//if value not already cached, fetch and parse everything and store in cache
+		public string[] ResolveRetrieve<T>(string matchIdentifier, ref T[] values)
+		{
+			CheckMatchIdentifier(matchIdentifier);
+
+			MatchIdentifierRequestCacheEntry cacheEntry = GetOrCreateCacheEntry(matchIdentifier);
+
+			if (values == null || values.Length < cacheEntry.fullMatchedIdentifierArray.Length)
+			{
+				values = new T[cacheEntry.fullMatchedIdentifierArray.Length];
+			}
+
+			for (int i = 0; i < cacheEntry.fullMatchedIdentifierArray.Length; i++)
+			{
+				string fullIdentifier = cacheEntry.fullMatchedIdentifierArray[i];
+
+				values[i] = cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier].Get<T>(cacheEntry.fullMatchedIdentifierLocals[fullIdentifier]);
+			}
+
+			return cacheEntry.fullMatchedIdentifierArray;
+		}
+
+		public string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null)
+		{
+			CheckMatchIdentifier(matchIdentifier);
+
+			MatchIdentifierRequestCacheEntry cacheEntry = GetOrCreateCacheEntry(matchIdentifier);
+
+			string localIdentifier = matchIdentifier.Contains<char>('.') ? matchIdentifier.Substring(matchIdentifier.LastIndexOf('.') + 1) : matchIdentifier;
+			int matchHierarchyLevel = matchIdentifier.Count<char>(c => c == '.');
+
+			for (int i = 0; i < cacheEntry.fullMatchedIdentifierArray.Length; i++)
+			{
+				string fullIdentifier = cacheEntry.fullMatchedIdentifierArray[i];
+				bool differentHierarchyLevel = fullIdentifier.Count<char>(c => c == '.') != matchHierarchyLevel;
+
+
+				Console.WriteLine(matchHierarchyLevel + " " + fullIdentifier + " " + fullIdentifier.Count<char>(c => c == '.') + " " + differentHierarchyLevel);
+
+				//in case of different hierarchy level, the actual final identifier does not exist yet and has to be appended and the full identifier represents the registry above it
+				if (differentHierarchyLevel)
+				{
+					((IRegistry) cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier][fullIdentifier]).Set(localIdentifier, value, associatedType);
+				}
+				else
+				{
+					cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier].Set(localIdentifier, value, associatedType);
+				}
+			}
+
+			return cacheEntry.fullMatchedIdentifierArray;
+		}
+
+		private MatchIdentifierRequestCacheEntry GetOrCreateCacheEntry(string matchIdentifier)
+		{
 			if (!matchIdentifierCache.ContainsKey(matchIdentifier))
 			{
-				Dictionary<string, IRegistry> fullMatchedIdentifierRegistries = new Dictionary<string, IRegistry>();
-
 				string[] matchIdentifierParts = matchIdentifier.Split('.');
 
 				ISet<string>[] conditionalTagsPerLevel = new HashSet<string>[matchIdentifierParts.Length];
@@ -136,9 +188,11 @@ namespace Sigma.Core.Utils
 					matchIdentifierParts[i] = ParseMatchIdentifier(i, matchIdentifierParts[i], conditionalTagsPerLevel);
 				}
 
+				Dictionary<string, IRegistry> fullMatchedIdentifierRegistries = new Dictionary<string, IRegistry>();
+
 				MatchIdentifierRequestCacheEntry newCacheEntry = new MatchIdentifierRequestCacheEntry(matchIdentifier, fullMatchedIdentifierRegistries, new Dictionary<string, string>(), null, null);
 
-				AddMatchingIdentifiersFromRegistryTree(0, matchIdentifierParts.Length, Root, "", matchIdentifierParts, conditionalTagsPerLevel, newCacheEntry);
+				AddMatchingIdentifiersFromRegistryTree(0, matchIdentifierParts.Length - 1, Root, "", matchIdentifierParts, conditionalTagsPerLevel, newCacheEntry);
 
 				newCacheEntry.fullMatchedIdentifierArray = fullMatchedIdentifierRegistries.Keys.ToArray<string>();
 
@@ -147,21 +201,7 @@ namespace Sigma.Core.Utils
 				matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
 			}
 
-			MatchIdentifierRequestCacheEntry cacheEntry = matchIdentifierCache[matchIdentifier];
-
-			if (values == null || values.Length < cacheEntry.fullMatchedIdentifierArray.Length)
-			{
-				values = new T[cacheEntry.fullMatchedIdentifierArray.Length];
-			}
-			
-			for (int i = 0; i < cacheEntry.fullMatchedIdentifierArray.Length; i++)
-			{
-				string identifier = cacheEntry.fullMatchedIdentifierArray[i];
-
-				values[i] = (T) cacheEntry.fullMatchedIdentifierRegistries[identifier][cacheEntry.fullMatchedIdentifierLocals[identifier]];
-			}
-
-			return cacheEntry.fullMatchedIdentifierArray;
+			return matchIdentifierCache[matchIdentifier];
 		}
 
 		private void AddMatchingIdentifiersFromRegistryTree(int hierarchyLevel, int searchDepth, IRegistry currentRootAtLevel, string currentFullIdentifier, string[] parsedMatchIdentifierParts, ISet<string>[] conditionalTagsPerLevel, MatchIdentifierRequestCacheEntry newCacheEntry)
@@ -185,13 +225,16 @@ namespace Sigma.Core.Utils
 
 						bool matchesAllTags = true;
 
-						foreach (string tag in conditionalTagsPerLevel[hierarchyLevel])
+						if (conditionalTagsPerLevel[hierarchyLevel]?.Count > 0)
 						{
-							if (!subRegistry.Tags.Contains(tag))
+							foreach (string tag in conditionalTagsPerLevel[hierarchyLevel])
 							{
-								matchesAllTags = false;
+								if (!subRegistry.Tags.Contains(tag))
+								{
+									matchesAllTags = false;
 
-								break;
+									break;
+								}
 							}
 						}
 
@@ -204,7 +247,7 @@ namespace Sigma.Core.Utils
 					}
 					else
 					{
-						string globalFullIdentifier = currentFullIdentifier + "." + identifier;
+						string globalFullIdentifier = (String.IsNullOrEmpty(currentFullIdentifier) ? "" : currentFullIdentifier + ".") + identifier;
 
 						newCacheEntry.fullMatchedIdentifierRegistries.Add(globalFullIdentifier, currentRootAtLevel);
 						newCacheEntry.fullMatchedIdentifierLocals.Add(globalFullIdentifier, identifier);

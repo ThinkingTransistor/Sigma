@@ -17,7 +17,7 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A registry resolver that resolves layered identifiers. Implementations are expected but not required to cache all resolved identifiers for better performance.
 	/// </summary>
-	interface IRegistryResolver
+	public interface IRegistryResolver
 	{
 		/// <summary>
 		/// The root of this resolver (where to start looking for identifiers).
@@ -34,10 +34,21 @@ namespace Sigma.Core.Utils
 		///		-	'*<tag>' conditionally matching wild-card mask, match any name if the conditional tag
 		///			Example: "*<trainer>.training.accuracy" match all sub-registries whose tags include the tag "trainer"
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="matchIdentifier"></param>
-		/// <param name="fullIdentifiers"></param>
+		/// <typeparam name="T">The most specific common type of the variables to retrieve.</typeparam>
+		/// <param name="matchIdentifier">The full match identifier.</param>
+		/// <param name="values">A reference to an array of values, filled with the values found at all matching identifiers.</param>
+		/// <returns>A list of fully qualified matches to the match identifier.</returns>
+		string[] ResolveRetrieve<T>(string matchIdentifier, ref T[] values);
+
+		/// <summary>
+		/// Set a single given value of a certain type to all matching identifiers. 
+		/// Note: The individual registries might throw an exception if a type-protected value is set to the wrong type.
+		/// </summary>
+		/// <typeparam name="T">The type of the value.</typeparam>
+		/// <param name="matchIdentifier">The full match identifier. </param>
+		/// <param name="value"></param>
+		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
 		/// <returns></returns>
-		string[] Resolve<T>(string matchIdentifier, ref T[] values);
+		string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null);
 	}
 }

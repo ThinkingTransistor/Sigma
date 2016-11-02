@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections;
 using System.Diagnostics;
+using Sigma.Core;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -13,58 +15,27 @@ namespace Sigma.Tests.Internals.Backend
 	{
 		static void Main(string[] args)
 		{
-			
-		}
+			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
-		public interface INDArray
-		{
+			Registry trainer1 = new Registry(sigma.Registry, new string[] { "trainer" });
+			Registry trainer2 = new Registry(sigma.Registry, new string[] { "trainer" });
+			Registry weirdtrainer = new Registry(sigma.Registry, new string[] { "trainer" });
 
-		}
+			sigma.Registry["trainer1"] = trainer1;
+			sigma.Registry["trainer2"] = trainer2;
+			sigma.Registry["weirdtrainer"] = weirdtrainer;
 
-		public interface IHandler
-		{
-			INDArray Add(INDArray a, INDArray b);
-		}
+			trainer1["accuracy"] = 0.0f;
+			trainer2["accuracy"] = 0.0f;
 
-		public class CPUFloat32Handler : IHandler
-		{
-			public IDataType DataType { get; }
+			sigma.RegistryResolver.ResolveSet<float>("*.accuracy", 1.0f, typeof(float));
 
-			public CPUFloat32Handler()
-			{
-				this.DataType = DataTypes.FLOAT32;
-			}
+			float[] result = null;
 
-			public INDArray Create(int[] shape)
-			{
-				return null;
-			}
+			Console.WriteLine(sigma.RegistryResolver.ResolveRetrieve<float>("*.accuracy", ref result));
 
-			public INDArray Add(INDArray a, INDArray b)
-			{
-				NDArray<float> _a = (NDArray<float>) a;
-				NDArray<float> _b = (NDArray<float>) b;
-				NDArray<float> result = _b; //CreateNDArray(...);
-
-				for (int i = 0; i < _a.data.Length; i++)
-				{
-					result.data.SetValue(_a.data.GetValue(i) + _b.data.GetValue(i), i);
-				}
-
-				return result;
-			}
-		}
-
-		public class NDArray<T> : INDArray
-		{
-			public IDataBuffer<T> data;
-			public int[] shape;
-
-			public T GetValue(int[] indices)
-			{
-				return default(T);
-				//return data.GetValue(IndiciesMagic());
-			}
+			Console.WriteLine(sigma.Registry);
+			Console.ReadKey();
 		}
 	}
 }
