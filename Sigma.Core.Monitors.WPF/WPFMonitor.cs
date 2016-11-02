@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Threading;
+using Sigma.Core.Monitors.WPF.Control;
 using Sigma.Core.Monitors.WPF.View;
 using Sigma.Core.Utils;
 
@@ -36,7 +37,6 @@ namespace Sigma.Core.Monitors.WPF
 
 		/// <summary>
 		/// This property returns the current window. 
-		/// 
 		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
 		/// </summary>
 		public WPFWindow Window
@@ -72,7 +72,11 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
-		private IRegistry tabs;
+		/// <summary>
+		/// The <see cref="TabControl"/> that allows to access all <see cref="Tab"/>s.
+		/// It is <see langword="null"/> until the corresponding <see cref="IMonitor"/> has been added to the <see cref="SigmaEnvironment"/>.
+		/// </summary>
+		public TabRegistry Tabs { get; private set; }
 
 		/// <summary>
 		/// The constructor for the WPF Monitor.
@@ -87,7 +91,7 @@ namespace Sigma.Core.Monitors.WPF
 
 		public override void Initialise()
 		{
-			tabs = new Registry(Sigma.Registry);
+			Tabs = new TabRegistry(Sigma.Registry);
 		}
 
 		public override void Start()

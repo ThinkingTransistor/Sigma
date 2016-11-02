@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Sigma.Core.Utils
@@ -178,7 +179,7 @@ namespace Sigma.Core.Utils
 
 		public bool Remove(KeyValuePair<string, object> item)
 		{
-			if (Object.ReferenceEquals(Get(item.Key), item.Value))
+			if (ReferenceEquals(Get(item.Key), item.Value))
 			{
 				Remove(item.Key);
 
@@ -204,6 +205,11 @@ namespace Sigma.Core.Utils
 		public bool ContainsKey(string key)
 		{
 			return mappedValues.ContainsKey(key);
+		}
+
+		public bool Contains(string key, object value)
+		{
+			return Contains(new KeyValuePair<string, object>(key, value));
 		}
 
 		public bool Contains(KeyValuePair<string, object> item)
@@ -234,6 +240,28 @@ namespace Sigma.Core.Utils
 		public IEnumerator GetValueIterator()
 		{
 			return mappedValues.Values.GetEnumerator();
+		}
+
+		public override string ToString()
+		{
+			StringBuilder str = new StringBuilder();
+
+			foreach (var mappedValue in mappedValues)
+			{
+				if (mappedValue.Value is IRegistry)
+				{
+					str.Append(mappedValue.Value.ToString().Replace("\n", "\n\t"));
+				}
+				else
+				{
+					str.Append($"[{mappedValue.Key}] = {mappedValue.Value}\n");
+				}
+			}
+
+			string formattedString = str.ToString();
+			formattedString.Substring(0, formattedString.Length - 1);
+
+			return formattedString;
 		}
 	}
 }

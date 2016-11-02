@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System.Windows;
+using Sigma.Core.Monitors.WPF.Control;
 
 namespace Sigma.Core.Monitors.WPF.View
 {
+
 	public class WPFWindow : Window
 	{
 		/// <summary>
