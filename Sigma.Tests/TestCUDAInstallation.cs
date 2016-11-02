@@ -1,8 +1,14 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using ManagedCuda;
 using ManagedCuda.CudaBlas;
 using NUnit.Framework;
-using System.Runtime.InteropServices;
 
 namespace Sigma.Tests
 {
@@ -11,7 +17,7 @@ namespace Sigma.Tests
 		static bool cudaInstalled;
 		static bool checkedCudaInstalled;
 
-		public static void AssertIgnoreIfCudaUnavailable()
+		public static void AssertIgnoreIfCUDAUnavailable()
 		{
 			if (!checkedCudaInstalled)
 			{
@@ -36,17 +42,17 @@ namespace Sigma.Tests
 		}
 
 		[TestCase]
-		public void TestCreateDefaultCUDAContext()
+		public void TestCUDAInstallationCreateContext()
 		{
-			AssertIgnoreIfCudaUnavailable();
+			AssertIgnoreIfCUDAUnavailable();
 
 			CudaContext context = new CudaContext();
 		}
 
 		[TestCase]
-		public void TestCreateCudaBlas()
+		public void TestCUDAInstallationCreateCudaBlas()
 		{
-			AssertIgnoreIfCudaUnavailable();
+			AssertIgnoreIfCUDAUnavailable();
 
 			CudaBlas cublas = new CudaBlas();
 		}

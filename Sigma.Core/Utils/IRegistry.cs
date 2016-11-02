@@ -1,9 +1,15 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Utils
 {
@@ -12,6 +18,29 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public interface IRegistry : IDictionary<string, object>
 	{
+		/// <summary>
+		/// The property for the registries parent. Returns null when no parent has been set.
+		/// </summary>
+		IRegistry Parent
+		{
+			get; set;
+		}
+
+		/// <summary>
+		/// The property for the root registry. Return null, when the registry itself is null.
+		/// </summary>
+		IRegistry Root { get; set; }
+
+		/// <summary>
+		/// A list of tags for this registry, used by registry resolvers (list may be empty). 
+		/// </summary>
+		ISet<string> Tags { get; }
+
+		/// <summary>
+		/// Holds all hierarchy change listeners, which get notified when a member of this registry with type IRegistry is added or changed. 
+		/// </summary>
+		ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners { get; }
+
 		/// <summary>
 		/// Set a value with a given identifier. 
 		/// </summary>
@@ -36,12 +65,13 @@ namespace Sigma.Core.Utils
 		object Get(string identifier);
 
 		/// <summary>
-		/// 
+		/// Get all values of type T matching the identifier and optionally check if they match a certain type. 
 		/// </summary>
-		/// <param name="matchIdentifier"></param>
-		/// <param name="matchType"></param>
+		/// <typeparam name="T">The type.</typeparam>
+		/// <param name="matchIdentifier">The identifier to match.</param>
+		/// <param name="matchType">The type to match.</param>
 		/// <returns></returns>
-		object[] GetAllValues(string matchIdentifier, Type matchType = null);
+		T[] GetAllValues<T>(string matchIdentifier, Type matchType = null);
 
 		/// <summary>
 		/// Removes the identifier and the associated type-checked value.
@@ -61,5 +91,10 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>An iterator over all values.</returns>
 		IEnumerator GetValueIterator();
+	}
+
+	public interface IRegistryHierarchyChangeListener
+	{
+		void OnChildHierarchyChanged(string identifier, IRegistry previousChild, IRegistry newChild);
 	}
 }

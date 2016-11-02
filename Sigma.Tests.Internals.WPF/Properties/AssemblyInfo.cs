@@ -1,22 +1,15 @@
-﻿/* 
-MIT License
-
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
-
-For full license see LICENSE in the root directory of this project. 
-*/
-
-using System.Reflection;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Sigma.Tests")]
+[assembly: AssemblyTitle("Sigma.Tests.Internals.WPF")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Sigma.Tests")]
+[assembly: AssemblyProduct("Sigma.Tests.Internals.WPF")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -27,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("656f0373-6309-409b-be43-9bec8b0840ac")]
+[assembly: Guid("5c4ed7ec-24d7-43ba-9424-cada167a3541")]
 
 // Version information for an assembly consists of the following four values:
 //

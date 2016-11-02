@@ -1,27 +1,66 @@
-﻿using log4net;
-using Sigma.Core.Utils;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using log4net;
+using Sigma.Core.Monitors;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core
 {
-	public partial class SigmaEnvironment
+	public class SigmaEnvironment
 	{
-		internal IRegistry rootRegistry;
+		private IRegistry rootRegistry;
+		private IRegistryResolver rootRegistryResolver;
+
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		/// <summary>
+		/// The unique name of this environment. 
+		/// </summary>
 		public string Name
 		{
 			get; internal set;
+		}
+
+		/// <summary>
+		/// The root registry of this environment where all exposed parameters are stored hierarchically.
+		/// </summary>
+		public IRegistry Registry
+		{
+			get { return rootRegistry; }
+		}
+
+		/// <summary>
+		/// The registry resolver corresponding to the registry used in this environment. 
+		/// For easier notation and faster access you can retrieve and using regex-style registry names and dot notation.
+		/// </summary>
+		public IRegistryResolver RegistryResolver
+		{
+			get { return rootRegistryResolver; }
 		}
 
 		private SigmaEnvironment(string name)
 		{
 			this.Name = name;
 			this.rootRegistry = new Registry();
+			this.rootRegistryResolver = new RegistryResolver(this.rootRegistry);
+		}
+
+		public T AddMonitor<T>(T monitor) where T : IMonitor
+		{
+			//TODO: 
+			monitor.Sigma = this;
+
+
+			monitor.Initialise();
+
+			return monitor;
 		}
 
 		public void Prepare()
@@ -107,6 +146,14 @@ namespace Sigma.Core
 		public static void Remove(string environmentName)
 		{
 			activeSigmaEnvironments.Remove(environmentName);
+		}
+
+		/// <summary>
+		/// Removes all active environments.
+		/// </summary>
+		public static void Clear()
+		{
+			activeSigmaEnvironments.Clear();
 		}
 	}
 }
