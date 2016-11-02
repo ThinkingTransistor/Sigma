@@ -1,4 +1,12 @@
-﻿using log4net;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using log4net;
 using Sigma.Core.Data;
 using System;
 using System.Collections;
@@ -9,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data
 {
-	class DataBuffer<T> : IDataBuffer<T>
+	public class DataBuffer<T> : IDataBuffer<T>
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -65,11 +73,12 @@ namespace Sigma.Core.Data
 			this.offset = offset + underlyingBuffer.offset;
 
 			this.data = underlyingBuffer.data;
+			this.Type = underlyingBuffer.Type;
 			this.underlyingBuffer = underlyingBuffer;
 			this.underlyingRootBuffer = underlyingBuffer.underlyingRootBuffer == null ? underlyingBuffer : underlyingBuffer.underlyingRootBuffer;
 		}
 
-		public DataBuffer(LargeChunkedArray<T> data, long offset, long length)
+		public DataBuffer(LargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
 		{
 			if (data == null)
 			{
@@ -94,9 +103,11 @@ namespace Sigma.Core.Data
 			this.data = data;
 			this.length = length;
 			this.offset = offset;
+
+			this.Type = InferDataType(underlyingType);
 		}
 
-		public DataBuffer(long length)
+		public DataBuffer(long length, IDataType underlyingType = null)
 		{
 			if (length < 1)
 			{
@@ -106,6 +117,25 @@ namespace Sigma.Core.Data
 			this.length = length;
 			this.offset = 0;
 			this.data = new LargeChunkedArray<T>(length);
+
+			this.Type = InferDataType(underlyingType);
+		}
+
+		private IDataType InferDataType(IDataType givenType)
+		{
+			if (givenType != null)
+			{
+				return givenType;
+			}
+
+			try
+			{
+				return DataTypes.GetMatchingType(typeof(T));
+			}
+			catch (ArgumentException e)
+			{
+				throw new ArgumentException($"Could not infer type interface for underlying system type {typeof(T)} (system type not registered) and no data type interface was explicitly given.", e);
+			}
 		}
 
 		public IDataBuffer<T> Copy()
