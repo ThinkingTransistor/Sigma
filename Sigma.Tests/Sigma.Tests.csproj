@@ -114,6 +114,7 @@
   <ItemGroup>
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Data\TestLargeChunkedArray.cs" />
+    <Compile Include="Data\TestRegistryResolver.cs" />
     <Compile Include="TestSigmaEnvironment.cs" />
     <Compile Include="TestCUDAInstallation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

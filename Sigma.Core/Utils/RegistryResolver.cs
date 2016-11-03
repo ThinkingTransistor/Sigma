@@ -22,8 +22,9 @@ namespace Sigma.Core.Utils
 			get; private set;
 		}
 
-		private Dictionary<string, MatchIdentifierRequestCacheEntry> matchIdentifierCache;
+		private static string[] EMPTY_ARRAY = new string[0] { };
 
+		private Dictionary<string, MatchIdentifierRequestCacheEntry> matchIdentifierCache;
 		private ISet<string> fullIdentifiersToInvalidate;
 
 		public RegistryResolver(IRegistry root)
@@ -128,7 +129,14 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public string[] ResolveRetrieve<T>(string matchIdentifier, ref T[] values)
+		public T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
+		{
+			string[] emptyArrayThrowaway = EMPTY_ARRAY;
+
+			return ResolveGet<T>(matchIdentifier, ref emptyArrayThrowaway, values);
+		}
+
+		public T[] ResolveGet<T>(string matchIdentifier, ref string[] fullMatchedIdentifierArray, T[] values = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
@@ -146,7 +154,9 @@ namespace Sigma.Core.Utils
 				values[i] = cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier].Get<T>(cacheEntry.fullMatchedIdentifierLocals[fullIdentifier]);
 			}
 
-			return cacheEntry.fullMatchedIdentifierArray;
+			fullMatchedIdentifierArray = cacheEntry.fullMatchedIdentifierArray;
+
+			return values;
 		}
 
 		public string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null)
@@ -210,22 +220,7 @@ namespace Sigma.Core.Utils
 					{
 						IRegistry subRegistry = (IRegistry) value;
 
-						bool matchesAllTags = true;
-
-						if (conditionalTagsPerLevel[hierarchyLevel]?.Count > 0)
-						{
-							foreach (string tag in conditionalTagsPerLevel[hierarchyLevel])
-							{
-								if (!subRegistry.Tags.Contains(tag))
-								{
-									matchesAllTags = false;
-
-									break;
-								}
-							}
-						}
-
-						if (matchesAllTags)
+						if (RegistryMatchesAllTags(subRegistry, conditionalTagsPerLevel[hierarchyLevel]))
 						{
 							string nextFullIdentifier = String.IsNullOrEmpty(currentFullIdentifier) ? identifier : (currentFullIdentifier + "." + identifier);
 
@@ -234,6 +229,11 @@ namespace Sigma.Core.Utils
 					}
 					else if (hierarchyLevel == lastHierarchySearchLevel)
 					{
+						if (value is IRegistry && !RegistryMatchesAllTags((IRegistry) value, conditionalTagsPerLevel[hierarchyLevel]))
+						{
+							continue;
+						}
+
 						string globalFullIdentifier = (String.IsNullOrEmpty(currentFullIdentifier) ? "" : currentFullIdentifier + ".") + identifier;
 
 						newCacheEntry.fullMatchedIdentifierRegistries.Add(globalFullIdentifier, currentRootAtLevel);
@@ -241,6 +241,26 @@ namespace Sigma.Core.Utils
 					}
 				}
 			}
+		}
+
+		private bool RegistryMatchesAllTags(IRegistry registry, ISet<string> tags)
+		{
+			bool matchesAllTags = true;
+
+			if (tags?.Count > 0)
+			{
+				foreach (string tag in tags)
+				{
+					if (!registry.Tags.Contains(tag))
+					{
+						matchesAllTags = false;
+
+						break;
+					}
+				}
+			}
+
+			return matchesAllTags;
 		}
 
 		private string ParseMatchIdentifier(int hierarchyLevel, string partialMatchIdentifier, ISet<string>[] conditionalTagsPerLevel)

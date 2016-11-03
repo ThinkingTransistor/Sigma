@@ -48,10 +48,10 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.RegistryResolver.ResolveSet<int>("*<trainer>.architecture.complexity", 11, typeof(int));
 
-			float[] result = null;
+			string[] resolved = null;
 
-			Console.WriteLine(string.Join(",", sigma.RegistryResolver.ResolveRetrieve<float>("*.accuracy", ref result)));
-			Console.WriteLine(string.Join(",", result));
+			Console.WriteLine(string.Join(",", sigma.RegistryResolver.ResolveGet<float>("*.accuracy", ref resolved)));
+			Console.WriteLine(string.Join(",", resolved));
 
 			Console.WriteLine(sigma.Registry);
 			Console.ReadKey();
