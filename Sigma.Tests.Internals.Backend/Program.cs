@@ -38,7 +38,15 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.RegistryResolver.ResolveSet<float>("*.accuracy", 1.0f, typeof(float));
 			sigma.RegistryResolver.ResolveSet<int>("*<trainer>.architecture.complexity", 5, typeof(int));
+			sigma.RegistryResolver.ResolveSet<int>("*<trainer>.architecture.complexity", 6, typeof(int));
 			sigma.RegistryResolver.ResolveSet<int>("trainer*<trainer>.*<architecture>.complexity", 9, typeof(int));
+
+			Registry differentTrainer1Architecture = new Registry(trainer1, "architecture");
+
+			trainer1["architecture"] = differentTrainer1Architecture;
+			differentTrainer1Architecture["complexity"] = 2;
+
+			sigma.RegistryResolver.ResolveSet<int>("*<trainer>.architecture.complexity", 11, typeof(int));
 
 			float[] result = null;
 

@@ -90,7 +90,7 @@ namespace Sigma.Core.Utils
 
 			foreach (object value in child.Values)
 			{
-				if (child is IRegistry)
+				if (value is IRegistry)
 				{
 					RemoveChildHierarchyListener((IRegistry) value);
 				}

@@ -77,7 +77,7 @@ namespace Sigma.Core.Utils
 			get; private set;
 		}
 
-		public Registry(IRegistry parent = null, string[] tags = null)
+		public Registry(IRegistry parent = null, params string[] tags)
 		{
 			this.Parent = parent;
 			this.Root = Parent?.Root == null ? Parent : Parent?.Root;
