@@ -4,7 +4,7 @@ using Sigma.Core.Monitors.WPF.Control.Tabs;
 
 namespace Sigma.Core.Monitors.WPF.Tests.Control
 {
-	public class TabRegistryTest
+	public class TestTabRegistry
 	{
 		[TestCase]
 		public void TestContainsTab()

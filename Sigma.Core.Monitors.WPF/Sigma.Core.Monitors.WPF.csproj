@@ -112,7 +112,7 @@
     <Compile Include="Control\Themes\IColorManager.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
     <Compile Include="Model\Tab.cs" />
-    <Compile Include="Panels\Panel.cs" />
+    <Compile Include="Panels\WindowPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

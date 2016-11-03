@@ -4,10 +4,10 @@ using Sigma.Core.Monitors.WPF.Model;
 
 namespace Sigma.Core.Monitors.WPF.Tests.Model
 {
-	public class TabTest
+	public class TestTab
 	{
 		[TestCase]
-		public void TestComparison()
+		public void TestTabComparison()
 		{
 			Tab a1 = "a";
 			Tab a2 = new Tab("a");

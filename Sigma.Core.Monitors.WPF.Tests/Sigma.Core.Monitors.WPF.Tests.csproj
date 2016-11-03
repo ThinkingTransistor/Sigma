@@ -106,8 +106,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="Control\TabRegistryTest.cs" />
-    <Compile Include="Model\TabTest.cs" />
+    <Compile Include="Control\TestTabRegistry.cs" />
+    <Compile Include="Model\TestTab.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WPFMonitorTest.cs" />
   </ItemGroup>

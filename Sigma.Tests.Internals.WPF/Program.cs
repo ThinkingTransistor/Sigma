@@ -1,16 +1,15 @@
-﻿using System;
-using System.Diagnostics;
+﻿
 using System.Threading;
-using MahApps.Metro;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Diagnostics;
 using MaterialDesignColors;
-using System.Collections.Generic;
 using System.Text;
-using System.IO;
-using Color = System.Windows.Media.Color;
+using System;
 using Sigma.Core.Monitors.WPF.Control.Themes;
+using MahApps.Metro.Controls;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -28,23 +27,29 @@ namespace Sigma.Tests.Internals.WPF
 			//sigma.Prepare()
 			guiMonitor.Start();
 
-			guiMonitor.Window.Dispatcher.Invoke(() => guiMonitor.Window.TitleCharacterCasing = CharacterCasing.Normal);
+
+			guiMonitor.WindowDispatcher((window) =>
+			{
+				window.TitleCharacterCasing = CharacterCasing.Normal;
 
 
-			var swatches = new SwatchesProvider().Swatches;
+				//window.GlowBrush = window.FindResource("AccentColorBrush") as Brush;
+			});
 
-			StringBuilder builder = new StringBuilder();
+			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.BLUE;
+
+
 
 
 			Random rand = new Random();
 
 			while (true)
 			{
-				foreach (Swatch swatch in swatches)
+				foreach (Swatch swatch in new SwatchesProvider().Swatches)
 				{
-					Thread.Sleep(2000);
+					Thread.Sleep(1500);
 
-					guiMonitor.ColorManager.Dark = rand.Next(2) == 1;
+					//guiMonitor.ColorManager.Dark = rand.Next(2) == 1;
 					guiMonitor.ColorManager.PrimaryColor = swatch;
 
 					string dark = guiMonitor.ColorManager.Dark ? "dark" : "light";
@@ -54,6 +59,7 @@ namespace Sigma.Tests.Internals.WPF
 			}
 
 
+			//StringBuilder builder = new StringBuilder();
 			//var swatches = new SwatchesProvider().Swatches;
 
 			//StringBuilder builder = new StringBuilder();

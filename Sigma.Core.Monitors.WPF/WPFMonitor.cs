@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Threading;
+using System.Windows.Threading;
 using MahApps.Metro;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.Themes;
@@ -41,7 +42,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// This property returns the current window. 
 		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
 		/// </summary>
-		public WPFWindow Window
+		internal WPFWindow Window
 		{
 			get { return window; }
 		}
@@ -130,6 +131,26 @@ namespace Sigma.Core.Monitors.WPF
 			//Wait until the thread has finished execution
 			waitForStart.WaitOne();
 			waitForStart.Reset();
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow"/>. 
+		/// All commands will be executed in the thread of the window!
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
+		public void WindowDispatcher(Action<WPFWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		{
+			window.Dispatcher.Invoke(() =>
+			{
+				action(window);
+			});
+
+			if (onFinished != null)
+			{
+				throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+			}
 		}
 	}
 }

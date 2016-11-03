@@ -58,7 +58,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 
 			new PaletteHelper().ReplacePrimaryColor(primaryColor);
 			new PaletteHelper().ReplaceAccentColor(secondaryColor);
-			new PaletteHelper().SetLightDark(true);
+			new PaletteHelper().SetLightDark(dark);
 		}
 
 		public Swatch PrimaryColor
