@@ -179,6 +179,8 @@ namespace Sigma.Core.Utils
 
 		private MatchIdentifierRequestCacheEntry GetOrCreateCacheEntry(string matchIdentifier)
 		{
+			CheckMatchIdentifier(matchIdentifier);
+
 			if (!matchIdentifierCache.ContainsKey(matchIdentifier))
 			{
 				string[] matchIdentifierParts = matchIdentifier.Split('.');
@@ -200,7 +202,16 @@ namespace Sigma.Core.Utils
 
 				newCacheEntry.allReferredRegistries = GetReferredRegistries(newCacheEntry.fullMatchedIdentifierRegistries.Values.ToList<IRegistry>());
 
-				matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
+				//only cache if the last identifier level did not contain a blank unrestricted wildcard (wildcard without conditional tags, meaning we can't cache anything as it could be any value)
+				int lastLevel = matchIdentifierParts.Length - 1;
+				bool shouldCache = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
+
+				if (shouldCache)
+				{
+					matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
+				}
+
+				return newCacheEntry;				
 			}
 
 			return matchIdentifierCache[matchIdentifier];

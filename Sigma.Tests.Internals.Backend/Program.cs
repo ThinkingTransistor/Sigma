@@ -8,12 +8,23 @@ using System.Collections;
 using System.Diagnostics;
 using Sigma.Core;
 using Sigma.Core.Utils;
+using Sigma.Core.Math;
 
 namespace Sigma.Tests.Internals.Backend
 {
 	class Program
 	{
 		static void Main(string[] args)
+		{
+			NDArray<int> array = new NDArray<int>(2, 3);
+
+			Console.WriteLine(ArrayUtils.ToString(array.Shape));
+			Console.WriteLine(array.IsScalar + " " + array.IsVector + " " + array.IsMatrix);
+
+			Console.ReadKey();
+		}
+
+		private static void TestRegistry()
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 

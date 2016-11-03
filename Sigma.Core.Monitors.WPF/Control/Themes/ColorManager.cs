@@ -124,8 +124,6 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			}
 		}
 
-
-
 		//private Application app;
 		//private bool appStarted;
 

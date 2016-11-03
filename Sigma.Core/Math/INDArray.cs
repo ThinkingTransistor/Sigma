@@ -38,12 +38,12 @@ namespace Sigma.Core.Math
 		/// <summary>
 		/// The shape of this ndarray (i.e. the dimensions).
 		/// </summary>
-		int[] Shape { get; }
+		long[] Shape { get; }
 
 		/// <summary>
-		/// The strides of this ndarray. A stride at any dimension defines how many elements to skip to move to the next element along the same dimension.
+		/// The strides of this ndarray. A stride at any dimension defines how many elements to skip to move to the next element along that dimension.
 		/// </summary>
-		int[] Strides { get; }
+		long[] Strides { get; }
 
 		/// <summary>
 		/// Convenience flag indicating if this ndarray is a scalar (i.e. if its shape is {1})
@@ -74,7 +74,7 @@ namespace Sigma.Core.Math
 		/// <typeparam name="TOther">The type the value should have.</typeparam>
 		/// <param name="indices">The indices.</param>
 		/// <returns>The value at the given index as the given type.</returns>
-		TOther GetValue<TOther>(int[] indices);
+		TOther GetValue<TOther>(params long[] indices);
 
 		/// <summary>
 		/// Set a value at a certain index of a certain type. 
@@ -83,7 +83,7 @@ namespace Sigma.Core.Math
 		/// <typeparam name="TOther">The type of the given value.</typeparam>
 		/// <param name="value">The value.</param>
 		/// <param name="indices">The indices.</param>
-		void SetValue<TOther>(TOther value, int[] indices);
+		void SetValue<TOther>(TOther value, params long[] indices);
 
 		/// <summary>
 		/// Get a NEW ndarray with the same data but another shape (and different strides).
@@ -91,7 +91,7 @@ namespace Sigma.Core.Math
 		/// </summary>
 		/// <param name="newShape">The new shape.</param>
 		/// <returns>A NEW ndarray with the same data and the given shape.</returns>
-		INDArray Reshape(int[] newShape);
+		INDArray Reshape(params long[] newShape);
 
 		/// <summary>
 		/// Reshape THIS ndarray to a new shape (this operation also changes strides). 
@@ -99,7 +99,7 @@ namespace Sigma.Core.Math
 		/// </summary>
 		/// <param name="newShape"></param>
 		/// <returns>This ndarray (for convenience).</returns>
-		INDArray ReshapeSelf(int[] newShape);
+		INDArray ReshapeSelf(params long[] newShape);
 
 		/// <summary>
 		/// Get a NEW ndarray with the same data but another permuted shape (and also different strides).
@@ -107,7 +107,7 @@ namespace Sigma.Core.Math
 		/// </summary>
 		/// <param name="rearrangedDimensions">The dimensions to swap.</param>
 		/// <returns>A NEW ndarray with the same data and a new permuted shape.</returns>
-		INDArray Permute(int[] rearrangedDimensions);
+		INDArray Permute(params int[] rearrangedDimensions);
 
 		/// <summary>
 		/// Permute THIS ndarray to another permuted shape (and also different strides).
@@ -115,7 +115,7 @@ namespace Sigma.Core.Math
 		/// </summary>
 		/// <param name="rearrangedDimensions">The dimensions to swap.</param>
 		/// <returns>This ndarray (for convenience).</returns>
-		INDArray PermuteSelf(int[] rearrangedDimensions);
+		INDArray PermuteSelf(params int[] rearrangedDimensions);
 
 		/// <summary>
 		/// Get a NEW ndarray with the same data but transposed (reversed dimensions).
