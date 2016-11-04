@@ -16,7 +16,9 @@ namespace Sigma.Tests.Internals.Backend
 	{
 		static void Main(string[] args)
 		{
-			NDArray<int> array = new NDArray<int>(2, 3);
+			NDArray<int> array = new NDArray<int>(3, 2, 1);
+
+			array.SetValue(5, 2, 1, 0);
 
 			Console.WriteLine(ArrayUtils.ToString(array.Shape));
 			Console.WriteLine($"scalar: {array.IsScalar}  vector: {array.IsVector} matrix: {array.IsMatrix}");

@@ -206,10 +206,7 @@ namespace Sigma.Core.Math
 				{
 					throw new ArgumentException($"All rearrange dimensions must be >= 0 and < rank, but rearrangedDimensions[{i}] was {rearrangedDimensions[i]}.");
 				}
-			}
 
-			for (int i = 0; i < rank; i++)
-			{
 				for (int y = 0; y < rank; y++)
 				{
 					if (rearrangedDimensions[i] == rearrangedDimensions[y])
@@ -218,6 +215,86 @@ namespace Sigma.Core.Math
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Constructs a string representing the contents of this ndarray, formatted properly. 
+		/// </summary>
+		/// <returns>A fancy string representing the contents of this ndarray.</returns>
+		public override string ToString()
+		{
+			StringBuilder builder = new StringBuilder();
+
+			int rank = this.Rank;
+			int lastIndex = rank - 1;
+			int openBraces = 0;
+
+			long[] indices = new long[rank];
+			long[] shape = this.Shape;
+			long[] strides = this.Strides;
+			long length = this.Length;
+
+			for (long i = 0; i < length; i++)
+			{
+				indices = GetIndices(i, shape, strides, indices);
+
+				for (int y = rank - 1; y >= 0; y--)
+				{
+					if (indices[y] == 0)
+					{
+						builder.Append('[');
+						openBraces++;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				builder.Append(this.data.GetValue(i));
+
+				if (indices[lastIndex] < shape[lastIndex] - 1)
+				{
+					builder.Append(", ");
+				}
+
+				bool requestNewLine = false;
+
+				for (int y = rank - 1; y >= 0; y--)
+				{
+					if (indices[y] == shape[y] - 1)
+					{
+						builder.Append(']');
+						openBraces--;
+
+						if (y > 0 && indices[y - 1] != shape[y - 1] - 1)
+						{
+							builder.Append(", ");
+
+							if (!requestNewLine && y < rank - 1)
+							{
+								requestNewLine = true;
+							}
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if (requestNewLine)
+				{
+					builder.Append('\n');
+
+					for (int y = 0; y < openBraces; y++)
+					{
+						builder.Append(' ');
+					}
+				}
+			}
+
+			return builder.ToString();
 		}
 
 		/// <summary>
@@ -293,34 +370,39 @@ namespace Sigma.Core.Math
 			return flatIndex;
 		}
 
-		public override string ToString()
+		/// <summary>
+		/// Get the per dimension indices corresponding to a certain flattened index and shape and strides of an ndarray.
+		/// </summary>
+		/// <param name="flatIndex">The flattened index.</param>
+		/// <param name="shape">The shape of the ndarray.</param>
+		/// <param name="strides">The strides of the ndarray.</param>
+		/// <param name="resultIndices">If this argument is non-null and the same length as the shape and strides arrays the result will be stored here and no new indices array will be created.</param>
+		/// <returns>The corresponding per dimension indices given a flat index, a shape and strides.</returns>
+		public static long[] GetIndices(long flatIndex, long[] shape, long[] strides, long[] resultIndices = null)
 		{
-			StringBuilder builder = new StringBuilder();
-
-			int rank = this.Rank;
-			int[] indices = new int[rank];
-
-			long length = this.Length;
-			for (long i = 0; i < length; i++)
+			if (shape.Length != strides.Length)
 			{
-				if (i == 0)
-				{
-					builder.Append('[');
-				}
-
-				builder.Append(this.data.GetValue(i));
-
-				if (i < length - 1)
-				{
-					builder.Append(',');
-				}
-				else
-				{
-					builder.Append(']');
-				}
+				throw new ArgumentException($"Shape, stride (and [result]) array length must be the same, but shape length was {shape.Length} and stride length {strides.Length}.");
 			}
 
-			return builder.ToString();
+			int rank = shape.Length;
+
+			if (resultIndices == null)
+			{
+				resultIndices = new long[rank];
+			}
+			else if (resultIndices.Length != rank)
+			{
+				throw new ArgumentException($"Shape, stride (and [result]) array length must be the same, but shape length and stride length were {shape.Length} and result length {resultIndices.Length}.");
+			}
+
+			for (int i = 0; i < rank; i++)
+			{
+				resultIndices[i] = flatIndex / strides[i];
+				flatIndex -= resultIndices[i] * strides[i];
+			}
+
+			return resultIndices;
 		}
 	}
 }
