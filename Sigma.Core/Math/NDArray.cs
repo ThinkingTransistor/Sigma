@@ -292,5 +292,35 @@ namespace Sigma.Core.Math
 
 			return flatIndex;
 		}
+
+		public override string ToString()
+		{
+			StringBuilder builder = new StringBuilder();
+
+			int rank = this.Rank;
+			int[] indices = new int[rank];
+
+			long length = this.Length;
+			for (long i = 0; i < length; i++)
+			{
+				if (i == 0)
+				{
+					builder.Append('[');
+				}
+
+				builder.Append(this.data.GetValue(i));
+
+				if (i < length - 1)
+				{
+					builder.Append(',');
+				}
+				else
+				{
+					builder.Append(']');
+				}
+			}
+
+			return builder.ToString();
+		}
 	}
 }
