@@ -32,5 +32,10 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// Switch between light and dark theme.
 		/// </summary>
 		bool Dark { get; set; }
+
+		/// <summary>
+		/// Switch between default and alternate style. 
+		/// </summary>
+		bool Alternate { get; set; }
 	}
 }

@@ -1,14 +1,7 @@
-﻿using Sigma.Core.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Diagnostics;
+﻿using System;
 using Sigma.Core;
-using Sigma.Core.Utils;
 using Sigma.Core.Math;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
 {

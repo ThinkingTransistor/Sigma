@@ -125,7 +125,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="View\Tabs\TabControlUI.cs" />
+    <Compile Include="Control\Tabs\TabControlUI.cs" />
     <Compile Include="View\Tabs\TabUI.cs" />
     <Compile Include="View\UIWrapper.cs" />
     <Compile Include="View\WPFWindow.cs" />
@@ -175,9 +175,7 @@
   <ItemGroup>
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Control\Tabs\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

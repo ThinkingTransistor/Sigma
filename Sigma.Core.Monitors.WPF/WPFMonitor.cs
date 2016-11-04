@@ -88,7 +88,7 @@ namespace Sigma.Core.Monitors.WPF
 				Tabs.Add(tab);
 			}
 		}
-		
+
 
 		/// <summary>
 		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
