@@ -9,8 +9,7 @@ using MaterialDesignColors;
 using System.Text;
 using System;
 using Sigma.Core.Monitors.WPF.Control.Themes;
-using MahApps.Metro.Controls;
-
+using System.Linq;
 namespace Sigma.Tests.Internals.WPF
 {
 	class Program
@@ -21,7 +20,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
 			guiMonitor.Priority = ThreadPriority.Highest;
-			guiMonitor.Tabs.AddTabs("Overview", "Data", "Tests");
+			guiMonitor.AddTabs("Overview", "Data", "Tests");
 
 
 			//sigma.Prepare()

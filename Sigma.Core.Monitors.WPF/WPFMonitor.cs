@@ -7,10 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
-using MahApps.Metro;
-using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View;
 
@@ -75,12 +74,21 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		//HACK: decide what Tabs is
 		/// <summary>
-		/// The <see cref="TabControl"/> that allows to access all <see cref="Tab"/>s.
-		/// It is <see langword="null"/> until the corresponding <see cref="IMonitor"/> has been added to the <see cref="SigmaEnvironment"/>.
+		/// The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare"/>.
 		/// </summary>
-		public TabRegistry Tabs { get; private set; }
+		public List<string> Tabs { get; private set; }
 
+		//HACK: decide what Tabs is
+		public void AddTabs(params string[] tabs)
+		{
+			foreach (string tab in tabs)
+			{
+				Tabs.Add(tab);
+			}
+		}
+		
 
 		/// <summary>
 		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
@@ -106,7 +114,8 @@ namespace Sigma.Core.Monitors.WPF
 
 		public override void Initialise()
 		{
-			Tabs = new TabRegistry(Sigma.Registry);
+			//Tabs = new TabRegistry(Sigma.Registry);
+			Tabs = new List<string>();
 		}
 
 		public override void Start()

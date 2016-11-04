@@ -1,8 +1,13 @@
-﻿using System;
-using System.Linq;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Windows;
-using MahApps.Metro;
-using MahApps.Metro.Controls;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 
@@ -123,112 +128,5 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 				}
 			}
 		}
-
-		//private Application app;
-		//private bool appStarted;
-
-		//public Application App
-		//{
-		//	get
-		//	{
-		//		return app;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("Application cannot be null");
-		//		}
-
-		//		appStarted = false;
-
-		//		//This is not the first app set
-		//		if (app != null)
-		//		{
-		//			app.Startup -= OnStartup;
-		//		}
-		//		//This is the first app set
-		//		else
-		//		{
-		//			if (Accent == null)
-		//			{
-		//				Accent = ThemeManager.GetAccent("Blue");
-		//			}
-		//			if (AppTheme == null)
-		//			{
-		//				AppTheme = ThemeManager.GetAppTheme("BaseLight");
-		//			}
-		//		}
-
-		//		app = value;
-
-		//		app.Startup += OnStartup;
-		//	}
-		//}
-
-		//private Accent accent;
-
-		//public Accent Accent
-		//{
-		//	get
-		//	{
-		//		return accent;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("Accent cannot be null");
-		//		}
-
-		//		accent = value;
-
-		//		//If the app has already be started, the accent can be directly changed
-		//		//otherwise it will be changed automatically on start
-		//		if (appStarted)
-		//		{
-		//			app.BeginInvoke(() => new PaletteHelper().SetLightDark(true));
-		//			//new PaletteHelper().SetLightDark(true);
-		//			//Console.WriteLine($"U say Nullpointer: Application.Current {Application.Current == null}, accent: {accent == null}, appTheme: {appTheme == null}");
-		//			//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//		}
-		//	}
-		//}
-
-		//private AppTheme appTheme;
-
-		//public AppTheme AppTheme
-		//{
-		//	get
-		//	{
-		//		return appTheme;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("AppTheme cannot be null");
-		//		}
-
-		//		appTheme = value;
-
-		//		//If the app has already be started, the theme can be directly changed
-		//		//otherwise it will be changed automatically on start
-		//		if (appStarted)
-		//		{
-		//			//new PaletteHelper().SetLightDark(true);
-		//			//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//		}
-		//	}
-		//}
-
-		//private void OnStartup(object sender, StartupEventArgs e)
-		//{
-
-		//	//new PaletteHelper().ReplacePrimaryColor("Green");
-		//	//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//	appStarted = true;
-		//}
-
 	}
 }
