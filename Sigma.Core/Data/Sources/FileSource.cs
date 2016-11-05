@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
+	/// <summary>
+	/// A file resource on the local file system used for datasets.
+	/// </summary>
 	public class FileSource : IDataSetSource
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

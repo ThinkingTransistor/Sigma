@@ -18,6 +18,9 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
+	/// <summary>
+	/// A URL resource used for datasets. Entire resource is downloaded and stored locally for processing.
+	/// </summary>
 	public class URLSource : IDataSetSource
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
