@@ -127,7 +127,7 @@ namespace Sigma.Core.Data.Sources
 
 		public Stream Retrieve()
 		{
-			if (localDownloadedFileStream != null)
+			if (localDownloadedFileStream == null)
 			{
 				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not fetched correctly (missing or failed Prepare() call?).");
 			}

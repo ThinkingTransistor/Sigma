@@ -26,24 +26,24 @@ namespace Sigma.Core.Data.Sources
 
 		private Stream fileStream;
 
-		public FileSource(string path) : this(path, SigmaEnvironment.Globals.Get<string>("workspacePath"))
+		public FileSource(string path) : this(path, SigmaEnvironment.Globals.Get<string>("datasets"))
 		{
 		}
 
-		public FileSource(string path, string workspace)
+		public FileSource(string path, string datasetsPath)
 		{
 			if (path == null)
 			{
 				throw new ArgumentNullException("Path cannot be null.");
 			}
 
-			if (workspace == null)
+			if (datasetsPath == null)
 			{
-				throw new ArgumentNullException("Workspace cannot be null (are the SigmaEnironment.Globals missing?)");
+				throw new ArgumentNullException("Data sets path cannot be null (are the SigmaEnironment.Globals missing?)");
 			}
 
 			this.localPath = path;
-			this.fullPath = workspace + path;
+			this.fullPath = datasetsPath + path;
 
 			CheckExists();
 		}
