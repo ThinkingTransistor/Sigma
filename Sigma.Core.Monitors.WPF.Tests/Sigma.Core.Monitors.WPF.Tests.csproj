@@ -106,7 +106,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Model\UI\TestGridSize.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View\TestUIWrapper.cs" />
     <Compile Include="WPFMonitorTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -140,7 +142,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Control\" />
-    <Folder Include="Model\UI\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
