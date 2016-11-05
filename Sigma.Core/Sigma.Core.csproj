@@ -104,6 +104,9 @@
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
+    <Compile Include="Data\Sources\FileSource.cs" />
+    <Compile Include="Data\Sources\IDataSetSource.cs" />
+    <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Math\INDArray.cs" />
     <Compile Include="Math\NDArray.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
@@ -118,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Architecture\" />
+    <Folder Include="Data\Extractors\" />
+    <Folder Include="Data\Preprocessors\" />
+    <Folder Include="Data\Readers\" />
     <Folder Include="Layers\" />
     <Folder Include="Logging\" />
     <Folder Include="Persistence\" />

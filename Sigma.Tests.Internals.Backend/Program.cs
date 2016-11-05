@@ -2,6 +2,7 @@
 using Sigma.Core;
 using Sigma.Core.Math;
 using Sigma.Core.Utils;
+using Sigma.Core.Data.Sources;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -9,22 +10,11 @@ namespace Sigma.Tests.Internals.Backend
 	{
 		static void Main(string[] args)
 		{
-			NDArray<int> array = new NDArray<int>(ArrayUtils.Range(1, 12), 2, 6);
+			log4net.Config.XmlConfigurator.Configure();
 
-			Console.WriteLine("originalshape: " + ArrayUtils.ToString(array.Shape));
-			Console.WriteLine(array);
+			URLSource source = new URLSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz");
 
-			array.ReshapeSelf(4, 3);
-
-			Console.WriteLine("array.ReshapeSelf(4, 3)");
-
-			Console.WriteLine(array);
-
-			array.TransposeSelf();
-
-			Console.WriteLine("array.TransposeSelf()");
-
-			Console.WriteLine(array);
+			source.Prepare();
 
 			Console.ReadKey();
 		}

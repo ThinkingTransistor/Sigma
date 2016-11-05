@@ -113,18 +113,36 @@ namespace Sigma.Core
 		}
 
 		internal static IRegistry activeSigmaEnvironments;
-		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
-		{
+		{ 
 			activeSigmaEnvironments = new Registry();
+
+			Globals = new Registry();
+			RegisterGlobals();
 		}
 
 		/// <summary>
-		/// Create an environment with the given name.
+		/// A global variable pool for globally relevant constants (e.g. workspace path).
+		/// </summary>
+		public static IRegistry Globals { get; private set; }
+
+
+		/// <summary>
+		/// Register all globals with an initial value and required associated type. 
+		/// </summary>
+		private static void RegisterGlobals()
+		{
+			Globals.Set("workspacePath", "workspace/", typeof(string));
+			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/");
+		}
+
+		/// <summary>
+		/// Create an environment with a certain name.
 		/// </summary>
 		/// <param name="environmentName"></param>
-		/// <returns></returns>
+		/// <returns>A new environment with the given name.</returns>
 		public static SigmaEnvironment Create(string environmentName)
 		{
 			if (Exists(environmentName))
