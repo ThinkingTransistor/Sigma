@@ -105,6 +105,15 @@ namespace Sigma.Core.Data
 
 		public long Length { get; private set; }
 
+		public LargeChunkedArray(T[] data)
+		{
+			this.data = new T[1][];
+
+			this.data[0] = data;
+
+			this.Length = data.Length;
+		}
+
 		public LargeChunkedArray(long size)
 		{
 			int numBlocks = (int) (size / BLOCK_SIZE);

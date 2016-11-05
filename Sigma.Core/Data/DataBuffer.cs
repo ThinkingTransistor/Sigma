@@ -56,20 +56,7 @@ namespace Sigma.Core.Data
 				throw new ArgumentNullException("Underlying buffer cannot be null.");
 			}
 
-			if (offset < 0)
-			{
-				throw new ArgumentException($"Offset must be > 0 but was {offset}.");
-			}
-
-			if (length < 1)
-			{
-				throw new ArgumentException($"Length must be > 1 but was {length}.");
-			}
-
-			if (offset + underlyingBuffer.offset + length > underlyingBuffer.length)
-			{
-				throw new ArgumentException("Buffer length cannot exceed length of its underlying buffer.");
-			}
+			CheckBufferBounds(offset, length, offset + length, underlyingBuffer.length);
 
 			this.length = length;
 			this.relativeOffset = offset;
@@ -81,6 +68,10 @@ namespace Sigma.Core.Data
 			this.underlyingRootBuffer = underlyingBuffer.underlyingRootBuffer == null ? underlyingBuffer : underlyingBuffer.underlyingRootBuffer;
 		}
 
+		public DataBuffer(LargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
+		{
+		}
+
 		public DataBuffer(LargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
 		{
 			if (data == null)
@@ -88,22 +79,30 @@ namespace Sigma.Core.Data
 				throw new ArgumentNullException("Data cannot be null.");
 			}
 
-			if (offset < 0)
-			{
-				throw new ArgumentException($"Offset must be > 0 but was {offset}.");
-			}
-
-			if (length < 1)
-			{
-				throw new ArgumentException($"Length must be > 1 but was {length}.");
-			}
-
-			if (offset + length > data.Length)
-			{
-				throw new ArgumentException("Buffer length cannot exceed length of its underlying data array.");
-			}
+			CheckBufferBounds(offset, length, offset + length, data.Length);
 
 			this.data = data;
+			this.length = length;
+			this.relativeOffset = offset;
+			this.offset = offset;
+
+			this.Type = InferDataType(underlyingType);
+		}
+
+		public DataBuffer(T[] data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
+		{
+		}
+
+		public DataBuffer(T[] data, long offset, long length, IDataType underlyingType = null)
+		{
+			if (data == null)
+			{
+				throw new ArgumentNullException("Data cannot be null.");
+			}
+
+			CheckBufferBounds(offset, length, offset + length, data.Length);
+
+			this.data = new LargeChunkedArray<T>(data);
 			this.length = length;
 			this.relativeOffset = offset;
 			this.offset = offset;
@@ -115,7 +114,7 @@ namespace Sigma.Core.Data
 		{
 			if (length < 1)
 			{
-				throw new ArgumentException($"Length must be > 1 but was {length}.");
+				throw new ArgumentException($"Length must be >= 1 but was {length}.");
 			}
 
 			this.length = length;
@@ -138,7 +137,25 @@ namespace Sigma.Core.Data
 			this.relativeOffset = other.relativeOffset;
 			this.length = other.length;
 		}
-		
+
+		private void CheckBufferBounds(long offset, long length, long requestedEndPosition, long underlyingLength)
+		{
+			if (offset < 0)
+			{
+				throw new ArgumentException($"Offset must be > 0 but was {offset}.");
+			}
+
+			if (length < 1)
+			{
+				throw new ArgumentException($"Length must be >= 1 but was {length}.");
+			}
+
+			if (requestedEndPosition > underlyingLength)
+			{
+				throw new ArgumentException($"Buffer length (+offset) cannot exceed length of its underlying buffer, but underlying buffer length was {underlyingLength} and requested length + offset {requestedEndPosition}.");
+			}
+		}
+
 		private IDataType InferDataType(IDataType givenType)
 		{
 			if (givenType != null)

@@ -40,9 +40,33 @@ namespace Sigma.Core.Math
 
 		public NDArray(DataBuffer<T> buffer, long[] shape)
 		{
+			if (buffer.Length < ArrayUtils.Product(shape))
+			{
+				throw new ArgumentException($"Buffer must contain the entire shape, but buffer length was {buffer.Length} and total shape length {ArrayUtils.Product(shape)} (shape = {ArrayUtils.ToString(shape)}).");
+			}
+
 			Initialise(CheckShape(shape), GetStrides(shape));
 
 			this.data = buffer;
+		}
+
+		public NDArray(T[] data)
+		{
+			Initialise(new long[] { 1, (int) data.Length }, GetStrides(1, (int) data.Length));
+
+			this.data = new DataBuffer<T>(data, 0L, data.Length);
+		}
+
+		public NDArray(T[] data, params long[] shape)
+		{
+			if (data.Length < ArrayUtils.Product(shape))
+			{
+				throw new ArgumentException($"Data must contain the entire shape, but data length was {data.Length} and total shape length {ArrayUtils.Product(shape)} (shape = {ArrayUtils.ToString(shape)}).");
+			}
+
+			Initialise(CheckShape(shape), GetStrides(shape));
+
+			this.data = new DataBuffer<T>(data, 0L, this.Length);
 		}
 
 		public NDArray(params long[] shape)
@@ -206,7 +230,7 @@ namespace Sigma.Core.Math
 
 				for (int y = 0; y < rank; y++)
 				{
-					if (rearrangedDimensions[i] == rearrangedDimensions[y])
+					if (i != y && rearrangedDimensions[i] == rearrangedDimensions[y])
 					{
 						throw new ArgumentException($"All rearranged dimensions must be unique, but rearrangedDimensions[{i}] and rearrangedDimensions[{i}] both were {i}.");
 					}
