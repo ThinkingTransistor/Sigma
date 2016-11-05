@@ -101,9 +101,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataBuffer.cs" />
+    <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
+    <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
+    <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
     <Compile Include="Data\Sources\IDataSetSource.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
@@ -121,9 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Architecture\" />
-    <Folder Include="Data\Extractors\" />
-    <Folder Include="Data\Preprocessors\" />
-    <Folder Include="Data\Readers\" />
     <Folder Include="Layers\" />
     <Folder Include="Logging\" />
     <Folder Include="Persistence\" />
