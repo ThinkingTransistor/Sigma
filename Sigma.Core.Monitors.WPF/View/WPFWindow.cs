@@ -8,8 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls;
@@ -105,7 +107,7 @@ namespace Sigma.Core.Monitors.WPF.View
 			if (addTabs)
 			{
 				//HACK: not Thread safe, if user is stupid and adds tabs 
-				//to the registry after start
+				//to the registry after start (calling this constructor via reflection)
 				AddTabs(TabControl, monitor.Tabs);
 			}
 

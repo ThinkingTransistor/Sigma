@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Windows.Controls;
-using MahApps.Metro.Controls;
 using NUnit.Framework;
 using Sigma.Core.Monitors.WPF.View;
 
@@ -21,7 +20,7 @@ namespace Sigma.Core.Monitors.WPF.Tests.View
 
 				Assert.AreEqual(wrapper.Content.Test, "hello");
 
-				wrapper.Content = new TestControl() { Content = "world" };
+				wrapper.Content = new TestControl() { Test = "world" };
 
 				Assert.AreNotEqual(wrapper.Content.Test, "hello");
 				Assert.AreEqual(wrapper.Content.Test, "world");
