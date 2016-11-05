@@ -1,8 +1,14 @@
-﻿using System;
-using System.Linq;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Windows;
-using MahApps.Metro;
-using MahApps.Metro.Controls;
+using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 
@@ -10,18 +16,46 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
 	public class ColorManager : IColorManager
 	{
+		/// <summary>
+		/// The application environment.
+		/// </summary>
 		private Application app;
+		/// <summary>
+		/// Tells whether onStartup has already been called on the app.
+		/// </summary>
 		private bool appStarted;
 
-		private Swatch primaryColor, secondaryColor;
+		/// <summary>
+		/// The primary colour.
+		/// </summary>
+		private Swatch primaryColor;
+		/// <summary>
+		/// The secondary colour.
+		/// </summary>
+		private Swatch secondaryColor;
+		/// <summary>
+		/// Whether a dark or a light theme should be applied.
+		/// </summary>
 		private bool dark;
+		/// <summary>
+		/// Option for an alternate style for tabs.
+		/// </summary>
+		private bool alternate;
 
+		/// <summary>
+		/// Create a new <see cref="ColorManager"/>.
+		/// </summary>
+		/// <param name="defaultPrimary">The default primary colour (if none has been set).</param>
+		/// <param name="defaultSecondary">The default secondary colour (if none has been set).</param>
 		public ColorManager(Swatch defaultPrimary, Swatch defaultSecondary)
 		{
 			this.primaryColor = defaultPrimary;
 			this.secondaryColor = defaultSecondary;
 		}
 
+		/// <summary>
+		/// The application environment. 
+		/// </summary>
 		public Application App
 		{
 			get
@@ -33,13 +67,15 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			{
 				if (value == null)
 				{
-					throw new ArgumentException("App cannot be null!");
+					throw new ArgumentNullException("App cannot be null!");
 				}
 
+				//If the value has changed
 				if (value != app)
 				{
 					app = value;
 
+					//reset appstarted
 					appStarted = false;
 
 					if (app != null)
@@ -52,15 +88,24 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			}
 		}
 
+		/// <summary>
+		/// The event listener that will be added to the app. 
+		/// </summary>
+		/// <param name="sender">The sender of the event.</param>
+		/// <param name="e">The <see cref="StartupEventArgs"/>.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
 			appStarted = true;
 
 			new PaletteHelper().ReplacePrimaryColor(primaryColor);
 			new PaletteHelper().ReplaceAccentColor(secondaryColor);
-			new PaletteHelper().SetLightDark(true);
+			new PaletteHelper().SetLightDark(dark);
+			ApplyStyle(alternate);
 		}
 
+		/// <summary>
+		/// The primary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// </summary>
 		public Swatch PrimaryColor
 		{
 			get
@@ -72,7 +117,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			{
 				if (value == null)
 				{
-					throw new ArgumentException("SecondaryColor cannot be null!");
+					throw new ArgumentNullException("SecondaryColor cannot be null!");
 				}
 
 				primaryColor = value;
@@ -84,6 +129,9 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			}
 		}
 
+		/// <summary>
+		/// The secondary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// </summary>
 		public Swatch SecondaryColor
 		{
 			get
@@ -95,7 +143,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			{
 				if (value == null)
 				{
-					throw new ArgumentException("SecondaryColor cannot be null!");
+					throw new ArgumentNullException("SecondaryColor cannot be null!");
 				}
 
 				secondaryColor = value;
@@ -107,6 +155,9 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			}
 		}
 
+		/// <summary>
+		/// Switch between light and dark theme.
+		/// </summary>
 		public bool Dark
 		{
 			get
@@ -124,113 +175,37 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 			}
 		}
 
+		/// <summary>
+		/// Switch between default and alternate style (especially for tabs).
+		/// </summary>
+		public bool Alternate
+		{
+			get
+			{
+				return alternate;
+			}
 
+			set
+			{
+				alternate = value;
 
-		//private Application app;
-		//private bool appStarted;
+				if (appStarted)
+				{
+					app.Dispatcher.Invoke(() => ApplyStyle(alternate));
+				}
+			}
+		}
 
-		//public Application App
-		//{
-		//	get
-		//	{
-		//		return app;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("Application cannot be null");
-		//		}
+		/// <summary>
+		/// Change the style to normal or alternate.
+		/// </summary>
+		/// <param name="alternate">Decides which style should be applied.</param>
+		private void ApplyStyle(bool alternate)
+		{
+			var styleKey = alternate ? "MaterialDesignAlternateTabablzControlStyle" : "MaterialDesignTabablzControlStyle";
+			var style = app.TryFindResource(styleKey) as Style;
 
-		//		appStarted = false;
-
-		//		//This is not the first app set
-		//		if (app != null)
-		//		{
-		//			app.Startup -= OnStartup;
-		//		}
-		//		//This is the first app set
-		//		else
-		//		{
-		//			if (Accent == null)
-		//			{
-		//				Accent = ThemeManager.GetAccent("Blue");
-		//			}
-		//			if (AppTheme == null)
-		//			{
-		//				AppTheme = ThemeManager.GetAppTheme("BaseLight");
-		//			}
-		//		}
-
-		//		app = value;
-
-		//		app.Startup += OnStartup;
-		//	}
-		//}
-
-		//private Accent accent;
-
-		//public Accent Accent
-		//{
-		//	get
-		//	{
-		//		return accent;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("Accent cannot be null");
-		//		}
-
-		//		accent = value;
-
-		//		//If the app has already be started, the accent can be directly changed
-		//		//otherwise it will be changed automatically on start
-		//		if (appStarted)
-		//		{
-		//			app.BeginInvoke(() => new PaletteHelper().SetLightDark(true));
-		//			//new PaletteHelper().SetLightDark(true);
-		//			//Console.WriteLine($"U say Nullpointer: Application.Current {Application.Current == null}, accent: {accent == null}, appTheme: {appTheme == null}");
-		//			//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//		}
-		//	}
-		//}
-
-		//private AppTheme appTheme;
-
-		//public AppTheme AppTheme
-		//{
-		//	get
-		//	{
-		//		return appTheme;
-		//	}
-		//	set
-		//	{
-		//		if (value == null)
-		//		{
-		//			throw new ArgumentException("AppTheme cannot be null");
-		//		}
-
-		//		appTheme = value;
-
-		//		//If the app has already be started, the theme can be directly changed
-		//		//otherwise it will be changed automatically on start
-		//		if (appStarted)
-		//		{
-		//			//new PaletteHelper().SetLightDark(true);
-		//			//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//		}
-		//	}
-		//}
-
-		//private void OnStartup(object sender, StartupEventArgs e)
-		//{
-
-		//	//new PaletteHelper().ReplacePrimaryColor("Green");
-		//	//ThemeManager.ChangeAppStyle(Application.Current, accent, appTheme);
-		//	appStarted = true;
-		//}
-
+			App.Resources[typeof(TabablzControl)] = style;
+		}
 	}
 }

@@ -9,10 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data
 {
@@ -108,6 +104,15 @@ namespace Sigma.Core.Data
 		public T[][] ChunkedData { get { return data; } }
 
 		public long Length { get; private set; }
+
+		public LargeChunkedArray(T[] data)
+		{
+			this.data = new T[1][];
+
+			this.data[0] = data;
+
+			this.Length = data.Length;
+		}
 
 		public LargeChunkedArray(long size)
 		{

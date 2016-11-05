@@ -1,12 +1,6 @@
-﻿using Sigma.Core.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
-using System.Diagnostics;
+﻿using System;
 using Sigma.Core;
+using Sigma.Core.Math;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
@@ -15,26 +9,23 @@ namespace Sigma.Tests.Internals.Backend
 	{
 		static void Main(string[] args)
 		{
-			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
+			NDArray<int> array = new NDArray<int>(ArrayUtils.Range(1, 12), 2, 6);
 
-			Registry trainer1 = new Registry(sigma.Registry, new string[] { "trainer" });
-			Registry trainer2 = new Registry(sigma.Registry, new string[] { "trainer" });
-			Registry weirdtrainer = new Registry(sigma.Registry, new string[] { "trainer" });
+			Console.WriteLine("originalshape: " + ArrayUtils.ToString(array.Shape));
+			Console.WriteLine(array);
 
-			sigma.Registry["trainer1"] = trainer1;
-			sigma.Registry["trainer2"] = trainer2;
-			sigma.Registry["weirdtrainer"] = weirdtrainer;
+			array.ReshapeSelf(4, 3);
 
-			trainer1["accuracy"] = 0.0f;
-			trainer2["accuracy"] = 0.0f;
+			Console.WriteLine("array.ReshapeSelf(4, 3)");
 
-			sigma.RegistryResolver.ResolveSet<float>("*.accuracy", 1.0f, typeof(float));
+			Console.WriteLine(array);
 
-			float[] result = null;
+			array.TransposeSelf();
 
-			Console.WriteLine(sigma.RegistryResolver.ResolveRetrieve<float>("*.accuracy", ref result));
+			Console.WriteLine("array.TransposeSelf()");
 
-			Console.WriteLine(sigma.Registry);
+			Console.WriteLine(array);
+
 			Console.ReadKey();
 		}
 	}

@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Windows;
 using MaterialDesignColors;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
@@ -24,5 +32,10 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// Switch between light and dark theme.
 		/// </summary>
 		bool Dark { get; set; }
+
+		/// <summary>
+		/// Switch between default and alternate style. 
+		/// </summary>
+		bool Alternate { get; set; }
 	}
 }

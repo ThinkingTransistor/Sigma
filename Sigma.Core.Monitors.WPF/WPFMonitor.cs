@@ -7,9 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
-using MahApps.Metro;
-using Sigma.Core.Monitors.WPF.Control.Tabs;
+using System.Windows.Threading;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View;
 
@@ -41,7 +41,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// This property returns the current window. 
 		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
 		/// </summary>
-		public WPFWindow Window
+		internal WPFWindow Window
 		{
 			get { return window; }
 		}
@@ -74,11 +74,20 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		//HACK: decide what Tabs is
 		/// <summary>
-		/// The <see cref="TabControl"/> that allows to access all <see cref="Tab"/>s.
-		/// It is <see langword="null"/> until the corresponding <see cref="IMonitor"/> has been added to the <see cref="SigmaEnvironment"/>.
+		/// The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare"/>.
 		/// </summary>
-		public TabRegistry Tabs { get; private set; }
+		public List<string> Tabs { get; private set; }
+
+		//HACK: decide what Tabs is
+		public void AddTabs(params string[] tabs)
+		{
+			foreach (string tab in tabs)
+			{
+				Tabs.Add(tab);
+			}
+		}
 
 
 		/// <summary>
@@ -98,14 +107,15 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			Title = title;
 
-			ColorManager = new ColorManager(MaterialDesignSwatches.BLUEGREY, MaterialDesignSwatches.AMBER);
+			ColorManager = new ColorManager(MaterialDesignSwatches.BLUE, MaterialDesignSwatches.AMBER);
 
 			waitForStart = new ManualResetEvent(false);
 		}
 
 		public override void Initialise()
 		{
-			Tabs = new TabRegistry(Sigma.Registry);
+			//Tabs = new TabRegistry(Sigma.Registry);
+			Tabs = new List<string>();
 		}
 
 		public override void Start()
@@ -130,6 +140,26 @@ namespace Sigma.Core.Monitors.WPF
 			//Wait until the thread has finished execution
 			waitForStart.WaitOne();
 			waitForStart.Reset();
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow"/>. 
+		/// All commands will be executed in the thread of the window!
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
+		public void WindowDispatcher(Action<WPFWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		{
+			window.Dispatcher.Invoke(() =>
+			{
+				action(window);
+			});
+
+			if (onFinished != null)
+			{
+				throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+			}
 		}
 	}
 }

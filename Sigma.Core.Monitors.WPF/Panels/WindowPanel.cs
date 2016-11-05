@@ -15,9 +15,9 @@ namespace Sigma.Core.Monitors.WPF.Panels
 
 	/// <summary>
 	/// This panel can be seen as a "subwindow".
-	/// One Window consists of one or multiple <see cref="Panel"/>(s) per tab arranged in a grid.
+	/// One Window consists of one or multiple <see cref="WindowPanel"/>(s) per tab arranged in a grid.
 	/// </summary>
-	public abstract class Panel : IPanel
+	public abstract class WindowPanel : IPanel
 	{
 
 	}

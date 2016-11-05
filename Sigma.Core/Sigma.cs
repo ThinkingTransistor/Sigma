@@ -73,6 +73,45 @@ namespace Sigma.Core
 			//TODO
 		}
 
+		/// <summary>
+		/// Resolve all matching identifiers in this registry. For the detailed supported syntax <see cref="IRegistryResolver"/>.
+		/// </summary>
+		/// <typeparam name="T">The most specific common type of the variables to retrieve.</typeparam>
+		/// <param name="matchIdentifier">The full match identifier.</param>
+		/// <param name="values">An array of values found at the matching identifiers, filled with the values found at all matching identifiers (for reuse and optimisation if request is issued repeatedly).</param>
+		/// <returns>An array of values found at the matching identifiers. The parameter values is used if it is large enough and not null.</returns>
+		T[] ResolveGet<T>(string matchIdentifier, ref string[] fullMatchedIdentifierArray, T[] values = null)
+		{
+			return rootRegistryResolver.ResolveGet<T>(matchIdentifier, ref fullMatchedIdentifierArray, values);
+		}
+
+		/// <summary>
+		/// Resolve all matching identifiers in this registry. For the detailed supported syntax <see cref="IRegistryResolver"/>.
+		/// </summary>
+		/// <typeparam name="T">The most specific common type of the variables to retrieve.</typeparam>
+		/// <param name="matchIdentifier">The full match identifier.</param>
+		/// <param name="fullMatchedIdentifierArray">A list of fully qualified matches to the match identifier.</param>
+		/// <param name="values">An array of values found at the matching identifiers, filled with the values found at all matching identifiers (for reuse and optimisation if request is issued repeatedly).</param>
+		/// <returns>An array of values found at the matching identifiers. The parameter values is used if it is large enough and not null.</returns>
+		T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
+		{
+			return rootRegistryResolver.ResolveGet<T>(matchIdentifier, values);
+		}
+
+		/// <summary>
+		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>
+		/// Note: The individual registries might throw an exception if a type-protected value is set to the wrong type.
+		/// </summary>
+		/// <typeparam name="T">The type of the value.</typeparam>
+		/// <param name="matchIdentifier">The full match identifier. </param>
+		/// <param name="value"></param>
+		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
+		/// <returns>A list of fully qualified matches to the match identifier.</returns>
+		public string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null)
+		{
+			return rootRegistryResolver.ResolveSet<T>(matchIdentifier, value, associatedType);
+		}
+
 		internal static IRegistry activeSigmaEnvironments;
 		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

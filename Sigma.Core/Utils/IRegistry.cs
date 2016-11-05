@@ -9,7 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Utils
 {
