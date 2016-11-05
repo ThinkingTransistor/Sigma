@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Windows;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -22,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		protected WPFMonitor monitor;
 
-		public App(WPFMonitor monitor)
+		public App(WPFMonitor monitor) : base()
 		{
 			this.monitor = monitor;
 

@@ -21,6 +21,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 			//guiMonitor.ColorManager.Alternate = true;
+			guiMonitor.ColorManager.Dark = true;
 
 			//sigma.Prepare()
 			guiMonitor.Start();

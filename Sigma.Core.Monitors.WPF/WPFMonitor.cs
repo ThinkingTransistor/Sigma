@@ -12,6 +12,7 @@ using System.Threading;
 using System.Windows.Threading;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -74,6 +75,8 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		private Type windowType;
+
 		//HACK: decide what Tabs is
 		/// <summary>
 		/// The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare"/>.
@@ -89,7 +92,6 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
-
 		/// <summary>
 		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
 		/// </summary>
@@ -100,12 +102,26 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
+		/// The constructor for the WPF Monitor that relies on <see cref="SigmaWindow"/>.
+		/// </summary>
+		/// <param name="title">The title of the new window.</param>
+		public WPFMonitor(string title) : this(title, typeof(SigmaWindow)) { }
+
+		/// <summary>
 		/// The constructor for the WPF Monitor.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
-		public WPFMonitor(string title)
+		/// <param name="window">The type of the <see cref="WPFWindow"/> that will be displayed. This window requires a constructor
+		/// whit the same arguments as <see cref="WPFWindow"/>.</param>
+		public WPFMonitor(string title, Type window)
 		{
+			if (!window.IsSubclassOf(typeof(WPFWindow)))
+			{
+				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}");
+			}
+
 			Title = title;
+			windowType = window;
 
 			ColorManager = new ColorManager(MaterialDesignSwatches.BLUE, MaterialDesignSwatches.AMBER);
 
@@ -125,7 +141,7 @@ namespace Sigma.Core.Monitors.WPF
 				app = new App(this);
 				ColorManager.App = app;
 
-				window = new WPFWindow(this, app, title);
+				window = (WPFWindow) Activator.CreateInstance(windowType, this, app, title);
 
 				app.Startup += (sender, args) => waitForStart.Set();
 

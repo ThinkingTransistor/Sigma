@@ -110,6 +110,8 @@
     <Compile Include="Control\Themes\ColorManager.cs" />
     <Compile Include="Control\Themes\IColorManager.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
+    <Compile Include="Control\TitleBar\TitleBarControl.cs" />
+    <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
     <Compile Include="Model\UI\GridSize.cs" />
     <Compile Include="Panels\WindowPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -127,8 +129,10 @@
     </Compile>
     <Compile Include="Control\Tabs\TabControlUI.cs" />
     <Compile Include="View\Tabs\TabUI.cs" />
+    <Compile Include="View\TitleBar\TitleBarItem.cs" />
     <Compile Include="View\UIWrapper.cs" />
-    <Compile Include="View\WPFWindow.cs" />
+    <Compile Include="View\Windows\SigmaWindow.cs" />
+    <Compile Include="View\Windows\WPFWindow.cs" />
     <Compile Include="WPFMonitor.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
