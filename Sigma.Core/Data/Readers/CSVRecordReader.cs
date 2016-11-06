@@ -144,6 +144,11 @@ namespace Sigma.Core.Data.Readers
 				throw new InvalidOperationException("Cannot read from source before preparing this reader (missing Prepare() call?).");
 			}
 
+			if (numberOfRecords <= 0)
+			{
+				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
+			}
+
 			logger.Info($"Reading requested {numberOfRecords} records from source {Source}...");
 
 			List<string[]> records = new List<string[]>();
