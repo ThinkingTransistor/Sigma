@@ -72,7 +72,7 @@ namespace Sigma.Core.Math
 		TOther GetValue<TOther>(params long[] indices);
 
 		/// <summary>
-		/// Set a value at a certain index of a certain type. 
+		/// Set a value of a certain type at a certain index. 
 		/// Note: The value might have to be internally explicitly cast to the internally used type (and thereby change). 
 		/// </summary>
 		/// <typeparam name="TOther">The type of the given value.</typeparam>

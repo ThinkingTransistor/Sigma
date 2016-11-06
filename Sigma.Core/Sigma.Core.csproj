@@ -101,15 +101,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataBuffer.cs" />
+    <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
+    <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
     <Compile Include="Data\Sources\IDataSetSource.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
+    <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Math\INDArray.cs" />
     <Compile Include="Math\NDArray.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
@@ -125,7 +129,6 @@
   <ItemGroup>
     <Folder Include="Architecture\" />
     <Folder Include="Layers\" />
-    <Folder Include="Logging\" />
     <Folder Include="Persistence\" />
     <Folder Include="Training\" />
   </ItemGroup>

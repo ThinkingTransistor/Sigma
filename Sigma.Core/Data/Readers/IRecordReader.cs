@@ -35,6 +35,11 @@ namespace Sigma.Core.Data.Readers
 		IRecordExtractor Extractor(IRecordExtractor extractor);
 
 		/// <summary>
+		/// Prepare this record reader and its underlying resources to be read.
+		/// </summary>
+		void Prepare();
+
+		/// <summary>
 		/// Reads a number of records and converts them to the specified type. 
 		/// This method is mostly used internally by extractors, which have to be compatible with the used record readers (so they know which data format to expect). 
 		/// </summary>

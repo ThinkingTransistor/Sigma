@@ -73,9 +73,12 @@ namespace Sigma.Core.Data.Sources
 				throw new InvalidOperationException($"Cannot prepare file source, underlying file \"{fullPath}\" does not exist.");
 			}
 
-			fileStream = new FileStream(fullPath, FileMode.Open);
+			if (fileStream == null)
+			{
+				fileStream = new FileStream(fullPath, FileMode.Open);
 
-			logger.Info($"Opened file \"{fullPath}\".");
+				logger.Info($"Opened file \"{fullPath}\".");
+			}
 		}
 
 		public Stream Retrieve()
@@ -86,6 +89,11 @@ namespace Sigma.Core.Data.Sources
 			}
 
 			return fileStream;
+		}
+
+		~FileSource()
+		{
+			fileStream.Dispose();
 		}
 	}
 }

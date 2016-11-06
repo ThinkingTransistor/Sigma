@@ -10,6 +10,7 @@ using System;
 using log4net;
 using Sigma.Core.Monitors;
 using Sigma.Core.Utils;
+using System.Net;
 
 namespace Sigma.Core
 {
@@ -135,7 +136,8 @@ namespace Sigma.Core
 		private static void RegisterGlobals()
 		{
 			Globals.Set("workspacePath", "workspace/", typeof(string));
-			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/");
+			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
+			Globals.Set("webProxy", new WebProxy(), typeof(WebProxy));
 		}
 
 		/// <summary>

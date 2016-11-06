@@ -17,7 +17,7 @@ namespace Sigma.Core.Data.Preprocessors
 {
 	/// <summary>
 	/// Preprocessors are a type of extractor which modify the actual data instead of just reshaping it. 
-	/// They are in their own namespace separate from record extractors for a clearer distinction.
+	/// They are in their own namespace separate from record extractors for a clearer conceptual distinction.
 	/// </summary>
 	public interface IRecordPreprocessor : IRecordExtractor
 	{

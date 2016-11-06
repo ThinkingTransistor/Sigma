@@ -27,10 +27,12 @@ namespace Sigma.Core.Data.Sources
 
 		private bool exists;
 		private bool checkedExists;
+		private bool prepared;
 
 		private string url;
 		private string localDownloadPath;
 		private FileStream localDownloadedFileStream;
+		private WebProxy proxy;
 
 		public bool Chunkable
 		{
@@ -41,7 +43,7 @@ namespace Sigma.Core.Data.Sources
 		{
 		}
 
-		public URLSource(string url, string localDownloadPath)
+		public URLSource(string url, string localDownloadPath, WebProxy proxy = null)
 		{
 			if (url == null)
 			{
@@ -55,6 +57,13 @@ namespace Sigma.Core.Data.Sources
 
 			this.url = url;
 			this.localDownloadPath = localDownloadPath;
+
+			this.proxy = proxy;
+
+			if (this.proxy == null)
+			{
+				this.proxy = SigmaEnvironment.Globals.Get<WebProxy>("webProxy");
+			}
 		}
 
 		private static string GetFileNameFromURL(string url)
@@ -68,6 +77,7 @@ namespace Sigma.Core.Data.Sources
 
 			HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
 
+			request.Proxy = proxy;
 			request.Method = "HEAD";
 
 			try
@@ -112,20 +122,31 @@ namespace Sigma.Core.Data.Sources
 				throw new InvalidOperationException($"Cannot prepare URL source, underlying URL resource \"{url}\" does not exist.");
 			}
 
-			Directory.CreateDirectory(new FileInfo(localDownloadPath).Directory.FullName);
-
-			logger.Info($"Starting download of URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
-
-			using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 8000))
+			if (!this.prepared)
 			{
-				//TODO when tasks are done - this should be a task
-				//client.progressChangedEvent 
-				client.DownloadFile(url, localDownloadPath);
+				Directory.CreateDirectory(new FileInfo(localDownloadPath).Directory.FullName);
+
+				if (File.Exists(localDownloadPath))
+				{
+					File.Delete(localDownloadPath);
+				}
+
+				logger.Info($"Starting download of URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
+
+				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 8000))
+				{
+					//TODO when tasks are done - this should be a task
+					//client.progressChangedEvent 
+					client.DownloadFile(url, localDownloadPath);
+
+					logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
+				}
+
+				logger.Info($"Opened file \"{localDownloadPath}\".");
+				localDownloadedFileStream = new FileStream(localDownloadPath, FileMode.Open);
+
+				prepared = true;
 			}
-
-			logger.Info($"Download of URL resource \"{url}\" to local path \"{localDownloadPath}\" completed.");
-
-			localDownloadedFileStream = new FileStream(localDownloadPath, FileMode.Open);
 		}
 
 		public Stream Retrieve()
@@ -136,6 +157,11 @@ namespace Sigma.Core.Data.Sources
 			}
 
 			return localDownloadedFileStream;
+		}
+
+		~URLSource()
+		{
+			localDownloadedFileStream.Dispose();
 		}
 	}
 
@@ -156,7 +182,7 @@ namespace Sigma.Core.Data.Sources
 
 		public event ProgressChanged progressChangedEvent;
 
-		public BlockingWebClient(int timeoutMilliseconds = 8000)
+		public BlockingWebClient(int timeoutMilliseconds = 8000, WebProxy proxy = null)
 		{
 			if (timeoutMilliseconds <= 0)
 			{
@@ -169,6 +195,13 @@ namespace Sigma.Core.Data.Sources
 			this.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressChangedHandle);
 
 			this.timeoutTimer = new Timer(this.OnTimeout, null, this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
+
+			this.Proxy = proxy;
+
+			if (this.Proxy == null)
+			{
+				this.Proxy = SigmaEnvironment.Globals.Get<WebProxy>("webProxy");
+			}
 		}
 
 		private void OnProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage)
@@ -216,12 +249,12 @@ namespace Sigma.Core.Data.Sources
 			this.downloadSuccess = true;
 		}
 
-		private void DownloadProgressChangedHandle(object sender, DownloadProgressChangedEventArgs evvent)
+		private void DownloadProgressChangedHandle(object sender, DownloadProgressChangedEventArgs ev)
 		{
-			long newBytesReceived = evvent.BytesReceived - previousBytesReceived;
-			previousBytesReceived = evvent.BytesReceived;
+			long newBytesReceived = ev.BytesReceived - previousBytesReceived;
+			previousBytesReceived = ev.BytesReceived;
 
-			OnProgressChanged(newBytesReceived, previousBytesReceived, evvent.TotalBytesToReceive, evvent.ProgressPercentage);
+			OnProgressChanged(newBytesReceived, previousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
 
 			this.timeoutTimer.Change(this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
 		}
