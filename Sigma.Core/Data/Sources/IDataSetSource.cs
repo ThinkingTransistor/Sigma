@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.IO;
 
 namespace Sigma.Core.Data.Sources
@@ -13,7 +14,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A data set source (e.g. local file source or URL web source) which can be used by record readers to populate datasets.
 	/// </summary>
-	public interface IDataSetSource
+	public interface IDataSetSource : IDisposable
 	{
 		/// <summary>
 		/// Indicates whether this is a chunkable data set source.

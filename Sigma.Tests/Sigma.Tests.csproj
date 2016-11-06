@@ -112,6 +112,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Data\Preprocessors\TestCSVRecordExtractor.cs" />
+    <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
     <Compile Include="Data\Sources\TestFileSource.cs" />
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
@@ -135,7 +137,9 @@
       <Name>Sigma.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Data\Extractors\" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

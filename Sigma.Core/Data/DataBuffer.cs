@@ -183,9 +183,9 @@ namespace Sigma.Core.Data
 			return data[offset + index];
 		}
 
-		public TOther GetValueAs<TOther>(long startIndex)
+		public TOther GetValueAs<TOther>(long index)
 		{
-			return (TOther) Convert.ChangeType(startIndex, typeof(TOther));
+			return (TOther) Convert.ChangeType(data[offset + index], typeof(TOther));
 		}
 
 		public IDataBuffer<T> GetValues(long startIndex, long length)

@@ -15,6 +15,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -24,6 +25,11 @@ namespace Sigma.Core.Data.Extractors
 
 		private Dictionary<string, IList<int>> namedColumnIndexMappings;
 		private Dictionary<int, Dictionary<object, object>> columnValueMappings;
+
+		public Dictionary<string, IList<int>> NamedColumnIndexMapping
+		{
+			get { return namedColumnIndexMappings; }
+		}
 
 		public IRecordReader Reader
 		{
@@ -52,9 +58,9 @@ namespace Sigma.Core.Data.Extractors
 		/// <param name="column">The column to add the value mapping to.</param>
 		/// <param name="objects">The values to map.</param>
 		/// <returns>This record extractor (for convenience).</returns>
-		public CSVRecordExtractor AddAutoValueMapping(int column, params object[] objects)
+		public CSVRecordExtractor AddValueMapping(int column, params object[] objects)
 		{
-			return AddDirectValueMapping(column, ArrayUtils.MapToOrder(objects));
+			return AddValueMapping(column, mapping: ArrayUtils.MapToOrder(objects));
 		}
 
 		/// <summary>
@@ -63,7 +69,7 @@ namespace Sigma.Core.Data.Extractors
 		/// <param name="column">The column to add the value mapping to.</param>
 		/// <param name="objects">The values to map.</param>
 		/// <returns>This record extractor (for convenience).</returns>
-		public CSVRecordExtractor AddDirectValueMapping(int column, Dictionary<object, object> mapping)
+		public CSVRecordExtractor AddValueMapping(int column, Dictionary<object, object> mapping)
 		{
 			this.columnValueMappings.Add(column, mapping);
 
@@ -82,11 +88,21 @@ namespace Sigma.Core.Data.Extractors
 				throw new InvalidOperationException("Cannot extract from record extractor before attaching a reader (reader was null).");
 			}
 
+			if (handler == null)
+			{
+				throw new ArgumentNullException("Computation handler cannot be null.");
+			}
+
+			if (numberOfRecords <= 0)
+			{
+				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
+			}
+
 			string[][] lineParts = Reader.Read<string[][]>(numberOfRecords);
 
 			int readNumberOfRecords = lineParts.Length;
 
-			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords}).");
+			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
@@ -97,7 +113,7 @@ namespace Sigma.Core.Data.Extractors
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
 				for (int i = 0; i < readNumberOfRecords; i++)
-				{ 
+				{
 					for (int y = 0; y < mappings.Count; y++)
 					{
 						int column = mappings[y];

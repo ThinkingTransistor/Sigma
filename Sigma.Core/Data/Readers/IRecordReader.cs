@@ -8,13 +8,14 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
+using System;
 
 namespace Sigma.Core.Data.Readers
 {
 	/// <summary>
 	/// A record reader which reads a selected number of records from a data set source in a specific format (e.g. CSV).
 	/// </summary>
-	public interface IRecordReader
+	public interface IRecordReader : IDisposable
 	{
 		/// <summary>
 		/// The underlying data set source.

@@ -155,9 +155,9 @@ namespace Sigma.Core.Data.Sources
 			return localDownloadedFileStream;
 		}
 
-		~URLSource()
+		public void Dispose()
 		{
-			localDownloadedFileStream.Dispose();
+			this.localDownloadedFileStream?.Dispose();
 		}
 	}
 

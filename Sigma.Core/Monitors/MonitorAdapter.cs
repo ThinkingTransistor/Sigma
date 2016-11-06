@@ -27,10 +27,5 @@ namespace Sigma.Core.Monitors
 		public virtual void Dispose()
 		{
 		}
-
-		~MonitorAdapter()
-		{
-			Dispose();
-		}
 	}
 }

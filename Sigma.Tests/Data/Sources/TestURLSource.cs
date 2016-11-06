@@ -93,6 +93,10 @@ namespace Sigma.Tests.Data.Sources
 			Stream stream = source.Retrieve();
 
 			Assert.IsNotNull(stream);
+
+			stream.Dispose();
+
+			File.Delete(Path.GetTempPath() + ".unittestfileurltest1");
 		}
 	}
 }

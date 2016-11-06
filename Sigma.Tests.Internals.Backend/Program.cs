@@ -9,6 +9,7 @@ using Sigma.Core.Data.Extractors;
 using System.Collections.Generic;
 using Sigma.Core.Handlers.Backends;
 using Sigma.Core.Handlers;
+using System.Net;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -18,8 +19,10 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			log4net.Config.XmlConfigurator.Configure();
 
+			SigmaEnvironment.Globals["webProxy"] = new WebProxy();
+
 			CSVRecordReader reader = new CSVRecordReader(new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"));
-			IRecordExtractor extractor = reader.Extractor(new Dictionary<string, IList<int>>() { ["inputs"] = new [] { 0, 1, 2, 3 }, ["targets"] = new [] { 4 } }).AddAutoValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
 
 			IComputationHandler handler = new CPUFloat32Handler();
 
@@ -29,10 +32,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			foreach (string name in namedArrays.Keys)
 			{
-				Console.WriteLine($"[{name}] =\n [{namedArrays[name].Shape[0]}]\n{namedArrays[name]}");
+				//Console.WriteLine($"[{name}] =\n{string.Join(", ", namedArrays[name])}");
 			}
-
-			Console.WriteLine();
 
 			Console.ReadKey();
 		}
