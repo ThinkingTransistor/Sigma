@@ -6,29 +6,29 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using log4net;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Handlers;
 using Sigma.Core.Math;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Sigma.Core.Data.Extractors
 {
 	public class CSVRecordExtractor : IRecordExtractor
 	{
+		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		private Dictionary<string, IList<int>> namedColumnIndexMappings;
+		private Dictionary<int, Dictionary<object, object>> columnValueMappings;
+
 		public IRecordReader Reader
 		{
 			get; set;
 		}
-
-		private Dictionary<string, IList<int>> namedColumnIndexMappings;
-		private Dictionary<int, Dictionary<object, object>> columnValueMappings; 
 
 		public CSVRecordExtractor(Dictionary<string, int[][]> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null) : this(ArrayUtils.GetFlatColumnMappings(namedColumnIndexMappings))
 		{
@@ -83,7 +83,10 @@ namespace Sigma.Core.Data.Extractors
 			}
 
 			string[][] lineParts = Reader.Read<string[][]>(numberOfRecords);
+
 			int readNumberOfRecords = lineParts.Length;
+
+			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
@@ -120,6 +123,8 @@ namespace Sigma.Core.Data.Extractors
 
 				namedArrays.Add(name, array);
 			}
+
+			logger.Info($"Done extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
 		}

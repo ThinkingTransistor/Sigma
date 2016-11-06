@@ -8,13 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using log4net;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
@@ -131,7 +127,7 @@ namespace Sigma.Core.Data.Sources
 					File.Delete(localDownloadPath);
 				}
 
-				logger.Info($"Starting download of URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
+				logger.Info($"Downloading URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
 
 				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 8000))
 				{

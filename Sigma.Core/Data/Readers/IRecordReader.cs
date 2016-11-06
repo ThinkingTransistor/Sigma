@@ -8,12 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Readers
 {
