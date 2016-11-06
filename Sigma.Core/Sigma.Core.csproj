@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\DataBuffer.cs" />
+    <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
