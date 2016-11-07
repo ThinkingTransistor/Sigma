@@ -126,6 +126,7 @@
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
+    <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Architecture\" />

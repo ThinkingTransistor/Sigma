@@ -19,7 +19,7 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			log4net.Config.XmlConfigurator.Configure();
 
-			SigmaEnvironment.Globals["webProxy"] = new WebProxy();
+			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			CSVRecordReader reader = new CSVRecordReader(new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"));
 			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
@@ -32,7 +32,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			foreach (string name in namedArrays.Keys)
 			{
-				//Console.WriteLine($"[{name}] =\n{string.Join(", ", namedArrays[name])}");
+				Console.WriteLine($"[{name}] =\n{string.Join(", ", namedArrays[name])}");
 			}
 
 			Console.ReadKey();

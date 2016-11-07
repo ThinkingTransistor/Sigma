@@ -137,7 +137,7 @@ namespace Sigma.Core
 		{
 			Globals.Set("workspacePath", "workspace/", typeof(string));
 			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
-			Globals.Set("webProxy", new WebProxy(), typeof(WebProxy));
+			Globals.Set("webProxy", System.Net.WebRequest.DefaultWebProxy, typeof(IWebProxy));
 		}
 
 		/// <summary>

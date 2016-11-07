@@ -121,9 +121,14 @@ namespace Sigma.Core.Utils
 				}
 			}
 
-			if (CheckTypes && associatedTypes.ContainsKey(identifier) && (value.GetType() != associatedTypes[identifier] && !value.GetType().IsSubclassOf(associatedTypes[identifier])))
+			if (CheckTypes && associatedTypes.ContainsKey(identifier))
 			{
-				throw new ArgumentException($"Values for identifier {identifier} must be of type {associatedTypes[identifier]} (but given value {value} had type {value?.GetType()})");
+				Type requiredType = associatedTypes[identifier];
+
+				if (value.GetType() != requiredType && !value.GetType().IsSubclassOf(requiredType) && !requiredType.IsAssignableFrom(value.GetType()))
+				{
+					throw new ArgumentException($"Values for identifier {identifier} must be of type {requiredType} (but given value {value} had type {value?.GetType()})");
+				}
 			}
 
 			//check if added object is another registry and if hierarchy listeners should be notified

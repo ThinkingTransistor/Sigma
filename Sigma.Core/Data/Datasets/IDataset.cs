@@ -100,6 +100,14 @@ namespace Sigma.Core.Data.Datasets
 		long[] GetBlockRegion(int blockIndex, IComputationHandler handler);
 
 		/// <summary>
+		/// Checks whether a certain block with a specific handler format can be fetched at the time of call.
+		/// </summary>
+		/// <param name="blockIndex">The block index.</param>
+		/// <param name="handler">The handler (which specifies the block format required).</param>
+		/// <returns></returns>
+		bool CanFetchBlock(int blockIndex, IComputationHandler handler);
+
+		/// <summary>
 		/// Fetch a record block with a certain index in a certain handler format. 
 		/// Load, prepare and convert the requested block to the format required by a certain handler unless it was already fetched and is still active in that format.
 		/// If the specified block can currently not be loaded due to memory constraints (as specified in <see cref="MaxConcurrentActiveBlocks"/> and <see cref="MaxTotalActiveBlockSizeBytes"/>):

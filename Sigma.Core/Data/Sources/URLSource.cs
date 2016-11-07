@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using log4net;
+using Sigma.Core.Utils;
 using System;
 using System.IO;
 using System.Net;
@@ -115,7 +116,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (!Exists())
 			{
-				throw new InvalidOperationException($"Cannot prepare URL source, underlying URL resource \"{url}\" does not exist.");
+				throw new InvalidOperationException($"Cannot prepare URL source, underlying URL resource \"{url}\" does not exist or is not accessible.");
 			}
 
 			if (!this.prepared)
@@ -158,110 +159,6 @@ namespace Sigma.Core.Data.Sources
 		public void Dispose()
 		{
 			this.localDownloadedFileStream?.Dispose();
-		}
-	}
-
-	internal class BlockingWebClient : WebClient
-	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-		private int timeoutMilliseconds;
-
-		public long previousBytesReceived;
-
-		private bool downloadSuccess;
-
-		private EventWaitHandle asyncWait = new ManualResetEvent(false);
-		private Timer timeoutTimer = null;
-
-		public delegate void ProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage);
-
-		public event ProgressChanged progressChangedEvent;
-
-		public BlockingWebClient(int timeoutMilliseconds = 8000, WebProxy proxy = null)
-		{
-			if (timeoutMilliseconds <= 0)
-			{
-				throw new ArgumentException($"Timeout must be > 0, but timeout was {timeoutMilliseconds}.");
-			}
-
-			this.timeoutMilliseconds = timeoutMilliseconds;
-
-			this.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler(DownloadFileCompletedHandle);
-			this.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressChangedHandle);
-
-			this.timeoutTimer = new Timer(this.OnTimeout, null, this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
-
-			this.Proxy = proxy;
-
-			if (this.Proxy == null)
-			{
-				this.Proxy = SigmaEnvironment.Globals.Get<WebProxy>("webProxy");
-			}
-		}
-
-		private void OnProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage)
-		{
-			if (this.progressChangedEvent != null)
-			{
-				this.progressChangedEvent(newBytesReceived, totalBytesReceived, totalBytes, progressPercentage);
-			}
-		}
-
-		private void OnTimeout(object ignored)
-		{
-			if (this.downloadSuccess)
-			{
-				return;
-			}
-
-			this.CancelAsync();
-			this.downloadSuccess = false;
-
-			this.logger.Warn($"Aborted download, connection timed out (more than {timeoutMilliseconds}ms passed since client last received anything).");
-
-			this.asyncWait.Set();
-		}
-
-		public new bool DownloadFile(string url, string outputPath)
-		{
-			this.downloadSuccess = false;
-
-			this.asyncWait.Reset();
-
-			Uri uri = new Uri(url);
-
-			base.DownloadFileAsync(uri, outputPath);
-
-			this.asyncWait.WaitOne();
-
-			return downloadSuccess;
-		}
-
-		private void DownloadFileCompletedHandle(object sender, System.ComponentModel.AsyncCompletedEventArgs ev)
-		{
-			this.asyncWait.Set();
-
-			this.downloadSuccess = true;
-		}
-
-		private void DownloadProgressChangedHandle(object sender, DownloadProgressChangedEventArgs ev)
-		{
-			long newBytesReceived = ev.BytesReceived - previousBytesReceived;
-			previousBytesReceived = ev.BytesReceived;
-
-			OnProgressChanged(newBytesReceived, previousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
-
-			this.timeoutTimer.Change(this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
-		}
-
-		protected override WebRequest GetWebRequest(Uri address)
-		{
-			WebRequest request = base.GetWebRequest(address);
-
-			request.Timeout = this.timeoutMilliseconds;
-
-			return request;
 		}
 	}
 }

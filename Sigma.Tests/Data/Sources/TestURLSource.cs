@@ -27,18 +27,23 @@ namespace Sigma.Tests.Data.Sources
 		{
 			if (!checkedInternetConnection)
 			{
-				internetConnectionValid = true;
+				internetConnectionValid = false;
 
-				using (WebClient client = new WebClient())
+				try
 				{
-					//this framework will be irrelevant long before google goes down
-					using (Stream stream = client.OpenRead("http://www.google.com"))
+					using (WebClient client = new WebClient())
 					{
-						internetConnectionValid = true;
+						//this framework will be irrelevant long before google goes down
+						using (Stream stream = client.OpenRead("http://www.google.com"))
+						{
+							internetConnectionValid = true;
+						}
 					}
 				}
-
-				checkedInternetConnection = true;
+				catch
+				{
+					checkedInternetConnection = false;
+				}
 			}
 
 			if (!internetConnectionValid)
