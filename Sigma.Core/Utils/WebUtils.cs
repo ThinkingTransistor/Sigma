@@ -93,6 +93,9 @@ namespace Sigma.Core.Utils
 		}
 	}
 
+	/// <summary>
+	/// A custom WebClient implementation which allows downloading a file with progress reporting within the calling thread via events. 
+	/// </summary>
 	public class BlockingWebClient : WebClient
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -128,7 +131,7 @@ namespace Sigma.Core.Utils
 
 			if (this.Proxy == null)
 			{
-				this.Proxy = SigmaEnvironment.Globals.Get<WebProxy>("webProxy");
+				this.Proxy = SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
 			}
 		}
 
@@ -155,6 +158,12 @@ namespace Sigma.Core.Utils
 			this.asyncWait.Set();
 		}
 
+		/// <summary>
+		/// A custom download file method which enables progress reporting within the same thread. 
+		/// </summary>
+		/// <param name="url"></param>
+		/// <param name="outputPath"></param>
+		/// <returns></returns>
 		public new bool DownloadFile(string url, string outputPath)
 		{
 			this.downloadSuccess = false;

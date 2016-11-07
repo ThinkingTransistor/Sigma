@@ -29,7 +29,7 @@ namespace Sigma.Core.Data.Sources
 		private string url;
 		private string localDownloadPath;
 		private FileStream localDownloadedFileStream;
-		private WebProxy proxy;
+		private IWebProxy proxy;
 
 		public bool Chunkable
 		{
@@ -40,7 +40,7 @@ namespace Sigma.Core.Data.Sources
 		{
 		}
 
-		public URLSource(string url, string localDownloadPath, WebProxy proxy = null)
+		public URLSource(string url, string localDownloadPath, IWebProxy proxy = null)
 		{
 			if (url == null)
 			{
@@ -59,7 +59,7 @@ namespace Sigma.Core.Data.Sources
 
 			if (this.proxy == null)
 			{
-				this.proxy = SigmaEnvironment.Globals.Get<WebProxy>("webProxy");
+				this.proxy = SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
 			}
 		}
 
