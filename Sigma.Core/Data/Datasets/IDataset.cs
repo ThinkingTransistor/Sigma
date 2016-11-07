@@ -23,15 +23,9 @@ namespace Sigma.Core.Data.Datasets
 	{
 		/// <summary>
 		/// The preferred per block size in records.
-		/// Note: Not every block must obey this request. 
+		/// Note: Not every block must obey this request (e.g. the last black might very well be a different size).
 		/// </summary>
 		long TargetBlockSizeRecords { get; }
-
-		/// <summary>
-		/// The preferred per block size in bytes.
-		/// Note: Not every block must obey this request.  
-		/// </summary>
-		long TargetBlockSizeBytes { get; }
 
 		/// <summary>
 		/// The maximum number of concurrently active blocks. 
@@ -43,11 +37,20 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		long MaxTotalActiveBlockSizeBytes { get; }
 
-
 		/// <summary>
 		/// The total size of all currently active record blocks in system memory in bytes.
 		/// </summary>
 		long TotalActiveBlockSizeBytes { get; }
+
+		/// <summary>
+		/// The maxmimum number of blocks to keep in the cache (inactive blocks are written to a cache, typically on disk, to be reloaded later).
+		/// </summary>
+		int MaxBlocksInCache { get; set; }
+
+		/// <summary>
+		/// The maxmimum number of bytes to keep in the cache (inactive blocks are written to a cache, typically on disk, to be reloaded later).
+		/// </summary>
+		long MaxBytesInCache { get; set; }
 
 		/// <summary>
 		/// The names for all sections present in this dataset (e.g. "inputs", "targets").
@@ -100,12 +103,19 @@ namespace Sigma.Core.Data.Datasets
 		long[] GetBlockRegion(int blockIndex, IComputationHandler handler);
 
 		/// <summary>
-		/// Checks whether a certain block with a specific handler format can be fetched at the time of call.
+		/// Check whether any more blocks can be fetched after a specified block index. 
+		/// </summary>
+		/// <param name="blockIndex">The block index after which to check for more blocks.</param>
+		/// <returns></returns>
+		bool CanFetchBlocksAfter(int blockIndex);
+
+		/// <summary>
+		/// Checks whether a certain block with a specific handler format can be fetched directly (without waiting until space becomes available) at the time of call.
 		/// </summary>
 		/// <param name="blockIndex">The block index.</param>
 		/// <param name="handler">The handler (which specifies the block format required).</param>
 		/// <returns></returns>
-		bool CanFetchBlock(int blockIndex, IComputationHandler handler);
+		bool CanFetchBlockDirectly(int blockIndex, IComputationHandler handler);
 
 		/// <summary>
 		/// Fetch a record block with a certain index for a certain computation handler. 

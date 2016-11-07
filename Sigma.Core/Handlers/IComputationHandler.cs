@@ -28,5 +28,12 @@ namespace Sigma.Core.Handlers
 		/// <returns>An ndarray with the given shape.</returns>
 		INDArray Create(params long[] shape);
 
+		/// <summary>
+		/// Get the (estimated) size of this ndarray in bytes. 
+		/// If the given ndarray is not of a format this handler can handle, throw an exception.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The (estimated) size of the given ndarray in bytes.</returns>
+		long GetSizeBytes(INDArray array);
 	}
 }
