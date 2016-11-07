@@ -26,6 +26,14 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 
 		private List<UIWrapper<TabItem>> tabs;
 
+		public List<UIWrapper<TabItem>> Tabs
+		{
+			get
+			{
+				return tabs;
+			}
+		}
+
 		public TabControlUI(WPFMonitor monitor, App app, string title) : base()
 		{
 			tabs = new List<UIWrapper<TabItem>>();

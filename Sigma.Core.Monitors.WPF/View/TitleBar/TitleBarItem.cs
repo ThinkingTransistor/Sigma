@@ -29,9 +29,9 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 
 		public TitleBarItem(string text) : base()
 		{
-			Background = Brushes.Transparent;
-			BorderBrush = Brushes.Transparent;
-			FontSize = 15;
+			//Background = Brushes.Transparent;
+			//BorderBrush = Brushes.Transparent;
+			//FontSize = 15;
 			Content = text;
 
 			

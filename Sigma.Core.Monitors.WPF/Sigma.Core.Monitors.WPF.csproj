@@ -109,6 +109,7 @@
     </Compile>
     <Compile Include="Control\Themes\ColorManager.cs" />
     <Compile Include="Control\Themes\IColorManager.cs" />
+    <Compile Include="Control\Themes\MaterialColors.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
     <Compile Include="Control\TitleBar\TitleBarControl.cs" />
     <Compile Include="Control\TitleBar\TitleBarSelector.cs" />

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Media;
 using Dragablz.Dockablz;
 using MaterialDesignThemes.Wpf;
@@ -64,12 +65,36 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
+			FontFamily = app.Resources["MaterialDesignFont"] as FontFamily;
+
 			TitleAlignment = HorizontalAlignment.Center;
 
-			LeftWindowCommands = new TitleBarControl();
-			LeftWindowCommands.Items.Add(new TitleBarItem("Environment"));
-			LeftWindowCommands.Items.Add(new TitleBarItem("Settings"));
-			LeftWindowCommands.Items.Add(new TitleBarItem("About"));
+			//LeftWindowCommands = new TitleBarControl();
+			//LeftWindowCommands.Items.Add(new TitleBarItem("Environment"));
+			//LeftWindowCommands.Items.Add(new TitleBarItem("Settings"));
+			//LeftWindowCommands.Items.Add(new TitleBarItem("About"));
+
+			//StackPanel stackPanel = new StackPanel();
+			//stackPanel.Children.Add(new Button { Content = "Load" });
+			//stackPanel.Children.Add(new Button { Content = "Save" });
+
+			//PopupBox popupBox = new PopupBox();
+			//popupBox.PopupContent = stackPanel;
+
+			//LeftWindowCommands.Items.Add(popupBox);
+
+
+			ToolBarTray tray = new ToolBarTray();
+			ToolBar toolbar = new ToolBar();
+			((IAddChild)tray).AddChild(toolbar);
+
+			toolbar.Items.Add(new Button() { Content = "New" });
+
+
+			LeftWindowCommands = new MahApps.Metro.Controls.WindowCommands();
+			LeftWindowCommands.Items.Add(tray);
+			
+
 
 			TabControl = CreateTabControl();
 
