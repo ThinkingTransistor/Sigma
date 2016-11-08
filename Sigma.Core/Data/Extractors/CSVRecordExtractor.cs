@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -30,6 +31,8 @@ namespace Sigma.Core.Data.Extractors
 		{
 			get { return namedColumnIndexMappings; }
 		}
+
+		public string[] SectionNames { get; private set; }
 
 		public IRecordReader Reader
 		{
@@ -49,7 +52,13 @@ namespace Sigma.Core.Data.Extractors
 				columnValueMappings = new Dictionary<int, Dictionary<object, object>>();
 			}
 
+			if (namedColumnIndexMappings.Count == 0)
+			{
+				throw new ArgumentException("There must be at least one named column index mapping, but the given dictionary was empty.");
+			}
+
 			this.columnValueMappings = columnValueMappings;
+			this.SectionNames = namedColumnIndexMappings.Keys.ToArray();
 		}
 
 		/// <summary>
@@ -98,7 +107,12 @@ namespace Sigma.Core.Data.Extractors
 				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
 			}
 
-			string[][] lineParts = Reader.Read<string[][]>(numberOfRecords);
+			return ExtractFrom(Reader.Read(numberOfRecords), numberOfRecords, handler);
+		}
+
+		public Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler)
+		{
+			string[][] lineParts = (string[][]) readData;
 
 			int readNumberOfRecords = lineParts.Length;
 

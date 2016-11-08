@@ -137,7 +137,7 @@ namespace Sigma.Core.Data.Readers
 			}
 		}
 
-		public T Read<T>(int numberOfRecords)
+		public object Read(int numberOfRecords)
 		{
 			if (this.reader == null)
 			{
@@ -190,7 +190,7 @@ namespace Sigma.Core.Data.Readers
 
 			logger.Info($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");
 
-			return (T) (object) (records.ToArray<string[]>());
+			return records.ToArray<string[]>();
 		}
 
 		public void Dispose()

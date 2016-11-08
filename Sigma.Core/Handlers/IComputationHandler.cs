@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using Sigma.Core.Math;
+using System.IO;
 
 namespace Sigma.Core.Handlers
 {
@@ -27,6 +28,22 @@ namespace Sigma.Core.Handlers
 		/// <param name="shape">The ndarray shape.</param>
 		/// <returns>An ndarray with the given shape.</returns>
 		INDArray Create(params long[] shape);
+
+		/// <summary>
+		/// Serialize a certain ndarray to the given stream.
+		/// Note: The ndarray format must be compatible with this handler. 
+		/// </summary>
+		/// <param name="array">The ndarray to serialise.</param>
+		/// <param name="stream">The stream to serialise to.</param>
+		void Serialise(INDArray array, Stream stream);
+
+		/// <summary>
+		/// Deserialise an ndarray from a certain stream. 
+		/// Note: The ndarray format must be compatible with this handler. 
+		/// </summary>
+		/// <param name="stream">The stream to deserialise the ndarray from.</param>
+		/// <returns></returns>
+		INDArray Deserialise(Stream stream);
 
 		/// <summary>
 		/// Get the (estimated) size of this ndarray in bytes. 

@@ -35,12 +35,11 @@ namespace Sigma.Core.Data.Readers
 		void Prepare();
 
 		/// <summary>
-		/// Reads a number of records and converts them to the specified type. 
+		/// Reads a number of records in any format (therefore attached extractors must be compatible). 
 		/// This method is mostly used internally by extractors, which have to be compatible with the used record readers (so they know which data format to expect). 
 		/// </summary>
-		/// <typeparam name="T">The type the collection of records have.</typeparam>
 		/// <param name="numberOfRecords">The number of records to read.</param>
 		/// <returns>An object of the given type representing a collection of a given number of records.</returns>
-		T Read<T>(int numberOfRecords);
+		object Read(int numberOfRecords);
 	}
 }
