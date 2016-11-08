@@ -62,16 +62,16 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public object Load(string identifier)
+		public T Load<T>(string identifier)
 		{
 			if (!IsCached(identifier))
 			{
-				return null;
+				return default(T);
 			}
 
 			using (Stream fileStream = new FileStream(RootDirectory + identifier, FileMode.Create))
 			{
-				return serialisationFormatter.Deserialize(fileStream);
+				return (T) serialisationFormatter.Deserialize(fileStream);
 			}
 		}
 	}
