@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Dragablz.Dockablz;
+using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI;
@@ -74,6 +76,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			TitleBar.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("Extra Extra", "Extra 3"))));
 			TitleBar.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
 			TitleBar.AddItem(new TitleBarItem("About", "Sigma"));
+
+			Button button = TitleBar[0].Elements[0] as Button;
+			PopupBox box = TitleBar[0].Elements[2] as PopupBox;
+			box.Width = float.NaN;
+			box.Height = button.Height;
+			box.HorizontalAlignment = HorizontalAlignment.Center;
+			box.VerticalAlignment = VerticalAlignment.Center;
+
+			Debug.WriteLine($"Height: {button.Height}, Width: {button.Width}");
 
 			LeftWindowCommands = TitleBar;
 
@@ -154,15 +165,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		protected virtual void SetBorderBehaviour(App app)
 		{
 			//This can only be set in the constructor or onstartup
-			Brush accentColorBrush = app.FindResource("AccentColorBrush") as Brush;
-
 			BorderThickness = new Thickness(1);
-			BorderBrush = accentColorBrush;
-			GlowBrush = accentColorBrush;
+			BorderBrush = UIValues.AccentColorBrush;
+			GlowBrush = UIValues.AccentColorBrush;
 
 			//Disable that the titlebar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = accentColorBrush;
+			NonActiveWindowTitleBrush = UIValues.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}

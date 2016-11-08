@@ -12,13 +12,17 @@ namespace Sigma.Core.Monitors.WPF.Model.UI
 	{
 		public static FontFamily @FontFamily { get; private set; }
 
+		/// <summary>
+		/// This is per default a bluish colour.
+		/// </summary>
+		public static Brush AccentColorBrush { get; private set; }
+
 		static UIValues()
 		{
 			Application app = Application.Current;
 
 			FontFamily = app.Resources["MaterialDesignFont"] as FontFamily;
+			AccentColorBrush = app.Resources["AccentColorBrush"] as Brush;
 		}
-
-
 	}
 }

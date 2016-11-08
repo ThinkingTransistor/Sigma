@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -41,10 +42,14 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		{
 			Content = new PopupBox() { StaysOpen = true };
 
+
 			if (toggleContent != null)
 			{
 				Content.ToggleContent = toggleContent;
-				Content.FontFamily = UIValues.FontFamily;
+				//TODO: Color and font
+				//Content.ToggleContentTemplate
+
+				Debug.WriteLine($"Content: {Content.ToggleContent.GetType()}");
 			}
 
 			Elements = new UIElement[contents.Length];
@@ -71,6 +76,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 				}
 				else if (contents[i] is string)
 				{
+					Debug.WriteLine($"String: {contents[i] as string}");
 					newElement = new Button { Content = contents[i], FontFamily = UIValues.FontFamily };
 				}
 				else

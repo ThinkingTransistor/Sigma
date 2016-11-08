@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Windows.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI;
 
 namespace Sigma.Core.Monitors.WPF.View.Tabs
 {
