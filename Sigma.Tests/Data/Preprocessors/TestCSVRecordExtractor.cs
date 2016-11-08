@@ -41,7 +41,7 @@ namespace Sigma.Tests.Data.Preprocessors
 			CreateCSVTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
-			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, int[][]>()));
+			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new int[][] { new int[] { 0 } } }));
 
 			Assert.AreSame(source, extractor.Reader.Source);
 

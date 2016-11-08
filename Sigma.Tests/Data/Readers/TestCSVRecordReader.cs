@@ -57,17 +57,17 @@ namespace Sigma.Tests.Data.Readers
 
 			CSVRecordReader reader = new CSVRecordReader(source);
 
-			Assert.Throws<InvalidOperationException>(() => reader.Read<string[][]>(3));
+			Assert.Throws<InvalidOperationException>(() => reader.Read(3));
 
 			reader.Prepare();
 
-			string[][] lineparts = reader.Read<string[][]>(2);
+			string[][] lineparts = (string[][]) reader.Read(2);
 
 			Assert.AreEqual(2, lineparts.Length);
 			Assert.AreEqual(5, lineparts[0].Length);
 			Assert.AreEqual(new string[] { "5.1", "3.5", "1.4", "0.2", "Iris-setosa" }, lineparts[0]);
 
-			lineparts = reader.Read<string[][]>(3);
+			lineparts = (string[][]) reader.Read(3);
 
 			Assert.AreEqual(1, lineparts.Length);
 			Assert.AreEqual(5, lineparts[0].Length);
