@@ -1,12 +1,14 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.Model.UI;
 
 namespace Sigma.Core.Monitors.WPF.View.TitleBar
 {
-	public class TitleBarItem : Button
+	public class TitleBarItem
 	{
 		//#region DependencyProperties
 
@@ -27,19 +29,82 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 
 		//#endregion Properties
 
-		public TitleBarItem(string text) : base()
+		public PopupBox Content { get; private set; }
+
+		private StackPanel contentPanel;
+
+		public UIElement[] Elements { get; set; }
+
+		private TitleBarItem parent;
+
+		public TitleBarItem(object toggleContent, params object[] contents)
 		{
+			Content = new PopupBox() { StaysOpen = true };
+
+			if (toggleContent != null)
+			{
+				Content.ToggleContent = toggleContent;
+				Content.FontFamily = UIValues.FontFamily;
+			}
+
+			Elements = new UIElement[contents.Length];
+
+			contentPanel = new StackPanel();
+
+			for (int i = 0; i < contents.Length; i++)
+			{
+				UIElement newElement = null;
+				if (contents[i] is TitleBarItem)
+				{
+					TitleBarItem child = (TitleBarItem) contents[i];
+					PrepareChild(child);
+
+					newElement = ModifyChild(child.Content);
+				}
+				else if (contents[i] is PopupBox)
+				{
+					newElement = ModifyChild((PopupBox) contents[i]);
+				}
+				else if (contents[i] is UIElement)
+				{
+					newElement = (UIElement) contents[i];
+				}
+				else if (contents[i] is string)
+				{
+					newElement = new Button { Content = contents[i], FontFamily = UIValues.FontFamily };
+				}
+				else
+				{
+					throw new ArgumentException($"Unsupported object {contents[i]}. Supported types: TitleBarItem, PopupBox, string, and UIElement");
+				}
+
+				contentPanel.Children.Add(newElement);
+
+				Elements[i] = newElement;
+			}
+
+			Content.PopupContent = contentPanel;
+
 			//Background = Brushes.Transparent;
 			//BorderBrush = Brushes.Transparent;
 			//FontSize = 15;
-			Content = text;
 
-			
-			
 			//Style = Application.Current.FindResource("WindowCommandsPopupBoxStyle") as Style;
 			//StackPanel panel = new StackPanel();
 			//panel.Children.Add(new Button() { Content = text });
 			//base.Content = panel;
+		}
+
+		private void PrepareChild(TitleBarItem child)
+		{
+			child.parent = this;
+		}
+
+		private PopupBox ModifyChild(PopupBox child)
+		{
+			child.PlacementMode = PopupBoxPlacementMode.RightAndAlignMiddles;
+
+			return child;
 		}
 	}
 }

@@ -82,7 +82,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		/// <summary>
 		/// In this function components should be initialised that
-		/// don't depend on constructor arguments.
+		/// don't depend on constructor arguments. This function
+		/// will be invoked as the last operation
+		/// of the <see cref="WPFWindow"/>'s constructor. 
 		/// </summary>
 		protected abstract void InitialiseComponents();
 	}

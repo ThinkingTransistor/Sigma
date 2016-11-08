@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
@@ -7,6 +8,15 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		public TitleBarControl()
 		{
 			ShowLastSeparator = false;
+		}
+
+		/// <summary>
+		/// Add a <see cref="TitleBarItem"/> to the <see cref="TitleBarControl"/>.
+		/// </summary>
+		/// <param name="item"></param>
+		public void AddItem(TitleBarItem item)
+		{
+			Items.Add(item.Content);
 		}
 
 		//#region DependencyProperties

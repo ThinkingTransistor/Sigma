@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Markup;
 using System.Windows.Media;
 using Dragablz.Dockablz;
-using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
 
@@ -40,6 +35,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		#endregion Properties
 
 		/// <summary>
+		/// The <see cref="TitleBarControl"/> for the dropdwons in the title.
+		/// With this property you can access every button of the dropdown.
+		/// </summary>
+		public TitleBarControl TitleBar { get; private set; }
+
+		/// <summary>
 		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUI"/>
 		/// and therefore, the <see cref="TabItem"/>.
 		/// </summary>
@@ -65,9 +66,16 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
-			FontFamily = app.Resources["MaterialDesignFont"] as FontFamily;
+			FontFamily = UIValues.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
+
+			TitleBar = new TitleBarControl();
+			TitleBar.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("Extra Extra", "Extra 3"))));
+			TitleBar.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
+			TitleBar.AddItem(new TitleBarItem("About", "Sigma"));
+
+			LeftWindowCommands = TitleBar;
 
 			//LeftWindowCommands = new TitleBarControl();
 			//LeftWindowCommands.Items.Add(new TitleBarItem("Environment"));
@@ -78,22 +86,42 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			//stackPanel.Children.Add(new Button { Content = "Load" });
 			//stackPanel.Children.Add(new Button { Content = "Save" });
 
+
+			////StackPanel innerPanel = new StackPanel();
+			////innerPanel.Children.Add(new Button() { Content = "Option1" });
+			////innerPanel.Children.Add(new Button() { Content = "Option2" });
+
+			////PopupBox innerBox = new PopupBox();
+			////innerBox.PopupContent = innerPanel;
+			////innerBox.ToggleContent = "Extras";
+			////innerBox.VerticalAlignment = VerticalAlignment.Center;
+			////innerBox.HorizontalAlignment = HorizontalAlignment.Center;
+			////innerBox.Style = new Button().Style;
+			////innerBox.PlacementMode = PopupBoxPlacementMode.RightAndAlignMiddles;
+			////stackPanel.Children.Add(innerBox);
+
 			//PopupBox popupBox = new PopupBox();
 			//popupBox.PopupContent = stackPanel;
+			//popupBox.ToggleContent = "Environment";
+			//popupBox.StaysOpen = true;
+
+			
+
+			//popupBox.PopupMode = PopupBoxPopupMode.MouseOverEager; 
 
 			//LeftWindowCommands.Items.Add(popupBox);
 
 
-			ToolBarTray tray = new ToolBarTray();
-			ToolBar toolbar = new ToolBar();
-			((IAddChild)tray).AddChild(toolbar);
+			//ToolBarTray tray = new ToolBarTray();
+			//ToolBar toolbar = new ToolBar();
+			//((IAddChild)tray).AddChild(toolbar);
 
-			toolbar.Items.Add(new Button() { Content = "New" });
+			//toolbar.Items.Add(new Button() { Content = "New" });
 
 
-			LeftWindowCommands = new MahApps.Metro.Controls.WindowCommands();
-			LeftWindowCommands.Items.Add(tray);
-			
+			//LeftWindowCommands = new MahApps.Metro.Controls.WindowCommands();
+			//LeftWindowCommands.Items.Add(tray);
+
 
 
 			TabControl = CreateTabControl();

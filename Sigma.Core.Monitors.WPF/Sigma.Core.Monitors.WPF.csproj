@@ -109,11 +109,11 @@
     </Compile>
     <Compile Include="Control\Themes\ColorManager.cs" />
     <Compile Include="Control\Themes\IColorManager.cs" />
-    <Compile Include="Control\Themes\MaterialColors.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
     <Compile Include="Control\TitleBar\TitleBarControl.cs" />
     <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
-    <Compile Include="Model\UI\GridSize.cs" />
+    <Compile Include="Model\UI\UIValues.cs" />
+    <Compile Include="Model\UI\Windows\GridSize.cs" />
     <Compile Include="Panels\WindowPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

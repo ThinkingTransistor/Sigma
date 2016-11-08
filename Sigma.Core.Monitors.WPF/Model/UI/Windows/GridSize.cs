@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 
-namespace Sigma.Core.Monitors.WPF.Model.UI
+namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 {
 	/// <summary>
 	/// Defines the grid size for every Tab.
