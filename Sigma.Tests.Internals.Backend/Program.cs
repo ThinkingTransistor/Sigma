@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Sigma.Core.Handlers.Backends;
 using Sigma.Core.Handlers;
 using System.Net;
+using Sigma.Core.Data.Datasets;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -25,17 +26,21 @@ namespace Sigma.Tests.Internals.Backend
 			CSVRecordReader reader = new CSVRecordReader(new FileSource("iris.data"));
 
 			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
-
 			IComputationHandler handler = new CPUFloat32Handler();
 
-			extractor.Prepare();
+			Dataset dataset = new Dataset("iris", extractor);
 
-			var namedArrays = extractor.Extract(15, handler);
+			Console.WriteLine("dataset: " + dataset.Name);
+			Console.WriteLine("sections: " + ArrayUtils.ToString(dataset.SectionNames));
 
-			foreach (string name in namedArrays.Keys)
-			{
-				Console.WriteLine($"[{name}] =\n{string.Join(", ", namedArrays[name])}");
-			}
+			Dictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler);
+
+			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
+			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
+
+			Dictionary<string, INDArray> secondNamedArrays = dataset.FetchBlock(1, handler);
+
+			Console.WriteLine("second " + secondNamedArrays == null);
 
 			Console.ReadKey();
 		}

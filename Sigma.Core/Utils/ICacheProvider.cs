@@ -35,6 +35,12 @@ namespace Sigma.Core.Utils
 		T Load<T>(string identifier);
 
 		/// <summary>
+		/// Remove the cache entry associated with an identifier from this cache provider.
+		/// </summary>
+		/// <param name="identifier">The identifier for which the cache associated cache entry is to be removed.</param>
+		void Remove(string identifier);
+
+		/// <summary>
 		/// Check whether an object with a certain identifier is cached in this provider. 
 		/// </summary>
 		/// <param name="identifier">The identifier to check for.</param>

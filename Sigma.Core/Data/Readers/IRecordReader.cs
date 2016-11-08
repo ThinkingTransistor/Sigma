@@ -31,6 +31,7 @@ namespace Sigma.Core.Data.Readers
 
 		/// <summary>
 		/// Prepare this record reader and its underlying resources to be read.
+		/// Note: This function may be called more than once (and subsequent calls should probably be ignored, depending on the implementation). 
 		/// </summary>
 		void Prepare();
 

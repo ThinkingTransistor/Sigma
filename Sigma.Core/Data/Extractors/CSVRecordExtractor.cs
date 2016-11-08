@@ -116,6 +116,11 @@ namespace Sigma.Core.Data.Extractors
 
 			int readNumberOfRecords = lineParts.Length;
 
+			if (readNumberOfRecords == 0)
+			{
+				return null;
+			}
+
 			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();

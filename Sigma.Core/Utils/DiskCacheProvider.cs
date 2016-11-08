@@ -74,5 +74,13 @@ namespace Sigma.Core.Utils
 				return (T) serialisationFormatter.Deserialize(fileStream);
 			}
 		}
+
+		public void Remove(string identifier)
+		{
+			if (IsCached(identifier))
+			{
+				File.Delete(RootDirectory + identifier);
+			}
+		}
 	}
 }

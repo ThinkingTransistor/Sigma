@@ -47,9 +47,9 @@ namespace Sigma.Core.Data.Datasets
 
 		public string Name { get; private set; }
 
-		public int ActiveBlockRegionCount { get; private set; }
+		public int ActiveBlockRegionCount { get { return activeBlocks.Count; } }
 
-		public int ActiveIndividualBlockCount { get; private set; }
+		public int ActiveIndividualBlockCount { get { return activeBlocks.Values.Sum(set => set.Count); } }
 
 		public int TargetBlockSizeRecords { get; private set; }
 
@@ -86,31 +86,11 @@ namespace Sigma.Core.Data.Datasets
 		{
 		}
 
-		public Dataset(string name, int blockSizeRecords, ICacheProvider cacheProvider, params IRecordExtractor[] recordExtractors)
+		public Dataset(string name, int blockSizeInRecords, ICacheProvider cacheProvider, params IRecordExtractor[] recordExtractors)
 		{
 			if (name == null)
 			{
 				throw new ArgumentNullException("Name cannot be null.");
-			}
-
-			if (blockSizeRecords == BLOCK_SIZE_ALL)
-			{
-				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
-				this.TargetBlockSizeRecords = Int32.MaxValue;
-			}
-			else if (blockSizeRecords == BLOCK_SIZE_AUTO)
-			{
-				//somewhat temporary guesstimation, should probably expose the individual parameters 
-				long estimatedRecordSizeBytes = 1024;
-				double memoryToConsume = 0.5f;
-				long optimalNumberBlocks = 24;
-				long availableSystemMemory = GetAvailablePhysicalMemory();
-
-				this.TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
-			}
-			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
-			{
-				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
 			}
 
 			if (recordExtractors.Length == 0)
@@ -118,11 +98,39 @@ namespace Sigma.Core.Data.Datasets
 				throw new ArgumentException("Datasets require at least one record extractor, but none were given.");
 			}
 
+			if (cacheProvider == null)
+			{
+				throw new ArgumentNullException("Cache provider cannot be null.");
+			}
+
+			if (blockSizeInRecords == BLOCK_SIZE_ALL)
+			{
+				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
+				this.TargetBlockSizeRecords = Int32.MaxValue;
+			}
+			else if (blockSizeInRecords == BLOCK_SIZE_AUTO)
+			{
+				//somewhat temporary guesstimate, should probably expose the individual parameters 
+				long estimatedRecordSizeBytes = 1024;
+				double memoryToConsume = 0.5f;
+				long optimalNumberBlocks = 24;
+				long availableSystemMemory = GetAvailablePhysicalMemory();
+
+				this.TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
+			}
+			else if (blockSizeInRecords == 0 || blockSizeInRecords < -2)
+			{
+				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeInRecords}.");
+			}
+			else
+			{
+				this.TargetBlockSizeRecords = blockSizeInRecords;
+			}
+
 			this.AnalyseExtractors(recordExtractors);
 
 			this.recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
-
-			this.TargetBlockSizeRecords = blockSizeRecords;
+			this.cacheProvider = cacheProvider;
 
 			this.availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
 			this.takenBlocksSemaphore = new Semaphore(0, MaxConcurrentActiveBlocks);
@@ -169,11 +177,7 @@ namespace Sigma.Core.Data.Datasets
 		{
 			//TODO check if block even could be fetched to not waste thread resources if shouldWaitUntilAvailable is false anyway
 
-			Dictionary<string, INDArray> block = await Task.Run<Dictionary<string, INDArray>>(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
-
-			//TODO
-
-			return block;
+			return await Task.Run<Dictionary<string, INDArray>>(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
 		}
 
 		public Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
@@ -208,12 +212,33 @@ namespace Sigma.Core.Data.Datasets
 
 			RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
 
-			//TODO
+			TotalActiveBlockSizeBytes += recordBlock.estimatedSizeBytes;
+			TotalActiveRecords += recordBlock.numberRecords;
+
+			if (!activeBlocks.ContainsKey(blockIndex))
+			{
+				activeBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+			}
+
+			activeBlocks[blockIndex].Add(recordBlock);
+		}
+
+		private void DeregisterActiveBlock(RecordBlock recordBlock)
+		{
+			TotalActiveBlockSizeBytes -= recordBlock.estimatedSizeBytes;
+			TotalActiveRecords -= recordBlock.numberRecords;
+
+			activeBlocks[recordBlock.blockIndex].Remove(recordBlock);
+
+			if (activeBlocks[recordBlock.blockIndex].Count == 0)
+			{
+				activeBlocks.Remove(recordBlock.blockIndex);
+			}
 		}
 
 		private Dictionary<string, INDArray> FetchBlockWhenAvailable(int blockIndex, IComputationHandler handler)
 		{
-			//vanity bool so you don't have to look at while(true)
+			//vanity boolean so you don't have to look at while(true)
 			bool fetchedBlockSuccessfully = false;
 
 			while (!fetchedBlockSuccessfully)
@@ -227,17 +252,25 @@ namespace Sigma.Core.Data.Datasets
 				//if block != null we could fetch the block successfully without violating any constraints
 				if (block != null)
 				{
-					takenBlocksSemaphore.Release();
-
 					RegisterActiveBlock(block, blockIndex, handler);
+
+					takenBlocksSemaphore.Release();
 
 					return block;
 				}
 				else
 				{
-					logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
+					//we cannot retrieve any more blocks and shouldn't keep trying 
+					if (blockIndex >= lastAvailableBlockIndex)
+					{
+						return null;
+					}
+					else
+					{
+						logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
 
-					availableBlocksSemaphore.Release();
+						availableBlocksSemaphore.Release();
+					}
 				}
 			}
 
@@ -257,6 +290,12 @@ namespace Sigma.Core.Data.Datasets
 
 			Dictionary<string, INDArray> block = LoadAndExtractBlock(blockIndex, handler);
 
+			//there was nothing to load and extract, most likely end of stream
+			if (block == null)
+			{
+				return null;
+			}
+
 			long blockSizeBytes = handler.GetSizeBytes(block.Values.ToArray());
 
 			if (TotalActiveBlockSizeBytes + blockSizeBytes > MaxTotalActiveBlockSizeBytes)
@@ -275,7 +314,7 @@ namespace Sigma.Core.Data.Datasets
 		{
 			//this method takes care of
 			//	- checking whether the index is already loaded and active and then converts it
-			//  - or checking whether the index is already cached and loads and converts it
+			//  - or checking whether the index is already cached in the right format and loads
 			//  - or if none of that, loads and extracts from the original extractors 
 
 			//check whether a block with the same index is already active 
@@ -310,12 +349,12 @@ namespace Sigma.Core.Data.Datasets
 				}
 			}
 
-			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType}.cache";
+			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType}.cache";
 
 			//it's already stored in the cache in the correct format
-			if (cacheProvider.IsCached(cacheIdentifier))
+			if (cacheProvider.IsCached(blockIdentifierInCache))
 			{
-				return cacheProvider.Load<Dictionary<string, INDArray>>(cacheIdentifier);
+				return cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
 			}
 
 			return LoadAndExtractRaw(blockIndex, handler);
@@ -329,6 +368,12 @@ namespace Sigma.Core.Data.Datasets
 				{
 					Dictionary<string, INDArray> block = LoadAndExtractRawDirect(tempBlockIndex, handler);
 
+					//looks like we couldn't read any more blocks
+					if (block == null)
+					{
+						return null;
+					}
+					
 					if (AllowRawReadDataCaching)
 					{
 						cacheProvider.Store($"raw.{tempBlockIndex}.cache", block);
@@ -361,9 +406,21 @@ namespace Sigma.Core.Data.Datasets
 		{
 			Dictionary<string, INDArray> namedBlocks = new Dictionary<string, INDArray>();
 
+			PrepareExtractors();
+
 			foreach (IRecordExtractor extractor in recordExtractors)
 			{
 				Dictionary<string, INDArray> subNamedBlock = extractor.Extract(TargetBlockSizeRecords, handler);
+
+				//check if block size is 0, indicating we reached the end of the stream 
+				if (subNamedBlock == null)
+				{
+					lastAvailableBlockIndex = blockIndex - 1;
+
+					logger.Info($"Cannot load and extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
+
+					return null;
+				}
 
 				foreach (string name in subNamedBlock.Keys)
 				{
@@ -388,28 +445,61 @@ namespace Sigma.Core.Data.Datasets
 
 		public void FreeBlock(int blockIndex, IComputationHandler handler)
 		{
-			takenBlocksSemaphore.WaitOne();
+			if (!activeBlocks.ContainsKey(blockIndex))
+			{
+				return;
+			}
 
-			availableBlocksSemaphore.Release();
+			foreach (RecordBlock block in activeBlocks[blockIndex])
+			{
+				if (object.ReferenceEquals(block.handler, handler))
+				{
+					takenBlocksSemaphore.WaitOne();
+
+					CacheBlockConstrained(block.namedBlocks, blockIndex, handler);
+
+					DeregisterActiveBlock(block);
+
+					availableBlocksSemaphore.Release();
+
+					break;
+				}
+			}
 		}
 
 		private void CacheBlockConstrained(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler)
 		{
-			long blockSize = handler.GetSizeBytes(block.Values.ToArray());
+			long blockSizeBytes = handler.GetSizeBytes(block.Values.ToArray());
 
 			if (cachedBlocks.Count >= MaxBlocksInCache)
 			{
+				logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBlocksInCache constraint of {MaxBlocksInCache}.");
 
+				return;
 			}
 
-			if (blockSize + totalCachedBlockSizeBytes >= MaxBytesInCache)
+			if (blockSizeBytes + totalCachedBlockSizeBytes >= MaxBytesInCache)
 			{
+				logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBytesInCache constraint of {MaxBytesInCache} bytes (block of size {blockSizeBytes} would exceed constraint by {totalCachedBlockSizeBytes + blockSizeBytes - MaxBytesInCache} bytes).");
 
+				return;
 			}
 
 			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType}.cache";
 
-			totalCachedBlockSizeBytes += blockSize;
+			cacheProvider.Store(cacheIdentifier, block);
+
+
+
+			totalCachedBlockSizeBytes += blockSizeBytes;
+		}
+
+		private void PrepareExtractors()
+		{
+			foreach (IRecordExtractor extractor in recordExtractors)
+			{
+				extractor.Prepare();
+			}
 		}
 
 		public long GetBlockSizeBytes(int blockIndex, IComputationHandler handler)

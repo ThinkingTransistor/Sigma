@@ -42,7 +42,12 @@ namespace Sigma.Core.Handlers.Backends
 
 			foreach (INDArray array in arrays)
 			{
-				totalSizeBytes += System.Runtime.InteropServices.Marshal.SizeOf(array);
+				long sizeBytes = 52L; // let's just assume 52bytes of base fluff, I really have no idea
+
+				sizeBytes += array.Length * this.DataType.SizeBytes;
+				sizeBytes += (array.Shape.Length) * 8L * 2;
+
+				totalSizeBytes += sizeBytes;
 			}
 
 			return totalSizeBytes;

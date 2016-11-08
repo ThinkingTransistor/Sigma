@@ -41,7 +41,7 @@ namespace Sigma.Core.Data.Extractors
 		/// </summary>
 		/// <param name="numberOfRecords">The number of records to extract.</param>
 		/// <param name="handler">The computation handler to use for ndarray creation and manipulation.</param>
-		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable).</returns>
+		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable). Return null when not a single record could be extracted.</returns>
 		Dictionary<string, INDArray> Extract(int numberOfRecords, IComputationHandler handler);
 
 		/// <summary>
@@ -53,11 +53,12 @@ namespace Sigma.Core.Data.Extractors
 		/// <param name="readData">The data read by any reader (requires the data formats to be compatible).</param>
 		/// <param name="numberOfRecords">The number of records to extract.</param>
 		/// <param name="handler">The computation handler to use for ndarray creation and manipulation.</param>
-		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable).</returns>
+		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable). Return null when not a single record could be extracted.</returns>
 		Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler);
 
 		/// <summary>
 		/// Prepare this record extractor and its underlying resources for extraction.
+		/// Note: This function may be called more than once (and subsequent calls should probably be ignored, depending on the implementation). 
 		/// </summary>
 		void Prepare();
 

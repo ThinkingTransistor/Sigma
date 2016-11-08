@@ -31,6 +31,7 @@ namespace Sigma.Core.Data.Sources
 		/// <summary>
 		/// Prepares this data set for retrieval via <see cref="Retrieve"/>. 
 		/// For non-chunkable sources this includes loading the entire data set.
+		/// Note: This function may be called more than once (and subsequent calls should probably be ignored, depending on the implementation). 
 		/// </summary>
 		void Prepare();
 

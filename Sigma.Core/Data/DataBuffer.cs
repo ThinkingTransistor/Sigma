@@ -195,8 +195,6 @@ namespace Sigma.Core.Data
 
 		public IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
 		{
-			System.Type otherType = typeof(TOther);
-
 			LargeChunkedArray<TOther> otherData = new LargeChunkedArray<TOther>(length);
 
 			otherData.FillWith<T>(this.data, this.offset + startIndex, 0L, length);
