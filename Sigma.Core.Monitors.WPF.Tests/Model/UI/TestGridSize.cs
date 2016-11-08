@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Sigma.Core.Monitors.WPF.Model.UI;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Tests.Model.UI
 {
