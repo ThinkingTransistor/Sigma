@@ -1,0 +1,44 @@
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sigma.Core.Utils
+{
+	/// <summary>
+	/// A cache provider which stores and loads named data of any format outside system memory. 
+	/// </summary>
+	public interface ICacheProvider
+	{
+		/// <summary>
+		/// Store a serialisable object with a certain identifier. 
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		/// <param name="data">The object to store (must be serialisable).</param>
+		void Store(string identifier, object data);
+
+		/// <summary>
+		/// Load a cache object with certain identifier of a certain type.
+		/// <typeparam name="T">The type the data should be cast to.</typeparam>
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		/// <returns>The object with the given identifier if cached in this provider, otherwise null.</returns>
+		T Load<T>(string identifier);
+
+		/// <summary>
+		/// Check whether an object with a certain identifier is cached in this provider. 
+		/// </summary>
+		/// <param name="identifier">The identifier to check for.</param>
+		/// <returns>A boolean indicating whether the given identifier is cached in this provider.</returns>
+		bool IsCached(string identifier);
+	}
+}

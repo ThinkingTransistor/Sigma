@@ -22,10 +22,16 @@ namespace Sigma.Core.Data.Datasets
 	public interface IDataset
 	{
 		/// <summary>
+		/// The name and identifier of this dataset.
+		/// Dataset names should be globally unique and easily identifiable. 
+		/// </summary>
+		string Name { get; }
+
+		/// <summary>
 		/// The preferred per block size in records.
 		/// Note: Not every block must obey this request (e.g. the last black might very well be a different size).
 		/// </summary>
-		long TargetBlockSizeRecords { get; }
+		int TargetBlockSizeRecords { get; }
 
 		/// <summary>
 		/// The maximum number of concurrently active blocks. 
@@ -95,14 +101,6 @@ namespace Sigma.Core.Data.Datasets
 		long GetBlockSizeBytes(int blockIndex, IComputationHandler handler);
 
 		/// <summary>
-		/// Get the region associated with a certain record block (absolute offset of record indices).
-		/// </summary>
-		/// <param name="blockIndex"></param>
-		/// <param name="handler"></param>
-		/// <returns></returns>
-		long[] GetBlockRegion(int blockIndex, IComputationHandler handler);
-
-		/// <summary>
 		/// Check whether any more blocks can be fetched after a specified block index. 
 		/// </summary>
 		/// <param name="blockIndex">The block index after which to check for more blocks.</param>
@@ -110,15 +108,7 @@ namespace Sigma.Core.Data.Datasets
 		bool CanFetchBlocksAfter(int blockIndex);
 
 		/// <summary>
-		/// Checks whether a certain block with a specific handler format can be fetched directly (without waiting until space becomes available) at the time of call.
-		/// </summary>
-		/// <param name="blockIndex">The block index.</param>
-		/// <param name="handler">The handler (which specifies the block format required).</param>
-		/// <returns></returns>
-		bool CanFetchBlockDirectly(int blockIndex, IComputationHandler handler);
-
-		/// <summary>
-		/// Fetch a record block with a certain index for a certain computation handler. 
+		/// Fetch named record block with a certain index for a certain computation handler. 
 		/// Load, prepare and convert the requested block to the format required by a certain handler unless it was already fetched and is still active in that format.
 		/// If the specified block can currently not be loaded due to memory constraints (as specified in <see cref="MaxConcurrentActiveBlocks"/> and <see cref="MaxTotalActiveBlockSizeBytes"/>):
 		///		- If shouldWaitUntilAvailable flag is set: the calling thread will wait until the block becomes available, fetch the block and return it. 
@@ -127,8 +117,8 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="blockIndex">The index of the record block to request.</param>
 		/// <param name="handler">The handler for which the block should be requested (specifies the block format).</param>
 		/// <param name="shouldWaitUntilAvailable">Indicate if this method should wait for the specified block to become available or return null if it is not immediately available when called.</param>
-		/// <returns>A block record representing the block at the given block index in the format required by the given handler or null if shouldWaitUntilAvailable is set to false and the specified block is unavailable.</returns>
-		INDArray FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
+		/// <returns>A block record representing the named blocks at the given block index in the format required by the given handler or null if shouldWaitUntilAvailable is set to false and the specified block is unavailable.</returns>
+		Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
 
 		/// <summary>
 		/// Fetch a record block with a certain index for a certain computation handler asynchronously. 
@@ -141,7 +131,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="handler">The handler for which the block should be requested (specifies the block format).</param>
 		/// <param name="shouldWaitUntilAvailable">Indicate if this method should wait for the specified block to become available or return null if it is not immediately available when called.</param>
 		/// <returns>A block record representing the block at the given block index in the format required by the given handler or null if shouldWaitUntilAvailable is set to false and the specified block is unavailable.</returns>
-		Task<INDArray> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
+		Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
 
 		/// <summary>
 		/// Frees a record block with a certain index associated with the given handler.

@@ -21,11 +21,9 @@ namespace Sigma.Core.Handlers.Backends
 	public class CPUFloat32Handler : IComputationHandler
 	{
 		public IDataType DataType { get { return DataTypes.FLOAT32; } }
-		private IFormatter serialisationFormatter;
 
 		public CPUFloat32Handler()
 		{
-			this.serialisationFormatter = new BinaryFormatter();
 		}
 
 		public INDArray Create(params long[] shape)
@@ -33,19 +31,43 @@ namespace Sigma.Core.Handlers.Backends
 			return new NDArray<float>(shape: shape);
 		}
 
-		public INDArray Deserialise(Stream stream)
+		public void InitAfterDeserialisation(INDArray array)
 		{
-			return (INDArray) serialisationFormatter.Deserialize(stream);
+			// nothing to do here for this handler, all relevant components are serialised automatically
 		}
 
-		public void Serialise(INDArray array, Stream stream)
+		public long GetSizeBytes(params INDArray[] arrays)
 		{
-			serialisationFormatter.Serialize(stream, array);
+			long totalSizeBytes = 0L;
+
+			foreach (INDArray array in arrays)
+			{
+				totalSizeBytes += System.Runtime.InteropServices.Marshal.SizeOf(array);
+			}
+
+			return totalSizeBytes;
 		}
 
-		public long GetSizeBytes(INDArray array)
+		public bool IsInterchangeable(IComputationHandler otherHandler)
 		{
-			return System.Runtime.InteropServices.Marshal.SizeOf(array);
+			//there are no interchangeable implementations so it will have to be the same type 
+			return otherHandler.GetType() == this.GetType();
+		}
+
+		public bool CanConvert(INDArray array, IComputationHandler otherHandler)
+		{
+			//if it's the same base unit and at least the same precision we can convert
+			return otherHandler.DataType.BaseUnderlyingType == this.DataType.BaseUnderlyingType && otherHandler.DataType.SizeBytes >= this.DataType.SizeBytes;
+		}
+
+		public INDArray Convert(INDArray array, IComputationHandler otherHandler)
+		{
+			return new NDArray<float>(array.GetDataAs<float>(), array.Shape);
+		}
+
+		public void Fill(INDArray arrayToFill, INDArray filler)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
