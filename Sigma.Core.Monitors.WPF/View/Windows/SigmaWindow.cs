@@ -68,71 +68,25 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
-			FontFamily = UIValues.FontFamily;
+			FontFamily = UIColours.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
 
-			TitleBar = new TitleBarControl();
-			TitleBar.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("Extra Extra", "Extra 3"))));
-			TitleBar.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
-			TitleBar.AddItem(new TitleBarItem("About", "Sigma"));
-
-			Button button = TitleBar[0].Elements[0] as Button;
-			PopupBox box = TitleBar[0].Elements[2] as PopupBox;
-			box.Width = float.NaN;
-			box.Height = button.Height;
-			box.HorizontalAlignment = HorizontalAlignment.Center;
-			box.VerticalAlignment = VerticalAlignment.Center;
-
-			Debug.WriteLine($"Height: {button.Height}, Width: {button.Width}");
-
+			TitleBar = CreateTitleBar();
 			LeftWindowCommands = TitleBar;
 
-			//LeftWindowCommands = new TitleBarControl();
-			//LeftWindowCommands.Items.Add(new TitleBarItem("Environment"));
-			//LeftWindowCommands.Items.Add(new TitleBarItem("Settings"));
-			//LeftWindowCommands.Items.Add(new TitleBarItem("About"));
+			//Button button = TitleBar[0].Elements[0] as Button;
+			//PopupBox box = TitleBar[0].Content as PopupBox;
 
-			//StackPanel stackPanel = new StackPanel();
-			//stackPanel.Children.Add(new Button { Content = "Load" });
-			//stackPanel.Children.Add(new Button { Content = "Save" });
+			//Debug.WriteLine(box.FocusVisualStyle == null);
 
+			//Debug.WriteLine($"Height: {button.ActualHeight}, Width: {button.ActualWidth}");
+			//var triggers = box.Toggle
 
-			////StackPanel innerPanel = new StackPanel();
-			////innerPanel.Children.Add(new Button() { Content = "Option1" });
-			////innerPanel.Children.Add(new Button() { Content = "Option2" });
-
-			////PopupBox innerBox = new PopupBox();
-			////innerBox.PopupContent = innerPanel;
-			////innerBox.ToggleContent = "Extras";
-			////innerBox.VerticalAlignment = VerticalAlignment.Center;
-			////innerBox.HorizontalAlignment = HorizontalAlignment.Center;
-			////innerBox.Style = new Button().Style;
-			////innerBox.PlacementMode = PopupBoxPlacementMode.RightAndAlignMiddles;
-			////stackPanel.Children.Add(innerBox);
-
-			//PopupBox popupBox = new PopupBox();
-			//popupBox.PopupContent = stackPanel;
-			//popupBox.ToggleContent = "Environment";
-			//popupBox.StaysOpen = true;
-
-			
-
-			//popupBox.PopupMode = PopupBoxPopupMode.MouseOverEager; 
-
-			//LeftWindowCommands.Items.Add(popupBox);
-
-
-			//ToolBarTray tray = new ToolBarTray();
-			//ToolBar toolbar = new ToolBar();
-			//((IAddChild)tray).AddChild(toolbar);
-
-			//toolbar.Items.Add(new Button() { Content = "New" });
-
-
-			//LeftWindowCommands = new MahApps.Metro.Controls.WindowCommands();
-			//LeftWindowCommands.Items.Add(tray);
-
+			//foreach (var trigger in triggers)
+			//{
+			//	Debug.WriteLine(trigger);
+			//}
 
 
 			TabControl = CreateTabControl();
@@ -166,12 +120,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			//This can only be set in the constructor or onstartup
 			BorderThickness = new Thickness(1);
-			BorderBrush = UIValues.AccentColorBrush;
-			GlowBrush = UIValues.AccentColorBrush;
+			BorderBrush = UIColours.AccentColorBrush;
+			GlowBrush = UIColours.AccentColorBrush;
 
 			//Disable that the titlebar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = UIValues.AccentColorBrush;
+			NonActiveWindowTitleBrush = UIColours.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}
@@ -193,6 +147,61 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			return new TabControlUI<SigmaWindow>(monitor, app, Title);
 		}
 
+		protected virtual TitleBarControl CreateTitleBar()
+		{
+			TitleBarControl titleBarControl = new TitleBarControl();
+			titleBarControl.Margin = new Thickness(0);
+			titleBarControl.Padding = new Thickness(0);
+
+			//titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
+			//titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
+			//titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
+			DockPanel dock = new DockPanel();
+			dock.Height = 20;
+
+			Menu menu = new Menu();
+			menu.IsMainMenu = true;
+
+			DockPanel.SetDock(menu, Dock.Top);
+
+
+			MenuItem environment = new MenuItem() { Header = "_Environment", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 };
+			menu.Items.Add(environment);
+
+
+			environment.Items.Add(new MenuItem() { Header = "_Save" });
+			environment.Items.Add(new MenuItem() { Header = "2" });
+			environment.Items.Add(new MenuItem() { Header = "3" });
+			environment.Items.Add(new Separator());
+
+			var test = new MenuItem() { Header = "Test" };
+			test.Items.Add(new MenuItem() { Header = "Just a prank" });
+			environment.Items.Add(test);
+
+
+			menu.Items.Add(new MenuItem() { Header = "Settings", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 });
+			menu.Items.Add(new MenuItem() { Header = "About", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 });
+
+			Style style = new Style(typeof(MenuItem), app.Resources["MaterialDesignMenuItem"] as Style);
+
+			style.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
+
+			Style style2 = new Style(typeof(Menu), (Style)app.Resources["MaterialDesignMenu"]);
+			style2.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
+
+			//header.Style = style;
+
+			//app.Resources["MaterialDesignPaper"] = Brushes.Transparent;
+
+			Debug.WriteLine(app.Resources["MaterialDesignPaper"]);
+
+			//dock.Children.Add(menu);
+
+			titleBarControl.Items.Add(menu);
+
+			return titleBarControl;
+		}
+
 		/// <summary>
 		/// Adds the tabs to the given <see cref="TabControlUI"/>.
 		/// </summary>
@@ -202,7 +211,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			for (int i = 0; i < names.Count; i++)
 			{
-				tabControl.AddTab(new TabUI(names[i]));
+				tabControl.AddTab(new TabUI(names[i], DefaultGridSize));
 			}
 		}
 

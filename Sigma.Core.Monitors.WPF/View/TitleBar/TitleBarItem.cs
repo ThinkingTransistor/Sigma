@@ -42,10 +42,10 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		{
 			Content = new PopupBox() { StaysOpen = true };
 
-
 			if (toggleContent != null)
 			{
 				Content.ToggleContent = toggleContent;
+
 				//TODO: Color and font
 				//Content.ToggleContentTemplate
 
@@ -59,6 +59,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			for (int i = 0; i < contents.Length; i++)
 			{
 				UIElement newElement = null;
+
 				if (contents[i] is TitleBarItem)
 				{
 					TitleBarItem child = (TitleBarItem) contents[i];
@@ -76,8 +77,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 				}
 				else if (contents[i] is string)
 				{
-					Debug.WriteLine($"String: {contents[i] as string}");
-					newElement = new Button { Content = contents[i], FontFamily = UIValues.FontFamily };
+					newElement = new Button { Content = contents[i], FontFamily = UIColours.FontFamily };
 				}
 				else
 				{
@@ -90,15 +90,6 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			}
 
 			Content.PopupContent = contentPanel;
-
-			//Background = Brushes.Transparent;
-			//BorderBrush = Brushes.Transparent;
-			//FontSize = 15;
-
-			//Style = Application.Current.FindResource("WindowCommandsPopupBoxStyle") as Style;
-			//StackPanel panel = new StackPanel();
-			//panel.Children.Add(new Button() { Content = text });
-			//base.Content = panel;
 		}
 
 		private void PrepareChild(TitleBarItem child)
@@ -106,11 +97,32 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			child.parent = this;
 		}
 
-		private PopupBox ModifyChild(PopupBox child)
+		private UIElement ModifyChild(PopupBox child)
 		{
 			child.PlacementMode = PopupBoxPlacementMode.RightAndAlignMiddles;
 
+			//TODO: fixme
+			child.VerticalAlignment = VerticalAlignment.Center;
+			child.HorizontalAlignment = HorizontalAlignment.Center;
+			child.Height = 36;
+			child.Width = double.NaN;
+
+			//child.MouseEnter += (a,b) => child.ToggleContentTemplate. = UIValues.AccentColorBrush;
+
+			//var button =  new Button() { Content = child.ToggleContent};
+
+			//child.ToggleContent = null;
+
+			//button.MouseLeftButtonDown += (sender, args) =>
+			//{
+			//	Debug.WriteLine($"Hover - content: {child.PopupContent}");
+			//	child.IsPopupOpen = true;
+			//};
+
+			//return button;
+
 			return child;
 		}
+
 	}
 }

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System.Windows.Controls;
 using Sigma.Core.Monitors.WPF.Model.UI;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 
 namespace Sigma.Core.Monitors.WPF.View.Tabs
 {
@@ -16,9 +17,12 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 	/// </summary>
 	internal class TabUI : UIWrapper<TabItem>
 	{
-		public TabUI(string header) : base()
+		public GridSize @GridSize { get; set; }
+
+		public TabUI(string header, GridSize gridsize) : base()
 		{
 			content.Header = header;
+			GridSize = gridsize;
 		}
 	}
 }

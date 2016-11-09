@@ -21,7 +21,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 			//guiMonitor.ColorManager.Alternate = true;
-			guiMonitor.ColorManager.Dark = true;
+			//guiMonitor.ColorManager.Dark = true;
 
 			//sigma.Prepare()
 			guiMonitor.Start();
@@ -40,32 +40,32 @@ namespace Sigma.Tests.Internals.WPF
 
 		}
 
-		private static void ExtractSwatches()
-		{
-			StringBuilder builder = new StringBuilder();
-			var swatches = new SwatchesProvider().Swatches;
+		//private static void ExtractSwatches()
+		//{
+		//	StringBuilder builder = new StringBuilder();
+		//	var swatches = new SwatchesProvider().Swatches;
 
-			foreach (Swatch swatch in swatches)
-			{
-				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new Hue[] " + "{ ");
+		//	foreach (Swatch swatch in swatches)
+		//	{
+		//		builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new Hue[] " + "{ ");
 
-				foreach (Hue hue in swatch.PrimaryHues)
-				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
-				}
+		//		foreach (Hue hue in swatch.PrimaryHues)
+		//		{
+		//			builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
+		//		}
 
-				builder.Append("}, new Hue[] { ");
+		//		builder.Append("}, new Hue[] { ");
 
-				foreach (Hue hue in swatch.AccentHues)
-				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
-				}
+		//		foreach (Hue hue in swatch.AccentHues)
+		//		{
+		//			builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
+		//		}
 
-				builder.Append("});\n");
-			}
+		//		builder.Append("});\n");
+		//	}
 
-			File.WriteAllText(@"C:\Users\Plainer\Desktop\colors.txt", builder.ToString());
-		}
+		//	File.WriteAllText(@"C:\Users\Plainer\Desktop\colors.txt", builder.ToString());
+		//}
 
 		private static void SwitchColor(WPFMonitor guiMonitor)
 		{
