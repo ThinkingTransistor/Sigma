@@ -59,9 +59,9 @@ namespace Sigma.Core.Data.Datasets
 
 		public long TotalActiveRecords { get; private set; }
 
-		public int MaxBlocksInCache { get; set; }
+		public int MaxBlocksInCache { get; set; } = int.MaxValue;
 
-		public long MaxBytesInCache { get; set; }
+		public long MaxBytesInCache { get; set; } = long.MaxValue;
 
 		public bool AllowRawReadDataCaching { get; set; } = true;
 
@@ -75,7 +75,6 @@ namespace Sigma.Core.Data.Datasets
 		private ISet<IRecordExtractor> recordExtractors;
 
 		private Semaphore availableBlocksSemaphore;
-		private Semaphore takenBlocksSemaphore;
 
 		public Dataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BLOCK_SIZE_AUTO, recordExtractors)
 		{
@@ -133,7 +132,6 @@ namespace Sigma.Core.Data.Datasets
 			this.cacheProvider = cacheProvider;
 
 			this.availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
-			this.takenBlocksSemaphore = new Semaphore(0, MaxConcurrentActiveBlocks);
 
 			this.activeBlocks = new Dictionary<int, ISet<RecordBlock>>();
 			this.cachedBlocks = new Dictionary<int, ISet<RecordBlock>>();
@@ -212,6 +210,8 @@ namespace Sigma.Core.Data.Datasets
 
 			RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
 
+			recordBlock.loadedAndActive = true;
+
 			TotalActiveBlockSizeBytes += recordBlock.estimatedSizeBytes;
 			TotalActiveRecords += recordBlock.numberRecords;
 
@@ -254,8 +254,6 @@ namespace Sigma.Core.Data.Datasets
 				{
 					RegisterActiveBlock(block, blockIndex, handler);
 
-					takenBlocksSemaphore.Release();
-
 					return block;
 				}
 				else
@@ -269,7 +267,7 @@ namespace Sigma.Core.Data.Datasets
 					{
 						logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
 
-						availableBlocksSemaphore.Release();
+						availableBlocksSemaphore.Release(1);
 					}
 				}
 			}
@@ -349,12 +347,18 @@ namespace Sigma.Core.Data.Datasets
 				}
 			}
 
-			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType}.cache";
+			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType.Identifier}.cache";
 
-			//it's already stored in the cache in the correct format
+			//it's already stored in the cache
 			if (cacheProvider.IsCached(blockIdentifierInCache))
 			{
-				return cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
+				Dictionary<string, INDArray> block = cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
+
+				//if its != null we could read it correctly in the right format
+				if (block != null)
+				{
+					return block;
+				}
 			}
 
 			return LoadAndExtractRaw(blockIndex, handler);
@@ -366,6 +370,8 @@ namespace Sigma.Core.Data.Datasets
 			{
 				for (int tempBlockIndex = lastReadRawDataBlockIndex + 1; tempBlockIndex < blockIndex; tempBlockIndex++)
 				{
+					//TODO raw data has to actually come from the original reader, should separate actual raw data and processed blocks
+					//TODO raw data should be read in a separate method LoadRawDirect and then ExtractRaw, so we can choose what data to extract and cache the raw data
 					Dictionary<string, INDArray> block = LoadAndExtractRawDirect(tempBlockIndex, handler);
 
 					//looks like we couldn't read any more blocks
@@ -454,13 +460,11 @@ namespace Sigma.Core.Data.Datasets
 			{
 				if (object.ReferenceEquals(block.handler, handler))
 				{
-					takenBlocksSemaphore.WaitOne();
-
 					CacheBlockConstrained(block.namedBlocks, blockIndex, handler);
 
 					DeregisterActiveBlock(block);
 
-					availableBlocksSemaphore.Release();
+					availableBlocksSemaphore.Release(1);
 
 					break;
 				}
@@ -485,11 +489,20 @@ namespace Sigma.Core.Data.Datasets
 				return;
 			}
 
-			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType}.cache";
+			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType.Identifier}.cache";
 
 			cacheProvider.Store(cacheIdentifier, block);
 
+			if (!cachedBlocks.ContainsKey(blockIndex))
+			{
+				cachedBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+			}
 
+			RecordBlock recordBlock = new RecordBlock(null, blockIndex, block.First().Value.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
+
+			recordBlock.loadedAndActive = false;
+
+			cachedBlocks[blockIndex].Add(recordBlock);
 
 			totalCachedBlockSizeBytes += blockSizeBytes;
 		}
@@ -566,7 +579,11 @@ namespace Sigma.Core.Data.Datasets
 				this.estimatedSizeBytes = estimatedSizeBytes;
 				this.handler = handler;
 
-				this.firstNamedBlock = namedBlocks[namedBlocks.First().Key];
+				//record blocks internal block can be null
+				if (namedBlocks != null)
+				{
+					this.firstNamedBlock = namedBlocks[namedBlocks.First().Key];
+				}
 			}
 		}
 	}

@@ -13,15 +13,20 @@ using System.Collections.Generic;
 
 namespace Sigma.Core.Data
 {
+	[Serializable]
 	public class DataBuffer<T> : IDataBuffer<T>
 	{
+		[NonSerialized]
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private LargeChunkedArray<T> data;
 		private long length;
 		private long offset;
 		private long relativeOffset;
+
+		[NonSerialized]
 		private IDataBuffer<T> underlyingBuffer;
+		[NonSerialized]
 		private IDataBuffer<T> underlyingRootBuffer;
 
 		public long Length

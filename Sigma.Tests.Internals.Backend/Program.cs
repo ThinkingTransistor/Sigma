@@ -40,7 +40,13 @@ namespace Sigma.Tests.Internals.Backend
 
 			Dictionary<string, INDArray> secondNamedArrays = dataset.FetchBlock(1, handler);
 
-			Console.WriteLine("second " + secondNamedArrays == null);
+			Console.WriteLine("second " + (secondNamedArrays == null));
+
+			dataset.FreeBlock(0, handler);
+
+			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
+			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
+
 
 			Console.ReadKey();
 		}

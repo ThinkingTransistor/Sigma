@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,8 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class DiskCacheProvider : ICacheProvider
 	{
+		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		public string RootDirectory { get; private set; }
 
 		private IFormatter serialisationFormatter;
@@ -56,10 +59,14 @@ namespace Sigma.Core.Utils
 
 		public void Store(string identifier, object data)
 		{
+			logger.Info($"Caching object {data} with identifier {identifier} to disk to \"{RootDirectory + identifier}\"...");
+
 			using (Stream fileStream = new FileStream(RootDirectory + identifier, FileMode.Create))
 			{
 				serialisationFormatter.Serialize(fileStream, data);
 			}
+
+			logger.Info($"Done caching object {data} with identifier {identifier} to disk to \"{RootDirectory + identifier}\".");
 		}
 
 		public T Load<T>(string identifier)
@@ -71,7 +78,16 @@ namespace Sigma.Core.Utils
 
 			using (Stream fileStream = new FileStream(RootDirectory + identifier, FileMode.Create))
 			{
-				return (T) serialisationFormatter.Deserialize(fileStream);
+				try
+				{
+					return (T) serialisationFormatter.Deserialize(fileStream);
+				}
+				catch (Exception e)
+				{
+					logger.Warn($"Failed to load cache entry for identifier {identifier} with error {e}, returning default value for type.");
+
+					return default(T);
+				}
 			}
 		}
 
