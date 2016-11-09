@@ -19,11 +19,15 @@ namespace Sigma.Core.Data.Readers
 {
 	public class CSVRecordReader : IRecordReader
 	{
+		private const int NUMBER_COLUMNS_NOT_SET = -1;
+
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private char separator;
 		private bool skipFirstLine;
+		private bool skippedFirstLine;
 		private StreamReader reader;
+		private int numberColumns = NUMBER_COLUMNS_NOT_SET;
 
 		public IDataSetSource Source
 		{
@@ -153,11 +157,12 @@ namespace Sigma.Core.Data.Readers
 
 			List<string[]> records = new List<string[]>();
 			int numberRecordsRead = 0;
-			int numberColumns = -1;
 
-			if (skipFirstLine)
+			if (skipFirstLine && !skippedFirstLine)
 			{
 				reader.ReadLine();
+
+				skippedFirstLine = true;
 			}
 
 			string line;
@@ -172,7 +177,8 @@ namespace Sigma.Core.Data.Readers
 
 				string[] lineParts = line.Split(separator);
 
-				if (numberColumns == -1)
+				//set number columns to the amount we find in the first column
+				if (numberColumns == NUMBER_COLUMNS_NOT_SET)
 				{
 					numberColumns = lineParts.Length;
 				}
@@ -186,6 +192,13 @@ namespace Sigma.Core.Data.Readers
 				records.Add(lineParts);
 
 				numberRecordsRead++;
+			}
+
+			if (numberRecordsRead == 0)
+			{
+				logger.Info($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
+
+				return null;
 			}
 
 			logger.Info($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");

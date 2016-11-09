@@ -29,21 +29,21 @@ namespace Sigma.Core.Data.Datasets
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		/// <summary>
+		/// Automatically size blocks according to estimated data metrics (e.g. physical memory available, record size).
+		/// </summary>
 		public const int BLOCK_SIZE_AUTO = -1;
+
+		/// <summary>
+		/// Assign all available data to the first block (one block fits it all - literally).
+		/// </summary>
 		public const int BLOCK_SIZE_ALL = -2;
 
-		public int MaxConcurrentActiveBlocks { get; private set; } = 24;
+		public int MaxConcurrentActiveBlocks { get; private set; } = 24; //24 seems like a good number, right?
 
 		public long MaxTotalActiveBlockSizeBytes { get; private set; } = GetAvailablePhysicalMemory() / 2; //default to half the available physical memory
 
-
-		public IReadOnlyCollection<int> ActiveBlockIndices
-		{
-			get
-			{
-				return activeBlocks.Keys.ToList<int>();
-			}
-		}
+		public IReadOnlyCollection<int> ActiveBlockIndices { get { return activeBlocks.Keys.ToList<int>(); } }
 
 		public string Name { get; private set; }
 
@@ -63,6 +63,10 @@ namespace Sigma.Core.Data.Datasets
 
 		public long MaxBytesInCache { get; set; } = long.MaxValue;
 
+		/// <summary>
+		/// Indicate whether this dataset should cache the raw reader data. 
+		/// If disabled, only extracted data will be cached and once processed, it might be impossible to retrieve preceding record blocks (reader streams are assumed to be non-seekable).
+		/// </summary>
 		public bool AllowRawReadDataCaching { get; set; } = true;
 
 		private Dictionary<int, ISet<RecordBlock>> activeBlocks;
@@ -76,20 +80,44 @@ namespace Sigma.Core.Data.Datasets
 
 		private Semaphore availableBlocksSemaphore;
 
+		/// <summary>
+		/// Creates a dataset with a certain unique name and the record extractors to use. 
+		/// </summary>
+		/// <param name="name">The unique dataset name.</param>
+		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
 		public Dataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BLOCK_SIZE_AUTO, recordExtractors)
 		{
 		}
 
+		/// <summary>
+		/// Creates a dataset with a certain unique name, target block size in records and the record extractors to use.
+		/// </summary>
+		/// <param name="name">The unique dataset name.</param>
+		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
+		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
 		public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
-			: this(name, BLOCK_SIZE_AUTO, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache") + name), recordExtractors)
+			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache") + name), true, recordExtractors)
 		{
 		}
 
-		public Dataset(string name, int blockSizeInRecords, ICacheProvider cacheProvider, params IRecordExtractor[] recordExtractors)
+		/// <summary>
+		/// Create a dataset with a certain unique name, target block size in records, specific cache provider and the record extractors to use.
+		/// </summary>
+		/// <param name="name">The unique dataset name.</param>
+		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
+		/// <param name="cacheProvider">The cache provider to use for caching record blocks and raw reader data.</param>
+		/// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
+		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
+		public Dataset(string name, int blockSizeRecords, ICacheProvider cacheProvider, bool flushCache = true, params IRecordExtractor[] recordExtractors)
 		{
 			if (name == null)
 			{
 				throw new ArgumentNullException("Name cannot be null.");
+			}
+
+			if (recordExtractors == null)
+			{
+				throw new ArgumentNullException("Record extractors cannot be null.");
 			}
 
 			if (recordExtractors.Length == 0)
@@ -102,12 +130,12 @@ namespace Sigma.Core.Data.Datasets
 				throw new ArgumentNullException("Cache provider cannot be null.");
 			}
 
-			if (blockSizeInRecords == BLOCK_SIZE_ALL)
+			if (blockSizeRecords == BLOCK_SIZE_ALL)
 			{
 				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
 				this.TargetBlockSizeRecords = Int32.MaxValue;
 			}
-			else if (blockSizeInRecords == BLOCK_SIZE_AUTO)
+			else if (blockSizeRecords == BLOCK_SIZE_AUTO)
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
 				long estimatedRecordSizeBytes = 1024;
@@ -117,32 +145,44 @@ namespace Sigma.Core.Data.Datasets
 
 				this.TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
 			}
-			else if (blockSizeInRecords == 0 || blockSizeInRecords < -2)
+			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
 			{
-				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeInRecords}.");
+				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
 			}
 			else
 			{
-				this.TargetBlockSizeRecords = blockSizeInRecords;
+				this.TargetBlockSizeRecords = blockSizeRecords;
 			}
 
+			this.Name = name;
 			this.AnalyseExtractors(recordExtractors);
 
-			this.recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
 			this.cacheProvider = cacheProvider;
+			this.recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
 
 			this.availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
 
 			this.activeBlocks = new Dictionary<int, ISet<RecordBlock>>();
 			this.cachedBlocks = new Dictionary<int, ISet<RecordBlock>>();
+
+			if (flushCache)
+			{
+				InvalidateAndClearCaches();
+			}
 		}
 
 		private void AnalyseExtractors(IRecordExtractor[] extractors)
 		{
 			ISet<string> sectionNames = new HashSet<string>();
 
+			int index = 0;
 			foreach (IRecordExtractor extractor in extractors)
 			{
+				if (extractor == null)
+				{
+					throw new ArgumentNullException($"Extractor at index {index} was null.");
+				}
+
 				if (extractor.SectionNames == null)
 				{
 					throw new ArgumentNullException($"Section names field in extractor {extractor} was null (field has to be set by extractor).");
@@ -161,6 +201,8 @@ namespace Sigma.Core.Data.Datasets
 						sectionNames.Add(sectionName);
 					}
 				}
+
+				index++;
 			}
 
 			this.SectionNames = sectionNames.ToArray();
@@ -529,6 +571,8 @@ namespace Sigma.Core.Data.Datasets
 		{
 			if (!activeBlocks.ContainsKey(blockIndex))
 			{
+				logger.Info($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
+
 				return;
 			}
 
@@ -536,13 +580,17 @@ namespace Sigma.Core.Data.Datasets
 			{
 				if (object.ReferenceEquals(block.handler, handler))
 				{
+					logger.Info($"Freeing block with index {blockIndex} for handler {handler}...");
+
 					CacheBlockConstrained(block.namedBlocks, blockIndex, handler);
 
 					DeregisterActiveBlock(block);
 
 					availableBlocksSemaphore.Release();
 
-					break;
+					logger.Info($"Done freeing block with index {blockIndex} for handler {handler}.");
+
+					return;
 				}
 			}
 
@@ -655,6 +703,17 @@ namespace Sigma.Core.Data.Datasets
 			}
 
 			return false;
+		}
+
+		public void Dispose()
+		{
+			foreach (IRecordExtractor extractor in recordExtractors)
+			{
+				extractor.Dispose();
+				extractor.Reader?.Dispose();
+			}
+
+			this.cacheProvider.Dispose();
 		}
 
 		private static long GetAvailablePhysicalMemory()

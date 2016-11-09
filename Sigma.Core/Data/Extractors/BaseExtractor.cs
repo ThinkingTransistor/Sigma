@@ -73,5 +73,7 @@ namespace Sigma.Core.Data.Extractors
 
 			return firstExtractor;
 		}
+
+		public abstract void Dispose();
 	}
 }

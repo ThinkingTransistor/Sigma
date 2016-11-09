@@ -20,7 +20,7 @@ namespace Sigma.Core.Data.Extractors
 	/// Example: CSVRecordReader reads IDataSetSource as CSV data, CSVRecordExtractor extracts specific entries into an INDArray.
 	/// 
 	/// </summary>
-	public interface IRecordExtractor
+	public interface IRecordExtractor : IDisposable
 	{
 		/// <summary>
 		/// The underlying record reader that is attached to this extractor.

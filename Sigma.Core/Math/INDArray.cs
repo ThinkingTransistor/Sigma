@@ -58,7 +58,7 @@ namespace Sigma.Core.Math
 		bool IsMatrix { get; }
 
 		/// <summary>
-		/// Get a copy of the underlying data buffer as a certain data type. 
+		/// Get a COPY of the underlying data buffer as a certain data type. 
 		/// </summary>
 		/// <typeparam name="TOther">The type the buffer should have.</typeparam>
 		/// <returns>The data buffer with the given data type.</returns>

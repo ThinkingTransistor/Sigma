@@ -112,7 +112,8 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="Data\Preprocessors\TestCSVRecordExtractor.cs" />
+    <Compile Include="Data\Datasets\TestDataset.cs" />
+    <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
     <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
     <Compile Include="Data\Sources\TestFileSource.cs" />
     <Compile Include="Data\Sources\TestURLSource.cs" />
@@ -138,7 +139,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\Extractors\" />
+    <Folder Include="Data\Preprocessors\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

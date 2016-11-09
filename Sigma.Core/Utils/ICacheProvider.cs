@@ -17,7 +17,7 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A cache provider which stores and loads named data of any format outside system memory. 
 	/// </summary>
-	public interface ICacheProvider
+	public interface ICacheProvider : IDisposable
 	{
 		/// <summary>
 		/// Store a serialisable object with a certain identifier. 

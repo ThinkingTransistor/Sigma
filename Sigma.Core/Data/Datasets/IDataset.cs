@@ -19,7 +19,7 @@ namespace Sigma.Core.Data.Datasets
 	/// <summary>
 	/// A dataset representing a collection of record blocks, where blocks can be 
 	/// </summary>
-	public interface IDataset
+	public interface IDataset : IDisposable
 	{
 		/// <summary>
 		/// The name and identifier of this dataset.

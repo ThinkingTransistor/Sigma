@@ -159,5 +159,9 @@ namespace Sigma.Core.Data.Extractors
 
 			return namedArrays;
 		}
+
+		public override void Dispose()
+		{
+		}
 	}
 }

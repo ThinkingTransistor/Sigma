@@ -123,5 +123,9 @@ namespace Sigma.Core.Utils
 
 			logger.Info($"Done removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
 		}
+
+		public void Dispose()
+		{
+		}
 	}
 }
