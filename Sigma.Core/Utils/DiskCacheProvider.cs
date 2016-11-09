@@ -76,7 +76,10 @@ namespace Sigma.Core.Utils
 				return default(T);
 			}
 
-			using (Stream fileStream = new FileStream(RootDirectory + identifier, FileMode.Create))
+			logger.Info($"Loading cache object with identifier {identifier} from disk \"{RootDirectory + identifier}\"...");
+
+
+			using (Stream fileStream = new FileStream(RootDirectory + identifier, FileMode.Open))
 			{
 				try
 				{

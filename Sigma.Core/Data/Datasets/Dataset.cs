@@ -267,7 +267,7 @@ namespace Sigma.Core.Data.Datasets
 					{
 						logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
 
-						availableBlocksSemaphore.Release(1);
+						availableBlocksSemaphore.Release();
 					}
 				}
 			}
@@ -464,7 +464,7 @@ namespace Sigma.Core.Data.Datasets
 
 					DeregisterActiveBlock(block);
 
-					availableBlocksSemaphore.Release(1);
+					availableBlocksSemaphore.Release();
 
 					break;
 				}
@@ -473,6 +473,20 @@ namespace Sigma.Core.Data.Datasets
 
 		private void CacheBlockConstrained(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler)
 		{
+			if (cachedBlocks.ContainsKey(blockIndex))
+			{
+				foreach (RecordBlock cachedBlock in cachedBlocks[blockIndex])
+				{
+					//check if block of the same type and size is already cached, if so, return, because there is no need to cache again
+					if (cachedBlock.blockIndex == blockIndex && cachedBlock.handler.IsInterchangeable(handler) && block.First().Value.Shape[0] == cachedBlock.numberRecords)
+					{
+						logger.Info($"Skipping cache request of block {blockIndex} for handler {handler} because interchangeable block of same index, format and size is already cached.");
+
+						return;
+					}
+				}
+			}
+
 			long blockSizeBytes = handler.GetSizeBytes(block.Values.ToArray());
 
 			if (cachedBlocks.Count >= MaxBlocksInCache)
