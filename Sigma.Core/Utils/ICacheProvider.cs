@@ -41,6 +41,13 @@ namespace Sigma.Core.Utils
 		void Remove(string identifier);
 
 		/// <summary>
+		/// Remove all cache entries associated with a cache provider.
+		/// WARNING: Removing cache entries may cause certain datasets to load much more slowly or incorrectly. 
+		///			 Use cases include removing cache entries for old datasets or datasets with different extractors. 
+		/// </summary>
+		void RemoveAll();
+
+		/// <summary>
 		/// Check whether an object with a certain identifier is cached in this provider. 
 		/// </summary>
 		/// <param name="identifier">The identifier to check for.</param>

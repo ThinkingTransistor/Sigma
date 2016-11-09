@@ -174,6 +174,23 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Get a sub array from a certain array within a certain range.
+		/// </summary>
+		/// <typeparam name="T">The type of the array elements.</typeparam>
+		/// <param name="array">The array to slice.</param>
+		/// <param name="startIndex">The start index of the subarray in the given array.</param>
+		/// <param name="length">The length of the sub array, starting at the start index, in the given array.</param>
+		/// <returns>A sub array of the given array within the given range of the given type.</returns>
+		public static T[] SubArray<T>(this T[] array, int startIndex, int length)
+		{
+			T[] subArray = new T[length];
+
+			Array.Copy(array, startIndex, subArray, 0, length);
+
+			return subArray;
+		}
+
+		/// <summary>
 		/// Extension ToString method for all enumerables, because it for something reason is not included in the default base class.
 		/// </summary>
 		/// <param name="array">The enumerable to string.</param>

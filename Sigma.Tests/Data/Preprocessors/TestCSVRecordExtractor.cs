@@ -60,14 +60,14 @@ namespace Sigma.Tests.Data.Preprocessors
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, IList<int>>() { ["inputs"] = new[] { 0, 1, 2 } }));
 
-			Assert.Throws<InvalidOperationException>(() => extractor.Extract(3, new CPUFloat32Handler()));
+			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(3, new CPUFloat32Handler()));
 
 			extractor.Prepare();
 
-			Assert.Throws<ArgumentNullException>(() => extractor.Extract(3, null));
-			Assert.Throws<ArgumentException>(() => extractor.Extract(-1, new CPUFloat32Handler()));
+			Assert.Throws<ArgumentNullException>(() => extractor.ExtractDirect(3, null));
+			Assert.Throws<ArgumentException>(() => extractor.ExtractDirect(-1, new CPUFloat32Handler()));
 
-			Assert.AreEqual(5, extractor.Extract(3, new CPUFloat32Handler())["inputs"].GetValue<int>(0, 0, 0));
+			Assert.AreEqual(5, extractor.ExtractDirect(3, new CPUFloat32Handler())["inputs"].GetValue<int>(0, 0, 0));
 
 			source.Dispose();
 

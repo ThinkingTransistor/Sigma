@@ -20,7 +20,7 @@ using System.Linq;
 
 namespace Sigma.Core.Data.Extractors
 {
-	public class CSVRecordExtractor : IRecordExtractor
+	public class CSVRecordExtractor : BaseExtractor
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -32,12 +32,7 @@ namespace Sigma.Core.Data.Extractors
 			get { return namedColumnIndexMappings; }
 		}
 
-		public string[] SectionNames { get; private set; }
-
-		public IRecordReader Reader
-		{
-			get; set;
-		}
+		public override string[] SectionNames { get; protected set; }
 
 		public CSVRecordExtractor(Dictionary<string, int[][]> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null) : this(ArrayUtils.GetFlatColumnMappings(namedColumnIndexMappings))
 		{
@@ -85,12 +80,12 @@ namespace Sigma.Core.Data.Extractors
 			return this;
 		}
 
-		public void Prepare()
+		public override void Prepare()
 		{
 			Reader.Prepare();
 		}
 
-		public Dictionary<string, INDArray> Extract(int numberOfRecords, IComputationHandler handler)
+		public override Dictionary<string, INDArray> ExtractDirect(int numberOfRecords, IComputationHandler handler)
 		{
 			if (Reader == null)
 			{
@@ -110,16 +105,17 @@ namespace Sigma.Core.Data.Extractors
 			return ExtractFrom(Reader.Read(numberOfRecords), numberOfRecords, handler);
 		}
 
-		public Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler)
+		public override Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler)
 		{
-			string[][] lineParts = (string[][]) readData;
-
-			int readNumberOfRecords = lineParts.Length;
-
-			if (readNumberOfRecords == 0)
+			//read data being null indicates that nothing could be read so we can't extract anything either
+			if (readData == null)
 			{
 				return null;
 			}
+
+			string[][] lineParts = (string[][]) readData;
+
+			int readNumberOfRecords = lineParts.Length;
 
 			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords})...");
 
@@ -162,23 +158,6 @@ namespace Sigma.Core.Data.Extractors
 			logger.Info($"Done extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
-		}
-
-		public IRecordPreprocessor Preprocess(params IRecordPreprocessor[] preprocessors)
-		{
-			if (preprocessors.Length == 0)
-			{
-				throw new ArgumentException("Cannot add an empty array of preprocessors to an extractor.");
-			}
-
-			IRecordExtractor lastPreprocessor = this;
-
-			foreach (IRecordPreprocessor preprocessor in preprocessors)
-			{
-				lastPreprocessor = lastPreprocessor.Preprocess(preprocessor);
-			}
-
-			return (IRecordPreprocessor) lastPreprocessor;
 		}
 	}
 }

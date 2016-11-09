@@ -30,6 +30,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			Dataset dataset = new Dataset("iris", extractor);
 
+			//dataset.InvalidateAndClearCaches();
+
 			Console.WriteLine("dataset: " + dataset.Name);
 			Console.WriteLine("sections: " + ArrayUtils.ToString(dataset.SectionNames));
 
@@ -38,15 +40,24 @@ namespace Sigma.Tests.Internals.Backend
 			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
 			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
 
-			//Dictionary<string, INDArray> secondNamedArrays = dataset.FetchBlock(1, handler);
+			namedArrays = dataset.FetchBlock(0, handler);
 
-			//Console.WriteLine("second " + (secondNamedArrays == null));
+			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
+			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
 
+			//freeing the block once, properly
+			dataset.FreeBlock(0, handler);
+
+			//doing it again for good measure
 			dataset.FreeBlock(0, handler);
 
 			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
 			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
 
+			namedArrays = dataset.FetchBlock(0, handler);
+
+			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
+			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
 
 			Console.ReadKey();
 		}
