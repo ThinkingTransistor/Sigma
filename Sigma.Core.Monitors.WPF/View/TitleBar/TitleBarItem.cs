@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,118 +12,129 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 {
 	public class TitleBarItem
 	{
-		//#region DependencyProperties
+		/// <summary>
+		/// The <see cref="MenuItem"/> behind the <see cref="TitleBarItem"/>.
+		/// </summary>
+		public MenuItem Content { get; private set; }
 
-		//public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(TitleBarItem), new UIPropertyMetadata("null"));
-
-		//#endregion DependencyProperties
-
-		//#region Properties
+		public Dictionary<string, UIElement> Children { get; private set; }
 
 		///// <summary>
-		///// The text that is displayed for the <see cref="TitleBarItem"/>.
+		///// The child UIElements that are inside this <see cref="MenuItem"/>.
 		///// </summary>
-		//public string Text
-		//{
-		//	get { return (string) GetValue(TextProperty); }
-		//	set { SetValue(TextProperty, value); }
-		//}
+		//public UIElement[] Children { get; private set; }
 
-		//#endregion Properties
+		/// <summary>
+		/// The logiacl parent of this <see cref="TitleBarItem"/>.
+		/// </summary>
+		public TitleBarItem Parent { get; private set; }
 
-		public PopupBox Content { get; private set; }
-
-		private StackPanel contentPanel;
-
-		public UIElement[] Elements { get; set; }
-
-		private TitleBarItem parent;
-
-		public TitleBarItem(object toggleContent, params object[] contents)
+		/// <summary>
+		/// Create a <see cref="TitleBarItem"/> with given header and children.
+		/// </summary>
+		/// <param name="header">The header of the <see cref="TitleBarItem"/>.</param>
+		/// <param name="children">The children that will be added. This can be a
+		/// <see cref="string"/>, another <see cref="TitleBarItem"/>
+		/// or a <see cref="UIElement"/>
+		/// - otherwise a <see cref="ArgumentException"/> is thrown.</param>
+		public TitleBarItem(object header, params object[] children)
 		{
-			Content = new PopupBox() { StaysOpen = true };
+			Content = new MenuItem();
+			Content.Header = header;
 
-			if (toggleContent != null)
+			Children = new Dictionary<string, UIElement>();
+			//Children = new MenuItem[children.Length];
+
+			for (int i = 0; i < children.Length; i++)
 			{
-				Content.ToggleContent = toggleContent;
-
-				//TODO: Color and font
-				//Content.ToggleContentTemplate
-
-				Debug.WriteLine($"Content: {Content.ToggleContent.GetType()}");
-			}
-
-			Elements = new UIElement[contents.Length];
-
-			contentPanel = new StackPanel();
-
-			for (int i = 0; i < contents.Length; i++)
-			{
+				string newElementKey = null;
 				UIElement newElement = null;
 
-				if (contents[i] is TitleBarItem)
+				if (children[i] is string)
 				{
-					TitleBarItem child = (TitleBarItem) contents[i];
-					PrepareChild(child);
+					newElementKey = (string) children[i];
+					newElement = new MenuItem() { Header = (string) children[i] };
+				}
+				else if (children[i] is TitleBarItem)
+				{
+					TitleBarItem childAsTitleBar = (TitleBarItem) children[i];
 
-					newElement = ModifyChild(child.Content);
+					if (childAsTitleBar.Parent != null)
+					{
+						throw new ArgumentException($"{childAsTitleBar} already has a different parent ({childAsTitleBar.Parent})");
+					}
+
+					childAsTitleBar.Parent = this;
+
+					if (childAsTitleBar.Content.Header is string)
+					{
+						newElementKey = (string) childAsTitleBar.Content.Header;
+					}
+
+					newElement = childAsTitleBar.Content;
 				}
-				else if (contents[i] is PopupBox)
+				else if (children[i] is UIElement)
 				{
-					newElement = ModifyChild((PopupBox) contents[i]);
-				}
-				else if (contents[i] is UIElement)
-				{
-					newElement = (UIElement) contents[i];
-				}
-				else if (contents[i] is string)
-				{
-					newElement = new Button { Content = contents[i], FontFamily = UIColours.FontFamily };
+					newElement = children[i] as UIElement;
 				}
 				else
 				{
-					throw new ArgumentException($"Unsupported object {contents[i]}. Supported types: TitleBarItem, PopupBox, string, and UIElement");
+					throw new ArgumentException($"{children[i]} is not supported!");
 				}
 
-				contentPanel.Children.Add(newElement);
+				if (newElementKey == null)
+				{
+					newElementKey = newElement.ToString();
+				}
 
-				Elements[i] = newElement;
+				Children.Add(newElementKey, newElement);
+				Content.Items.Add(newElement);
+			
+				//Check if next is function
+				if (i + 1 < children.Length)
+				{
+					if (children[i + 1] is Action)
+					{
+						i++;
+						SetFunction(newElement, (Action) children[i]);
+					}
+				}
+			}
+		}
+
+		public TitleBarItem SetFunction(string elementKey, Action action)
+		{
+			return SetFunction(Children[elementKey], action);
+		}
+
+		public TitleBarItem SetFunction(UIElement item, Action action)
+		{
+			if (item == null)
+			{
+				throw new ArgumentNullException($"{nameof(item)} may not be null!");
+			}
+			else if (action == null)
+			{
+				throw new ArgumentNullException($"{nameof(action)} may not be null!");
 			}
 
-			Content.PopupContent = contentPanel;
+			Debug.WriteLine($"Added function for {item}");
+
+			item.MouseLeftButtonUp += (sender, args) => action?.Invoke();
+			item.TouchDown += (sender, args) => action?.Invoke();
+
+			if (item is MenuItem)
+			{
+				((MenuItem) item).Click += (sender, args) => action?.Invoke();
+			}
+
+			return this;
 		}
 
-		private void PrepareChild(TitleBarItem child)
+		public override string ToString()
 		{
-			child.parent = this;
+			return Content.Header.ToString();
 		}
-
-		private UIElement ModifyChild(PopupBox child)
-		{
-			child.PlacementMode = PopupBoxPlacementMode.RightAndAlignMiddles;
-
-			//TODO: fixme
-			child.VerticalAlignment = VerticalAlignment.Center;
-			child.HorizontalAlignment = HorizontalAlignment.Center;
-			child.Height = 36;
-			child.Width = double.NaN;
-
-			//child.MouseEnter += (a,b) => child.ToggleContentTemplate. = UIValues.AccentColorBrush;
-
-			//var button =  new Button() { Content = child.ToggleContent};
-
-			//child.ToggleContent = null;
-
-			//button.MouseLeftButtonDown += (sender, args) =>
-			//{
-			//	Debug.WriteLine($"Hover - content: {child.PopupContent}");
-			//	child.IsPopupOpen = true;
-			//};
-
-			//return button;
-
-			return child;
-		}
-
 	}
+
 }
