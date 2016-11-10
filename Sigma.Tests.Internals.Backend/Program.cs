@@ -21,32 +21,21 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			CSVRecordReader reader = new CSVRecordReader(new MultiSource(new FileSource("iris.data"), new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
+			CSVRecordReader reader = new CSVRecordReader(new MultiSource(new URLSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
-			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			
 			IComputationHandler handler = new CPUFloat32Handler();
 
-			Dataset dataset = new Dataset("iris", 5, extractor);
+			//Dataset dataset = new Dataset("mnist-training", 5, extractor);
 
-			var block = dataset.FetchBlock(0, handler);
+			//var block = dataset.FetchBlock(0, handler);
 
-			foreach (string name in block.Keys)
-			{
-				Console.WriteLine("[name] = " + block[name]);
-			}
+			//foreach (string name in block.Keys)
+			//{
+			//	Console.WriteLine("[name] = " + block[name]);
+			//}
 
 			Console.ReadKey();
-		}
-
-		private static async Task FetchAsync(Dataset dataset, IComputationHandler handler)
-		{
-			var block1 = dataset.FetchBlockAsync(0, handler);
-			var block3 = dataset.FetchBlockAsync(2, handler);
-			var block2 = dataset.FetchBlockAsync(1, handler);
-
-			Dictionary<string, INDArray> namedArrays1 = await block1;
-			Dictionary<string, INDArray> namedArrays2 = await block2;
-			Dictionary<string, INDArray> namedArrays3 = await block3;
 		}
 	}
 }

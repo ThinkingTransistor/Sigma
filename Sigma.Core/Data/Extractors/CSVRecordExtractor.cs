@@ -77,11 +77,6 @@ namespace Sigma.Core.Data.Extractors
 			return this;
 		}
 
-		public override void Prepare()
-		{
-			Reader.Prepare();
-		}
-
 		public override Dictionary<string, INDArray> ExtractDirect(int numberOfRecords, IComputationHandler handler)
 		{
 			if (Reader == null)

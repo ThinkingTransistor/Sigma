@@ -34,7 +34,15 @@ namespace Sigma.Core.Data.Extractors
 
 		public abstract Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler);
 
-		public abstract void Prepare();
+		public virtual void Prepare()
+		{
+			if (Reader == null)
+			{
+				throw new InvalidOperationException("Cannot prepare record extractor before attaching a reader (reader was null).");
+			}
+
+			Reader.Prepare();
+		}
 
 		public IRecordPreprocessor Preprocess(params IRecordPreprocessor[] preprocessors)
 		{

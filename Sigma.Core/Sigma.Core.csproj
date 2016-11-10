@@ -104,12 +104,14 @@
     <Compile Include="Data\Datasets\Dataset.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
+    <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
+    <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
