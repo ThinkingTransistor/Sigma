@@ -127,7 +127,7 @@ namespace Sigma.Core.Utils
 		{
 			string[] cacheFiles = Directory.GetFiles(RootDirectory, $"*{CacheFileExtension}", SearchOption.AllDirectories);
 
-			logger.Info($"Removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
+			logger.Info($"Removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
 
 			lock (this)
 			{
@@ -137,7 +137,7 @@ namespace Sigma.Core.Utils
 				}
 			}
 
-			logger.Info($"Done removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
+			logger.Info($"Done removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
 		}
 
 		public void Dispose()

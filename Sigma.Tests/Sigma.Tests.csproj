@@ -116,6 +116,7 @@
     <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
     <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
     <Compile Include="Data\Sources\TestFileSource.cs" />
+    <Compile Include="Data\Sources\TestMultiSource.cs" />
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Data\TestLargeChunkedArray.cs" />

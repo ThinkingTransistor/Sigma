@@ -165,7 +165,11 @@ namespace Sigma.Core.Data.Datasets
 
 			if (flushCache)
 			{
+				logger.Info($"Flushing all caches for dataset {Name} as flushCache flag was set...");
+
 				InvalidateAndClearCaches();
+
+				logger.Info($"Done flushing all caches for dataset {Name}.");
 			}
 		}
 
@@ -323,9 +327,13 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
+			logger.Info("Invalidating and clearning all caches...");
+
 			this.cacheProvider.RemoveAll();
 
 			this.cachedBlocks.Clear();
+
+			logger.Info("Done invalidating and clearning all caches.");
 		}
 
 		private Dictionary<string, INDArray> FetchBlockWhenAvailable(int blockIndex, IComputationHandler handler)

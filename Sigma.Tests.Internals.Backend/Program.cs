@@ -21,78 +21,19 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			CSVRecordReader reader = new CSVRecordReader(new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"));
-			//CSVRecordReader reader = new CSVRecordReader(new FileSource("iris.data"));
+			CSVRecordReader reader = new CSVRecordReader(new MultiSource(new FileSource("iris.data"), new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
 
 			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
 			IComputationHandler handler = new CPUFloat32Handler();
 
-			Dataset dataset = new Dataset("iris", 50, extractor);
+			Dataset dataset = new Dataset("iris", 5, extractor);
 
-			FetchAsync(dataset, handler).Wait();
+			var block = dataset.FetchBlock(0, handler);
 
-			//Console.WriteLine("dataset: " + dataset.Name);
-			//Console.WriteLine("sections: " + ArrayUtils.ToString(dataset.SectionNames));
-
-			//Console.WriteLine("read block 0");
-			//Dictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 0 (again)");
-			//namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("free block 0");
-
-			////freeing the block once, properly
-			//dataset.FreeBlock(0, handler);
-
-			//Console.WriteLine("free block 1");
-
-			////doing it again for good measure
-			//dataset.FreeBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 0 (again after freed)");
-			//namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 1");
-			//namedArrays = dataset.FetchBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 2");
-			//namedArrays = dataset.FetchBlock(2, handler);
-
-			//Console.WriteLine("free block 1");
-			//dataset.FreeBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("fetch block 1 (again)");
-			//namedArrays = dataset.FetchBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("fetch block 3 (doesn't exist)");
-			//namedArrays = dataset.FetchBlock(3, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine(SystemInformationUtils.GetAvailablePhysicalMemoryBytes());
+			foreach (string name in block.Keys)
+			{
+				Console.WriteLine("[name] = " + block[name]);
+			}
 
 			Console.ReadKey();
 		}

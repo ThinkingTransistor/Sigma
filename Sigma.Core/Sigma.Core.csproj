@@ -114,6 +114,7 @@
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
     <Compile Include="Data\Sources\IDataSetSource.cs" />
+    <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
