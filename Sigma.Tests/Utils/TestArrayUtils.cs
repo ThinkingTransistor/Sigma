@@ -37,5 +37,11 @@ namespace Sigma.Tests.Utils
 		{
 			Assert.AreEqual(new long[] { 4, 2, 1, 3 }, ArrayUtils.PermuteArray(new long[] { 1, 2, 3, 4 }, new int[] { 3, 1, 0, 2 }));
 		}
+
+		[TestCase]
+		public void TestArrayUtilsGetFlatColumnMappings()
+		{
+			Assert.AreEqual(new int[] { 1, 2, 3, 4, 5, 9 }, ArrayUtils.GetFlatColumnMappings(new int[][] { new[] { 1, 5 }, new[] { 9 } }));
+		}
 	}
 }

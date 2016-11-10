@@ -91,6 +91,7 @@ namespace Sigma.Core.Data
 	/// Realistically, you might run into system memory issues when getting anywhere near that size and it would be more efficient better to use record blocks.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Serializable]
 	public class LargeChunkedArray<T> : ILargeChunkedArray<T>
 	{
 		// These absolutely need to be constant in order for the C# optimiser to inline the get / set methods (hint: it's much faster). 

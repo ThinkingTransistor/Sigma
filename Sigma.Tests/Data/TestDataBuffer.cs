@@ -6,9 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using NUnit.Framework;
 using Sigma.Core.Data;
+using System;
 
 namespace Sigma.Tests.Data
 {
@@ -78,7 +78,7 @@ namespace Sigma.Tests.Data
 
 			Assert.AreEqual(7.0f, rootBuffer.GetValue(1000));
 			Assert.AreEqual(7.0f, childBufferL2.GetValue(900));
-			Assert.AreEqual(7.0f, childBufferL3.GetValue(800));
+			Assert.AreEqual(7, childBufferL3.GetValueAs<int>(800));
 
 			Assert.AreEqual(8.0f, rootBuffer.GetValue(1001));
 			Assert.AreEqual(9.0f, rootBuffer.GetValue(1002));

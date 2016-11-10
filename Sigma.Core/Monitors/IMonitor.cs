@@ -23,10 +23,9 @@ namespace Sigma.Core.Monitors
 		/// </summary>
 		void Start();
 
-		SigmaEnvironment Sigma
-		{
-			get;
-			set;
-		}
+		/// <summary>
+		/// The sigma environment associated with this monitor.
+		/// </summary>
+		SigmaEnvironment Sigma { get; set; }
 	}
 }

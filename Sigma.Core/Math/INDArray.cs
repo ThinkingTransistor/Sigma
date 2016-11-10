@@ -56,7 +56,7 @@ namespace Sigma.Core.Math
 		bool IsMatrix { get; }
 
 		/// <summary>
-		/// Get a copy of the underlying data buffer as a certain data type. 
+		/// Get a COPY of the underlying data buffer as a certain data type. 
 		/// </summary>
 		/// <typeparam name="TOther">The type the buffer should have.</typeparam>
 		/// <returns>The data buffer with the given data type.</returns>
@@ -72,7 +72,7 @@ namespace Sigma.Core.Math
 		TOther GetValue<TOther>(params long[] indices);
 
 		/// <summary>
-		/// Set a value at a certain index of a certain type. 
+		/// Set a value of a certain type at a certain index. 
 		/// Note: The value might have to be internally explicitly cast to the internally used type (and thereby change). 
 		/// </summary>
 		/// <typeparam name="TOther">The type of the given value.</typeparam>

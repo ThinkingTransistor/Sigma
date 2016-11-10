@@ -6,10 +6,11 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using log4net;
 using Sigma.Core.Monitors;
 using Sigma.Core.Utils;
+using System;
+using System.Net;
 
 namespace Sigma.Core
 {
@@ -113,18 +114,38 @@ namespace Sigma.Core
 		}
 
 		internal static IRegistry activeSigmaEnvironments;
-		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
-		{
+		{ 
 			activeSigmaEnvironments = new Registry();
+
+			Globals = new Registry();
+			RegisterGlobals();
 		}
 
 		/// <summary>
-		/// Create an environment with the given name.
+		/// A global variable pool for globally relevant constants (e.g. workspace path).
+		/// </summary>
+		public static IRegistry Globals { get; private set; }
+
+
+		/// <summary>
+		/// Register all globals with an initial value and required associated type. 
+		/// </summary>
+		private static void RegisterGlobals()
+		{
+			Globals.Set("workspacePath", "workspace/", typeof(string));
+			Globals.Set("cache", Globals.Get<string>("workspacePath") + "cache/", typeof(string));
+			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
+			Globals.Set("webProxy", System.Net.WebRequest.DefaultWebProxy, typeof(IWebProxy));
+		}
+
+		/// <summary>
+		/// Create an environment with a certain name.
 		/// </summary>
 		/// <param name="environmentName"></param>
-		/// <returns></returns>
+		/// <returns>A new environment with the given name.</returns>
 		public static SigmaEnvironment Create(string environmentName)
 		{
 			if (Exists(environmentName))

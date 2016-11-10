@@ -6,9 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using System;
 using System.Collections.Generic;
-using log4net;
 
 namespace Sigma.Core.Data
 {
@@ -19,9 +19,19 @@ namespace Sigma.Core.Data
 	public interface IDataType
 	{
 		/// <summary>
+		/// THe identifier of this data type (typically its name in system-independent form).
+		/// </summary>
+		string Identifier { get; }
+
+		/// <summary>
 		/// The underlying system type of this data type. 
 		/// </summary>
 		System.Type UnderlyingType { get; }
+
+		/// <summary>
+		/// The smallest system type of the same kind as the actual underlying type.
+		/// </summary>
+		System.Type BaseUnderlyingType { get; }
 
 		/// <summary>
 		/// The size of this type in bytes.
@@ -46,13 +56,13 @@ namespace Sigma.Core.Data
 
 		public static bool AllowExternalTypeOverwrites { get; set; } = false;
 
-		public static readonly IDataType FLOAT32 = Register(typeof(float), new DataType<float>(4));
-		public static readonly IDataType FLOAT64 = Register(typeof(double), new DataType<double>(8));
+		public static readonly IDataType FLOAT32 = Register(typeof(float), new DataType<float>("float32", 4, typeof(float)));
+		public static readonly IDataType FLOAT64 = Register(typeof(double), new DataType<double>("float64", 8, typeof(float)));
 
-		public static readonly IDataType INT8 = Register(typeof(byte), new DataType<byte>(1));
-		public static readonly IDataType INT16 = Register(typeof(short), new DataType<short>(2));
-		public static readonly IDataType INT32 = Register(typeof(int), new DataType<int>(4));
-		public static readonly IDataType INT64 = Register(typeof(long), new DataType<long>(8));
+		public static readonly IDataType INT8 = Register(typeof(byte), new DataType<byte>("int8", 1, typeof(byte)));
+		public static readonly IDataType INT16 = Register(typeof(short), new DataType<short>("int16", 2, typeof(byte)));
+		public static readonly IDataType INT32 = Register(typeof(int), new DataType<int>("int32", 4, typeof(byte)));
+		public static readonly IDataType INT64 = Register(typeof(long), new DataType<long>("int64", 8, typeof(byte)));
 
 		/// <summary>
 		/// Register a system data type with a Sigma data type interface to be automatically inferred whenever the system type is used. 
@@ -98,6 +108,7 @@ namespace Sigma.Core.Data
 		}
 	}
 
+	[Serializable]
 	public class DataType<T> : IDataType
 	{
 		public int SizeBytes
@@ -110,9 +121,18 @@ namespace Sigma.Core.Data
 			get;
 		} = typeof(T);
 
-		public DataType(int sizeBytes)
+		public Type BaseUnderlyingType
+		{
+			get;
+		}
+
+		public string Identifier { get; private set; }
+
+		public DataType(string identifier, int sizeBytes, Type baseUnderlyingType)
 		{
 			this.SizeBytes = sizeBytes;
+			this.BaseUnderlyingType = baseUnderlyingType;
+			this.Identifier = identifier;
 		}
 
 		public Array CreateArray(int length)

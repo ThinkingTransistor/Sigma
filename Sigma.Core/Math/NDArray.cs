@@ -6,16 +6,17 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Text;
 using Sigma.Core.Data;
 using Sigma.Core.Utils;
+using System;
+using System.Text;
 
 namespace Sigma.Core.Math
 {
+	[Serializable]
 	public class NDArray<T> : INDArray
 	{
-		private DataBuffer<T> data;
+		private IDataBuffer<T> data;
 
 		public long Length { get; private set; }
 
@@ -31,14 +32,14 @@ namespace Sigma.Core.Math
 
 		public bool IsMatrix { get; private set; }
 
-		public NDArray(DataBuffer<T> buffer)
+		public NDArray(IDataBuffer<T> buffer)
 		{
 			Initialise(new long[] { 1, (int) buffer.Length }, GetStrides(1, (int) buffer.Length));
 
 			this.data = buffer;
 		}
 
-		public NDArray(DataBuffer<T> buffer, long[] shape)
+		public NDArray(IDataBuffer<T> buffer, long[] shape)
 		{
 			if (buffer.Length < ArrayUtils.Product(shape))
 			{

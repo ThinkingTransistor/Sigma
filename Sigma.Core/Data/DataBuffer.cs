@@ -6,22 +6,27 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using log4net;
 
 namespace Sigma.Core.Data
 {
+	[Serializable]
 	public class DataBuffer<T> : IDataBuffer<T>
 	{
+		[NonSerialized]
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private LargeChunkedArray<T> data;
 		private long length;
 		private long offset;
 		private long relativeOffset;
+
+		[NonSerialized]
 		private IDataBuffer<T> underlyingBuffer;
+		[NonSerialized]
 		private IDataBuffer<T> underlyingRootBuffer;
 
 		public long Length
@@ -183,9 +188,9 @@ namespace Sigma.Core.Data
 			return data[offset + index];
 		}
 
-		public TOther GetValueAs<TOther>(long startIndex)
+		public TOther GetValueAs<TOther>(long index)
 		{
-			return (TOther) Convert.ChangeType(startIndex, typeof(TOther));
+			return (TOther) Convert.ChangeType(data[offset + index], typeof(TOther));
 		}
 
 		public IDataBuffer<T> GetValues(long startIndex, long length)
@@ -195,8 +200,6 @@ namespace Sigma.Core.Data
 
 		public IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
 		{
-			System.Type otherType = typeof(TOther);
-
 			LargeChunkedArray<TOther> otherData = new LargeChunkedArray<TOther>(length);
 
 			otherData.FillWith<T>(this.data, this.offset + startIndex, 0L, length);

@@ -14,8 +14,8 @@ namespace Sigma.Tests
 {
 	public class TestCUDAInstallation
 	{
-		static bool cudaInstalled;
-		static bool checkedCudaInstalled;
+		private static bool cudaInstalled;
+		private static bool checkedCudaInstalled;
 
 		public static void AssertIgnoreIfCUDAUnavailable()
 		{

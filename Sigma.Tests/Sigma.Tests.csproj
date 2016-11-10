@@ -112,6 +112,11 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Data\Datasets\TestDataset.cs" />
+    <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
+    <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
+    <Compile Include="Data\Sources\TestFileSource.cs" />
+    <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Data\TestLargeChunkedArray.cs" />
     <Compile Include="Data\TestRegistryResolver.cs" />
@@ -132,6 +137,9 @@
       <Project>{92b1bb1d-7f6a-4bd7-820c-46454f9af8b3}</Project>
       <Name>Sigma.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\Preprocessors\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

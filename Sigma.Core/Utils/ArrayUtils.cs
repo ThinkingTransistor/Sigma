@@ -92,13 +92,130 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
-		/// Extension toString method for all enumerables, because it for something reason is not included in the default base class.
+		/// Get the flattened column mappings corresponding to a certain higher level column mapping.
+		/// </summary>
+		/// <param name="columnMappings">The higher level column mappings.</param>
+		/// <returns>The corresponding flattened column mappings.</returns>
+		public static Dictionary<string, IList<int>> GetFlatColumnMappings(Dictionary<string, int[][]> columnMappings)
+		{
+			if (columnMappings == null)
+			{
+				throw new ArgumentNullException("Column mappings cannot be null.");
+			}
+
+			Dictionary<string, IList<int>> flatMappings = new Dictionary<string, IList<int>>();
+
+			foreach (string key in columnMappings.Keys)
+			{
+				flatMappings.Add(key, GetFlatColumnMappings(columnMappings[key]));
+			}
+
+			return flatMappings;
+		}
+
+		/// <summary>
+		/// Get the flattened column mappings corresponding to a certain higher level column mapping.
+		/// </summary>
+		/// <param name="columnMappings">The higher level column mappings.</param>
+		/// <returns>The corresponding flattened column mappings.</returns>
+		public static IList<int> GetFlatColumnMappings(int[][] columnMappings)
+		{
+			if (columnMappings == null)
+			{
+				throw new ArgumentNullException("Column mappings cannot be null.");
+			}
+
+			IList<int> individualMappings = new List<int>();
+
+			for (int i = 0; i < columnMappings.Length; i++)
+			{
+				if (columnMappings[i].Length == 0)
+				{
+					throw new ArgumentException($"Column mappings cannot be empty, but mapping at index {i} was empty (length: 0).");
+				}
+
+				if (columnMappings[i].Length == 1)
+				{
+					individualMappings.Add(columnMappings[i][0]);
+				}
+				else if (columnMappings[i].Length > 2)
+				{
+					throw new ArgumentException($"Column mappings can only be assigned in pairs, but mapping at index{1} was of length {columnMappings[i].Length}");
+				}
+				else
+				{
+					foreach (int y in ArrayUtils.Range(columnMappings[i][0], columnMappings[i][1]))
+					{
+						individualMappings.Add(y);
+					}
+				}
+			}
+
+			return individualMappings;
+		}
+
+		/// <summary>
+		/// Maps a list of values into a dictionary, where each value is mapped to the order in the given list.
+		/// </summary>
+		/// <typeparam name="T">The value type.</typeparam>
+		/// <param name="values">The values.</param>
+		/// <returns>A dictionary mapping of values and their order in the given values list.</returns>
+		public static Dictionary<T, object> MapToOrder<T>(IEnumerable<T> values)
+		{
+			Dictionary<T, object> mapping = new Dictionary<T, object>();
+
+			int index = 0;
+			foreach (T value in values)
+			{
+				mapping.Add(value, index++);
+			}
+
+			return mapping;
+		}
+
+		/// <summary>
+		/// Get a sub array from a certain array within a certain range.
+		/// </summary>
+		/// <typeparam name="T">The type of the array elements.</typeparam>
+		/// <param name="array">The array to slice.</param>
+		/// <param name="startIndex">The start index of the subarray in the given array.</param>
+		/// <param name="length">The length of the sub array, starting at the start index, in the given array.</param>
+		/// <returns>A sub array of the given array within the given range of the given type.</returns>
+		public static T[] SubArray<T>(this T[] array, int startIndex, int length)
+		{
+			T[] subArray = new T[length];
+
+			Array.Copy(array, startIndex, subArray, 0, length);
+
+			return subArray;
+		}
+
+		/// <summary>
+		/// Extension ToString method for all enumerables, because it for something reason is not included in the default base class.
 		/// </summary>
 		/// <param name="array">The enumerable to string.</param>
 		/// <returns>A string representing the enumerable.</returns>
 		public static string ToString<T>(this IEnumerable<T> array)
 		{
 			return "[" + string.Join(", ", array) + "]";
+		}
+
+		/// <summary>
+		/// Extended ToString method for two-dimensional arrays of any type.
+		/// </summary>
+		/// <typeparam name="T">The type.</typeparam>
+		/// <param name="array">The two-dimensional array.</param>
+		/// <returns>A string representing the contents of the given array.</returns>
+		public static string ToString<T>(T[][] array)
+		{
+			string[] subarrays = new string[array.Length];
+
+			for (int i = 0; i < subarrays.Length; i++)
+			{
+				subarrays[i] = "[" + string.Join(", ", array[i]) + "]";
+			}
+
+			return "[" + string.Join(",\n", subarrays) + "]";
 		}
 	}
 }

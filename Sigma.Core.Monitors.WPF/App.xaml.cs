@@ -22,7 +22,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		protected WPFMonitor monitor;
 
-		public App(WPFMonitor monitor)
+		public App(WPFMonitor monitor) : base()
 		{
 			this.monitor = monitor;
 
