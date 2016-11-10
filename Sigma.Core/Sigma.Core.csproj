@@ -129,6 +129,7 @@
     <Compile Include="Utils\ICacheProvider.cs" />
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
+    <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
     <Compile Include="Utils\WebUtils.cs" />
