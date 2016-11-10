@@ -41,7 +41,7 @@ namespace Sigma.Core.Data.Datasets
 
 		public int MaxConcurrentActiveBlocks { get; private set; } = 24; //24 seems like a good number, right?
 
-		public long MaxTotalActiveBlockSizeBytes { get; private set; } = SystemInformationUtils.GetAvailablePhysicalMemory() / 2; //default to half the available physical memory
+		public long MaxTotalActiveBlockSizeBytes { get; private set; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
 
 		public IReadOnlyCollection<int> ActiveBlockIndices { get { return activeBlocks.Keys.ToList<int>(); } }
 
@@ -141,7 +141,7 @@ namespace Sigma.Core.Data.Datasets
 				long estimatedRecordSizeBytes = 1024;
 				double memoryToConsume = 0.5f;
 				long optimalNumberBlocks = 24;
-				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemory();
+				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
 				this.TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
 			}

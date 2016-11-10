@@ -18,6 +18,8 @@ namespace Sigma.Core.Utils
 {
 	public static class SystemInformationUtils
 	{
+		public static long DefaultSystemMemoryAvailableBytes { get; set; } = 4L * 1024L * 1024L * 1024L; //4GB
+
 		private static PerformanceCounter memoryCounterAvailableKBytes;
 
 		static SystemInformationUtils()
@@ -25,9 +27,17 @@ namespace Sigma.Core.Utils
 			memoryCounterAvailableKBytes = new PerformanceCounter("Memory", "Available KBytes");
 		}
 
-		public static long GetAvailablePhysicalMemory()
+		public static long GetAvailablePhysicalMemoryBytes()
 		{
-			return (long) memoryCounterAvailableKBytes.NextValue() * 1024L;
+			float readKBytes = memoryCounterAvailableKBytes.NextValue();
+			long availableMemoryBytes = (long) readKBytes * 1024L;
+
+			if (readKBytes <= 0)
+			{
+				availableMemoryBytes = DefaultSystemMemoryAvailableBytes;
+			}
+
+			return availableMemoryBytes;
 		}
 	}
 }

@@ -93,6 +93,8 @@ namespace Sigma.Tests.Internals.Backend
 			Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
 			Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
 
+			Console.WriteLine(SystemInformationUtils.GetAvailablePhysicalMemoryBytes());
+
 			Console.ReadKey();
 		}
 	}
