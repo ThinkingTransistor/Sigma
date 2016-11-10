@@ -10,7 +10,6 @@ using Sigma.Core.Data;
 using Sigma.Core.Utils;
 using System;
 using System.Text;
-using System.Runtime.Serialization;
 
 namespace Sigma.Core.Math
 {

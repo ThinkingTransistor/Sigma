@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using MahApps.Metro.Controls;
+﻿using MahApps.Metro.Controls;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
+using System.Collections.Generic;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {

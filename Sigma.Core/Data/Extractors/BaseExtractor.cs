@@ -6,16 +6,13 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Handlers;
 using Sigma.Core.Math;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
 
 namespace Sigma.Core.Data.Extractors
 {

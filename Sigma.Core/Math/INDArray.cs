@@ -7,8 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Data;
-using System;
-using System.Runtime.Serialization;
 
 namespace Sigma.Core.Math
 {

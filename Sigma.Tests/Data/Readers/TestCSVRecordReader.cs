@@ -10,11 +10,7 @@ using NUnit.Framework;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Readers
 {

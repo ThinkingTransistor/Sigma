@@ -6,15 +6,8 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using Dragablz.Dockablz;
 using MahApps.Metro.Controls;
+using System;
 
 
 namespace Sigma.Core.Monitors.WPF.View.Windows

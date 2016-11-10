@@ -6,9 +6,8 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Windows.Controls;
-using Sigma.Core.Monitors.WPF.Model.UI;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using System.Windows.Controls;
 
 namespace Sigma.Core.Monitors.WPF.View.Tabs
 {

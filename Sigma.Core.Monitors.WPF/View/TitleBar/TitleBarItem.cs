@@ -1,11 +1,9 @@
-﻿using System;
+﻿using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.Model.UI;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
-using Sigma.Core.Monitors.WPF.Model.UI;
 
 namespace Sigma.Core.Monitors.WPF.View.TitleBar
 {
