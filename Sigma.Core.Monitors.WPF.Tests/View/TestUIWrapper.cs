@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using System.Windows.Controls;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Sigma.Core.Monitors.WPF.View;
+using System.Threading;
+using System.Windows.Controls;
 
 namespace Sigma.Core.Monitors.WPF.Tests.View
 {

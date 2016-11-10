@@ -6,18 +6,16 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
+using Sigma.Core.Data.Extractors;
+using Sigma.Core.Handlers;
+using Sigma.Core.Math;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Handlers;
-using Sigma.Core.Math;
-using System.Collections.ObjectModel;
-using Sigma.Core.Data.Extractors;
-using log4net;
 using System.Threading;
-using Sigma.Core.Utils;
+using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Datasets
 {
@@ -262,15 +260,18 @@ namespace Sigma.Core.Data.Datasets
 
 			recordBlock.loadedAndActive = true;
 
-			TotalActiveBlockSizeBytes += recordBlock.estimatedSizeBytes;
-			TotalActiveRecords += recordBlock.numberRecords;
-
-			if (!activeBlocks.ContainsKey(blockIndex))
+			lock (this)
 			{
-				activeBlocks.Add(blockIndex, new HashSet<RecordBlock>());
-			}
+				TotalActiveBlockSizeBytes += recordBlock.estimatedSizeBytes;
+				TotalActiveRecords += recordBlock.numberRecords;
 
-			activeBlocks[blockIndex].Add(recordBlock);
+				if (!activeBlocks.ContainsKey(blockIndex))
+				{
+					activeBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+				}
+
+				activeBlocks[blockIndex].Add(recordBlock);
+			}
 		}
 
 		private void DeregisterActiveBlock(RecordBlock recordBlock)
@@ -281,14 +282,17 @@ namespace Sigma.Core.Data.Datasets
 				return;
 			}
 
-			TotalActiveBlockSizeBytes -= recordBlock.estimatedSizeBytes;
-			TotalActiveRecords -= recordBlock.numberRecords;
-
-			activeBlocks[recordBlock.blockIndex].Remove(recordBlock);
-
-			if (activeBlocks[recordBlock.blockIndex].Count == 0)
+			lock (this)
 			{
-				activeBlocks.Remove(recordBlock.blockIndex);
+				TotalActiveBlockSizeBytes -= recordBlock.estimatedSizeBytes;
+				TotalActiveRecords -= recordBlock.numberRecords;
+
+				activeBlocks[recordBlock.blockIndex].Remove(recordBlock);
+
+				if (activeBlocks[recordBlock.blockIndex].Count == 0)
+				{
+					activeBlocks.Remove(recordBlock.blockIndex);
+				}
 			}
 		}
 
@@ -438,17 +442,20 @@ namespace Sigma.Core.Data.Datasets
 			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
 
 			//it's already stored in the cache
-			if (cacheProvider.IsCached(blockIdentifierInCache))
+			lock (cacheProvider)
 			{
-				Dictionary<string, INDArray> block = cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
-
-				//if its != null we could read it correctly in the right format
-				if (block != null)
+				if (cacheProvider.IsCached(blockIdentifierInCache))
 				{
-					//register this cache entry as a properly loaded block
-					RegisterCachedBlock(block, blockIndex, handler);
+					Dictionary<string, INDArray> block = cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
 
-					return block;
+					//if its != null we could read it correctly in the right format
+					if (block != null)
+					{
+						//register this cache entry as a properly loaded block
+						RegisterCachedBlock(block, blockIndex, handler);
+
+						return block;
+					}
 				}
 			}
 
@@ -457,44 +464,48 @@ namespace Sigma.Core.Data.Datasets
 
 		private Dictionary<string, INDArray> LoadAndExtractRaw(int blockIndex, IComputationHandler handler)
 		{
-			if (blockIndex >= lastReadRawDataBlockIndex)
+			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and risking corruption of data
+			lock (this)
 			{
-				object[] lastRawData = null;
-
-				for (int tempBlockIndex = lastReadRawDataBlockIndex + 1; tempBlockIndex <= blockIndex; tempBlockIndex++)
+				if (blockIndex >= lastReadRawDataBlockIndex)
 				{
-					lastRawData = LoadDirect(tempBlockIndex, handler);
+					object[] lastRawData = null;
 
-					//looks like we couldn't read any more blocks, maybe reached the end of the underlying source streams
-					if (lastRawData == null)
+					for (int tempBlockIndex = lastReadRawDataBlockIndex + 1; tempBlockIndex <= blockIndex; tempBlockIndex++)
 					{
-						return null;
+						lastRawData = LoadDirect(tempBlockIndex, handler);
+
+						//looks like we couldn't read any more blocks, maybe reached the end of the underlying source streams
+						if (lastRawData == null)
+						{
+							return null;
+						}
+
+						if (AllowRawReadDataCaching)
+						{
+							cacheProvider.Store($"raw.{tempBlockIndex}", lastRawData);
+						}
 					}
 
-					if (AllowRawReadDataCaching)
-					{
-						cacheProvider.Store($"raw.{tempBlockIndex}", lastRawData);
-					}
-				}
-
-				return ExtractDirectFrom(lastRawData, blockIndex, handler);
-			}
-			else
-			{
-				if (AllowRawReadDataCaching)
-				{
-					string cacheIdentifier = $"raw.{blockIndex}";
-
-					if (!cacheProvider.IsCached(cacheIdentifier))
-					{
-						throw new InvalidOperationException($"Unable to load cached entry for block {blockIndex} for handler {handler}, cache entry does not exist in provider {cacheProvider}.");
-					}
-
-					return ExtractDirectFrom(cacheProvider.Load<object[]>(cacheIdentifier), blockIndex, handler);
+					return ExtractDirectFrom(lastRawData, blockIndex, handler);
 				}
 				else
 				{
-					throw new InvalidOperationException($"Cannot load and extract raw block with index {blockIndex} because AllowRawReadDataCaching is set to false and last read position is at {lastReadRawDataBlockIndex}.");
+					if (AllowRawReadDataCaching)
+					{
+						string cacheIdentifier = $"raw.{blockIndex}";
+
+						if (!cacheProvider.IsCached(cacheIdentifier))
+						{
+							throw new InvalidOperationException($"Unable to load cached entry for block {blockIndex} for handler {handler}, cache entry does not exist in provider {cacheProvider}.");
+						}
+
+						return ExtractDirectFrom(cacheProvider.Load<object[]>(cacheIdentifier), blockIndex, handler);
+					}
+					else
+					{
+						throw new InvalidOperationException($"Cannot load and extract raw block with index {blockIndex} because AllowRawReadDataCaching is set to false and last read position is at {lastReadRawDataBlockIndex}.");
+					}
 				}
 			}
 		}
@@ -507,9 +518,14 @@ namespace Sigma.Core.Data.Datasets
 
 			foreach (IRecordExtractor extractor in recordExtractors)
 			{
-				//check if block reader could read anything, if not, return null
-				object data = extractor.Reader.Read(TargetBlockSizeRecords);
+				object data;
 
+				lock (extractor.Reader)
+				{
+					data = extractor.Reader.Read(TargetBlockSizeRecords);
+				}
+
+				//check if block reader could read anything, if not, return null
 				if (data == null)
 				{
 					lastAvailableBlockIndex = blockIndex - 1;
@@ -642,7 +658,10 @@ namespace Sigma.Core.Data.Datasets
 		{
 			foreach (IRecordExtractor extractor in recordExtractors)
 			{
-				extractor.Prepare();
+				lock (extractor)
+				{
+					extractor.Prepare();
+				}
 			}
 		}
 

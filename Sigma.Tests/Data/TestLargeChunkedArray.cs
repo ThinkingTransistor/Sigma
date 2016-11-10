@@ -6,9 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using NUnit.Framework;
 using Sigma.Core.Data;
+using System;
 
 namespace Sigma.Tests.Data
 {

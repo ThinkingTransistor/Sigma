@@ -14,9 +14,6 @@ using Sigma.Core.Handlers.Backends;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Preprocessors
 {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using MahApps.Metro.Controls;
 using Sigma.Core.Monitors.WPF.View.TitleBar;

@@ -17,8 +17,6 @@ using Sigma.Core.Math;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Datasets
@@ -74,11 +72,11 @@ namespace Sigma.Tests.Data.Datasets
 		}
 
 		[TestCase]
-		public void TestDatasetFetchBlock()
+		public void TestDatasetFetchBlockSequential()
 		{
 			RedirectGlobalsToTempPath();
 
-			string filename = "test.dat";
+			string filename = $"test{nameof(TestDatasetFetchBlockSequential)}.dat";
 
 			CreateCSVTempFile(filename);
 
@@ -115,21 +113,79 @@ namespace Sigma.Tests.Data.Datasets
 		}
 
 		[TestCase]
-		public void TestDatasetFetchAsync()
+		public async Task TestDatasetFetchAsync()
 		{
+			RedirectGlobalsToTempPath();
 
+			string filename = $"test{nameof(TestDatasetFetchAsync)}.dat";
+
+			CreateCSVTempFile(filename);
+
+			CSVRecordExtractor extractor = new CSVRecordReader(new FileSource(filename, Path.GetTempPath())).Extractor("inputs", 1, 2, "targets", 3);
+			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
+			CPUFloat32Handler handler = new CPUFloat32Handler();
+
+			var block0 = dataset.FetchBlockAsync(0, handler);
+			var block2 = dataset.FetchBlockAsync(2, handler);
+			var block1 = dataset.FetchBlockAsync(1, handler);
+
+			//mock a free block request to freak out the dataset controller
+			dataset.FreeBlock(1, handler);
+
+			Dictionary<string, INDArray> namedArrays0 = await block0;
+			Dictionary<string, INDArray> namedArrays1 = await block1;
+			Dictionary<string, INDArray> namedArrays2 = await block2;
+
+			Assert.IsNotNull(namedArrays1);
+			Assert.AreEqual(new float[] { 3.0f, 1.4f }, namedArrays1["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			Assert.IsNotNull(namedArrays2);
+			Assert.AreEqual(new float[] { 3.2f, 1.3f }, namedArrays2["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			Assert.IsNotNull(namedArrays0);
+			Assert.AreEqual(new float[] { 3.5f, 1.4f }, namedArrays0["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			dataset.Dispose();
+
+			DeleteTempFile(filename);
 		}
 
 		[TestCase]
-		public void TestDatasetFreeBlock()
+		public void TestDatasetFreeBlockSequential()
 		{
+			RedirectGlobalsToTempPath();
 
-		}
+			string filename = $"test{nameof(TestDatasetFetchBlockSequential)}.dat";
 
-		[TestCase]
-		public void TestDatasetFetchFreeMultipleBlocks()
-		{
+			CreateCSVTempFile(filename);
 
+			CSVRecordExtractor extractor = new CSVRecordReader(new FileSource(filename, Path.GetTempPath())).Extractor("inputs", 1, 2, "targets", 3);
+			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
+			CPUFloat32Handler handler = new CPUFloat32Handler();
+
+			dataset.FetchBlock(0, handler, false);
+			dataset.FetchBlock(1, handler, false);
+			dataset.FetchBlock(2, handler, false);
+
+			Assert.AreEqual(3, dataset.ActiveBlockRegionCount);
+
+			dataset.FreeBlock(1, handler);
+			dataset.FreeBlock(2, handler);
+
+			Assert.AreEqual(1, dataset.ActiveBlockRegionCount);
+
+			var namedArrays = dataset.FetchBlock(0, handler, false);
+			Assert.AreEqual(new float[] { 3.5f, 1.4f }, namedArrays["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			namedArrays = dataset.FetchBlock(1, handler, false);
+			Assert.AreEqual(new float[] { 3.0f, 1.4f }, namedArrays["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			namedArrays = dataset.FetchBlock(2, handler, false);
+			Assert.AreEqual(new float[] { 3.2f, 1.3f }, namedArrays["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+
+			dataset.Dispose();
+
+			DeleteTempFile(filename);
 		}
 	}
 }

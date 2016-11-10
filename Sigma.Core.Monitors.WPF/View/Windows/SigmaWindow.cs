@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using Dragablz.Dockablz;
-using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using Dragablz.Dockablz;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows

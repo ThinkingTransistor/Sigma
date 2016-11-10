@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Windows;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {

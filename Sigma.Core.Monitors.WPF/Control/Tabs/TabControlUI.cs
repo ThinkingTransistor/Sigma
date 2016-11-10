@@ -6,15 +6,15 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Dragablz;
+using Dragablz.Dockablz;
+using Sigma.Core.Monitors.WPF.View;
+using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using Dragablz;
-using Dragablz.Dockablz;
-using Sigma.Core.Monitors.WPF.View;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.Tabs
 {

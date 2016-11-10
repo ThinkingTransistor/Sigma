@@ -9,12 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Data.Sources;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Sources
 {

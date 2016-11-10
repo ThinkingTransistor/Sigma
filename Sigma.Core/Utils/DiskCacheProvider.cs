@@ -8,13 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using log4net;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Utils
 {
@@ -62,7 +58,14 @@ namespace Sigma.Core.Utils
 		{
 			logger.Info($"Caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\"...");
 
-			using (Stream fileStream = new FileStream(RootDirectory + identifier + CacheFileExtension, FileMode.Create))
+			Stream fileStream;
+
+			lock (this)
+			{
+				fileStream = new FileStream(RootDirectory + identifier + CacheFileExtension, FileMode.Create);
+			}
+
+			using (fileStream)
 			{
 				serialisationFormatter.Serialize(fileStream, data);
 			}
@@ -79,7 +82,14 @@ namespace Sigma.Core.Utils
 
 			logger.Info($"Loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
 
-			using (Stream fileStream = new FileStream(RootDirectory + identifier + CacheFileExtension, FileMode.Open))
+			Stream fileStream;
+
+			lock (this)
+			{
+				fileStream = new FileStream(RootDirectory + identifier + CacheFileExtension, FileMode.Open);
+			}
+
+			using (fileStream)
 			{
 				try
 				{
@@ -104,7 +114,10 @@ namespace Sigma.Core.Utils
 			{
 				logger.Info($"Removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
 
-				File.Delete(RootDirectory + identifier);
+				lock (this)
+				{
+					File.Delete(RootDirectory + identifier);
+				}
 
 				logger.Info($"Done removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
 			}
@@ -116,9 +129,12 @@ namespace Sigma.Core.Utils
 
 			logger.Info($"Removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
 
-			foreach (string file in cacheFiles)
+			lock (this)
 			{
-				File.Delete(file);
+				foreach (string file in cacheFiles)
+				{
+					File.Delete(file);
+				}
 			}
 
 			logger.Info($"Done removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");

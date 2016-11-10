@@ -6,11 +6,11 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Windows;
 using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using System;
+using System.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {

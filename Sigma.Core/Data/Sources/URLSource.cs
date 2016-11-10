@@ -11,7 +11,6 @@ using Sigma.Core.Utils;
 using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 
 namespace Sigma.Core.Data.Sources
 {
