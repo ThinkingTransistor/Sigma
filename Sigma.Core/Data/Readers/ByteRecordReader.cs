@@ -30,16 +30,16 @@ namespace Sigma.Core.Data.Readers
 		private bool prepared;
 		private bool skippedHeaderBytes;
 
-		public ByteRecordReader(IDataSetSource source, int headerBytes, int recordSizeBytes)
+		public ByteRecordReader(IDataSetSource source, int headerLengthBytes, int recordSizeBytes)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException("Source cannot be null.");
 			}
 
-			if (headerBytes < 0)
+			if (headerLengthBytes < 0)
 			{
-				throw new ArgumentException($"Header bytes must be >= 0, but header bytes was {headerBytes}.");
+				throw new ArgumentException($"Header bytes must be >= 0, but header bytes was {headerLengthBytes}.");
 			}
 
 			if (recordSizeBytes < 0)
@@ -48,7 +48,7 @@ namespace Sigma.Core.Data.Readers
 			}
 
 			this.Source = source;
-			this.headerBytes = headerBytes;
+			this.headerBytes = headerLengthBytes;
 			this.recordSizeBytes = recordSizeBytes;
 		}
 
