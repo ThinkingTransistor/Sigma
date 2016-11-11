@@ -107,6 +107,75 @@ namespace Sigma.Core.Data.Readers
 			return records.ToArray();
 		}
 
+		public ByteRecordExtractor Extractor(params object[] args)
+		{
+			if (args.Length == 0)
+			{
+				throw new ArgumentException("Extractor parameters cannot be empty.");
+			}
+
+			Dictionary<string, long[][]> indexMappings = new Dictionary<string, long[][]>();
+
+			string currentNamedSection = null;
+			IList<long[]> currentParams = null;
+			int paramIndex = 0;
+
+			foreach (object param in args)
+			{
+				if (param is string)
+				{
+					string previousSection = currentNamedSection;
+					currentNamedSection = (string) param;
+
+					if (indexMappings.ContainsKey(currentNamedSection))
+					{
+						throw new ArgumentException($"Named sections can only be used once, but section {currentNamedSection} (argument {paramIndex}) was already used.");
+					}
+
+					if (previousSection != null)
+					{
+
+
+						indexMappings.Add(previousSection, currentParams.ToArray());
+					}
+
+					currentParams = new List<long[]>();
+				}
+				else if (param is long[])
+				{
+					if (currentNamedSection == null)
+					{
+						throw new ArgumentException("Cannot assign parameters without naming a section.");
+					}
+
+					long[] indexRange = (long[]) param;
+
+					for (int i = 0; i < indexRange.Length; i++)
+					{
+						if (indexRange[i] < 0)
+						{
+							throw new ArgumentException($"All parameters in index range have to be >= 0, but element at index {i} of parameter {paramIndex} was {indexRange[i]}.");
+						}
+					}
+
+					currentParams.Add(indexRange);
+				}
+				else
+				{
+					throw new ArgumentException("All parameters must be either of type string or long[].");
+				}
+
+				paramIndex++;
+			}
+
+			return (ByteRecordExtractor) Extractor(indexMappings);
+		}
+
+		public IRecordExtractor Extractor(Dictionary<string, long[][]> indexMappings)
+		{
+			return Extractor(new ByteRecordExtractor(indexMappings));
+		}
+
 		public IRecordExtractor Extractor(IRecordExtractor extractor)
 		{
 			extractor.Reader = this;

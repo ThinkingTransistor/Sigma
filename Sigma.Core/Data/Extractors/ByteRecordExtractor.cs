@@ -15,6 +15,7 @@ using Sigma.Core.Handlers;
 using Sigma.Core.Math;
 using System.ComponentModel;
 using log4net;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -83,17 +84,25 @@ namespace Sigma.Core.Data.Extractors
 			foreach (string name in indexMappings.Keys)
 			{
 				long[][] mappings = indexMappings[name];
+				long[][] perMappingShape = new long[mappings.Length / 2][];
+				long[] perMappingLength = new long[mappings.Length / 2];
 				long[] featureShape = new long[mappings[0].Length];
 
 				for (int i = 0; i < mappings.Length; i += 2)
 				{
+					int halfIndex = i / 2;
+					perMappingShape[halfIndex] = new long[mappings[0].Length];
+
 					for (int y = 0; y < featureShape.Length; i++)
 					{
-						featureShape[y] = mappings[i + 1][y] - mappings[i][y];
+						perMappingShape[halfIndex][y] = mappings[i + 1][y] - mappings[i][y];
+						featureShape[y] += perMappingShape[halfIndex][y];
 					}
+
+					perMappingLength[i / 2] = ArrayUtils.Product(perMappingShape[halfIndex]);
 				}
 
-				long[] shape = new long[featureShape.Length + 2]; 
+				long[] shape = new long[featureShape.Length + 2];
 
 				shape[0] = numberOfRecordsRead;
 				shape[1] = 1;
@@ -103,10 +112,30 @@ namespace Sigma.Core.Data.Extractors
 				INDArray array = handler.Create(shape);
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
-				for (int i = 0; i < mappings.Length; i += 2)
+				for (int r = 0; r < numberOfRecordsRead; r++)
 				{
-					
+					byte[] record = rawRecords[r];
+
+					for (int i = 0; i < mappings.Length; i += 2)
+					{
+						long[] beginShape = mappings[i];
+						long[] localShape = perMappingShape[i / 2];
+						long[] localStrides = NDArray<byte>.GetStrides(localShape);
+						long[] bufferIndices = new long[mappings[i].Length];
+						long length = perMappingLength[i / 2];
+						long beginFlatIndex = ArrayUtils.Product(beginShape);
+
+						for (int y = 0; y < length; y++)
+						{
+							bufferIndices = NDArray<byte>.GetIndices(y, localShape, localStrides, bufferIndices);
+							bufferIndices = ArrayUtils.Add(beginShape, bufferIndices, bufferIndices);
+
+							array.SetValue<byte>(record[beginFlatIndex + y], bufferIndices);
+						}
+					}
 				}
+
+				namedArrays.Add(name, array);
 			}
 
 			return namedArrays;

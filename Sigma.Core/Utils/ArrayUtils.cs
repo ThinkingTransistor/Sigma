@@ -15,6 +15,7 @@ namespace Sigma.Core.Utils
 	/// A collection of array utility functions. 
 	/// </summary>
 	public static class ArrayUtils
+
 	{
 		/// <summary>
 		/// The product of an integer array (i.e. all values multiplied with each other).
@@ -31,6 +32,33 @@ namespace Sigma.Core.Utils
 			}
 
 			return product;
+		}
+
+		/// <summary>
+		/// Add two arrays of equal length and get the resulting summed array of same length.
+		/// </summary>
+		/// <param name="a">The first array.</param>
+		/// <param name="b">The second array.</param>
+		/// <param name="c">The optional result array which will be returned. If null or not large enough, a new array will be created.</param>
+		/// <returns>An array representing the sum of a and b.</returns>
+		public static long[] Add(long[] a, long[] b, long[] c = null)
+		{
+			if (a.Length != b.Length)
+			{
+				throw new ArgumentException($"Arrays to be added must be of same length, but first array a was of size {a.Length} and b {b.Length}.");
+			}
+
+			if (c == null || c.Length < a.Length)
+			{
+				c = new long[a.Length];
+			}
+
+			for (int i = 0; i < a.Length; i++)
+			{
+				c[i] = a[i] + b[i];
+			}
+
+			return c;
 		}
 
 		/// <summary>
