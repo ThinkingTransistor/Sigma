@@ -37,7 +37,7 @@ namespace Sigma.Core.Data.Extractors
 			{
 				if (indexMappings[name].Length % 2 != 0)
 				{
-					throw new ArgumentException($"All index mapping arrays have to be a multiple of 2 (start and end indices of each range).");
+					throw new ArgumentException($"All index mapping arrays have to be a multiple of 2 (start and end indices of each range), but index mapping for name {name} had {indexMappings[name].Length}.");
 				}
 			}
 
@@ -93,7 +93,7 @@ namespace Sigma.Core.Data.Extractors
 					int halfIndex = i / 2;
 					perMappingShape[halfIndex] = new long[mappings[0].Length];
 
-					for (int y = 0; y < featureShape.Length; i++)
+					for (int y = 0; y < featureShape.Length; y++)
 					{
 						perMappingShape[halfIndex][y] = mappings[i + 1][y] - mappings[i][y];
 						featureShape[y] += perMappingShape[halfIndex][y];
@@ -109,28 +109,37 @@ namespace Sigma.Core.Data.Extractors
 
 				Array.Copy(featureShape, 0, shape, 2, featureShape.Length);
 
+				Console.WriteLine(ArrayUtils.ToString(featureShape));
+
 				INDArray array = handler.Create(shape);
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
+
+				long[] globalBufferIndices = new long[shape.Length];
 
 				for (int r = 0; r < numberOfRecordsRead; r++)
 				{
 					byte[] record = rawRecords[r];
+
+					globalBufferIndices[0] = r; //BatchTimeFeatures indexing
+					globalBufferIndices[1] = 0;
 
 					for (int i = 0; i < mappings.Length; i += 2)
 					{
 						long[] beginShape = mappings[i];
 						long[] localShape = perMappingShape[i / 2];
 						long[] localStrides = NDArray<byte>.GetStrides(localShape);
-						long[] bufferIndices = new long[mappings[i].Length];
+						long[] localBufferIndices = new long[mappings[i].Length];
 						long length = perMappingLength[i / 2];
 						long beginFlatIndex = ArrayUtils.Product(beginShape);
 
 						for (int y = 0; y < length; y++)
 						{
-							bufferIndices = NDArray<byte>.GetIndices(y, localShape, localStrides, bufferIndices);
-							bufferIndices = ArrayUtils.Add(beginShape, bufferIndices, bufferIndices);
+							localBufferIndices = NDArray<byte>.GetIndices(y, localShape, localStrides, localBufferIndices);
+							localBufferIndices = ArrayUtils.Add(beginShape, localBufferIndices, localBufferIndices);
 
-							array.SetValue<byte>(record[beginFlatIndex + y], bufferIndices);
+							Array.Copy(localBufferIndices, 0, globalBufferIndices, 2, localBufferIndices.Length);
+
+							array.SetValue<byte>(record[beginFlatIndex + y], globalBufferIndices);
 						}
 					}
 				}

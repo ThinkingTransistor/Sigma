@@ -17,6 +17,11 @@ namespace Sigma.Core.Data.Sources
 	public interface IDataSetSource : IDisposable
 	{
 		/// <summary>
+		/// The name of this source (e.g. file name, URL).
+		/// </summary>
+		string ResourceName { get; }
+
+		/// <summary>
 		/// Indicates whether this is a chunkable data set source.
 		/// Chunkable sources can be loaded partially, non-chunkable sources are pre-fetched in <see cref="Prepare"/>.
 		/// </summary>

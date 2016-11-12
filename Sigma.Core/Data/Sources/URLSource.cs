@@ -21,6 +21,8 @@ namespace Sigma.Core.Data.Sources
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string ResourceName { get { return url; } }
+
 		private bool exists;
 		private bool checkedExists;
 		private bool prepared;
@@ -149,7 +151,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (localDownloadedFileStream == null)
 			{
-				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not fetched correctly (missing or failed Prepare() call?).");
+				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not prepared correctly (missing or failed Prepare() call?).");
 			}
 
 			return localDownloadedFileStream;

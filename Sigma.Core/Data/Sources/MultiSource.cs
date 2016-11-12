@@ -27,6 +27,8 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		public IDataSetSource ActiveSource { get; private set; }
 
+		public string ResourceName { get { return ActiveSource?.ResourceName; } }
+
 		public bool Chunkable { get { return ActiveSource?.Chunkable ?? false; } }
 
 		private bool fetchedActiveSource;

@@ -16,6 +16,7 @@ using Sigma.Core.Data.Sources;
 using log4net;
 using Sigma.Core.Math;
 using System.IO;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Readers
 {
@@ -134,9 +135,7 @@ namespace Sigma.Core.Data.Readers
 
 					if (previousSection != null)
 					{
-
-
-						indexMappings.Add(previousSection, currentParams.ToArray());
+						AddNamedIndexParameters(indexMappings, previousSection, currentParams, paramIndex);
 					}
 
 					currentParams = new List<long[]>();
@@ -168,7 +167,22 @@ namespace Sigma.Core.Data.Readers
 				paramIndex++;
 			}
 
+			if (currentNamedSection != null && !indexMappings.ContainsKey(currentNamedSection))
+			{
+				AddNamedIndexParameters(indexMappings, currentNamedSection, currentParams, paramIndex);
+			}
+
 			return (ByteRecordExtractor) Extractor(indexMappings);
+		}
+
+		private void AddNamedIndexParameters(Dictionary<string, long[][]> indexMappings, string currentNamedSection, IList<long[]> currentParams, int paramIndex)
+		{
+			if (currentParams.Count < 1)
+			{
+				throw new ArgumentException($"There must be >= 1 index regions, but in section {currentNamedSection} at parameter index {paramIndex} there were {currentParams.Count}.");
+			}
+
+			indexMappings.Add(currentNamedSection, currentParams.ToArray());
 		}
 
 		public IRecordExtractor Extractor(Dictionary<string, long[][]> indexMappings)

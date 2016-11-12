@@ -19,6 +19,8 @@ namespace Sigma.Core.Data.Sources
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string ResourceName { get; private set; }
+
 		private bool exists;
 		private string fullPath;
 		private string localPath;
@@ -43,6 +45,8 @@ namespace Sigma.Core.Data.Sources
 
 			this.localPath = path;
 			this.fullPath = datasetsPath + path;
+
+			this.ResourceName = new FileInfo(localPath).Name;
 
 			CheckExists();
 		}

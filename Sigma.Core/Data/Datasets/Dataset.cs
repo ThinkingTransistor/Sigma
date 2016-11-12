@@ -229,6 +229,11 @@ namespace Sigma.Core.Data.Datasets
 			//block could be fetched directly without violating any constraints, return successfully
 			if (block != null)
 			{
+				if (block.Count == 0)
+				{
+					throw new InvalidOperationException($"Fetched block did not contain any named elements (was empty; is the extractor output correct?).");
+				}
+
 				availableBlocksSemaphore.WaitOne();
 
 				RegisterActiveBlock(block, blockIndex, handler);
