@@ -57,68 +57,7 @@ namespace Sigma.Core.Data.Readers
 
 		public CSVRecordExtractor Extractor(params object[] parameters)
 		{
-			if (parameters.Length == 0)
-			{
-				throw new ArgumentException("Extractor parameters cannot be empty.");
-			}
-
-			Dictionary<string, IList<int>> columnMappings = new Dictionary<string, IList<int>>();
-
-			string currentNamedSection = null;
-			IList<int> currentColumnMapping = null;
-			int paramIndex = 0;
-
-			foreach (object param in parameters)
-			{
-				if (param is string)
-				{
-					currentNamedSection = (string) param;
-
-					if (columnMappings.ContainsKey(currentNamedSection))
-					{
-						throw new ArgumentException($"Named sections can only be used once, but section {currentNamedSection} (argument {paramIndex}) was already used.");
-					}
-
-					currentColumnMapping = new List<int>();
-					columnMappings.Add(currentNamedSection, currentColumnMapping);
-				}
-				else if (param is int || param is int[])
-				{
-					if (currentNamedSection == null)
-					{
-						throw new ArgumentException("Cannot assign parameters without naming a section.");
-					}
-
-					if (param is int)
-					{
-						currentColumnMapping.Add((int) param);
-					}
-					else
-					{
-						int[] range = (int[]) param;
-
-						if (range.Length != 2)
-						{
-							throw new ArgumentException($"Column ranges can only be pairs (size 2), but array length of argument {paramIndex} was {range.Length}.");
-						}
-
-						int[] flatRange = ArrayUtils.Range(range[0], range[1]);
-
-						for (int i = 0; i < flatRange.Length; i++)
-						{
-							currentColumnMapping.Add(flatRange[i]);
-						}
-					}
-				}
-				else
-				{
-					throw new ArgumentException("All parameters must be either of type string, int or int[]");
-				}
-
-				paramIndex++;
-			}
-
-			return Extractor(columnMappings: columnMappings);
+			return Extractor(columnMappings: CSVRecordExtractor.ParseExtractorParameters(parameters));
 		}
 
 		public CSVRecordExtractor Extractor(Dictionary<string, IList<int>> columnMappings)

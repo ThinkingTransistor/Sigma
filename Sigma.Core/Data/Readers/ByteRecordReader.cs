@@ -117,81 +117,9 @@ namespace Sigma.Core.Data.Readers
 			return records.ToArray();
 		}
 
-		public ByteRecordExtractor Extractor(params object[] args)
+		public ByteRecordExtractor Extractor(params object[] parameters)
 		{
-			if (args.Length == 0)
-			{
-				throw new ArgumentException("Extractor parameters cannot be empty.");
-			}
-
-			Dictionary<string, long[][]> indexMappings = new Dictionary<string, long[][]>();
-
-			string currentNamedSection = null;
-			IList<long[]> currentParams = null;
-			int paramIndex = 0;
-
-			foreach (object param in args)
-			{
-				if (param is string)
-				{
-					string previousSection = currentNamedSection;
-					currentNamedSection = (string) param;
-
-					if (indexMappings.ContainsKey(currentNamedSection))
-					{
-						throw new ArgumentException($"Named sections can only be used once, but section {currentNamedSection} (argument {paramIndex}) was already used.");
-					}
-
-					if (previousSection != null)
-					{
-						AddNamedIndexParameters(indexMappings, previousSection, currentParams, paramIndex);
-					}
-
-					currentParams = new List<long[]>();
-				}
-				else if (param is long[])
-				{
-					if (currentNamedSection == null)
-					{
-						throw new ArgumentException("Cannot assign parameters without naming a section.");
-					}
-
-					long[] indexRange = (long[]) param;
-
-					for (int i = 0; i < indexRange.Length; i++)
-					{
-						if (indexRange[i] < 0)
-						{
-							throw new ArgumentException($"All parameters in index range have to be >= 0, but element at index {i} of parameter {paramIndex} was {indexRange[i]}.");
-						}
-					}
-
-					currentParams.Add(indexRange);
-				}
-				else
-				{
-					throw new ArgumentException("All parameters must be either of type string or long[].");
-				}
-
-				paramIndex++;
-			}
-
-			if (currentNamedSection != null && !indexMappings.ContainsKey(currentNamedSection))
-			{
-				AddNamedIndexParameters(indexMappings, currentNamedSection, currentParams, paramIndex);
-			}
-
-			return (ByteRecordExtractor) Extractor(indexMappings);
-		}
-
-		private void AddNamedIndexParameters(Dictionary<string, long[][]> indexMappings, string currentNamedSection, IList<long[]> currentParams, int paramIndex)
-		{
-			if (currentParams.Count < 1)
-			{
-				throw new ArgumentException($"There must be >= 1 index regions, but in section {currentNamedSection} at parameter index {paramIndex} there were {currentParams.Count}.");
-			}
-
-			indexMappings.Add(currentNamedSection, currentParams.ToArray());
+			return (ByteRecordExtractor) Extractor(ByteRecordExtractor.ParseExtractorParameters(parameters));
 		}
 
 		public IRecordExtractor Extractor(Dictionary<string, long[][]> indexMappings)

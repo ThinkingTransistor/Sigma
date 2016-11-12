@@ -113,7 +113,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Data\Datasets\TestDataset.cs" />
+    <Compile Include="Data\Extractors\TestByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
+    <Compile Include="Data\Readers\TestByteRecordExtractor.cs" />
     <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
     <Compile Include="Data\Sources\TestFileSource.cs" />
     <Compile Include="Data\Sources\TestMultiSource.cs" />
