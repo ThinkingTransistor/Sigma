@@ -67,14 +67,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
-			FontFamily = UIColours.FontFamily;
+			FontFamily = UIResources.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
 
 			TitleBar = CreateTitleBar();
 			LeftWindowCommands = TitleBar;
 
-			AddMenuItems(TitleBar);
+			AddTitleBarItems(TitleBar);
 
 			TabControl = CreateTabControl();
 
@@ -107,12 +107,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			//This can only be set in the constructor or onstartup
 			BorderThickness = new Thickness(1);
-			BorderBrush = UIColours.AccentColorBrush;
-			GlowBrush = UIColours.AccentColorBrush;
+			BorderBrush = UIResources.AccentColorBrush;
+			GlowBrush = UIResources.AccentColorBrush;
 
 			//Disable that the titlebar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = UIColours.AccentColorBrush;
+			NonActiveWindowTitleBrush = UIResources.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}
@@ -144,21 +144,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			titleBarControl.Margin = new Thickness(0);
 			titleBarControl.Padding = new Thickness(0);
 
-
-			////header.Style = style;
-
-			//app.Resources["MaterialDesignPaper"] = Brushes.Transparent;
-
-			//Debug.WriteLine(app.Resources["MaterialDesignPaper"]);
-
 			return titleBarControl;
 		}
 
 		/// <summary>
-		/// Add specified <see cref="TitleBarItem"/>s to the passed <see cref="TitleBarControl"/>.
+		/// Add specified <see cref="TitleBarItem"/>s to a given <see cref="TitleBarControl"/>.
 		/// </summary>
 		/// <param name="titleBarControl">The specified <see cref="TitleBarControl"/>.</param>
-		private static void AddMenuItems(TitleBarControl titleBarControl)
+		private static void AddTitleBarItems(TitleBarControl titleBarControl)
 		{
 			titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 			titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));

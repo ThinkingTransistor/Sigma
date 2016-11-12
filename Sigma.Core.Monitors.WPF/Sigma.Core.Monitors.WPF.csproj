@@ -112,7 +112,7 @@
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
     <Compile Include="Control\TitleBar\TitleBarControl.cs" />
     <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
-    <Compile Include="Model\UI\UIColours.cs" />
+    <Compile Include="Model\UI\UIResources.cs" />
     <Compile Include="Model\UI\Windows\GridSize.cs" />
     <Compile Include="Panels\WindowPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

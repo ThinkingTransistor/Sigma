@@ -6,6 +6,7 @@ using Sigma.Core.Monitors.WPF.Control.Themes;
 using System;
 using System.Threading;
 using System.Windows.Controls;
+using System.Diagnostics;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -21,13 +22,18 @@ namespace Sigma.Tests.Internals.WPF
 			//guiMonitor.ColorManager.Alternate = true;
 			//guiMonitor.ColorManager.Dark = true;
 
+			guiMonitor.WindowDispatcher((window) =>
+			{
+				window.TitleCharacterCasing = CharacterCasing.Normal;
+			});
+
 			//sigma.Prepare()
 			guiMonitor.Start();
 
 
 			guiMonitor.WindowDispatcher((window) =>
 			{
-				window.TitleCharacterCasing = CharacterCasing.Normal;
+				Debug.WriteLine("dunno when");
 			});
 
 			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.BLUE;
