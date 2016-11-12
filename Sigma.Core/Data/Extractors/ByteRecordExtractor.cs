@@ -159,7 +159,7 @@ namespace Sigma.Core.Data.Extractors
 		{
 		}
 
-		public static Dictionary<string, long[][]> ParseExtractorParameters(object[] parameters)
+		public static Dictionary<string, long[][]> ParseExtractorParameters(params object[] parameters)
 		{
 			if (parameters.Length == 0)
 			{

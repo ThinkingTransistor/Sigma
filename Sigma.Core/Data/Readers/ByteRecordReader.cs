@@ -52,9 +52,9 @@ namespace Sigma.Core.Data.Readers
 				throw new ArgumentException($"Header bytes must be >= 0, but header bytes was {headerLengthBytes}.");
 			}
 
-			if (recordSizeBytes < 0)
+			if (recordSizeBytes <= 0)
 			{
-				throw new ArgumentException($"Record size bytes must be >= 0, but record size bytes was {recordSizeBytes}.");
+				throw new ArgumentException($"Record size bytes must be > 0, but record size bytes was {recordSizeBytes}.");
 			}
 
 			this.Source = source;
