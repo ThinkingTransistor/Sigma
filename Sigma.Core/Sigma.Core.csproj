@@ -111,6 +111,7 @@
     <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
+    <Compile Include="Data\Extractors\ValueMappingExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
