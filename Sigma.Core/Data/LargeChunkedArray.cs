@@ -106,6 +106,10 @@ namespace Sigma.Core.Data
 
 		public long Length { get; private set; }
 
+		/// <summary>
+		/// Create a large chunked array representation of a certain data array.
+		/// </summary>
+		/// <param name="data"></param>
 		public LargeChunkedArray(T[] data)
 		{
 			this.data = new T[1][];
@@ -115,6 +119,10 @@ namespace Sigma.Core.Data
 			this.Length = data.Length;
 		}
 
+		/// <summary>
+		/// Create a large chunked array representation of a certain data array.
+		/// </summary>
+		/// <param name="size">The size this large chunked array should have.</param>
 		public LargeChunkedArray(long size)
 		{
 			int numBlocks = (int) (size / BLOCK_SIZE);

@@ -17,6 +17,9 @@ using System.Linq;
 
 namespace Sigma.Core.Data.Readers
 {
+	/// <summary>
+	/// A CSV record reader which reads comma separated values as string lines from a source.
+	/// </summary>
 	public class CSVRecordReader : IRecordReader
 	{
 		private const int NUMBER_COLUMNS_NOT_SET = -1;
@@ -34,6 +37,12 @@ namespace Sigma.Core.Data.Readers
 			get; private set;
 		}
 
+		/// <summary>
+		/// Create a CSV record reader of a certain data set source and separator.
+		/// </summary>
+		/// <param name="source">The data set source.</param>
+		/// <param name="separator">The separator to use in this CSV reader.</param>
+		/// <param name="skipFirstLine">Indicate if the first line should be skipped.</param>
 		public CSVRecordReader(IDataSetSource source, char separator = ',', bool skipFirstLine = false)
 		{
 			if (source == null)

@@ -79,7 +79,7 @@ namespace Sigma.Core.Data.Datasets
 		private Semaphore availableBlocksSemaphore;
 
 		/// <summary>
-		/// Creates a dataset with a certain unique name and the record extractors to use. 
+		/// Create a dataset with a certain unique name and the record extractors to use. 
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
@@ -88,7 +88,7 @@ namespace Sigma.Core.Data.Datasets
 		}
 
 		/// <summary>
-		/// Creates a dataset with a certain unique name, target block size in records and the record extractors to use.
+		/// Create a dataset with a certain unique name, target block size in records and the record extractors to use.
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>

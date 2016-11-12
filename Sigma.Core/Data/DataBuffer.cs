@@ -13,6 +13,10 @@ using System.Collections.Generic;
 
 namespace Sigma.Core.Data
 {
+	/// <summary>
+	/// A default implementation of the databuffer interface.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public class DataBuffer<T> : IDataBuffer<T>
 	{
@@ -54,6 +58,12 @@ namespace Sigma.Core.Data
 			get { return data; }
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain type with a certain underlying buffer.
+		/// </summary>
+		/// <param name="underlyingBuffer">The underlying buffer.</param>
+		/// <param name="offset">The offset relative to the underlying buffer.</param>
+		/// <param name="length">The length this buffer should have.</param>
 		public DataBuffer(DataBuffer<T> underlyingBuffer, long offset, long length)
 		{
 			if (underlyingBuffer == null)
@@ -73,10 +83,22 @@ namespace Sigma.Core.Data
 			this.underlyingRootBuffer = underlyingBuffer.underlyingRootBuffer == null ? underlyingBuffer : underlyingBuffer.underlyingRootBuffer;
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain large chunked array.
+		/// </summary>
+		/// <param name="data">The large chunked array data.</param>
+		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
 		public DataBuffer(LargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
 		{
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain large chunked array.
+		/// </summary>
+		/// <param name="data">The large chunked array data.</param>
+		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
+		/// <param name="offset">The offset relative to the data array.</param>
+		/// <param name="length">The length this buffer should have.</param>
 		public DataBuffer(LargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
 		{
 			if (data == null)
@@ -94,10 +116,22 @@ namespace Sigma.Core.Data
 			this.Type = InferDataType(underlyingType);
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain array.
+		/// </summary>
+		/// <param name="data">The data array.</param>
+		/// <param name="underlyingType">The underlying type (inferred if not explicitly given).</param>
 		public DataBuffer(T[] data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
 		{
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain array within certain bounds.
+		/// </summary>
+		/// <param name="data">The data array.</param>
+		/// <param name="offset">The offset (relative to the given data array).</param>
+		/// <param name="length">The length this buffer should have.</param>
+		/// <param name="underlyingType">The underlying type (inferred if not explicitly given).</param>
 		public DataBuffer(T[] data, long offset, long length, IDataType underlyingType = null)
 		{
 			if (data == null)
@@ -115,6 +149,11 @@ namespace Sigma.Core.Data
 			this.Type = InferDataType(underlyingType);
 		}
 
+		/// <summary>
+		/// Create a data buffer of a certain length.
+		/// </summary>
+		/// <param name="length">The length this buffer should have.</param>
+		/// <param name="underlyingType">The underlying type (inferred if not explicitly given).</param>
 		public DataBuffer(long length, IDataType underlyingType = null)
 		{
 			if (length < 1)

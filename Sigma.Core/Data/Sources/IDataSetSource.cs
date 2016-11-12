@@ -22,10 +22,10 @@ namespace Sigma.Core.Data.Sources
 		string ResourceName { get; }
 
 		/// <summary>
-		/// Indicates whether this is a chunkable data set source.
-		/// Chunkable sources can be loaded partially, non-chunkable sources are pre-fetched in <see cref="Prepare"/>.
+		/// Indicates whether this is a seekable data set source.
+		/// Seekable sources can be loaded and reloaded partially, non-chunkable sources are pre-fetched in <see cref="Prepare"/>.
 		/// </summary>
-		bool Chunkable { get; }
+		bool Seekable { get; }
 
 		/// <summary>
 		/// Check whether the specified data set source exists and can be retrieved.

@@ -15,6 +15,11 @@ using System.Text.RegularExpressions;
 
 namespace Sigma.Core.Utils
 {
+	/// <summary>
+	/// A default implementation of the registry interface.
+	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. 
+	/// Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
+	/// </summary>
 	public class Registry : IRegistry
 	{
 		private Dictionary<string, object> mappedValues;
@@ -77,6 +82,11 @@ namespace Sigma.Core.Utils
 			get; private set;
 		}
 
+		/// <summary>
+		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
+		/// </summary>
+		/// <param name="parent">The optional parent to this registry.</param>
+		/// <param name="tags">The optional tags to this registry.</param>
 		public Registry(IRegistry parent = null, params string[] tags)
 		{
 			this.Parent = parent;

@@ -13,6 +13,10 @@ using System.Text;
 
 namespace Sigma.Core.Math
 {
+	/// <summary>
+	/// A default, in system memory implementation of the INDArray interface. 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public class NDArray<T> : INDArray
 	{
@@ -32,6 +36,10 @@ namespace Sigma.Core.Math
 
 		public bool IsMatrix { get; private set; }
 
+		/// <summary>
+		/// Create a vectorised ndarray of a certain buffer.
+		/// </summary>
+		/// <param name="buffer">The buffer to back this ndarray.</param>
 		public NDArray(IDataBuffer<T> buffer)
 		{
 			Initialise(new long[] { 1, (int) buffer.Length }, GetStrides(1, (int) buffer.Length));
@@ -39,6 +47,11 @@ namespace Sigma.Core.Math
 			this.data = buffer;
 		}
 
+		/// <summary>
+		/// Create a ndarray of a certain buffer and shape.
+		/// </summary>
+		/// <param name="buffer">The buffer to back this ndarray.</param>
+		/// <param name="shape">The shape.</param>
 		public NDArray(IDataBuffer<T> buffer, long[] shape)
 		{
 			if (buffer.Length < ArrayUtils.Product(shape))
@@ -51,6 +64,10 @@ namespace Sigma.Core.Math
 			this.data = buffer;
 		}
 
+		/// <summary>
+		/// Create a vectorised ndarray of a certain array (array will be COPIED into a data buffer).
+		/// </summary>
+		/// <param name="data">The data to use to fill this ndarray.</param>
 		public NDArray(T[] data)
 		{
 			Initialise(new long[] { 1, (int) data.Length }, GetStrides(1, (int) data.Length));
@@ -58,6 +75,12 @@ namespace Sigma.Core.Math
 			this.data = new DataBuffer<T>(data, 0L, data.Length);
 		}
 
+		/// <summary>
+		/// Create an ndarray of a certain array (array will be COPIED into a data buffer) and shape.
+		/// Total shape length must be smaller or equal than the data array length.
+		/// </summary>
+		/// <param name="data">The data to use to fill this ndarray.</param>
+		/// <param name="shape">The shape.</param>
 		public NDArray(T[] data, params long[] shape)
 		{
 			if (data.Length < ArrayUtils.Product(shape))
@@ -70,6 +93,10 @@ namespace Sigma.Core.Math
 			this.data = new DataBuffer<T>(data, 0L, this.Length);
 		}
 
+		/// <summary>
+		/// Create an ndarray of a certain shape (initialised with zeros).
+		/// </summary>
+		/// <param name="shape">The shape.</param>
 		public NDArray(params long[] shape)
 		{
 			Initialise(CheckShape(shape), GetStrides(shape));

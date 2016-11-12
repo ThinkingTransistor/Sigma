@@ -23,6 +23,8 @@ namespace Sigma.Core.Data.Sources
 
 		public string ResourceName { get { return url; } }
 
+		public bool Seekable { get { return true; } }
+
 		private bool exists;
 		private bool checkedExists;
 		private bool prepared;
@@ -32,15 +34,19 @@ namespace Sigma.Core.Data.Sources
 		private FileStream localDownloadedFileStream;
 		private IWebProxy proxy;
 
-		public bool Chunkable
-		{
-			get { return true; }
-		}
-
+		/// <summary>
+		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
+		/// </summary>
+		/// <param name="url">The URL.</param>
 		public URLSource(string url) : this(url, SigmaEnvironment.Globals["datasets"] + GetFileNameFromURL(url))
 		{
 		}
 
+		/// <summary>
+		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
+		/// </summary>
+		/// <param name="url">The URL.</param>
+		/// <param name="localDownloadPath">The local download path, where this file will be downloaded to.</param>
 		public URLSource(string url, string localDownloadPath, IWebProxy proxy = null)
 		{
 			if (url == null)

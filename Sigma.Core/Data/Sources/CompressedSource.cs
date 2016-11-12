@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using log4net;
-using SharpCompress.Readers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,31 +17,60 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
+	/// <summary>
+	/// A compressed data set source. Decompresses a given underlying source using a given or inferred unpacker.
+	/// During preparation the entire stream is decompressed and stored as a local file.
+	/// </summary>
 	public class CompressedSource : IDataSetSource
 	{
 		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public bool Chunkable { get { return true; } }
+		public bool Seekable { get { return true; } }
 
 		public string ResourceName { get { return UnderlyingSource?.ResourceName; } }
 
+		/// <summary>
+		/// The underlying data source which is decompressed.
+		/// </summary>
 		public IDataSetSource UnderlyingSource { get; private set; }
 
+
+		/// <summary>
+		/// The unpacker to use to decompress the underlying data source.
+		/// </summary>
 		public IUnpacker Unpacker { get; private set; }
 
 		private FileStream fileStream;
 		private string localUnpackPath;
 		private bool prepared;
 
+		/// <summary>
+		/// Create a compressed source which automatically decompressed a certain underlying source. 
+		/// The decompression algorithm to use and the local unpacked path are inferred.
+		/// </summary>
+		/// <param name="source">The underlying data set source to decompress.</param>
 		public CompressedSource(IDataSetSource source) : this(source, InferLocalUnpackPath(source))
 		{
 		}
 
+		/// <summary>
+		/// Create a compressed source which automatically decompressed a certain underlying source. 
+		/// The decompression algorithm to use is inferred, the local unpacked path is explicitly given.
+		/// </summary>
+		/// <param name="source">The underlying data set source to decompress.</param>
+		/// <param name="localUnpackPath">The local unpack path (where the unpacked underlying source stream is stored locally).</param>
 		public CompressedSource(IDataSetSource source, string localUnpackPath) : this(source, localUnpackPath, InferUnpacker(source))
 		{
 		}
 
+		/// <summary>
+		/// Create a compressed source which automatically decompressed a certain underlying source. 
+		/// The decompression algorithm to use and the local unpacked path are explicitly given.
+		/// </summary>
+		/// <param name="source">The underlying data set source to decompress.</param>
+		/// <param name="localUnpackPath">The local unpack path (where the unpacked underlying source stream is stored locally).</param>
+		/// <param name="unpacker">The unpacker to use to decompress the given source.</param>
 		public CompressedSource(IDataSetSource source, string localUnpackPath, IUnpacker unpacker)
 		{
 			if (source == null)
@@ -130,7 +158,7 @@ namespace Sigma.Core.Data.Sources
 
 			if (extension == null || extension.Length == 0)
 			{
-				clazzLogger.Info($"Unable to infer unpacker via extension for underlying source {source} with resource name {source.ResourceName}, will attempt to infer unpacker type from source stream signature when first retrieved.");
+				throw new ArgumentException($"Unable to infer unpacker via extension for underlying source {source} with resource name {source.ResourceName}, extension could not be identified.");
 			}
 			else
 			{
@@ -138,15 +166,13 @@ namespace Sigma.Core.Data.Sources
 
 				if (inferredUnpacker == null)
 				{
-					clazzLogger.Info($"Unable to infer unpacker via extension {extension} with internal registry, will attempt to infer unpacker type from source stream signature when first retrieved.");
+					throw new ArgumentException($"Unable to infer unpacker via extension {extension} of resource name {source.ResourceName} with internal registry.");
 				}
 				else
 				{
 					return inferredUnpacker;
 				}
 			}
-
-			return new SignatureDetectingUnpacker();
 		}
 	}
 }

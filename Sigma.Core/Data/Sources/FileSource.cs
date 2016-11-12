@@ -27,24 +27,33 @@ namespace Sigma.Core.Data.Sources
 
 		private Stream fileStream;
 
+		/// <summary>
+		/// Create a file source referring to a locally stored file.
+		/// </summary>
+		/// <param name="path">The local fileName (relative to the global dataset fileName).</param>
 		public FileSource(string path) : this(path, SigmaEnvironment.Globals.Get<string>("datasets"))
 		{
 		}
 
-		public FileSource(string path, string datasetsPath)
+		/// <summary>
+		/// Create a file source referring to a locally stored file.
+		/// </summary>
+		/// <param name="path">The local fileName (relative to the given dataset fileName).</param>
+		/// <param name="datasetsPath">The data set fileName, within which the local fileName will be stored.</param>
+		public FileSource(string fileName, string datasetsPath)
 		{
-			if (path == null)
+			if (fileName == null)
 			{
 				throw new ArgumentNullException("Path cannot be null.");
 			}
 
 			if (datasetsPath == null)
 			{
-				throw new ArgumentNullException("Data sets path cannot be null (are the SigmaEnironment.Globals missing?)");
+				throw new ArgumentNullException("Data sets fileName cannot be null (are the SigmaEnironment.Globals missing?)");
 			}
 
-			this.localPath = path;
-			this.fullPath = datasetsPath + path;
+			this.localPath = fileName;
+			this.fullPath = datasetsPath + fileName;
 
 			this.ResourceName = new FileInfo(localPath).Name;
 
@@ -56,7 +65,7 @@ namespace Sigma.Core.Data.Sources
 			return this.exists = File.Exists(fullPath);
 		}
 
-		public bool Chunkable
+		public bool Seekable
 		{
 			get { return true; }
 		}

@@ -1,5 +1,5 @@
-﻿using log4net;
-using SharpCompress.Readers;
+﻿using ICSharpCode.SharpZipLib.Tar;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,8 +10,16 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
+	/// <summary>
+	/// An unpacker which takes an input stream and decompresses (unpacks) it using a certain compression method. Used for compressed sources.
+	/// </summary>
 	public interface IUnpacker
 	{
+		/// <summary>
+		/// Unpack a certain stream with the decompression algorithm implemented in this unpacker. 
+		/// </summary>
+		/// <param name="input">The stream to unpack.</param>
+		/// <returns>A stream with the unpacked contents of the given input stream.</returns>
 		Stream Unpack(Stream input);
 	}
 
@@ -70,21 +78,11 @@ namespace Sigma.Core.Data.Sources
 		}
 	}
 
-	public class SignatureDetectingUnpacker : IUnpacker
+	public class TarUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
 		{
-			try
-			{
-				using (var reader = ReaderFactory.Open(input, new ReaderOptions() { LeaveStreamOpen = true }))
-				{
-					return reader.OpenEntryStream();
-				}
-			}
-			catch (InvalidOperationException e)
-			{
-				throw new InvalidOperationException("Unable to unpack stream in signature detecting unpacker, could not determine archive type by signature in underlying utility.", e);
-			}
+			return new TarInputStream(input);
 		}
 	}
 }

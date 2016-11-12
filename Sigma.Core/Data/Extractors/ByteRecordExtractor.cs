@@ -19,6 +19,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Extractors
 {
+	/// <summary>
+	/// A byte record extractor, which extracts named ranges to ndarrays bytewise.
+	/// </summary>
 	public class ByteRecordExtractor : BaseExtractor
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -26,6 +29,10 @@ namespace Sigma.Core.Data.Extractors
 		public override string[] SectionNames { get; protected set; }
 		private Dictionary<string, long[][]> indexMappings;
 
+		/// <summary>
+		/// Create a byte record extractor with a certain named index mapping.
+		/// </summary>
+		/// <param name="indexMappings">The named index mapping.</param>
 		public ByteRecordExtractor(Dictionary<string, long[][]> indexMappings)
 		{
 			if (indexMappings == null)

@@ -29,12 +29,16 @@ namespace Sigma.Core.Data.Sources
 
 		public string ResourceName { get { return ActiveSource?.ResourceName; } }
 
-		public bool Chunkable { get { return ActiveSource?.Chunkable ?? false; } }
+		public bool Seekable { get { return ActiveSource?.Seekable ?? false; } }
 
 		private bool fetchedActiveSource;
 
 		private IDataSetSource[] sources;
 
+		/// <summary>
+		/// Create a multi data set source with a certain array of underlying source, of which the first existing source will be exposed.
+		/// </summary>
+		/// <param name="sources">The array of underlying sources to consider.</param>
 		public MultiSource(params IDataSetSource[] sources)
 		{
 			if (sources == null)

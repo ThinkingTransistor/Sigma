@@ -20,6 +20,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Readers
 {
+	/// <summary>
+	/// A byte record reader, which reads sources bytewise.
+	/// </summary>
 	public class ByteRecordReader : IRecordReader
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -31,6 +34,12 @@ namespace Sigma.Core.Data.Readers
 		private bool prepared;
 		private bool skippedHeaderBytes;
 
+		/// <summary>
+		/// Create a byte record reader with a certain header size and per record size.
+		/// </summary>
+		/// <param name="source">The source which should read.</param>
+		/// <param name="headerLengthBytes">The header length in bytes (which will be skipped in this implementation).</param>
+		/// <param name="recordSizeBytes">The per record size in bytes.</param>
 		public ByteRecordReader(IDataSetSource source, int headerLengthBytes, int recordSizeBytes)
 		{
 			if (source == null)

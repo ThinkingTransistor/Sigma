@@ -17,6 +17,9 @@ using System.Linq;
 
 namespace Sigma.Core.Data.Extractors
 {
+	/// <summary>
+	/// A CSV record extractor, which extracts string based records as columns.
+	/// </summary>
 	public class CSVRecordExtractor : BaseExtractor
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -31,10 +34,20 @@ namespace Sigma.Core.Data.Extractors
 
 		public override string[] SectionNames { get; protected set; }
 
+		/// <summary>
+		/// Create a CSV record extractor with a certain named column index mapping and an optional value mapping.
+		/// </summary>
+		/// <param name="namedColumnIndexMappings">The named column index mapping (not flattened).</param>
+		/// <param name="columnValueMappings">The optional value mapping.</param>
 		public CSVRecordExtractor(Dictionary<string, int[][]> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null) : this(ArrayUtils.GetFlatColumnMappings(namedColumnIndexMappings))
 		{
 		}
 
+		/// <summary>
+		/// Create a CSV record extractor with a certain named column index mapping and an optional value mapping.
+		/// </summary>
+		/// <param name="namedColumnIndexMappings">The named column index mapping (flattened).</param>
+		/// <param name="columnValueMappings">The optional value mapping.</param>
 		public CSVRecordExtractor(Dictionary<string, IList<int>> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null)
 		{
 			this.namedColumnIndexMappings = namedColumnIndexMappings;
