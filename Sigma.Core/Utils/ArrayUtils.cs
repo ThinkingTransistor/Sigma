@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Math;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +16,6 @@ namespace Sigma.Core.Utils
 	/// A collection of array utility functions. 
 	/// </summary>
 	public static class ArrayUtils
-
 	{
 		/// <summary>
 		/// The product of an integer array (i.e. all values multiplied with each other).
@@ -216,6 +216,19 @@ namespace Sigma.Core.Utils
 			Array.Copy(array, startIndex, subArray, 0, length);
 
 			return subArray;
+		}
+
+		/// <summary>
+		/// A helper function to call the toString method of the default NDArray<T> implementation.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="array"></param>
+		/// <param name="toStringElement"></param>
+		/// <param name="maxDimensionNewLine"></param>
+		/// <returns></returns>
+		public static string ToString<T>(INDArray array, NDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1)
+		{
+			return ((NDArray<T>) array).ToString(toStringElement, maxDimensionNewLine);
 		}
 
 		/// <summary>

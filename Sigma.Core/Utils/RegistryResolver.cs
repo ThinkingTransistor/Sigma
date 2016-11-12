@@ -35,6 +35,10 @@ namespace Sigma.Core.Utils
 		private Dictionary<string, MatchIdentifierRequestCacheEntry> matchIdentifierCache;
 		private ISet<string> fullIdentifiersToInvalidate;
 
+		/// <summary>
+		/// Create a registry resolver with a certain root registry.
+		/// </summary>
+		/// <param name="root">The root registry.</param>
 		public RegistryResolver(IRegistry root)
 		{
 			if (root == null)

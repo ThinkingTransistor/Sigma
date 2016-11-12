@@ -35,7 +35,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			foreach (string name in block.Keys)
 			{
-				Console.WriteLine($"[{name}]=\n" + block[name]);
+				Console.WriteLine($"[{name}]=\n" + ArrayUtils.ToString<float>(block[name], e => e == 0 ? "..." : string.Format("{0:000}", e), maxDimensionNewLine: 0));
 			}
 
 			Console.ReadKey();

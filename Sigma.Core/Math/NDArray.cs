@@ -266,13 +266,23 @@ namespace Sigma.Core.Math
 			}
 		}
 
-		/// <summary>
-		/// Constructs a string representing the contents of this ndarray, formatted properly. 
-		/// </summary>
-		/// <returns>A fancy string representing the contents of this ndarray.</returns>
 		public override string ToString()
 		{
-			StringBuilder builder = new StringBuilder();
+			return this.ToString();
+		}
+
+		public delegate string ToStringElement(T element);
+
+		/// <summary>
+		/// Constructs a string representing the contents of this ndarray, formatted properly and somewhat customisable. 
+		/// </summary>
+		/// <returns>A fancy string representing the contents of this ndarray.</returns>
+		public string ToString(ToStringElement toStringElement = null, int dimensionNewLine = 1)
+		{
+			if (toStringElement == null)
+			{
+				toStringElement = element => element.ToString();
+			}
 
 			int rank = this.Rank;
 			int lastIndex = rank - 1;
@@ -282,6 +292,8 @@ namespace Sigma.Core.Math
 			long[] shape = this.Shape;
 			long[] strides = this.Strides;
 			long length = this.Length;
+
+			StringBuilder builder = new StringBuilder();
 
 			for (long i = 0; i < length; i++)
 			{
@@ -300,7 +312,7 @@ namespace Sigma.Core.Math
 					}
 				}
 
-				builder.Append(this.data.GetValue(i));
+				builder.Append(toStringElement(this.data.GetValue(i)));
 
 				if (indices[lastIndex] < shape[lastIndex] - 1)
 				{
@@ -308,6 +320,8 @@ namespace Sigma.Core.Math
 				}
 
 				bool requestNewLine = false;
+
+				int maxRankNewLine = rank - dimensionNewLine;
 
 				for (int y = rank - 1; y >= 0; y--)
 				{
@@ -320,7 +334,7 @@ namespace Sigma.Core.Math
 						{
 							builder.Append(", ");
 
-							if (!requestNewLine && y < rank - 1)
+							if (!requestNewLine && y < maxRankNewLine)
 							{
 								requestNewLine = true;
 							}

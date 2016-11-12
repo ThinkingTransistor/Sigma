@@ -120,7 +120,8 @@
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Data\TestLargeChunkedArray.cs" />
-    <Compile Include="Data\TestRegistryResolver.cs" />
+    <Compile Include="Utils\TestDiskCacheProvider.cs" />
+    <Compile Include="Utils\TestRegistryResolver.cs" />
     <Compile Include="Math\TestNDArray.cs" />
     <Compile Include="TestSigmaEnvironment.cs" />
     <Compile Include="TestCUDAInstallation.cs" />
