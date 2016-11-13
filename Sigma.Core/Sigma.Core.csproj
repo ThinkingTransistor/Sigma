@@ -114,7 +114,9 @@
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
+    <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />

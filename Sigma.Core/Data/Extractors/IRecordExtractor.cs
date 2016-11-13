@@ -34,10 +34,10 @@ namespace Sigma.Core.Data.Extractors
 		IRecordExtractor ParentExtractor { get; set; }
 
 		/// <summary>
-		/// The names of all sections used in this extractor (e.g. "inputs" or "targets").
-		/// These sections must be the same sections returned when calling Extract. 
+		/// The names of all sections output in this extractor (e.g. "inputs" or "targets"). 
+		/// These sections must be the same sections returned when calling any of the Extract methods. 
 		/// </summary>
-		string[] SectionNames { get; }
+		string[] SectionNames { get; set; }
 
 		/// <summary>
 		/// Extract a number of records into a collection of named ndarrays directly from the underlying reader/extractor. 
@@ -51,7 +51,8 @@ namespace Sigma.Core.Data.Extractors
 		Dictionary<string, INDArray> ExtractDirect(int numberOfRecords, IComputationHandler handler);
 
 		/// <summary>
-		/// Extract a number of records from data read by any reader (requires the data formats to be compatible).
+		/// Extract a number of records from data read or extracted by any other source (requires the data formats to be compatible).
+		/// Direct extraction does not respect parent extractors and extracts directly from this extractor.
 		/// The ndarray format to use is BatchTimeFeatures (BTF), where T is 1 for non-sequential data. 
 		/// Note: There cannot be duplicate names (multiple ndarrays with the same name/identifier) in the final dataset. 
 		///		  For merging multiple sources with the same name (e.g. inputs from different files) use merge extractors. 
@@ -60,7 +61,20 @@ namespace Sigma.Core.Data.Extractors
 		/// <param name="numberOfRecords">The number of records to extract.</param>
 		/// <param name="handler">The computation handler to use for ndarray creation and manipulation.</param>
 		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable). Return null when not a single record could be extracted.</returns>
-		Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler);
+		Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler);
+
+		/// <summary>
+		/// Extract a number of records from data read or extracted by any other source (requires the data formats to be compatible).
+		/// Hierarchical extraction extracts from all parent extractors hierarchically and then extracts directly from that data.
+		/// The ndarray format to use is BatchTimeFeatures (BTF), where T is 1 for non-sequential data. 
+		/// Note: There cannot be duplicate names (multiple ndarrays with the same name/identifier) in the final dataset. 
+		///		  For merging multiple sources with the same name (e.g. inputs from different files) use merge extractors. 
+		/// </summary>
+		/// <param name="readData">The data read by any reader (requires the data formats to be compatible).</param>
+		/// <param name="numberOfRecords">The number of records to extract.</param>
+		/// <param name="handler">The computation handler to use for ndarray creation and manipulation.</param>
+		/// <returns>The extracted named ndarrays, each containing a collection of numberOfRecords records (or less if unavailable). Return null when not a single record could be extracted.</returns>
+		Dictionary<string, INDArray> ExtractHierarchicalFrom(object readData, int numberOfRecords, IComputationHandler handler);
 
 		/// <summary>
 		/// Prepare this record extractor and its underlying resources for extraction.

@@ -26,7 +26,6 @@ namespace Sigma.Core.Data.Extractors
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public override string[] SectionNames { get; protected set; }
 		private Dictionary<string, long[][]> indexMappings;
 
 		/// <summary>
@@ -52,27 +51,7 @@ namespace Sigma.Core.Data.Extractors
 			this.SectionNames = indexMappings.Keys.ToArray();
 		}
 
-		public override Dictionary<string, INDArray> ExtractDirect(int numberOfRecords, IComputationHandler handler)
-		{
-			if (Reader == null)
-			{
-				throw new InvalidOperationException("Cannot extract from record extractor before attaching a reader (reader was null).");
-			}
-
-			if (handler == null)
-			{
-				throw new ArgumentNullException("Computation handler cannot be null.");
-			}
-
-			if (numberOfRecords <= 0)
-			{
-				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
-			}
-
-			return ExtractFrom(Reader.Read(numberOfRecords), numberOfRecords, handler);
-		}
-
-		public override Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler)
+		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
 		{
 			// read data being null means no more data could be read so we will just pass that along
 			if (readData == null)

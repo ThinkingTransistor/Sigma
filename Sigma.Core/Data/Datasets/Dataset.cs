@@ -568,7 +568,7 @@ namespace Sigma.Core.Data.Datasets
 			int extractorIndex = 0;
 			foreach (IRecordExtractor extractor in recordExtractors)
 			{
-				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
+				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractHierarchicalFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
 
 				//check if block size is 0, indicating we reached the end of the stream 
 				if (subNamedBlock == null)

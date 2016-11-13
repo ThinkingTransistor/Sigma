@@ -20,7 +20,7 @@ namespace Sigma.Core.Math
 	[Serializable]
 	public class NDArray<T> : INDArray
 	{
-		private IDataBuffer<T> data;
+		internal IDataBuffer<T> data;
 
 		public long Length { get; private set; }
 

@@ -58,7 +58,7 @@ namespace Sigma.Tests.Data.Extractors
 
 			byte[][] rawData = new byte[][] { new byte[] { 0 }, new byte[] { 1 } };
 
-			Assert.AreEqual(new float[] { 0, 1 }, extractor.ExtractFrom(rawData, 2, handler)["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0L, 2L));
+			Assert.AreEqual(new float[] { 0, 1 }, extractor.ExtractDirectFrom(rawData, 2, handler)["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0L, 2L));
 		}
 	}
 }

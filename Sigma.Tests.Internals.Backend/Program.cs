@@ -1,6 +1,7 @@
 ﻿using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
@@ -25,10 +26,10 @@ namespace Sigma.Tests.Internals.Backend
 			//CSVRecordExtractor irisExtractor = irisReader.Extractor("inputs2", new[] { 0, 3 }, "targets2", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
 
 			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new URLSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			ByteRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L });
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
 			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new URLSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			ByteRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L });
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L });
 
 			IComputationHandler handler = new CPUFloat32Handler();
 
@@ -44,7 +45,9 @@ namespace Sigma.Tests.Internals.Backend
 			{
 				foreach (string name in block.Keys)
 				{
-					Console.WriteLine($"[{name}]=\n" + ArrayUtils.ToString<float>(block[name], e => e == 0 ? "..." : string.Format("{0:000}", e), maxDimensionNewLine: 0));
+					string blockString = name == "inputs" ? ArrayUtils.ToString<float>(block[name], e => string.Format("{0:0.000}", e).Replace('0', '.'), maxDimensionNewLine: 0) : block[name].ToString();
+
+					Console.WriteLine($"[{name}]=\n" + blockString);
 				}
 			}
 

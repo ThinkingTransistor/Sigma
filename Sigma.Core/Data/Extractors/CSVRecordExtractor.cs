@@ -32,8 +32,6 @@ namespace Sigma.Core.Data.Extractors
 			get { return namedColumnIndexMappings; }
 		}
 
-		public override string[] SectionNames { get; protected set; }
-
 		/// <summary>
 		/// Create a CSV record extractor with a certain named column index mapping and an optional value mapping.
 		/// </summary>
@@ -90,27 +88,7 @@ namespace Sigma.Core.Data.Extractors
 			return this;
 		}
 
-		public override Dictionary<string, INDArray> ExtractDirect(int numberOfRecords, IComputationHandler handler)
-		{
-			if (Reader == null)
-			{
-				throw new InvalidOperationException("Cannot extract from record extractor before attaching a reader (reader was null).");
-			}
-
-			if (handler == null)
-			{
-				throw new ArgumentNullException("Computation handler cannot be null.");
-			}
-
-			if (numberOfRecords <= 0)
-			{
-				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
-			}
-
-			return ExtractFrom(Reader.Read(numberOfRecords), numberOfRecords, handler);
-		}
-
-		public override Dictionary<string, INDArray> ExtractFrom(object readData, int numberOfRecords, IComputationHandler handler)
+		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
 		{
 			//read data being null indicates that nothing could be read so we can't extract anything either
 			if (readData == null)

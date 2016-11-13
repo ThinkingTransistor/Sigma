@@ -71,5 +71,41 @@ namespace Sigma.Core.Handlers
 		/// <param name="arrayToFill">The ndarray to fill.</param>
 		/// <param name="filler">The filler ndarray (from which the values will be copied).</param>
 		void Fill(INDArray arrayToFill, INDArray filler);
+
+		/// <summary>
+		/// Add a value to all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Add<TOther>(INDArray array, TOther value, INDArray output);
+
+		/// <summary>
+		/// Subtract a value from all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Subtract<TOther>(INDArray array, TOther value, INDArray output);
+
+		/// <summary>
+		/// Multiply a value with all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Multiply<TOther>(INDArray array, TOther value, INDArray output);
+
+		/// <summary>
+		/// Divide all elements in an ndarray by a value and put the result in another ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Divide<TOther>(INDArray array, TOther value, INDArray output);
 	}
 }
