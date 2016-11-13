@@ -98,19 +98,19 @@ namespace Sigma.Core.Data.Extractors
 
 			string[][] lineParts = (string[][]) readData;
 
-			int readNumberOfRecords = lineParts.Length;
+			int numberOfRecordsToExtract = System.Math.Min(lineParts.Length, numberOfRecords);
 
-			logger.Info($"Extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords})...");
+			logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
 			foreach (string name in namedColumnIndexMappings.Keys)
 			{
 				IList<int> mappings = namedColumnIndexMappings[name];
-				INDArray array = handler.Create(readNumberOfRecords, 1, mappings.Count);
+				INDArray array = handler.Create(numberOfRecordsToExtract, 1, mappings.Count);
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
-				for (int i = 0; i < readNumberOfRecords; i++)
+				for (int i = 0; i < numberOfRecordsToExtract; i++)
 				{
 					for (int y = 0; y < mappings.Count; y++)
 					{
@@ -138,7 +138,7 @@ namespace Sigma.Core.Data.Extractors
 				namedArrays.Add(name, array);
 			}
 
-			logger.Info($"Done extracting {readNumberOfRecords} records from reader {Reader} (requested: {numberOfRecords}).");
+			logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
 		}

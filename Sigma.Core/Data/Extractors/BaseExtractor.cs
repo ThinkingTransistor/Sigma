@@ -99,7 +99,7 @@ namespace Sigma.Core.Data.Extractors
 			return firstPreprocessor;
 		}
 
-		public IRecordExtractor Extract(params IRecordExtractor[] extractors)
+		public IRecordExtractor Extractor(params IRecordExtractor[] extractors)
 		{
 			IRecordExtractor firstExtractor = extractors[0];
 
@@ -110,7 +110,7 @@ namespace Sigma.Core.Data.Extractors
 
 			if (extractors.Length > 1)
 			{
-				return firstExtractor.Extract(extractors.SubArray(1, extractors.Length - 1));
+				return firstExtractor.Extractor(extractors.SubArray(1, extractors.Length - 1));
 			}
 
 			return firstExtractor;

@@ -30,6 +30,8 @@ namespace Sigma.Core.Data.Preprocessors
 	/// </summary>
 	public class OneHotPreprocessor : BasePreprocessor
 	{
+		public override bool AffectsDataShape { get { return true; } }
+
 		private Dictionary<object, int> valueToIndexMapping;
 
 		/// <summary>
@@ -52,19 +54,11 @@ namespace Sigma.Core.Data.Preprocessors
 		}
 
 		/// <summary>
-		/// Create a one-hot preprocessor with an array of possible values and for all sections.
-		/// </summary>
-		/// <param name="possibleValues">All possible values that this one-hot preprocessor should encode (have to be known ahead of time).</param>
-		public OneHotPreprocessor(params object[] possibleValues) : this(sectionName: null, possibleValues: possibleValues)
-		{
-		}
-
-		/// <summary>
 		/// Create a one-hot preprocessor with an array of possible values and optionally for a specific section.
 		/// </summary>
 		/// <param name="sectionName">The optional specific this processor should be applied to.</param>
 		/// <param name="possibleValues">All possible values that this one-hot preprocessor should encode (have to be known ahead of time).</param>
-		public OneHotPreprocessor(string sectionName = null, params object[] possibleValues) : base(sectionName == null ? null : new string[] { sectionName})
+		public OneHotPreprocessor(string sectionName, params object[] possibleValues) : base(sectionName == null ? null : new string[] { sectionName})
 		{
 			if (possibleValues == null)
 			{

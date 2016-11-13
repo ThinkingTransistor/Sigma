@@ -115,6 +115,8 @@
     <Compile Include="Data\Datasets\TestDataset.cs" />
     <Compile Include="Data\Extractors\TestByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
+    <Compile Include="Data\Preprocessors\TestNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\TestOneHotPreprocessor.cs" />
     <Compile Include="Data\Readers\TestByteRecordExtractor.cs" />
     <Compile Include="Data\Readers\TestCSVRecordReader.cs" />
     <Compile Include="Data\Sources\TestFileSource.cs" />
@@ -142,9 +144,7 @@
       <Name>Sigma.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\Preprocessors\" />
-  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

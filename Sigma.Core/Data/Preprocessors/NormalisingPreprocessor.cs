@@ -21,6 +21,8 @@ namespace Sigma.Core.Data.Preprocessors
 	/// </summary>
 	public class NormalisingPreprocessor : BasePreprocessor
 	{
+		public override bool AffectsDataShape { get { return false; } }
+
 		public int MinInputValue { get; private set; }
 		public int MaxInputValue { get; private set; }
 		public int MinOutputValue { get; private set; }
@@ -28,7 +30,6 @@ namespace Sigma.Core.Data.Preprocessors
 
 		private int inputRange;
 		private int outputRange;
-		private int outputOffset;
 		private double outputScale;
 
 		/// <summary>
@@ -68,7 +69,6 @@ namespace Sigma.Core.Data.Preprocessors
 
 			this.inputRange = maxInputValue - minInputValue;
 			this.outputRange = maxOutputValue - minOutputValue;
-			this.outputOffset = minOutputValue - minInputValue;
 			this.outputScale = ((double) outputRange) / inputRange;
 		}
 
@@ -76,7 +76,7 @@ namespace Sigma.Core.Data.Preprocessors
 		{
 			handler.Subtract(array, MinInputValue, array);
 			handler.Multiply(array, outputScale, array);
-			handler.Add(array, outputOffset, array);
+			handler.Add(array, MinOutputValue, array);
 
 			return array;
 		}

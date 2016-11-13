@@ -61,9 +61,9 @@ namespace Sigma.Core.Data.Extractors
 
 			byte[][] rawRecords = (byte[][]) readData;
 
-			int numberOfRecordsRead = rawRecords.Length;
+			int numberOfRecordsToExtract = System.Math.Min(rawRecords.Length, numberOfRecords);
 
-			logger.Info($"Extracting {numberOfRecordsRead} records from reader {Reader} (requested: {numberOfRecords})...");
+			logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
@@ -90,7 +90,7 @@ namespace Sigma.Core.Data.Extractors
 
 				long[] shape = new long[featureShape.Length + 2];
 
-				shape[0] = numberOfRecordsRead;
+				shape[0] = numberOfRecordsToExtract;
 				shape[1] = 1;
 
 				Array.Copy(featureShape, 0, shape, 2, featureShape.Length);
@@ -100,7 +100,7 @@ namespace Sigma.Core.Data.Extractors
 
 				long[] globalBufferIndices = new long[shape.Length];
 
-				for (int r = 0; r < numberOfRecordsRead; r++)
+				for (int r = 0; r < numberOfRecordsToExtract; r++)
 				{
 					byte[] record = rawRecords[r];
 

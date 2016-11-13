@@ -94,6 +94,6 @@ namespace Sigma.Core.Data.Extractors
 		/// </summary>
 		/// <param name="extractors">The extractors to add to this extractor.</param>
 		/// <returns>The last given extractor (for convenience).</returns>
-		IRecordExtractor Extract(params IRecordExtractor[] extractors);
+		IRecordExtractor Extractor(params IRecordExtractor[] extractors);
 	}
 }

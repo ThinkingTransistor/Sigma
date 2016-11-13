@@ -16,7 +16,7 @@ namespace Sigma.Tests.Internals.Backend
 {
 	class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
 			log4net.Config.XmlConfigurator.Configure();
 

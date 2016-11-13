@@ -28,7 +28,7 @@ namespace Sigma.Core.Data.Preprocessors
 		/// </summary>
 		public IReadOnlyCollection<string> ProcessedSectionNames { get; protected set; }
 
-		public virtual bool AffectsDataShape { get; }
+		public abstract bool AffectsDataShape { get; }
 
 		/// <summary>
 		/// Create a base processor with an optional array of sections to process.
@@ -53,14 +53,14 @@ namespace Sigma.Core.Data.Preprocessors
 
 			foreach (string sectionName in unprocessedNamedArrays.Keys)
 			{
+				INDArray processedArray = unprocessedNamedArrays[sectionName];
+
 				if (ProcessedSectionNames == null || ProcessedSectionNames.Contains(sectionName))
 				{
-					processedNamedArrays.Add(sectionName, ProcessDirect(unprocessedNamedArrays[sectionName], handler));
+					processedArray = ProcessDirect(processedArray, handler);
 				}
-				else
-				{
-					processedNamedArrays.Add(sectionName, unprocessedNamedArrays[sectionName]);
-				}
+
+				processedNamedArrays.Add(sectionName, processedArray);
 			}
 
 			return processedNamedArrays;
