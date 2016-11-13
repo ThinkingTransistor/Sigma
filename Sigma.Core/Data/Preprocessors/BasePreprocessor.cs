@@ -55,6 +55,23 @@ namespace Sigma.Core.Data.Preprocessors
 			{
 				INDArray processedArray = unprocessedNamedArrays[sectionName];
 
+				if (processedArray.Shape[0] != numberOfRecords)
+				{
+					long[] beginIndices = processedArray.Shape.ToArray();
+					long[] endIndices = processedArray.Shape.ToArray();
+
+					beginIndices[0] = 0;
+					endIndices[0] = numberOfRecords;
+
+					for (int i = 1; i < processedArray.Rank; i++)
+					{
+						beginIndices[i] = 0;
+						endIndices[i] = processedArray.Shape[i]; 
+					}
+
+					processedArray = processedArray.Slice(beginIndices, endIndices);
+				}
+
 				if (ProcessedSectionNames == null || ProcessedSectionNames.Contains(sectionName))
 				{
 					processedArray = ProcessDirect(processedArray, handler);

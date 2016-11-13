@@ -144,6 +144,35 @@ namespace Sigma.Core.Math
 			this.data.SetValue((T) Convert.ChangeType(value, this.data.Type.UnderlyingType), GetFlatIndex(this.Shape, this.Strides, indices));
 		}
 
+		public INDArray Slice(long[] beginIndices, long[] endIndices)
+		{
+			if (beginIndices.Length != endIndices.Length)
+			{
+				throw new ArgumentException($"Begin and end indices arrays must be of same length, but begin indices was of length {beginIndices.Length} and end indices {endIndices.Length}.");
+			}
+
+			long[] slicedShape = new long[beginIndices.Length];
+
+			for (int i = 0; i < slicedShape.Length; i++)
+			{
+				slicedShape[i] = endIndices[i] - beginIndices[i];
+				
+				if (slicedShape[i] < 0)
+				{
+					throw new ArgumentException($"Begin indices must be smaller than end indices, but begin indices at [{i}] was {beginIndices[i]} and end indices at [{i}] {endIndices[i]}");
+				}
+
+				//we want the end indices to be inclusive for easier handling
+				endIndices[i]--;
+			}
+
+			long absoluteBeginOffset = GetFlatIndex(this.Shape, this.Strides, beginIndices);
+			long absoluteEndOffset = GetFlatIndex(this.Shape, this.Strides, endIndices);
+			long length = absoluteEndOffset - absoluteBeginOffset + 1;
+
+			return new NDArray<T>(new DataBuffer<T>(this.data, absoluteBeginOffset, length), slicedShape);
+		}
+
 		public INDArray Flatten()
 		{
 			return this.Reshape(0, this.Length);

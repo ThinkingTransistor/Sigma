@@ -23,7 +23,7 @@ namespace Sigma.Core.Data
 		[NonSerialized]
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private LargeChunkedArray<T> data;
+		private ILargeChunkedArray<T> data;
 		private long length;
 		private long offset;
 		private long relativeOffset;
@@ -64,23 +64,23 @@ namespace Sigma.Core.Data
 		/// <param name="underlyingBuffer">The underlying buffer.</param>
 		/// <param name="offset">The offset relative to the underlying buffer.</param>
 		/// <param name="length">The length this buffer should have.</param>
-		public DataBuffer(DataBuffer<T> underlyingBuffer, long offset, long length)
+		public DataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length)
 		{
 			if (underlyingBuffer == null)
 			{
 				throw new ArgumentNullException("Underlying buffer cannot be null.");
 			}
 
-			CheckBufferBounds(offset, length, offset + length, underlyingBuffer.length);
+			CheckBufferBounds(offset, length, offset + length, underlyingBuffer.Length);
 
 			this.length = length;
 			this.relativeOffset = offset;
-			this.offset = offset + underlyingBuffer.offset;
+			this.offset = offset + underlyingBuffer.Offset;
 
-			this.data = underlyingBuffer.data;
+			this.data = underlyingBuffer.Data;
 			this.Type = underlyingBuffer.Type;
 			this.underlyingBuffer = underlyingBuffer;
-			this.underlyingRootBuffer = underlyingBuffer.underlyingRootBuffer == null ? underlyingBuffer : underlyingBuffer.underlyingRootBuffer;
+			this.underlyingRootBuffer = underlyingBuffer.GetUnderlyingRootBuffer() == null ? underlyingBuffer : underlyingBuffer.GetUnderlyingRootBuffer();
 		}
 
 		/// <summary>
@@ -224,12 +224,12 @@ namespace Sigma.Core.Data
 
 		public T GetValue(long index)
 		{
-			return data[offset + index];
+			return data.GetValue(offset + index);
 		}
 
 		public TOther GetValueAs<TOther>(long index)
 		{
-			return (TOther) Convert.ChangeType(data[offset + index], typeof(TOther));
+			return (TOther) Convert.ChangeType(data.GetValue(offset + index), typeof(TOther));
 		}
 
 		public IDataBuffer<T> GetValues(long startIndex, long length)
@@ -266,7 +266,7 @@ namespace Sigma.Core.Data
 
 		public void SetValue(T value, long index)
 		{
-			data[index + this.offset] = value;
+			data.SetValue(value, index + this.offset);
 		}
 
 		public void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length)
@@ -293,7 +293,7 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < this.length; i++)
 			{
-				yield return data[i];
+				yield return data.GetValue(i);
 			}
 		}
 
@@ -301,7 +301,7 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < this.length; i++)
 			{
-				yield return data[i];
+				yield return data.GetValue(i);
 			}
 		}
 	}

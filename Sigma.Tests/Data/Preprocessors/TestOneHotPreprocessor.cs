@@ -34,9 +34,9 @@ namespace Sigma.Tests.Data.Preprocessors
 			OneHotPreprocessor preprocessor = new OneHotPreprocessor("test", minValue: 0, maxValue: 2);
 			IComputationHandler handler = new CPUFloat32Handler();
 
-			Dictionary<string, INDArray> extracted = preprocessor.ExtractDirectFrom(GetNamedArrayTestData(), 3, handler);
+			Dictionary<string, INDArray> extracted = preprocessor.ExtractDirectFrom(GetNamedArrayTestData(), 2, handler);
 
-			Assert.AreEqual(new float[] { 1, 0, 0, 0, 0, 1, 0, 1, 0 }, extracted["test"].GetDataAs<float>().GetValuesArrayAs<float>(0, 9).ToArray());
+			Assert.AreEqual(new float[] { 1, 0, 0, 0, 0, 1 }, extracted["test"].GetDataAs<float>().GetValuesArrayAs<float>(0, 6).ToArray());
 		}
 	}
 }
