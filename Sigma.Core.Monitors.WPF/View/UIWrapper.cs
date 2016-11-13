@@ -38,9 +38,10 @@ namespace Sigma.Core.Monitors.WPF.View
 		}
 
 		/// <summary>
-		/// Property for the content. (The actual data).
+		/// Property for the content. (The actual data). If you want to
+		/// set the content of the <see cref="WrappedContent"/> use <see cref="WrappedContent.Content"/>.
 		/// </summary>
-		public T Content
+		public T WrappedContent
 		{
 			get
 			{
@@ -51,6 +52,8 @@ namespace Sigma.Core.Monitors.WPF.View
 				content = value;
 			}
 		}
+
+
 
 		/// <summary>
 		/// Convert the <see cref="UIWrapper{T}"/> to the wrapped content.

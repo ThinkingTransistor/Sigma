@@ -79,7 +79,7 @@ namespace Sigma.Core.Data.Datasets
 		private Semaphore availableBlocksSemaphore;
 
 		/// <summary>
-		/// Creates a dataset with a certain unique name and the record extractors to use. 
+		/// Create a dataset with a certain unique name and the record extractors to use. 
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
@@ -88,7 +88,7 @@ namespace Sigma.Core.Data.Datasets
 		}
 
 		/// <summary>
-		/// Creates a dataset with a certain unique name, target block size in records and the record extractors to use.
+		/// Create a dataset with a certain unique name, target block size in records and the record extractors to use.
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
@@ -165,7 +165,11 @@ namespace Sigma.Core.Data.Datasets
 
 			if (flushCache)
 			{
+				logger.Info($"Flushing all caches for dataset {Name} as flushCache flag was set...");
+
 				InvalidateAndClearCaches();
+
+				logger.Info($"Done flushing all caches for dataset {Name}.");
 			}
 		}
 
@@ -225,6 +229,11 @@ namespace Sigma.Core.Data.Datasets
 			//block could be fetched directly without violating any constraints, return successfully
 			if (block != null)
 			{
+				if (block.Count == 0)
+				{
+					throw new InvalidOperationException($"Fetched block did not contain any named elements (was empty; is the extractor output correct?).");
+				}
+
 				availableBlocksSemaphore.WaitOne();
 
 				RegisterActiveBlock(block, blockIndex, handler);
@@ -323,9 +332,13 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
+			logger.Info("Invalidating and clearning all caches...");
+
 			this.cacheProvider.RemoveAll();
 
 			this.cachedBlocks.Clear();
+
+			logger.Info("Done invalidating and clearning all caches.");
 		}
 
 		private Dictionary<string, INDArray> FetchBlockWhenAvailable(int blockIndex, IComputationHandler handler)
@@ -555,7 +568,7 @@ namespace Sigma.Core.Data.Datasets
 			int extractorIndex = 0;
 			foreach (IRecordExtractor extractor in recordExtractors)
 			{
-				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
+				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractHierarchicalFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
 
 				//check if block size is 0, indicating we reached the end of the stream 
 				if (subNamedBlock == null)

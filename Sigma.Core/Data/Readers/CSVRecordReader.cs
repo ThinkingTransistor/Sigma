@@ -17,6 +17,9 @@ using System.Linq;
 
 namespace Sigma.Core.Data.Readers
 {
+	/// <summary>
+	/// A CSV record reader which reads comma separated values as string lines from a source.
+	/// </summary>
 	public class CSVRecordReader : IRecordReader
 	{
 		private const int NUMBER_COLUMNS_NOT_SET = -1;
@@ -34,6 +37,12 @@ namespace Sigma.Core.Data.Readers
 			get; private set;
 		}
 
+		/// <summary>
+		/// Create a CSV record reader of a certain data set source and separator.
+		/// </summary>
+		/// <param name="source">The data set source.</param>
+		/// <param name="separator">The separator to use in this CSV reader.</param>
+		/// <param name="skipFirstLine">Indicate if the first line should be skipped.</param>
 		public CSVRecordReader(IDataSetSource source, char separator = ',', bool skipFirstLine = false)
 		{
 			if (source == null)
@@ -48,68 +57,7 @@ namespace Sigma.Core.Data.Readers
 
 		public CSVRecordExtractor Extractor(params object[] parameters)
 		{
-			if (parameters.Length == 0)
-			{
-				throw new ArgumentException("Extractor parameters cannot be empty.");
-			}
-
-			Dictionary<string, IList<int>> columnMappings = new Dictionary<string, IList<int>>();
-
-			string currentNamedSection = null;
-			IList<int> currentColumnMapping = null;
-			int paramIndex = 0;
-
-			foreach (object param in parameters)
-			{
-				if (param is string)
-				{
-					currentNamedSection = (string) param;
-
-					if (columnMappings.ContainsKey(currentNamedSection))
-					{
-						throw new ArgumentException($"Named sections can only be used once, but section {currentNamedSection} (argument {paramIndex}) was already used.");
-					}
-
-					currentColumnMapping = new List<int>();
-					columnMappings.Add(currentNamedSection, currentColumnMapping);
-				}
-				else if (param is int || param is int[])
-				{
-					if (currentNamedSection == null)
-					{
-						throw new ArgumentException("Cannot assign parameters without naming a section.");
-					}
-
-					if (param is int)
-					{
-						currentColumnMapping.Add((int) param);
-					}
-					else
-					{
-						int[] range = (int[]) param;
-
-						if (range.Length != 2)
-						{
-							throw new ArgumentException($"Column ranges can only be pairs (size 2), but array length of argument {paramIndex} was {range.Length}.");
-						}
-
-						int[] flatRange = ArrayUtils.Range(range[0], range[1]);
-
-						for (int i = 0; i < flatRange.Length; i++)
-						{
-							currentColumnMapping.Add(flatRange[i]);
-						}
-					}
-				}
-				else
-				{
-					throw new ArgumentException("All parameters must be either of type string, int or int[]");
-				}
-
-				paramIndex++;
-			}
-
-			return Extractor(columnMappings: columnMappings);
+			return Extractor(columnMappings: CSVRecordExtractor.ParseExtractorParameters(parameters));
 		}
 
 		public CSVRecordExtractor Extractor(Dictionary<string, IList<int>> columnMappings)

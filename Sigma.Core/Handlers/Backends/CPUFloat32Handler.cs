@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data;
 using Sigma.Core.Math;
 using System;
+using System.ComponentModel;
 
 namespace Sigma.Core.Handlers.Backends
 {
@@ -18,6 +19,8 @@ namespace Sigma.Core.Handlers.Backends
 	public class CPUFloat32Handler : IComputationHandler
 	{
 		public IDataType DataType { get { return DataTypes.FLOAT32; } }
+
+		private TypeConverter converter = TypeDescriptor.GetConverter(typeof(float));
 
 		public CPUFloat32Handler()
 		{
@@ -70,6 +73,82 @@ namespace Sigma.Core.Handlers.Backends
 		public void Fill(INDArray arrayToFill, INDArray filler)
 		{
 			throw new NotImplementedException();
+		}
+
+		public void Add<TOther>(INDArray array, TOther value, INDArray output)
+		{
+			NDArray<float> _array = (NDArray<float>) array;
+			NDArray<float> _output = (NDArray<float>) output;
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+
+			CheckSameLength(array, output);
+
+			IDataBuffer<float> _arrayData = _array.data;
+			IDataBuffer<float> _outputData = _output.data;
+
+			for (long i = 0; i < _arrayData.Length; i++)
+			{
+				_outputData.SetValue(_arrayData.GetValue(i) + _value, i);
+			}
+		}
+
+		public void Subtract<TOther>(INDArray array, TOther value, INDArray output)
+		{
+			NDArray<float> _array = (NDArray<float>) array;
+			NDArray<float> _output = (NDArray<float>) output;
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+
+			CheckSameLength(array, output);
+
+			IDataBuffer<float> _arrayData = _array.data;
+			IDataBuffer<float> _outputData = _output.data;
+
+			for (long i = 0; i < _arrayData.Length; i++)
+			{
+				_outputData.SetValue(_arrayData.GetValue(i) - _value, i);
+			}
+		}
+
+		public void Multiply<TOther>(INDArray array, TOther value, INDArray output)
+		{
+			NDArray<float> _array = (NDArray<float>) array;
+			NDArray<float> _output = (NDArray<float>) output;
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+
+			CheckSameLength(array, output);
+
+			IDataBuffer<float> _arrayData = _array.data;
+			IDataBuffer<float> _outputData = _output.data;
+
+			for (long i = 0; i < _arrayData.Length; i++)
+			{
+				_outputData.SetValue(_arrayData.GetValue(i) * _value, i);
+			}
+		}
+
+		public void Divide<TOther>(INDArray array, TOther value, INDArray output)
+		{
+			NDArray<float> _array = (NDArray<float>) array;
+			NDArray<float> _output = (NDArray<float>) output;
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+
+			CheckSameLength(array, output);
+
+			IDataBuffer<float> _arrayData = _array.data;
+			IDataBuffer<float> _outputData = _output.data;
+
+			for (long i = 0; i < _arrayData.Length; i++)
+			{
+				_outputData.SetValue(_arrayData.GetValue(i) / _value, i);
+			}
+		}
+
+		private void CheckSameLength(INDArray a, INDArray b)
+		{
+			if (a.Length != b.Length)
+			{
+				throw new ArgumentException($"NDArray lengths must be equal, but first array was of length {a.Length} and second {b.Length}.");
+			}
 		}
 	}
 }

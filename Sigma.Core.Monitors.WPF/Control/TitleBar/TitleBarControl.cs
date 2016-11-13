@@ -1,6 +1,7 @@
-﻿using MahApps.Metro.Controls;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
 using System.Collections.Generic;
+using System.Windows.Controls;
+using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
@@ -9,11 +10,16 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// <summary>
 		/// The children of the <see cref="TitleBarControl"/>.
 		/// </summary>
-		private List<TitleBarItem> children;
+		private Dictionary<string, TitleBarItem> children;
+
+		public Menu @Menu { get; private set; }
 
 		public TitleBarControl()
 		{
-			children = new List<TitleBarItem>();
+			children = new Dictionary<string, TitleBarItem>();
+
+			Menu = new Menu();
+			Items.Add(Menu);
 
 			//Styling options
 			ShowLastSeparator = false;
@@ -21,13 +27,13 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 
 		/// <summary>
 		/// Add a <see cref="TitleBarItem"/> to the <see cref="TitleBarControl"/>.
-		/// Do not use <see cref="ItemCollection.Add"/>. (Although it will be called internally) 
+		/// Do not use <see cref="ItemCollection.Add"/> ore <see cref="Menu.Items.Add"/>. (Although it will be called internally) 
 		/// </summary>
 		/// <param name="item">The item to add.</param>
 		public void AddItem(TitleBarItem item)
 		{
-			Items.Add(item.Content);
-			children.Add(item);
+			Menu.Items.Add(item.Content);
+			children.Add(item.ToString(), item);
 		}
 
 		/// <summary>
@@ -36,8 +42,8 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// <param name="item"></param>
 		public void RemoveItem(TitleBarItem item)
 		{
-			Items.Remove(item.Content);
-			children.Remove(item);
+			Menu.Items.Remove(item.Content);
+			children.Remove(item.ToString());
 		}
 
 		/// <summary>
@@ -45,28 +51,9 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// </summary>
 		/// <param name="i">The specified index. </param>
 		/// <returns></returns>
-		public TitleBarItem this[int i]
+		public TitleBarItem this[string str]
 		{
-			get { return children[i]; }
+			get { return children[str]; }
 		}
-
-		//#region DependencyProperties
-
-		//public static readonly DependencyProperty ChildrenProperty = DependencyProperty.Register("Text", typeof(string), typeof(TitleBarItem), new UIPropertyMetadata("null"));
-
-		//#endregion DependencyProperties
-
-		//#region Properties
-
-		///// <summary>
-		///// The text that is displayed for the <see cref="TitleBarItem"/>.
-		///// </summary>
-		//public string Text
-		//{
-		//	get { return (string) GetValue(TextProperty); }
-		//	set { SetValue(TextProperty, value); }
-		//}
-
-		//#endregion Properties
 	}
 }

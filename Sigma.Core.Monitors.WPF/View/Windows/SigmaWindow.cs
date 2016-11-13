@@ -1,4 +1,3 @@
-﻿using Dragablz.Dockablz;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI;
@@ -9,6 +8,8 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Dragablz.Dockablz;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
@@ -66,26 +67,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
-			FontFamily = UIColours.FontFamily;
+			FontFamily = UIResources.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
 
 			TitleBar = CreateTitleBar();
 			LeftWindowCommands = TitleBar;
 
-			//Button button = TitleBar[0].Elements[0] as Button;
-			//PopupBox box = TitleBar[0].Content as PopupBox;
-
-			//Debug.WriteLine(box.FocusVisualStyle == null);
-
-			//Debug.WriteLine($"Height: {button.ActualHeight}, Width: {button.ActualWidth}");
-			//var triggers = box.Toggle
-
-			//foreach (var trigger in triggers)
-			//{
-			//	Debug.WriteLine(trigger);
-			//}
-
+			AddTitleBarItems(TitleBar);
 
 			TabControl = CreateTabControl();
 
@@ -118,12 +107,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			//This can only be set in the constructor or onstartup
 			BorderThickness = new Thickness(1);
-			BorderBrush = UIColours.AccentColorBrush;
-			GlowBrush = UIColours.AccentColorBrush;
+			BorderBrush = UIResources.AccentColorBrush;
+			GlowBrush = UIResources.AccentColorBrush;
 
 			//Disable that the titlebar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = UIColours.AccentColorBrush;
+			NonActiveWindowTitleBrush = UIResources.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}
@@ -145,59 +134,30 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			return new TabControlUI<SigmaWindow>(monitor, app, Title);
 		}
 
+		/// <summary>
+		/// Create the <see cref="TitleBarControl"/>.
+		/// </summary>
+		/// <returns></returns>
 		protected virtual TitleBarControl CreateTitleBar()
 		{
 			TitleBarControl titleBarControl = new TitleBarControl();
 			titleBarControl.Margin = new Thickness(0);
 			titleBarControl.Padding = new Thickness(0);
 
-			//titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
-			//titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
-			//titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
-			DockPanel dock = new DockPanel();
-			dock.Height = 20;
-
-			Menu menu = new Menu();
-			menu.IsMainMenu = true;
-
-			DockPanel.SetDock(menu, Dock.Top);
-
-
-			MenuItem environment = new MenuItem() { Header = "_Environment", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 };
-			menu.Items.Add(environment);
-
-
-			environment.Items.Add(new MenuItem() { Header = "_Save" });
-			environment.Items.Add(new MenuItem() { Header = "2" });
-			environment.Items.Add(new MenuItem() { Header = "3" });
-			environment.Items.Add(new Separator());
-
-			var test = new MenuItem() { Header = "Test" };
-			test.Items.Add(new MenuItem() { Header = "Just a prank" });
-			environment.Items.Add(test);
-
-
-			menu.Items.Add(new MenuItem() { Header = "Settings", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 });
-			menu.Items.Add(new MenuItem() { Header = "About", VerticalAlignment = VerticalAlignment.Center, FontSize = 12, Height = 28 });
-
-			Style style = new Style(typeof(MenuItem), app.Resources["MaterialDesignMenuItem"] as Style);
-
-			style.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
-
-			Style style2 = new Style(typeof(Menu), (Style)app.Resources["MaterialDesignMenu"]);
-			style2.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
-
-			//header.Style = style;
-
-			//app.Resources["MaterialDesignPaper"] = Brushes.Transparent;
-
-			Debug.WriteLine(app.Resources["MaterialDesignPaper"]);
-
-			//dock.Children.Add(menu);
-
-			titleBarControl.Items.Add(menu);
-
 			return titleBarControl;
+		}
+
+		/// <summary>
+		/// Add specified <see cref="TitleBarItem"/>s to a given <see cref="TitleBarControl"/>.
+		/// </summary>
+		/// <param name="titleBarControl">The specified <see cref="TitleBarControl"/>.</param>
+		private static void AddTitleBarItems(TitleBarControl titleBarControl)
+		{
+			titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
+			titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
+			titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
+
+			titleBarControl["Environment"].SetFunction("Load", () => Debug.WriteLine("You clicked load"));
 		}
 
 		/// <summary>

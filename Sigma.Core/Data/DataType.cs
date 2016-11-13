@@ -108,6 +108,10 @@ namespace Sigma.Core.Data
 		}
 	}
 
+	/// <summary>
+	/// A default data type implementation.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public class DataType<T> : IDataType
 	{

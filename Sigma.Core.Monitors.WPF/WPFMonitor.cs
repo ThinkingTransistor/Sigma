@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -74,6 +75,11 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		/// <summary>
+		/// The type of the window that will be created.
+		/// A type is passed in order to prevent generics.
+		/// (Mostly that user does not have to care about it)
+		/// </summary>
 		private Type windowType;
 
 		//HACK: decide what Tabs is
@@ -101,6 +107,12 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
+		/// Actions assigned to this list will listen
+		/// to the onStart-event of the <see cref="app"/>.
+		/// </summary>
+		private List<Action<WPFWindow>> onWindowStartup;
+
+		/// <summary>
 		/// The constructor for the WPF Monitor that relies on <see cref="SigmaWindow"/>.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
@@ -116,7 +128,7 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			if (!window.IsSubclassOf(typeof(WPFWindow)))
 			{
-				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}");
+				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}!");
 			}
 
 			Title = title;
@@ -129,6 +141,7 @@ namespace Sigma.Core.Monitors.WPF
 
 		public override void Initialise()
 		{
+			base.Initialise();
 			//Tabs = new TabRegistry(Sigma.Registry);
 			Tabs = new List<string>();
 		}
@@ -142,8 +155,19 @@ namespace Sigma.Core.Monitors.WPF
 
 				window = (WPFWindow) Activator.CreateInstance(windowType, this, app, title);
 
-				app.Startup += (sender, args) => waitForStart.Set();
+				if (onWindowStartup != null)
+				{
+					foreach (var action in onWindowStartup)
+					{
+						app.Startup += (sender, args) => action?.Invoke(window);
+					}
+				}
 
+				app.Startup += (sender, args) =>
+				{
+					Debug.WriteLine("after lock");
+					waitForStart.Set();
+				};
 				app.Run(window);
 			});
 
@@ -160,16 +184,30 @@ namespace Sigma.Core.Monitors.WPF
 		/// <summary>
 		/// This method allows to access the <see cref="WPFWindow"/>. 
 		/// All commands will be executed in the thread of the window!
+		/// If the environment has note been prepared, the function will be executed 
+		/// in OnStartup function of the window. 
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
 		/// <param name="priority">The priority of the execution.</param>
 		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
 		public void WindowDispatcher(Action<WPFWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
 		{
-			window.Dispatcher.Invoke(() =>
+			if (window == null)
 			{
-				action(window);
-			});
+				if (onWindowStartup == null)
+				{
+					onWindowStartup = new List<Action<WPFWindow>>();
+				}
+
+				onWindowStartup.Add(action);
+			}
+			else
+			{
+				window.Dispatcher.Invoke(() =>
+				{
+					action(window);
+				});
+			}
 
 			if (onFinished != null)
 			{

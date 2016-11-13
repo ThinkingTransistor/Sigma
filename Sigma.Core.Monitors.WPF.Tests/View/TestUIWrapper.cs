@@ -14,16 +14,16 @@ namespace Sigma.Core.Monitors.WPF.Tests.View
 			{
 				TestUIWrapperClass wrapper = new TestUIWrapperClass();
 
-				Assert.IsTrue(wrapper.Content is TestControl);
+				Assert.IsTrue(wrapper.WrappedContent is TestControl);
 
-				wrapper.Content.Test = "hello";
+				wrapper.WrappedContent.Test = "hello";
 
-				Assert.AreEqual(wrapper.Content.Test, "hello");
+				Assert.AreEqual(wrapper.WrappedContent.Test, "hello");
 
-				wrapper.Content = new TestControl() { Test = "world" };
+				wrapper.WrappedContent = new TestControl() { Test = "world" };
 
-				Assert.AreNotEqual(wrapper.Content.Test, "hello");
-				Assert.AreEqual(wrapper.Content.Test, "world");
+				Assert.AreNotEqual(wrapper.WrappedContent.Test, "hello");
+				Assert.AreEqual(wrapper.WrappedContent.Test, "world");
 			});
 
 			fred.SetApartmentState(ApartmentState.STA);

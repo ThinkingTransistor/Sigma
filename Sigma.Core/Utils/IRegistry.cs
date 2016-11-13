@@ -13,7 +13,8 @@ using System.Collections.Generic;
 namespace Sigma.Core.Utils
 {
 	/// <summary>
-	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
+	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. 
+	/// Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
 	/// </summary>
 	public interface IRegistry : IDictionary<string, object>
 	{

@@ -1,6 +1,7 @@
 ﻿using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
@@ -15,97 +16,43 @@ namespace Sigma.Tests.Internals.Backend
 {
 	class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
 			log4net.Config.XmlConfigurator.Configure();
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			CSVRecordReader reader = new CSVRecordReader(new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"));
-			//CSVRecordReader reader = new CSVRecordReader(new FileSource("iris.data"));
+			//CSVRecordReader irisReader = new CSVRecordReader(new MultiSource(new FileSource("iris.data"), new URLSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
+			//IRecordExtractor irisExtractor = irisReader.Extractor("inputs2", new[] { 0, 3 }, "targets2", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			//irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets2", minValue: 0, maxValue: 2), new NormalisingPreprocessor(sectionNames: "inputs2", minInputValue: 0, maxInputValue: 6));
 
-			IRecordExtractor extractor = reader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new URLSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+
+			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new URLSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+
 			IComputationHandler handler = new CPUFloat32Handler();
 
-			Dataset dataset = new Dataset("iris", 50, extractor);
+			Dataset dataset = new Dataset("mnist-training", 5, mnistImageExtractor, mnistTargetExtractor);
 
-			FetchAsync(dataset, handler).Wait();
+			var block = dataset.FetchBlock(0, handler);
 
-			//Console.WriteLine("dataset: " + dataset.Name);
-			//Console.WriteLine("sections: " + ArrayUtils.ToString(dataset.SectionNames));
+			if (block == null)
+			{
+				Console.WriteLine("Fetch block 0 FAILED.");
+			}
+			else
+			{
+				foreach (string name in block.Keys)
+				{
+					string blockString = name == "inputs" ? ArrayUtils.ToString<float>(block[name], e => string.Format("{0:0.000}", e).Replace('0', '.'), maxDimensionNewLine: 0) : block[name].ToString();
 
-			//Console.WriteLine("read block 0");
-			//Dictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 0 (again)");
-			//namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("free block 0");
-
-			////freeing the block once, properly
-			//dataset.FreeBlock(0, handler);
-
-			//Console.WriteLine("free block 1");
-
-			////doing it again for good measure
-			//dataset.FreeBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 0 (again after freed)");
-			//namedArrays = dataset.FetchBlock(0, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 1");
-			//namedArrays = dataset.FetchBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("read block 2");
-			//namedArrays = dataset.FetchBlock(2, handler);
-
-			//Console.WriteLine("free block 1");
-			//dataset.FreeBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("fetch block 1 (again)");
-			//namedArrays = dataset.FetchBlock(1, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine("fetch block 3 (doesn't exist)");
-			//namedArrays = dataset.FetchBlock(3, handler);
-
-			//Console.WriteLine("TotalActiveRecords: " + dataset.TotalActiveRecords);
-			//Console.WriteLine("TotalActiveBlockSizeBytes: " + dataset.TotalActiveBlockSizeBytes);
-
-			//Console.WriteLine(SystemInformationUtils.GetAvailablePhysicalMemoryBytes());
+					Console.WriteLine($"[{name}]=\n" + blockString);
+				}
+			}
 
 			Console.ReadKey();
-		}
-
-		private static async Task FetchAsync(Dataset dataset, IComputationHandler handler)
-		{
-			var block1 = dataset.FetchBlockAsync(0, handler);
-			var block3 = dataset.FetchBlockAsync(2, handler);
-			var block2 = dataset.FetchBlockAsync(1, handler);
-
-			Dictionary<string, INDArray> namedArrays1 = await block1;
-			Dictionary<string, INDArray> namedArrays2 = await block2;
-			Dictionary<string, INDArray> namedArrays3 = await block3;
 		}
 	}
 }

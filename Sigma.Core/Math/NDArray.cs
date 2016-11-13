@@ -13,10 +13,14 @@ using System.Text;
 
 namespace Sigma.Core.Math
 {
+	/// <summary>
+	/// A default, in system memory implementation of the INDArray interface. 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	public class NDArray<T> : INDArray
 	{
-		private IDataBuffer<T> data;
+		internal IDataBuffer<T> data;
 
 		public long Length { get; private set; }
 
@@ -32,6 +36,10 @@ namespace Sigma.Core.Math
 
 		public bool IsMatrix { get; private set; }
 
+		/// <summary>
+		/// Create a vectorised ndarray of a certain buffer.
+		/// </summary>
+		/// <param name="buffer">The buffer to back this ndarray.</param>
 		public NDArray(IDataBuffer<T> buffer)
 		{
 			Initialise(new long[] { 1, (int) buffer.Length }, GetStrides(1, (int) buffer.Length));
@@ -39,6 +47,11 @@ namespace Sigma.Core.Math
 			this.data = buffer;
 		}
 
+		/// <summary>
+		/// Create a ndarray of a certain buffer and shape.
+		/// </summary>
+		/// <param name="buffer">The buffer to back this ndarray.</param>
+		/// <param name="shape">The shape.</param>
 		public NDArray(IDataBuffer<T> buffer, long[] shape)
 		{
 			if (buffer.Length < ArrayUtils.Product(shape))
@@ -51,6 +64,10 @@ namespace Sigma.Core.Math
 			this.data = buffer;
 		}
 
+		/// <summary>
+		/// Create a vectorised ndarray of a certain array (array will be COPIED into a data buffer).
+		/// </summary>
+		/// <param name="data">The data to use to fill this ndarray.</param>
 		public NDArray(T[] data)
 		{
 			Initialise(new long[] { 1, (int) data.Length }, GetStrides(1, (int) data.Length));
@@ -58,6 +75,12 @@ namespace Sigma.Core.Math
 			this.data = new DataBuffer<T>(data, 0L, data.Length);
 		}
 
+		/// <summary>
+		/// Create an ndarray of a certain array (array will be COPIED into a data buffer) and shape.
+		/// Total shape length must be smaller or equal than the data array length.
+		/// </summary>
+		/// <param name="data">The data to use to fill this ndarray.</param>
+		/// <param name="shape">The shape.</param>
 		public NDArray(T[] data, params long[] shape)
 		{
 			if (data.Length < ArrayUtils.Product(shape))
@@ -70,6 +93,10 @@ namespace Sigma.Core.Math
 			this.data = new DataBuffer<T>(data, 0L, this.Length);
 		}
 
+		/// <summary>
+		/// Create an ndarray of a certain shape (initialised with zeros).
+		/// </summary>
+		/// <param name="shape">The shape.</param>
 		public NDArray(params long[] shape)
 		{
 			Initialise(CheckShape(shape), GetStrides(shape));
@@ -115,6 +142,35 @@ namespace Sigma.Core.Math
 		public void SetValue<TOther>(TOther value, params long[] indices)
 		{
 			this.data.SetValue((T) Convert.ChangeType(value, this.data.Type.UnderlyingType), GetFlatIndex(this.Shape, this.Strides, indices));
+		}
+
+		public INDArray Slice(long[] beginIndices, long[] endIndices)
+		{
+			if (beginIndices.Length != endIndices.Length)
+			{
+				throw new ArgumentException($"Begin and end indices arrays must be of same length, but begin indices was of length {beginIndices.Length} and end indices {endIndices.Length}.");
+			}
+
+			long[] slicedShape = new long[beginIndices.Length];
+
+			for (int i = 0; i < slicedShape.Length; i++)
+			{
+				slicedShape[i] = endIndices[i] - beginIndices[i];
+				
+				if (slicedShape[i] < 0)
+				{
+					throw new ArgumentException($"Begin indices must be smaller than end indices, but begin indices at [{i}] was {beginIndices[i]} and end indices at [{i}] {endIndices[i]}");
+				}
+
+				//we want the end indices to be inclusive for easier handling
+				endIndices[i]--;
+			}
+
+			long absoluteBeginOffset = GetFlatIndex(this.Shape, this.Strides, beginIndices);
+			long absoluteEndOffset = GetFlatIndex(this.Shape, this.Strides, endIndices);
+			long length = absoluteEndOffset - absoluteBeginOffset + 1;
+
+			return new NDArray<T>(new DataBuffer<T>(this.data, absoluteBeginOffset, length), slicedShape);
 		}
 
 		public INDArray Flatten()
@@ -239,13 +295,23 @@ namespace Sigma.Core.Math
 			}
 		}
 
-		/// <summary>
-		/// Constructs a string representing the contents of this ndarray, formatted properly. 
-		/// </summary>
-		/// <returns>A fancy string representing the contents of this ndarray.</returns>
 		public override string ToString()
 		{
-			StringBuilder builder = new StringBuilder();
+			return this.ToString();
+		}
+
+		public delegate string ToStringElement(T element);
+
+		/// <summary>
+		/// Constructs a string representing the contents of this ndarray, formatted properly and somewhat customisable. 
+		/// </summary>
+		/// <returns>A fancy string representing the contents of this ndarray.</returns>
+		public string ToString(ToStringElement toStringElement = null, int dimensionNewLine = 1)
+		{
+			if (toStringElement == null)
+			{
+				toStringElement = element => element.ToString();
+			}
 
 			int rank = this.Rank;
 			int lastIndex = rank - 1;
@@ -255,6 +321,8 @@ namespace Sigma.Core.Math
 			long[] shape = this.Shape;
 			long[] strides = this.Strides;
 			long length = this.Length;
+
+			StringBuilder builder = new StringBuilder();
 
 			for (long i = 0; i < length; i++)
 			{
@@ -273,7 +341,7 @@ namespace Sigma.Core.Math
 					}
 				}
 
-				builder.Append(this.data.GetValue(i));
+				builder.Append(toStringElement(this.data.GetValue(i)));
 
 				if (indices[lastIndex] < shape[lastIndex] - 1)
 				{
@@ -281,6 +349,8 @@ namespace Sigma.Core.Math
 				}
 
 				bool requestNewLine = false;
+
+				int maxRankNewLine = rank - dimensionNewLine;
 
 				for (int y = rank - 1; y >= 0; y--)
 				{
@@ -293,7 +363,7 @@ namespace Sigma.Core.Math
 						{
 							builder.Append(", ");
 
-							if (!requestNewLine && y < rank - 1)
+							if (!requestNewLine && y < maxRankNewLine)
 							{
 								requestNewLine = true;
 							}

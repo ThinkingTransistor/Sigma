@@ -76,6 +76,15 @@ namespace Sigma.Core.Data
 		void FillWith(ILargeChunkedArray<T> data, long sourceStartIndex, long destStartIndex, long length);
 
 		/// <summary>
+		/// Fill this chunked array with data from another array of the same type within the given range. 
+		/// </summary>
+		/// <param name="data">Another chunked array to copy the data from.</param>
+		/// <param name="sourceStartIndex">The source start index (where to start copying in the source data).</param>
+		/// <param name="destStartIndex">The destination start index (where to start pasting in the destination data - this chunked array).</param>
+		/// <param name="length">The length (how many elements to copy).</param>
+		void FillWith(T[] data, long sourceStartIndex, long destStartIndex, long length);
+
+		/// <summary>
 		/// Fill this chunked array with data from another chunked array of another same type within the given range (data may have to be cast).
 		/// </summary>
 		/// <typeparam name="TOther">The type of the source data.</typeparam>
@@ -106,6 +115,10 @@ namespace Sigma.Core.Data
 
 		public long Length { get; private set; }
 
+		/// <summary>
+		/// Create a large chunked array representation of a certain data array.
+		/// </summary>
+		/// <param name="data"></param>
 		public LargeChunkedArray(T[] data)
 		{
 			this.data = new T[1][];
@@ -115,6 +128,10 @@ namespace Sigma.Core.Data
 			this.Length = data.Length;
 		}
 
+		/// <summary>
+		/// Create a large chunked array representation of a certain data array.
+		/// </summary>
+		/// <param name="size">The size this large chunked array should have.</param>
 		public LargeChunkedArray(long size)
 		{
 			int numBlocks = (int) (size / BLOCK_SIZE);

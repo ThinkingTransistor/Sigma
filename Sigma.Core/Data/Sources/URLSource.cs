@@ -21,6 +21,10 @@ namespace Sigma.Core.Data.Sources
 	{
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string ResourceName { get { return url; } }
+
+		public bool Seekable { get { return true; } }
+
 		private bool exists;
 		private bool checkedExists;
 		private bool prepared;
@@ -30,15 +34,19 @@ namespace Sigma.Core.Data.Sources
 		private FileStream localDownloadedFileStream;
 		private IWebProxy proxy;
 
-		public bool Chunkable
-		{
-			get { return true; }
-		}
-
+		/// <summary>
+		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
+		/// </summary>
+		/// <param name="url">The URL.</param>
 		public URLSource(string url) : this(url, SigmaEnvironment.Globals["datasets"] + GetFileNameFromURL(url))
 		{
 		}
 
+		/// <summary>
+		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
+		/// </summary>
+		/// <param name="url">The URL.</param>
+		/// <param name="localDownloadPath">The local download path, where this file will be downloaded to.</param>
 		public URLSource(string url, string localDownloadPath, IWebProxy proxy = null)
 		{
 			if (url == null)
@@ -81,6 +89,8 @@ namespace Sigma.Core.Data.Sources
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 
 				this.exists = response.StatusCode == HttpStatusCode.OK;
+
+				response.Dispose();
 			}
 			catch
 			{
@@ -129,13 +139,26 @@ namespace Sigma.Core.Data.Sources
 
 				logger.Info($"Downloading URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
 
-				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 8000))
+				bool downloadSuccessful = false;
+
+				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
 				{
 					//TODO when tasks are done - this should be a task
 					//client.progressChangedEvent 
-					client.DownloadFile(url, localDownloadPath);
+					downloadSuccessful = client.DownloadFile(url, localDownloadPath);
 
-					logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
+					if (downloadSuccessful)
+					{
+						logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
+					}
+					else
+					{
+						logger.Warn($"Failed to download URL source \"{url}\", could not prepare this URL source correctly.");
+
+						File.Delete(localDownloadPath);
+
+						return; 
+					}
 				}
 
 				logger.Info($"Opened file \"{localDownloadPath}\".");
@@ -149,7 +172,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (localDownloadedFileStream == null)
 			{
-				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not fetched correctly (missing or failed Prepare() call?).");
+				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not prepared correctly (missing or failed Prepare() call?).");
 			}
 
 			return localDownloadedFileStream;

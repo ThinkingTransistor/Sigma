@@ -81,6 +81,14 @@ namespace Sigma.Core.Math
 		void SetValue<TOther>(TOther value, params long[] indices);
 
 		/// <summary>
+		/// Get a slice of this ndarray of a certain region as a new ndarray with the same underlying data. 
+		/// </summary>
+		/// <param name="beginIndices">The begin indices (inclusively, where the slice should begin).</param>
+		/// <param name="endIndices">The end indices (exclusively, where the slice should end).</param>
+		/// <returns></returns>
+		INDArray Slice(long[] beginIndices, long[] endIndices);
+
+		/// <summary>
 		/// Get a NEW ndarray with the same data but another shape (and different strides).
 		/// Note: The total length of the ndarray cannot change.
 		/// </summary>

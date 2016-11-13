@@ -41,6 +41,7 @@ namespace Sigma.Tests.Data.Preprocessors
 			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new int[][] { new int[] { 0 } } }));
 
 			Assert.AreSame(source, extractor.Reader.Source);
+			Assert.AreEqual(new string[] { "inputs" }, extractor.SectionNames);
 
 			source.Dispose();
 

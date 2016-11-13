@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using MahApps.Metro.Controls;
 using System;
-
+using System.Collections.Generic;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {

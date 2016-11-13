@@ -13,6 +13,16 @@ using System.Text.RegularExpressions;
 
 namespace Sigma.Core.Utils
 {
+	/// <summary>
+	/// A default implementation of the registry resolver interface.
+	/// A registry resolver that resolves layered identifiers. Implementations are expected but not required to cache all resolved identifiers for better performance.
+	/// The supported notation syntax is:
+	///		-	'.' separates registries hierarchically
+	///			Example: "trainer2.training.accuracy"
+	///		-	'*' indicates a wild-card mask, match any name - similar to regex's '.'
+	///			Example: "trainer*.training.accuracy" match all sub-registries whose name starts with trainer
+	///		-	'*<tag>' conditionally matching wild-card mask, match any name if the conditional tag
+	///			Example: "*<trainer>.training.accuracy" match all sub-registries whose tags include the tag "trainer"	/// </summary>
 	public class RegistryResolver : IRegistryResolver, IRegistryHierarchyChangeListener
 	{
 		public IRegistry Root
@@ -25,6 +35,10 @@ namespace Sigma.Core.Utils
 		private Dictionary<string, MatchIdentifierRequestCacheEntry> matchIdentifierCache;
 		private ISet<string> fullIdentifiersToInvalidate;
 
+		/// <summary>
+		/// Create a registry resolver with a certain root registry.
+		/// </summary>
+		/// <param name="root">The root registry.</param>
 		public RegistryResolver(IRegistry root)
 		{
 			if (root == null)

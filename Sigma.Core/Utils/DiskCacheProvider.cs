@@ -26,6 +26,10 @@ namespace Sigma.Core.Utils
 
 		private IFormatter serialisationFormatter;
 
+		/// <summary>
+		/// Create a disk cache provider with a certain root directory.
+		/// </summary>
+		/// <param name="rootDirectory">The root directory.</param>
 		public DiskCacheProvider(string rootDirectory)
 		{
 			if (rootDirectory == null)
@@ -33,19 +37,17 @@ namespace Sigma.Core.Utils
 				throw new ArgumentNullException("Root directory cannot be null.");
 			}
 
-			rootDirectory = rootDirectory.Replace('\\', '/');
-
-			if (rootDirectory.EndsWith("/"))
-			{
-				rootDirectory = rootDirectory.Substring(0, rootDirectory.Length - 1);
-			}
-
 			if (!Directory.Exists(rootDirectory))
 			{
 				Directory.CreateDirectory(rootDirectory);
 			}
 
-			this.RootDirectory = rootDirectory + "/";
+			if (!rootDirectory.EndsWith("/") && !rootDirectory.EndsWith("\\"))
+			{
+				rootDirectory = rootDirectory + (rootDirectory.Contains("/") ? '/' : '\\'); 
+			}
+
+			this.RootDirectory = rootDirectory;
 			this.serialisationFormatter = new BinaryFormatter();
 		}
 
@@ -127,7 +129,7 @@ namespace Sigma.Core.Utils
 		{
 			string[] cacheFiles = Directory.GetFiles(RootDirectory, $"*{CacheFileExtension}", SearchOption.AllDirectories);
 
-			logger.Info($"Removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
+			logger.Info($"Removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
 
 			lock (this)
 			{
@@ -137,7 +139,7 @@ namespace Sigma.Core.Utils
 				}
 			}
 
-			logger.Info($"Done removing ALL {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
+			logger.Info($"Done removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
 		}
 
 		public void Dispose()
