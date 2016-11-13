@@ -45,5 +45,28 @@ namespace Sigma.Tests.Data.Readers
 
 			DeleteTempFile(filename);
 		}
+
+		[TestCase]
+		public void TestByteRecordReaderRead()
+		{
+			string filename = ".unittestfile" + nameof(TestByteRecordReaderCreate);
+
+			CreateCSVTempFile(filename);
+
+			FileSource source = new FileSource(filename, Path.GetTempPath());
+
+			ByteRecordReader reader = new ByteRecordReader(source, 2, 1);
+
+			Assert.Throws<InvalidOperationException>(() => reader.Read(1));
+
+			reader.Prepare();
+
+			Assert.AreEqual(new byte[][] { new byte[] { 5 }, new byte[] { 3 }, new byte[] { 4 } }, reader.Read(4));
+
+			source.Dispose();
+			reader.Dispose();
+
+			DeleteTempFile(filename);
+		}
 	}
 }

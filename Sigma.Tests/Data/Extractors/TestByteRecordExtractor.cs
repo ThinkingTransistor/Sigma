@@ -1,6 +1,8 @@
 ﻿using NUnit.Framework;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
+using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,6 +46,19 @@ namespace Sigma.Tests.Data.Extractors
 			source.Dispose();
 
 			DeleteTempFile(filename);
+		}
+
+		[TestCase]
+		public void TestByteRecordExtractorExtract()
+		{
+			ByteRecordExtractor extractor = new ByteRecordExtractor(ByteRecordExtractor.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
+			IComputationHandler handler = new CPUFloat32Handler();
+
+			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(10, handler));
+
+			byte[][] rawData = new byte[][] { new byte[] { 0 }, new byte[] { 1 } };
+
+			Assert.AreEqual(new float[] { 0, 1 }, extractor.ExtractFrom(rawData, 2, handler)["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0L, 2L));
 		}
 	}
 }

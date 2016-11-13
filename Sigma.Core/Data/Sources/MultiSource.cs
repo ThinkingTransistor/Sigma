@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace Sigma.Core.Data.Sources
 	/// </summary>
 	public class MultiSource : IDataSetSource
 	{
+		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		/// <summary>
 		/// The data source active in this multi source which this data source will imitate.
 		/// Can be null if not yet set or none of the given source exists.
@@ -76,6 +79,8 @@ namespace Sigma.Core.Data.Sources
 				if (source.Exists())
 				{
 					ActiveSource = source;
+
+					logger.Info($"Found existing underlying source {source}, set as active source and forwarding its output.");
 
 					break;
 				}

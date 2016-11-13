@@ -89,6 +89,8 @@ namespace Sigma.Core.Data.Sources
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 
 				this.exists = response.StatusCode == HttpStatusCode.OK;
+
+				response.Dispose();
 			}
 			catch
 			{
@@ -137,13 +139,26 @@ namespace Sigma.Core.Data.Sources
 
 				logger.Info($"Downloading URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
 
-				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 8000))
+				bool downloadSuccessful = false;
+
+				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
 				{
 					//TODO when tasks are done - this should be a task
 					//client.progressChangedEvent 
-					client.DownloadFile(url, localDownloadPath);
+					downloadSuccessful = client.DownloadFile(url, localDownloadPath);
 
-					logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
+					if (downloadSuccessful)
+					{
+						logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
+					}
+					else
+					{
+						logger.Warn($"Failed to download URL source \"{url}\", could not prepare this URL source correctly.");
+
+						File.Delete(localDownloadPath);
+
+						return; 
+					}
 				}
 
 				logger.Info($"Opened file \"{localDownloadPath}\".");

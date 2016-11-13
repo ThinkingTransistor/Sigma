@@ -78,6 +78,11 @@ namespace Sigma.Core.Utils
 				}
 			}
 
+			if (address == null)
+			{
+				return defaultProxy;
+			}
+
 			WebProxy customProxy = new WebProxy(address, port);
 
 			if (username != null)
@@ -109,7 +114,7 @@ namespace Sigma.Core.Utils
 
 		public event ProgressChanged progressChangedEvent;
 
-		public BlockingWebClient(int timeoutMilliseconds = 8000, WebProxy proxy = null)
+		public BlockingWebClient(int timeoutMilliseconds = 16000, WebProxy proxy = null)
 		{
 			if (timeoutMilliseconds <= 0)
 			{
@@ -157,9 +162,9 @@ namespace Sigma.Core.Utils
 		/// <summary>
 		/// A custom download file method which enables progress reporting within the same thread. 
 		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="outputPath"></param>
-		/// <returns></returns>
+		/// <param name="url">The url to download from.</param>
+		/// <param name="outputPath">The output path (where the downloaded file will be stored).</param>
+		/// <returns>A boolean indicating whether the download was successful.</returns>
 		public new bool DownloadFile(string url, string outputPath)
 		{
 			this.downloadSuccess = false;
@@ -171,6 +176,11 @@ namespace Sigma.Core.Utils
 			base.DownloadFileAsync(uri, outputPath);
 
 			this.asyncWait.WaitOne();
+
+			if (previousBytesReceived <= 0)
+			{
+				downloadSuccess = false;
+			}
 
 			return downloadSuccess;
 		}

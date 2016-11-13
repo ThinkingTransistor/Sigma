@@ -21,7 +21,7 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Data.Readers
 {
 	/// <summary>
-	/// A byte record reader, which reads sources bytewise.
+	/// A byte record reader, which reads sources byte-wise.
 	/// </summary>
 	public class ByteRecordReader : IRecordReader
 	{
@@ -32,7 +32,7 @@ namespace Sigma.Core.Data.Readers
 		private int headerBytes;
 		private int recordSizeBytes;
 		private bool prepared;
-		private bool skippedHeaderBytes;
+		private bool processedHeaderBytes;
 
 		/// <summary>
 		/// Create a byte record reader with a certain header size and per record size.
@@ -64,11 +64,6 @@ namespace Sigma.Core.Data.Readers
 
 		public void Prepare()
 		{
-			if (prepared)
-			{
-				return;
-			}
-
 			Source.Prepare();
 
 			prepared = true;
@@ -83,22 +78,26 @@ namespace Sigma.Core.Data.Readers
 
 			Stream stream = Source.Retrieve();
 
-			if (!skippedHeaderBytes)
+			if (!processedHeaderBytes)
 			{
-				int read = stream.Read(new byte[headerBytes], 0, headerBytes);
+				byte[] header = new byte[headerBytes];
+				int read = stream.Read(header, 0, headerBytes);
 
-				skippedHeaderBytes = true;
+				ProcessHeader(header, headerBytes);
+
+				processedHeaderBytes = true;
 
 				if (read != headerBytes)
 				{
+					logger.Warn($"Could not read the requested number of header bytes ({headerBytes} bytes), could only read {read} bytes.");
+
 					return null;
 				}
 			}
 
 			List<byte[]> records = new List<byte[]>();
 
-			int numberOfRecordsRead = 0;
-			while (numberOfRecordsRead < numberOfRecords)
+			for (int numberOfRecordsRead = 0;  numberOfRecordsRead < numberOfRecords; numberOfRecordsRead++)
 			{
 				byte[] buffer = new byte[recordSizeBytes];
 
@@ -110,11 +109,13 @@ namespace Sigma.Core.Data.Readers
 				}
 
 				records.Add(buffer);
-
-				numberOfRecordsRead++;
 			}
 
 			return records.ToArray();
+		}
+
+		protected virtual void ProcessHeader(byte[] header, int headerBytes)
+		{
 		}
 
 		public ByteRecordExtractor Extractor(params object[] parameters)

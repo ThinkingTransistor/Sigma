@@ -20,7 +20,7 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Data.Extractors
 {
 	/// <summary>
-	/// A byte record extractor, which extracts named ranges to ndarrays bytewise.
+	/// A byte record extractor, which extracts named ranges to ndarrays byte-wise from a byte record reader.
 	/// </summary>
 	public class ByteRecordExtractor : BaseExtractor
 	{
@@ -32,7 +32,7 @@ namespace Sigma.Core.Data.Extractors
 		/// <summary>
 		/// Create a byte record extractor with a certain named index mapping.
 		/// </summary>
-		/// <param name="indexMappings">The named index mapping.</param>
+		/// <param name="indexMappings">The named index mappings.</param>
 		public ByteRecordExtractor(Dictionary<string, long[][]> indexMappings)
 		{
 			if (indexMappings == null)

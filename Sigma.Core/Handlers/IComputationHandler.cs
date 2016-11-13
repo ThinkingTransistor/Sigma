@@ -12,7 +12,7 @@ using Sigma.Core.Math;
 namespace Sigma.Core.Handlers
 {
 	/// <summary>
-	/// A computation backend handler. Creates and manages ndarrays, implements their mathematical relations. 
+	/// A computation backend handler. Creates and manages ndarrays, processes mathematical operations at scale. 
 	/// </summary>
 	public interface IComputationHandler
 	{
