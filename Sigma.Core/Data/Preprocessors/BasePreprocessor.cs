@@ -1,6 +1,15 @@
-﻿using Sigma.Core.Data.Extractors;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using Sigma.Core.Data.Extractors;
 using Sigma.Core.Handlers;
 using Sigma.Core.Math;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +18,9 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Preprocessors
 {
+	/// <summary>
+	/// The base class for all preprocessors. Takes care of selective per section processing and simplifies implementation of new preprocessors. 
+	/// </summary>
 	public abstract class BasePreprocessor : BaseExtractor, IRecordPreprocessor
 	{
 		/// <summary>
@@ -18,7 +30,13 @@ namespace Sigma.Core.Data.Preprocessors
 
 		public virtual bool AffectsDataShape { get; }
 
-		protected BasePreprocessor(params string[] processedSectionNames)
+		/// <summary>
+		/// Create a base processor with an optional array of sections to process.
+		/// If an array of section names is specified, only the sections with those names are processed. 
+		/// If no such array is specified (null or empty), all sections are processed.
+		/// </summary>
+		/// <param name="processedSectionNames"></param>
+		protected BasePreprocessor(string[] processedSectionNames = null)
 		{
 			if (processedSectionNames != null && processedSectionNames.Length == 0)
 			{
@@ -39,15 +57,26 @@ namespace Sigma.Core.Data.Preprocessors
 				{
 					processedNamedArrays.Add(sectionName, ProcessDirect(unprocessedNamedArrays[sectionName], handler));
 				}
+				else
+				{
+					processedNamedArrays.Add(sectionName, unprocessedNamedArrays[sectionName]);
+				}
 			}
 
 			return processedNamedArrays;
 		}
 
+		/// <summary>
+		/// Process a certain ndarray with a certain computation handler.
+		/// </summary>
+		/// <param name="array">The ndarray to process.</param>
+		/// <param name="handler">The computation handler to do the processing with.</param>
+		/// <returns>An ndarray with the processed contents of the given array (can be the same or a new one).</returns>
 		protected abstract INDArray ProcessDirect(INDArray array, IComputationHandler handler);
 
 		public override void Dispose()
 		{
+			// there shouldn't be anything to dispose in a preprocessor
 		}
 	}
 }

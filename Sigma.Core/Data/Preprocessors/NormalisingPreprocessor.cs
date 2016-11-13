@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +16,9 @@ using Sigma.Core.Math;
 
 namespace Sigma.Core.Data.Preprocessors
 {
+	/// <summary>
+	/// A normalising preprocessor, which normalises all values in certain named sections to a given range of values.
+	/// </summary>
 	public class NormalisingPreprocessor : BasePreprocessor
 	{
 		public int MinInputValue { get; private set; }
@@ -20,11 +31,25 @@ namespace Sigma.Core.Data.Preprocessors
 		private int outputOffset;
 		private double outputScale;
 
-		public NormalisingPreprocessor(int minInputValue, int maxInputValue) : this(minInputValue, maxInputValue, 0, 1)
+		/// <summary>
+		/// Create a normalising preprocessor with a certain input and an output range of [0, 1] and optionally specify for which sections this processor should be applied.
+		/// </summary>
+		/// <param name="minInputValue">The minimum input value (inclusive).</param>
+		/// <param name="maxInputValue">The maximum input value (inclusive).</param>
+		/// <param name="sectionNames">The optional section names. If specified, only the given sections are processed.</param>
+		public NormalisingPreprocessor(int minInputValue, int maxInputValue, params string[] sectionNames) : this(minInputValue, maxInputValue, 0, 1, sectionNames)
 		{
 		}
 
-		public NormalisingPreprocessor(int minInputValue, int maxInputValue, int minOutputValue, int maxOutputValue)
+		/// <summary>
+		/// Create a normalising preprocessor with a certain input and output range and optionally specify for which sections this processor should be applied.
+		/// </summary>
+		/// <param name="minInputValue">The minimum input value (inclusive).</param>
+		/// <param name="maxInputValue">The maximum input value (inclusive).</param>
+		/// <param name="minOutputValue">The minimum output value (inclusive).</param>
+		/// <param name="maxOutputValue">The maximum output value (inclusive).</param>
+		/// <param name="sectionNames">The optional section names. If specified, only the given sections are processed.</param>
+		public NormalisingPreprocessor(int minInputValue, int maxInputValue, int minOutputValue, int maxOutputValue, params string[] sectionNames) : base(sectionNames)
 		{
 			if (minInputValue >= maxInputValue)
 			{

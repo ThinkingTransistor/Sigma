@@ -238,7 +238,21 @@ namespace Sigma.Core.Utils
 		/// <returns>A string representing the enumerable.</returns>
 		public static string ToString<T>(this IEnumerable<T> array)
 		{
+			if (array == null)
+			{
+				return "null";
+			}
+
 			return "[" + string.Join(", ", array) + "]";
+		}
+
+		public static TOther[] As<T, TOther>(this T[] array)
+		{
+			TOther[] otherArray = new TOther[array.Length];
+
+			Array.Copy(array, otherArray, array.Length);
+
+			return otherArray;
 		}
 
 		/// <summary>
