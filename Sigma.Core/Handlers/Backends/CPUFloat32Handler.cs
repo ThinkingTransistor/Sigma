@@ -70,9 +70,12 @@ namespace Sigma.Core.Handlers.Backends
 			return new NDArray<float>(array.GetDataAs<float>(), array.Shape);
 		}
 
-		public void Fill(INDArray arrayToFill, INDArray filler)
+		public void Fill(INDArray filler, INDArray arrayToFill)
 		{
-			throw new NotImplementedException();
+			IDataBuffer<float> _arrayToFillData = ((NDArray<float>) arrayToFill).data;
+			IDataBuffer<float> _fillerData = ((NDArray<float>) filler).data;
+
+			_arrayToFillData.Data.FillWith(_fillerData.Data, 0, 0, System.Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		public void Add<TOther>(INDArray array, TOther value, INDArray output)

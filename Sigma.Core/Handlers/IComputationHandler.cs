@@ -68,9 +68,9 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Fill an ndarray with the contents of another ndarray.
 		/// </summary>
-		/// <param name="arrayToFill">The ndarray to fill.</param>
 		/// <param name="filler">The filler ndarray (from which the values will be copied).</param>
-		void Fill(INDArray arrayToFill, INDArray filler);
+		/// <param name="arrayToFill">The ndarray to fill.</param>
+		void Fill(INDArray filler, INDArray arrayToFill);
 
 		/// <summary>
 		/// Add a value to all elements in an ndarray and put the result in another ndarray.
