@@ -77,14 +77,12 @@ namespace Sigma.Core.Handlers.Backends
 
 		public void Add<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			NDArray<float> _array = (NDArray<float>) array;
-			NDArray<float> _output = (NDArray<float>) output;
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
-
 			CheckSameLength(array, output);
 
-			IDataBuffer<float> _arrayData = _array.data;
-			IDataBuffer<float> _outputData = _output.data;
+			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
+			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
 
 			for (long i = 0; i < _arrayData.Length; i++)
 			{
@@ -94,14 +92,12 @@ namespace Sigma.Core.Handlers.Backends
 
 		public void Subtract<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			NDArray<float> _array = (NDArray<float>) array;
-			NDArray<float> _output = (NDArray<float>) output;
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
-
 			CheckSameLength(array, output);
 
-			IDataBuffer<float> _arrayData = _array.data;
-			IDataBuffer<float> _outputData = _output.data;
+			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
+			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
 
 			for (long i = 0; i < _arrayData.Length; i++)
 			{
@@ -111,14 +107,12 @@ namespace Sigma.Core.Handlers.Backends
 
 		public void Multiply<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			NDArray<float> _array = (NDArray<float>) array;
-			NDArray<float> _output = (NDArray<float>) output;
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
-
 			CheckSameLength(array, output);
 
-			IDataBuffer<float> _arrayData = _array.data;
-			IDataBuffer<float> _outputData = _output.data;
+			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
+			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
 
 			for (long i = 0; i < _arrayData.Length; i++)
 			{
@@ -128,14 +122,12 @@ namespace Sigma.Core.Handlers.Backends
 
 		public void Divide<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			NDArray<float> _array = (NDArray<float>) array;
-			NDArray<float> _output = (NDArray<float>) output;
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
-
 			CheckSameLength(array, output);
 
-			IDataBuffer<float> _arrayData = _array.data;
-			IDataBuffer<float> _outputData = _output.data;
+			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
+			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+
+			float _value = (float) System.Convert.ChangeType(value, typeof(float));
 
 			for (long i = 0; i < _arrayData.Length; i++)
 			{
