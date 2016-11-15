@@ -31,7 +31,7 @@ namespace Sigma.Core.Utils
 
 			ITaskObserver observer = new TaskObserver(taskType, taskDescription, exposed);
 
-			observer.Status = TaskStatus.RUNNING;
+			observer.Status = TaskObserveStatus.RUNNING;
 			observer.StartTime = DateTime.Now;
 
 			if (indeterminate)
@@ -49,13 +49,13 @@ namespace Sigma.Core.Utils
 
 		public void CancelTask(ITaskObserver task)
 		{
-			if (task.Status != TaskStatus.RUNNING)
+			if (task.Status != TaskObserveStatus.RUNNING)
 			{
 				//nothing to do here, task is not even running
 				return;
 			}
 
-			task.Status = TaskStatus.CANCELED;
+			task.Status = TaskObserveStatus.CANCELED;
 
 			lock (runningObservers)
 			{
@@ -65,13 +65,13 @@ namespace Sigma.Core.Utils
 
 		public void EndTask(ITaskObserver task)
 		{
-			if (task.Status != TaskStatus.RUNNING)
+			if (task.Status != TaskObserveStatus.RUNNING)
 			{
 				//nothing to do here, task is not even running
 				return;
 			}
 
-			task.Status = TaskStatus.ENDED;
+			task.Status = TaskObserveStatus.ENDED;
 
 			lock (runningObservers)
 			{
@@ -86,7 +86,7 @@ namespace Sigma.Core.Utils
 
 		public IEnumerable<ITaskObserver> GetTasks(ITaskType taskType)
 		{
-			return runningObservers.Where(observer => observer.Type == taskType);
+			return runningObservers.Where(observer => observer.Type == taskType && observer.Exposed);
 		}
 	}
 

@@ -30,9 +30,9 @@ namespace Sigma.Core.Utils
 		ITaskType Type { get; set; }
 
 		/// <summary>
-		/// The current status of this task (running, ended, canceled - <see cref="TaskStatus"/>).
+		/// The current status of this task (running, ended, canceled - <see cref="TaskObserveStatus"/>).
 		/// </summary>
-		TaskStatus Status { get; set; }
+		TaskObserveStatus Status { get; set; }
 
 		/// <summary>
 		/// An optional task description, describing further details about this task (e.g. what file is being downloaded). 
@@ -67,7 +67,7 @@ namespace Sigma.Core.Utils
 		public string Description { get; set; }
 		public bool Exposed { get; set; } = true;
 		public float Progress { get; set; }
-		public TaskStatus Status { get; set; }
+		public TaskObserveStatus Status { get; set; }
 		public ITaskType Type { get; set; }
 		public DateTime StartTime { get; set; }
 		public TimeSpan TimeSinceStarted { get { return DateTime.Now - StartTime; } }
@@ -86,16 +86,21 @@ namespace Sigma.Core.Utils
 
 		public void Report(float value)
 		{
-			this.Progress = value / 100.0f;
+			float newProgress = value / 100.0f;
 
-			//Console.WriteLine($"{Type.ExpressedType}  {Description} ({string.Format("{0:00.0}", Progress * 100)}%)");
+			if (newProgress != Progress)
+			{
+				this.Progress = value / 100.0f;
+
+				Console.WriteLine($"{Type.ExpressedType} {Description} ({string.Format("{0:00.0}", Progress * 100)}%)");
+			}
 		}
 	}
 
 	/// <summary>
 	/// A task status, used by task manager and task observers to indicate what a given task is up to.
 	/// </summary>
-	public enum TaskStatus
+	public enum TaskObserveStatus
 	{
 		RUNNING,
 		ENDED,

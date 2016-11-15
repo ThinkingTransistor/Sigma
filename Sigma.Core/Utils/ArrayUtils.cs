@@ -246,6 +246,13 @@ namespace Sigma.Core.Utils
 			return "[" + string.Join(", ", array) + "]";
 		}
 
+		/// <summary>
+		/// Convert any array to an array of another type (and convert the contents as needed).
+		/// </summary>
+		/// <typeparam name="T">The current type of the array elements.</typeparam>
+		/// <typeparam name="TOther">The new type which the array elements should have.</typeparam>
+		/// <param name="array">The array to convert.</param>
+		/// <returns>A new converted array with the given element type and converted elements.</returns>
 		public static TOther[] As<T, TOther>(this T[] array)
 		{
 			TOther[] otherArray = new TOther[array.Length];
