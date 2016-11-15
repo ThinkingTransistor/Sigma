@@ -106,6 +106,7 @@ namespace Sigma.Core.Utils
 		public long previousBytesReceived;
 
 		private bool downloadSuccess;
+		private IProgress<float> downloadProgress;
 
 		private EventWaitHandle asyncWait = new ManualResetEvent(false);
 		private Timer timeoutTimer = null;
@@ -165,9 +166,10 @@ namespace Sigma.Core.Utils
 		/// <param name="url">The url to download from.</param>
 		/// <param name="outputPath">The output path (where the downloaded file will be stored).</param>
 		/// <returns>A boolean indicating whether the download was successful.</returns>
-		public new bool DownloadFile(string url, string outputPath)
+		public new bool DownloadFile(string url, string outputPath, IProgress<float> progress)
 		{
 			this.downloadSuccess = false;
+			this.downloadProgress = progress;
 
 			this.asyncWait.Reset();
 
@@ -198,6 +200,8 @@ namespace Sigma.Core.Utils
 			previousBytesReceived = ev.BytesReceived;
 
 			OnProgressChanged(newBytesReceived, previousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
+
+			this.downloadProgress.Report(ev.ProgressPercentage);
 
 			this.timeoutTimer.Change(this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
 		}

@@ -130,6 +130,8 @@ namespace Sigma.Core.Data.Sources
 
 			if (!this.prepared)
 			{
+				ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.DOWNLOAD, url);
+
 				Directory.CreateDirectory(new FileInfo(localDownloadPath).Directory.FullName);
 
 				if (File.Exists(localDownloadPath))
@@ -143,9 +145,7 @@ namespace Sigma.Core.Data.Sources
 
 				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
 				{
-					//TODO when tasks are done - this should be a task
-					//client.progressChangedEvent 
-					downloadSuccessful = client.DownloadFile(url, localDownloadPath);
+					downloadSuccessful = client.DownloadFile(url, localDownloadPath, task);
 
 					if (downloadSuccessful)
 					{
@@ -157,6 +157,8 @@ namespace Sigma.Core.Data.Sources
 
 						File.Delete(localDownloadPath);
 
+						SigmaEnvironment.TaskManager.CancelTask(task);
+
 						return; 
 					}
 				}
@@ -165,6 +167,8 @@ namespace Sigma.Core.Data.Sources
 				localDownloadedFileStream = new FileStream(localDownloadPath, FileMode.Open);
 
 				prepared = true;
+
+				SigmaEnvironment.TaskManager.EndTask(task);
 			}
 		}
 

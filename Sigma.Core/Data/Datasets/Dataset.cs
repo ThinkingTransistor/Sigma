@@ -563,7 +563,13 @@ namespace Sigma.Core.Data.Datasets
 		{
 			Dictionary<string, INDArray> namedBlocks = new Dictionary<string, INDArray>();
 
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.PREPARE, "extractors for dataset " + Name, indeterminate: true);
+
 			PrepareExtractors();
+
+			SigmaEnvironment.TaskManager.EndTask(prepareTask);
+
+			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.PREPARE, $"block {blockIndex} for dataset {Name}", indeterminate: true);
 
 			int extractorIndex = 0;
 			foreach (IRecordExtractor extractor in recordExtractors)
@@ -577,6 +583,8 @@ namespace Sigma.Core.Data.Datasets
 
 					logger.Info($"Cannot  extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
 
+					SigmaEnvironment.TaskManager.CancelTask(extractTask);
+
 					return null;
 				}
 
@@ -584,6 +592,8 @@ namespace Sigma.Core.Data.Datasets
 				{
 					if (namedBlocks.ContainsKey(name))
 					{
+						SigmaEnvironment.TaskManager.CancelTask(extractTask);
+
 						throw new ArgumentException($"Section name collision: {name} is already used by another extractor, current extractor {extractor} cannot use it again.");
 					}
 					else
@@ -592,6 +602,8 @@ namespace Sigma.Core.Data.Datasets
 					}
 				}
 			}
+
+			SigmaEnvironment.TaskManager.EndTask(extractTask);
 
 			return namedBlocks;
 		}
@@ -660,9 +672,13 @@ namespace Sigma.Core.Data.Datasets
 
 			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
 
+			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.SAVE, cacheIdentifier, indeterminate: true);
+
 			cacheProvider.Store(cacheIdentifier, block);
 
 			RegisterCachedBlock(block, blockIndex, handler);
+
+			SigmaEnvironment.TaskManager.EndTask(task);
 
 			totalCachedBlockSizeBytes += blockSizeBytes;
 		}

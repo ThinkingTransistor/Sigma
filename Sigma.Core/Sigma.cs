@@ -14,6 +14,9 @@ using System.Net;
 
 namespace Sigma.Core
 {
+	/// <summary>
+	/// A sigma environment, where all the magic happens.
+	/// </summary>
 	public class SigmaEnvironment
 	{
 		private IRegistry rootRegistry;
@@ -53,7 +56,7 @@ namespace Sigma.Core
 			this.rootRegistryResolver = new RegistryResolver(this.rootRegistry);
 		}
 
-		public T AddMonitor<T>(T monitor) where T : IMonitor
+		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
 		{
 			//TODO: 
 			monitor.Sigma = this;
@@ -113,12 +116,23 @@ namespace Sigma.Core
 			return rootRegistryResolver.ResolveSet<T>(matchIdentifier, value, associatedType);
 		}
 
+		// static part of SigmaEnvironment
+
+		/// <summary>
+		/// The task manager for this environment.
+		/// </summary>
+		public static ITaskManager TaskManager
+		{
+			get; internal set;
+		}
+
 		internal static IRegistry activeSigmaEnvironments;
 		private static readonly ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
 		{ 
 			activeSigmaEnvironments = new Registry();
+			TaskManager = new TaskManager();
 
 			Globals = new Registry();
 			RegisterGlobals();
@@ -180,16 +194,6 @@ namespace Sigma.Core
 		}
 
 		/// <summary>
-		/// Checks whether an environment exists with the given name.
-		/// </summary>
-		/// <param name="environmentName">The environment name.</param>
-		/// <returns>A boolean indicating if an environment with the given name exists.</returns>
-		public static bool Exists(string environmentName)
-		{
-			return activeSigmaEnvironments.ContainsKey(environmentName);
-		}
-
-		/// <summary>
 		/// Gets an environment with a given name, if previously created (null otherwise).
 		/// </summary>
 		/// <param name="environmentName">The environment name.</param>
@@ -197,6 +201,16 @@ namespace Sigma.Core
 		public static SigmaEnvironment Get(string environmentName)
 		{
 			return activeSigmaEnvironments.Get<SigmaEnvironment>(environmentName);
+		}
+
+		/// <summary>
+		/// Checks whether an environment exists with the given name.
+		/// </summary>
+		/// <param name="environmentName">The environment name.</param>
+		/// <returns>A boolean indicating if an environment with the given name exists.</returns>
+		public static bool Exists(string environmentName)
+		{
+			return activeSigmaEnvironments.ContainsKey(environmentName);
 		}
 
 		/// <summary>
