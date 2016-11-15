@@ -1,4 +1,4 @@
-﻿/* 
+/* 
 MIT License
 
 Copyright (c) 2016 Florian Cäsar, Michael Plainer
@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI;
+using System.Diagnostics;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 
 namespace Sigma.Core.Monitors.WPF.Control.Tabs
 {
@@ -34,7 +37,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			}
 		}
 
-		public TabControlUI(WPFMonitor monitor, App app, string title) : base()
+		public TabControlUI (WPFMonitor monitor, App app, string title) : base()
 		{
 			tabs = new List<UIWrapper<TabItem>>();
 
@@ -54,11 +57,13 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			//Allow to create new dragged out windows
 			tabControl.InterTabController = new InterTabController() { InterTabClient = new CustomInterTabClient(monitor, app, title) };
 
+			tabControl.FontFamily = UIResources.FontFamily;
+			tabControl.FontSize = UIResources.P1;
 
 			content.Content = tabControl;
 		}
 
-		public void AddTab(UIWrapper<TabItem> tabUI)
+		public void AddTab (UIWrapper<TabItem> tabUI)
 		{
 			tabs.Add(tabUI);
 			tabControl.Items.Add((TabItem) tabUI);
@@ -70,26 +75,26 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			private App app;
 			private string title;
 
-			public CustomInterTabClient(WPFMonitor monitor, App app, string title)
+			public CustomInterTabClient (WPFMonitor monitor, App app, string title)
 			{
 				this.monitor = monitor;
 				this.app = app;
 				this.title = title;
 			}
 
-			public INewTabHost<Window> GetNewHost(IInterTabClient interTabClient, object partition, TabablzControl source)
+			public INewTabHost<Window> GetNewHost (IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
 				T window = Construct(new Type[] { typeof(WPFMonitor), typeof(App), typeof(string), typeof(bool) }, new object[] { monitor, app, title, false });
 				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 
-			public TabEmptiedResponse TabEmptiedHandler(TabablzControl tabControl, Window window)
+			public TabEmptiedResponse TabEmptiedHandler (TabablzControl tabControl, Window window)
 			{
 				window.Close();
 				return TabEmptiedResponse.CloseWindowOrLayoutBranch;
 			}
 
-			private static T Construct(Type[] paramTypes, object[] paramValues)
+			private static T Construct (Type[] paramTypes, object[] paramValues)
 			{
 				Type t = typeof(T);
 

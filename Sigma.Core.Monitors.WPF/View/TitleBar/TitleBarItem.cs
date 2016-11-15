@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using Sigma.Core.Monitors.WPF.Model.UI;
 
 namespace Sigma.Core.Monitors.WPF.View.TitleBar
 {
@@ -31,7 +33,9 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <see cref="string"/>, another <see cref="TitleBarItem"/>
 		/// or an <see cref="UIElement"/>
 		/// - otherwise a <see cref="ArgumentException"/> is thrown.</param>
-		public TitleBarItem(object header, params object[] children) : this(new MenuItem() { Header = header }, children) { }
+		//HACK: fixed size
+		//TODO: apply style
+		public TitleBarItem (object header, params object[] children) : this(new MenuItem() { Header = header, VerticalAlignment = VerticalAlignment.Center, Height = 25 }, children) { }
 
 		/// <summary>
 		/// Create a <see cref="TitleBarItem"/> with given <see cref="MenuItem"/> and children.
@@ -42,7 +46,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <see cref="string"/>, another <see cref="TitleBarItem"/>
 		/// or an <see cref="UIElement"/>
 		/// - otherwise a <see cref="ArgumentException"/> is thrown.</param>
-		public TitleBarItem(MenuItem item, params object[] children)
+		public TitleBarItem (MenuItem item, params object[] children)
 		{
 			Content = item;
 			Children = new Dictionary<string, UIElement>();
@@ -121,7 +125,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <param name="action">The <see cref="Action"/> that will be assigned
 		/// to the <see cref="UIElement"/></param>
 		/// <returns>The <see cref="TitleBarItem"/> for concatenation. </returns>
-		public TitleBarItem SetFunction(string elementKey, Action action)
+		public TitleBarItem SetFunction (string elementKey, Action action)
 		{
 			return SetFunction(Children[elementKey], action);
 		}
@@ -136,7 +140,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <param name="action">The <see cref="Action"/> that will be assigned
 		/// to the <see cref="UIElement"/></param>
 		/// <returns>The <see cref="TitleBarItem"/> for concatenation. </returns>
-		public TitleBarItem SetFunction(UIElement item, Action action)
+		public TitleBarItem SetFunction (UIElement item, Action action)
 		{
 			if (item == null)
 			{
@@ -160,7 +164,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			return this;
 		}
 
-		public override string ToString()
+		public override string ToString ()
 		{
 			return Content.Header.ToString();
 		}

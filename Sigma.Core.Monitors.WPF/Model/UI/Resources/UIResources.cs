@@ -1,12 +1,27 @@
-﻿using System.Windows;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Media;
 
-namespace Sigma.Core.Monitors.WPF.Model.UI
+namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 {
 	public static class UIResources
 	{
 		#region Font
 		public static FontFamily @FontFamily { get; private set; }
+
+		#region FontSize
+		public static readonly double H1;
+		public static readonly double H2;
+		public static readonly double H3;
+		public static readonly double H4;
+		public static readonly double H5;
+		public static readonly double H6;
+
+		public static readonly double P1;
+		public static readonly double P2;
+		public static readonly double P3;
+
+		#endregion FontSize
 
 		public static Style MaterialDesignDisplay4TextBlock { get; private set; }
 		public static Style MaterialDesignDisplay3TextBlock { get; private set; }
@@ -59,12 +74,24 @@ namespace Sigma.Core.Monitors.WPF.Model.UI
 		#endregion
 		#endregion
 
-		static UIResources()
+		static UIResources ()
 		{
 			Application app = Application.Current;
 
 			#region Font
 			FontFamily = (FontFamily) app.Resources["MaterialDesignFont"];
+
+			H1 = (double) app.Resources["H1"];
+			H2 = (double) app.Resources["H2"];
+			H3 = (double) app.Resources["H3"];
+			H4 = (double) app.Resources["H4"];
+			H5 = (double) app.Resources["H5"];
+			H6 = (double) app.Resources["H6"];
+
+			P1 = (double) app.Resources["P1"];
+			P2 = (double) app.Resources["P2"];
+			P3 = (double) app.Resources["P3"];
+
 
 			MaterialDesignDisplay4TextBlock = (Style) app.Resources["MaterialDesignDisplay4TextBlock"];
 			MaterialDesignDisplay3TextBlock = (Style) app.Resources["MaterialDesignDisplay3TextBlock"];

@@ -1,0 +1,11 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:Sigma.Core.Monitors.WPF.View.Styles">
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="../../Model/UI/Resources/FontResource.xaml"/>
+		
+		<ResourceDictionary Source="TitleBar/MenuStyle.xaml"/>
+		
+	</ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

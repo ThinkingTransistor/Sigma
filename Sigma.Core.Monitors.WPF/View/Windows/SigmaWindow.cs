@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Dragablz.Dockablz;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {

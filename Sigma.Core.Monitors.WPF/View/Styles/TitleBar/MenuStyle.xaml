@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:Sigma.Core.Monitors.WPF.View.Styles.TitleBar">
+
+	<Style TargetType="{x:Type Menu}" BasedOn="{StaticResource MaterialDesignMenu}">
+		<Setter Property="FontSize" Value="{DynamicResource P1}"></Setter>
+	</Style>
+</ResourceDictionary>
