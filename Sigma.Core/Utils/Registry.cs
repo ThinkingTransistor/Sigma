@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,13 +23,18 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class Registry : IRegistry
 	{
-		private Dictionary<string, object> mappedValues;
-		private Dictionary<string, Type> associatedTypes;
+		internal Dictionary<string, object> mappedValues;
+		internal Dictionary<string, Type> associatedTypes;
 
 		public bool CheckTypes
 		{
 			get; set;
 		} = true;
+
+		public bool IgnoreNonDeepCopyable
+		{
+			get; set;
+		} 
 
 		public ICollection<string> Keys
 		{
@@ -104,6 +110,52 @@ namespace Sigma.Core.Utils
 			this.HierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
 		}
 
+		public object DeepCopy()
+		{
+			Registry copy = new Registry(this.Parent);
+
+			foreach (string identifier in this.mappedValues.Keys)
+			{
+				object value = this.mappedValues[identifier];
+
+				if (value.GetType().IsPrimitive)
+				{
+					copy.mappedValues.Add(identifier, value);
+				}
+				else
+				{
+					IDeepCopyable cloneable = value as IDeepCopyable;
+
+					object copiedValue;
+
+					if (cloneable == null)
+					{
+						if (IgnoreNonDeepCopyable)
+						{
+							copiedValue = value;
+						}
+						else
+						{
+							throw new InvalidOperationException($"The IRegistry.Copy method requires all non-primitive values to implement IDeepCopyable, but value {value} associated with identifier {identifier} does not.");
+						}
+					}
+					else
+					{
+						copiedValue = cloneable.DeepCopy();
+					}
+
+					copy.mappedValues.Add(identifier, copiedValue);
+				}
+			}
+
+			foreach (string identifier in this.associatedTypes.Keys)
+			{
+				copy.associatedTypes.Add(identifier, this.associatedTypes[identifier]);
+			}
+
+			return copy;
+		}
+
 		public object this[string identifier]
 		{
 			get
@@ -117,7 +169,7 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public void Set(string identifier, object value, Type valueType = null)
+		public virtual void Set(string identifier, object value, Type valueType = null)
 		{
 			if (valueType != null)
 			{
@@ -175,7 +227,7 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public void Add(string key, object value)
+		public virtual void Add(string key, object value)
 		{
 			mappedValues.Add(key, value);
 		}
@@ -230,7 +282,7 @@ namespace Sigma.Core.Utils
 			return (T) Remove(identifier);
 		}
 
-		public object Remove(string identifier)
+		public virtual object Remove(string identifier)
 		{
 			associatedTypes.Remove(identifier);
 
@@ -241,7 +293,7 @@ namespace Sigma.Core.Utils
 			return previousValue;
 		}
 
-		public bool Remove(KeyValuePair<string, object> item)
+		public virtual bool Remove(KeyValuePair<string, object> item)
 		{
 			if (ReferenceEquals(Get(item.Key), item.Value))
 			{
@@ -326,6 +378,46 @@ namespace Sigma.Core.Utils
 			}
 
 			return str.ToString();
+		}
+	}
+
+	/// <summary>
+	/// A read only view of a registry. 
+	/// </summary>
+	public class ReadOnlyRegistry : Registry, IReadOnlyRegistry
+	{
+		private Registry underlyingRegistry;
+
+		public ReadOnlyRegistry(Registry underlyingRegistry)
+		{
+			if (underlyingRegistry == null)
+			{
+				throw new ArgumentNullException("Underlying registry cannot be null.");
+			}
+
+			this.underlyingRegistry = underlyingRegistry;
+			this.mappedValues = underlyingRegistry.mappedValues;
+			this.associatedTypes = underlyingRegistry.associatedTypes;
+		}
+
+		public override void Set(string identifier, object value, Type valueType = null)
+		{
+			throw new ReadOnlyException($"This registry is read-only. The identifier {identifier} cannot be set to {value}.");
+		}
+
+		public override void Add(string identifier, object value)
+		{
+			throw new ReadOnlyException($"This registry is read-only. The identifier {identifier} cannot be added.");
+		}
+
+		public override bool Remove(KeyValuePair<string, object> item)
+		{
+			throw new ReadOnlyException($"This registry is read-only. The item {item} cannot be removed.");
+		}
+
+		public override object Remove(string identifier)
+		{
+			throw new ReadOnlyException($"This registry is read-only. The identifier {identifier} cannot be removed.");
 		}
 	}
 }

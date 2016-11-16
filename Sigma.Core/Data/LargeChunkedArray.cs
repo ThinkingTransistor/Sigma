@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Sigma.Core.Data
 	/// A (typically large) chunked array of any type. Behaves like an array but the data is actually split into chunks in a two-dimensional array. Typically used when the normal, one-dimensional array limit (2^32 / 2) is not enough or inconvenient. 
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public interface ILargeChunkedArray<T> : IEnumerable<T>
+	public interface ILargeChunkedArray<T> : IEnumerable<T>, IDeepCopyable
 	{
 		/// <summary>
 		/// The chunked data. First dimension represents chunk index and second data index within chunk. 
@@ -128,6 +129,12 @@ namespace Sigma.Core.Data
 			this.Length = data.Length;
 		}
 
+		internal LargeChunkedArray(T[][] data, long length)
+		{
+			this.data = data;
+			this.Length = length;
+		}
+
 		/// <summary>
 		/// Create a large chunked array representation of a certain data array.
 		/// </summary>
@@ -153,6 +160,11 @@ namespace Sigma.Core.Data
 			data[numBlocks - 1] = new T[differentLastArray ? size % BLOCK_SIZE : BLOCK_SIZE];
 
 			Length = size;
+		}
+
+		public object DeepCopy()
+		{
+			return new LargeChunkedArray<T>((T[][]) this.data.Clone(), this.Length);
 		}
 
 		public T this[long index]

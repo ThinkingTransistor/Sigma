@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Utils;
 using System.Collections.Generic;
 
 namespace Sigma.Core.Data
@@ -14,7 +15,7 @@ namespace Sigma.Core.Data
 	/// A data buffer view with data of a certain type. Data buffers can be "stacked" hierarchically, meaning data buffers can represent a buffer view of their underlying data.
 	/// </summary>
 	/// <typeparam name="T">The underlying data type.</typeparam>
-	public interface IDataBuffer<T> : IEnumerable<T>
+	public interface IDataBuffer<T> : IEnumerable<T>, IDeepCopyable
 	{
 		/// <summary>
 		/// The number of elements in this data buffer.

@@ -88,7 +88,7 @@ namespace Sigma.Core.Data
 		/// </summary>
 		/// <param name="data">The large chunked array data.</param>
 		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
-		public DataBuffer(LargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
+		public DataBuffer(ILargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
 		{
 		}
 
@@ -99,7 +99,7 @@ namespace Sigma.Core.Data
 		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
 		/// <param name="offset">The offset relative to the data array.</param>
 		/// <param name="length">The length this buffer should have.</param>
-		public DataBuffer(LargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
+		public DataBuffer(ILargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
 		{
 			if (data == null)
 			{
@@ -220,6 +220,11 @@ namespace Sigma.Core.Data
 		public IDataBuffer<T> Copy()
 		{
 			return new DataBuffer<T>(this);
+		}
+
+		public object DeepCopy()
+		{
+			return new DataBuffer<T>((ILargeChunkedArray<T>) this.data.DeepCopy(), this.Type);
 		}
 
 		public T GetValue(long index)

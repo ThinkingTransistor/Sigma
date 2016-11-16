@@ -138,6 +138,8 @@
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />
+    <Compile Include="Utils\IDeepCopyable.cs" />
+    <Compile Include="Utils\IHook.cs" />
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
@@ -146,6 +148,7 @@
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
     <Compile Include="Utils\ITaskManager.cs" />
+    <Compile Include="Utils\TimeStep.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>

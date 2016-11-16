@@ -166,7 +166,7 @@ namespace Sigma.Core.Utils
 		/// <param name="url">The url to download from.</param>
 		/// <param name="outputPath">The output path (where the downloaded file will be stored).</param>
 		/// <returns>A boolean indicating whether the download was successful.</returns>
-		public new bool DownloadFile(string url, string outputPath, IProgress<float> progress)
+		public bool DownloadFile(string url, string outputPath, IProgress<float> progress = null)
 		{
 			this.downloadSuccess = false;
 			this.downloadProgress = progress;
@@ -201,7 +201,10 @@ namespace Sigma.Core.Utils
 
 			OnProgressChanged(newBytesReceived, previousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
 
-			this.downloadProgress.Report(ev.ProgressPercentage);
+			if (this.downloadProgress != null)
+			{
+				this.downloadProgress.Report(ev.ProgressPercentage);
+			}
 
 			this.timeoutTimer.Change(this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
 		}

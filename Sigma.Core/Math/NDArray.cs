@@ -18,7 +18,7 @@ namespace Sigma.Core.Math
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	public class NDArray<T> : INDArray
+	public class NDArray<T> : INDArray, IDeepCopyable
 	{
 		internal IDataBuffer<T> data;
 
@@ -107,6 +107,11 @@ namespace Sigma.Core.Math
 		public NDArray<T> Copy()
 		{
 			return new NDArray<T>(this.data, this.Shape);
+		}
+
+		public object DeepCopy()
+		{
+			return new NDArray<T>((IDataBuffer<T>) this.data.DeepCopy(), (long[]) this.Shape.Clone());
 		}
 
 		private void Initialise(long[] shape, long[] strides)
