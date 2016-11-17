@@ -81,7 +81,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			LeftWindowCommands = TitleBar;
 
 			AddTitleBarItems(TitleBar);
-			ApplyTitleBarStyle();
 
 			TabControl = CreateTabControl();
 
@@ -93,14 +92,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 
 			Content = (Layout) TabControl;
-		}
-
-		private void ApplyTitleBarStyle()
-		{
-			foreach (TitleBarItem item in TitleBar)
-			{
-				item.Content.Foreground = UIResources.IdealForegroundColorBrush;
-			}
 		}
 
 		protected override void InitialiseComponents()

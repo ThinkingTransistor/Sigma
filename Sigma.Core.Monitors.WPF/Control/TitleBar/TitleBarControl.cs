@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
@@ -42,10 +43,15 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// Do not use <see cref="ItemCollection.Add"/> ore <see cref="Menu.Items.Add"/>. (Although it will be called internally) 
 		/// </summary>
 		/// <param name="item">The item to add.</param>
-		public void AddItem(TitleBarItem item)
+		public void AddItem(TitleBarItem item, bool applyStyle = true)
 		{
 			Menu.Items.Add(item.Content);
 			children.Add(item.ToString(), item);
+
+			if (applyStyle)
+			{
+				item.Content.Foreground = UIResources.IdealForegroundColorBrush;
+			}
 		}
 
 		/// <summary>

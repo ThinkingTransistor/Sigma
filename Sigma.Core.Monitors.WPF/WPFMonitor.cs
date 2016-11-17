@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows.Threading;
 using Sigma.Core.Monitors.WPF.Control.Themes;

@@ -1,12 +1,12 @@
-﻿using MaterialDesignColors;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Windows.Controls;
+using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
-using System;
-using System.Threading;
-using System.Windows.Controls;
-using System.Text;
-using System.IO;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Tests.Internals.WPF
@@ -26,7 +26,6 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.WindowDispatcher((window) =>
 			{
 				window.TitleCharacterCasing = CharacterCasing.Normal;
-				((SigmaWindow) window).TitleBar.AddItem(new Core.Monitors.WPF.View.TitleBar.TitleBarItem("Environment2", "Test"));
 			});
 
 			//sigma.Prepare()
