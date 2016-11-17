@@ -67,6 +67,7 @@ namespace Sigma.Core
 		{
 			monitor.Sigma = this;
 
+			monitor.Initialise();
 			this.monitors.Add(monitor);
 
 			return monitor;
@@ -76,7 +77,6 @@ namespace Sigma.Core
 		{
 			foreach (IMonitor monitor in monitors)
 			{
-				monitor.Initialise();
 				monitor.Start();
 			}
 		}

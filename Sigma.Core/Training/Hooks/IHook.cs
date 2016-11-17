@@ -56,7 +56,7 @@ namespace Sigma.Core.Utils
 	public interface IPassiveHook : IHook
 	{
 		/// <summary>
-		/// A complete copy of the global registry with the parameters required for this hook for asynchronous execution.
+		/// A complete and local copy of the global registry with the parameters required for this hook for asynchronous execution.
 		/// </summary>
 		IRegistry RegistryCopy { get; set; }
 	}

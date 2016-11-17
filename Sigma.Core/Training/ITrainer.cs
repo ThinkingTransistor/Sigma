@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Training
 {
+	/// <summary>
+	/// A trainer that defines how a network should be trained, denoting initialisers, optimiser, operator, custom hooks and data to apply and use. 
+	/// </summary>
 	public interface ITrainer
 	{
 		/// <summary>
@@ -77,5 +80,10 @@ namespace Sigma.Core.Training
 		/// </summary>
 		/// <param name="hook">The passive hook to add to this trainer.</param>
 		void AddPassiveHook(IPassiveHook hook);
+
+		/// <summary>
+		/// Initialise this trainer and the network to be trained using the set initialisers.
+		/// </summary>
+		void Initialise();
 	}
 }

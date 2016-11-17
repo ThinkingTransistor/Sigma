@@ -28,10 +28,11 @@ namespace Sigma.Tests.Internals.WPF
 				window.TitleCharacterCasing = CharacterCasing.Normal;
 			});
 
-			//sigma.Prepare()
-			guiMonitor.Start();
+			sigma.Prepare();
 
-			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.BLUE;
+			guiMonitor.ColorManager.Dark = true;
+			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.TEAL;
+			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.AMBER;
 
 			//SwitchColor(guiMonitor);
 
