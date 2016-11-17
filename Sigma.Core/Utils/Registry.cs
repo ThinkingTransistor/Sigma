@@ -31,10 +31,10 @@ namespace Sigma.Core.Utils
 			get; set;
 		} = true;
 
-		public bool IgnoreNonDeepCopyable
+		public bool ExceptionOnCopyNonDeepCopyable
 		{
 			get; set;
-		} 
+		}
 
 		public ICollection<string> Keys
 		{
@@ -130,9 +130,14 @@ namespace Sigma.Core.Utils
 
 					if (cloneable == null)
 					{
-						if (IgnoreNonDeepCopyable)
+						if (!ExceptionOnCopyNonDeepCopyable)
 						{
 							copiedValue = value;
+
+							if (value is ICloneable)
+							{
+								copiedValue = ((ICloneable) value).Clone();
+							}
 						}
 						else
 						{

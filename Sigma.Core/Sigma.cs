@@ -10,6 +10,7 @@ using log4net;
 using Sigma.Core.Monitors;
 using Sigma.Core.Utils;
 using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace Sigma.Core
@@ -21,6 +22,11 @@ namespace Sigma.Core
 	{
 		private IRegistry rootRegistry;
 		private IRegistryResolver rootRegistryResolver;
+		private ISet<IMonitor> monitors;
+		private ISet<IMonitor> trainers;
+		private ISet<IMonitor> operators;
+		private Queue<IPassiveHook> hooksToExecute;
+		private Queue<IHook> hooksToAttach;
 
 		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -54,27 +60,38 @@ namespace Sigma.Core
 			this.Name = name;
 			this.rootRegistry = new Registry();
 			this.rootRegistryResolver = new RegistryResolver(this.rootRegistry);
+			this.monitors = new HashSet<IMonitor>();
 		}
 
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
 		{
-			//TODO: 
 			monitor.Sigma = this;
 
-
-			monitor.Initialise();
+			this.monitors.Add(monitor);
 
 			return monitor;
 		}
 
 		public void Prepare()
 		{
-			//TODO
+			foreach (IMonitor monitor in monitors)
+			{
+				monitor.Initialise();
+				monitor.Start();
+			}
 		}
 
 		public void Run()
 		{
-			//TODO
+			bool shouldRun = true;
+
+			while (shouldRun)
+			{
+				foreach (IHook hook in hooksToAttach)
+				{
+
+				}
+			}
 		}
 
 		/// <summary>

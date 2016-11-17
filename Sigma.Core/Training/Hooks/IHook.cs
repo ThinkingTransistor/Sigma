@@ -20,10 +20,20 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public interface IHook
 	{
+		/// <summary>
+		/// The time step at which to execute this hook.
+		/// </summary>
 		ITimeStep TimeStep { get; }
 
+		/// <summary>
+		/// The global registry entries required for the execution of this hook.
+		/// </summary>
 		ISet<string> RequiredRegistryEntries { get; }
 
+		/// <summary>
+		/// Execute this hook with a certain parameter registry.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		void Execute(IRegistry registry);		
 	}
 
@@ -45,6 +55,10 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public interface IPassiveHook : IHook
 	{
+		/// <summary>
+		/// A complete copy of the global registry with the parameters required for this hook for asynchronous execution.
+		/// </summary>
+		IRegistry RegistryCopy { get; set; }
 	}
 
 	/// <summary>
@@ -54,12 +68,27 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public abstract class Hook : IHook
 	{
+		/// <summary>
+		/// The time step at which to execute this hook.
+		/// </summary>
 		public ITimeStep TimeStep { get; private set; }
 
+		/// <summary>
+		/// The global registry entries required for the execution of this hook.
+		/// </summary>
 		public ISet<string> RequiredRegistryEntries { get; private set; }
 
+		/// <summary>
+		/// Execute this hook with a certain parameter registry.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		public abstract void Execute(IRegistry registry);
 
+		/// <summary>
+		/// Create a hook with a certain time step and a set of required global registry entries. 
+		/// </summary>
+		/// <param name="timestep">The time step.</param>
+		/// <param name="requiredRegistryEntries">The required registry entries.</param>
 		public Hook(ITimeStep timestep, ISet<string> requiredRegistryEntries)
 		{
 			if (timestep == null)
@@ -94,6 +123,8 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public abstract class PassiveHook : Hook, IPassiveHook
 	{
+		public IRegistry RegistryCopy { get; set; }
+
 		public PassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
