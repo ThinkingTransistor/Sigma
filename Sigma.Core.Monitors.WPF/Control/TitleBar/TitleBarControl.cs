@@ -1,16 +1,20 @@
+/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using MahApps.Metro.Controls;
-using Sigma.Core.Monitors.WPF.Model.UI;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
-	public class TitleBarControl : WindowCommands
+	public class TitleBarControl : WindowCommands, IEnumerable<TitleBarItem>
 	{
 		/// <summary>
 		/// The children of the <see cref="TitleBarControl"/>.
@@ -19,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 
 		public Menu @Menu { get; private set; }
 
-		public TitleBarControl ()
+		public TitleBarControl()
 		{
 			children = new Dictionary<string, TitleBarItem>();
 
@@ -38,7 +42,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// Do not use <see cref="ItemCollection.Add"/> ore <see cref="Menu.Items.Add"/>. (Although it will be called internally) 
 		/// </summary>
 		/// <param name="item">The item to add.</param>
-		public void AddItem (TitleBarItem item)
+		public void AddItem(TitleBarItem item)
 		{
 			Menu.Items.Add(item.Content);
 			children.Add(item.ToString(), item);
@@ -48,10 +52,20 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// Remove a <see cref="TitleBarItem"/> from the <see cref="TitleBarControl"/>.
 		/// </summary>
 		/// <param name="item"></param>
-		public void RemoveItem (TitleBarItem item)
+		public void RemoveItem(TitleBarItem item)
 		{
 			Menu.Items.Remove(item.Content);
 			children.Remove(item.ToString());
+		}
+
+		public IEnumerator<TitleBarItem> GetEnumerator()
+		{
+			return children.Values.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return children.Values.GetEnumerator();
 		}
 
 		/// <summary>

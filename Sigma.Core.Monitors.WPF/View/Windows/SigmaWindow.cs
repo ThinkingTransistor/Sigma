@@ -1,16 +1,21 @@
-using Sigma.Core.Monitors.WPF.Control.Tabs;
-using Sigma.Core.Monitors.WPF.Control.TitleBar;
-using Sigma.Core.Monitors.WPF.Model.UI;
-using Sigma.Core.Monitors.WPF.Model.UI.Windows;
-using Sigma.Core.Monitors.WPF.View.Tabs;
+/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Dragablz.Dockablz;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
+using Sigma.Core.Monitors.WPF.Control.Tabs;
+using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.View.Tabs;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
@@ -38,7 +43,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		/// <summary>
 		/// The <see cref="TitleBarControl"/> for the dropdwons in the title.
-		/// With this property you can access every button of the dropdown.
+		/// With this property you can access every object of the dropdown.
 		/// </summary>
 		public TitleBarControl TitleBar { get; private set; }
 
@@ -76,6 +81,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			LeftWindowCommands = TitleBar;
 
 			AddTitleBarItems(TitleBar);
+			ApplyTitleBarStyle();
 
 			TabControl = CreateTabControl();
 
@@ -87,6 +93,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 
 			Content = (Layout) TabControl;
+		}
+
+		private void ApplyTitleBarStyle()
+		{
+			foreach (TitleBarItem item in TitleBar)
+			{
+				item.Content.Foreground = UIResources.IdealForegroundColorBrush;
+			}
 		}
 
 		protected override void InitialiseComponents()
@@ -158,7 +172,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
 			titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
 
-			titleBarControl["Environment"].SetFunction("Load", () => Debug.WriteLine("You clicked load"));
+
 		}
 
 		/// <summary>

@@ -1,4 +1,11 @@
-using System.Diagnostics;
+/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System.Windows;
 using System.Windows.Media;
 
@@ -65,6 +72,9 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 
 		public static Brush AccentSelectedColorBrush { get; private set; }
 
+		public static Brush MaterialDesignBody { get; private set; }
+		public static Brush MaterialDesignBodyLight { get; private set; }
+
 		#region Alias
 
 		public static Brush IdealForegroundColorBrush { get; private set; }
@@ -125,20 +135,20 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 			HighlightColorBrush = (Brush) app.Resources["HighlightBrush"];
 
 			AccentColorBrush = (Brush) app.Resources["AccentColorBrush"];
-
 			AccentColorBrush2 = (Brush) app.Resources["AccentColorBrush2"];
-
 			AccentColorBrush3 = (Brush) app.Resources["AccentColorBrush3"];
-
 			AccentColorBrush4 = (Brush) app.Resources["AccentColorBrush4"];
 
 			AccentSelectedColorBrush = (Brush) app.Resources["AccentSelectedColorBrush"];
 
+			MaterialDesignBody = (Brush) app.Resources["MaterialDesignBody"];
+			MaterialDesignBodyLight = (Brush) app.Resources["MaterialDesignBodyLight"];
 
 			//Alias references
 			WindowTitleColorBrush = HighlightColorBrush;
 			IdealForegroundColorBrush = AccentSelectedColorBrush;
 			IdealForegroundDisabledBrush = AccentColorBrush;
+
 			#endregion Colour
 		}
 	}

@@ -2,7 +2,30 @@
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 					xmlns:local="clr-namespace:Sigma.Core.Monitors.WPF.View.Styles.TitleBar">
 
+	<!--Copied and modified from MaterialDesignMenu definition-->
 	<Style TargetType="{x:Type Menu}" BasedOn="{StaticResource MaterialDesignMenu}">
-		<Setter Property="FontSize" Value="{DynamicResource P1}"></Setter>
+		<Setter Property="FontSize" Value="{DynamicResource P1}"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type MenuBase}">
+					<Border BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Background="Transparent"
+							Padding="{TemplateBinding Padding}"
+							SnapsToDevicePixels="true">
+						<ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
 	</Style>
+
+
+	<Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource MaterialDesignMenuItem}">
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="Height" Value="25"/>
+		<!-- // HACK: Foreground is hardcoded -->
+		<Setter Property="Foreground" Value="#DD000000"/>
+	</Style>
+
 </ResourceDictionary>
