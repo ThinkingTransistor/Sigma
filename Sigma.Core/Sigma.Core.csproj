@@ -131,8 +131,8 @@
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
-    <Compile Include="Math\INDArray.cs" />
-    <Compile Include="Math\NDArray.cs" />
+    <Compile Include="MathAbstract\INDArray.cs" />
+    <Compile Include="MathAbstract\NDArray.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />

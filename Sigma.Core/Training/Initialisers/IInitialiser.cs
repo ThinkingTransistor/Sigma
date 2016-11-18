@@ -1,5 +1,5 @@
 ﻿using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;

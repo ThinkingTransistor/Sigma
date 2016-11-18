@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 
-namespace Sigma.Core.Math
+namespace Sigma.Core.MathAbstract
 {
 	/// <summary>
 	/// An n-dimensional array of any data type with C-like ordering. Includes utility functions for scalar, vector and matrix manipulation. 

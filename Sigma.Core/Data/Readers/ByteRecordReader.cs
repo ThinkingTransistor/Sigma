@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
 using log4net;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System.IO;
 using Sigma.Core.Utils;
 

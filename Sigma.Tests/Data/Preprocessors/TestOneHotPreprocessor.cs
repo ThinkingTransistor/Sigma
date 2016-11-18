@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;

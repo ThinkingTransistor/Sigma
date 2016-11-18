@@ -11,7 +11,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Text;
 
-namespace Sigma.Core.Math
+namespace Sigma.Core.MathAbstract
 {
 	/// <summary>
 	/// A default, in system memory implementation of the INDArray interface. 

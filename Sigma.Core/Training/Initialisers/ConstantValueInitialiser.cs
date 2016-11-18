@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 
 namespace Sigma.Core.Training.Initialisers
 {
@@ -39,6 +39,21 @@ namespace Sigma.Core.Training.Initialisers
 
 		public void Initialise(INDArray array, IComputationHandler handler, Random random)
 		{
+			if (array == null)
+			{
+				throw new ArgumentNullException("Array cannot be null.");
+			}
+
+			if (handler == null)
+			{
+				throw new ArgumentNullException("Handler cannot be null.");
+			}
+
+			if (random == null)
+			{
+				throw new ArgumentNullException("Random cannot be null.");
+			}
+
 			handler.Fill(ConstantValue, array);
 		}
 	}

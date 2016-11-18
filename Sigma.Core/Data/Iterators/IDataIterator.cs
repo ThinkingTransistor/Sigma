@@ -7,7 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Data.Datasets;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;

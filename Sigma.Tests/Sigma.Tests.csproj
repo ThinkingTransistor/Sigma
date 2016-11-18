@@ -124,6 +124,8 @@
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Data\TestLargeChunkedArray.cs" />
+    <Compile Include="Training\Initialisers\TestConstantValueInitialiser.cs" />
+    <Compile Include="Training\Initialisers\TestGaussianInitialiser.cs" />
     <Compile Include="Utils\TestDiskCacheProvider.cs" />
     <Compile Include="Utils\TestRegistryResolver.cs" />
     <Compile Include="Math\TestNDArray.cs" />
