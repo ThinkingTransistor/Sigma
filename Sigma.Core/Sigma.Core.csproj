@@ -137,7 +137,10 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
+    <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
+    <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />

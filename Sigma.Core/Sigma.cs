@@ -55,12 +55,23 @@ namespace Sigma.Core
 			get { return rootRegistryResolver; }
 		}
 
+		public Random Random
+		{
+			get; private set;
+		}
+
 		private SigmaEnvironment(string name)
 		{
 			this.Name = name;
 			this.rootRegistry = new Registry();
 			this.rootRegistryResolver = new RegistryResolver(this.rootRegistry);
 			this.monitors = new HashSet<IMonitor>();
+			this.Random = new Random();
+		}
+
+		public void SetRandomSeed(int seed)
+		{
+			this.Random = new Random(seed);
 		}
 
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor

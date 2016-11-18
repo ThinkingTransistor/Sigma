@@ -73,6 +73,14 @@ namespace Sigma.Core.Handlers
 		void Fill(INDArray filler, INDArray arrayToFill);
 
 		/// <summary>
+		/// Fill an ndarray with a single value.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
+		/// <param name="value">The value to set all elements of the ndarray to</param>
+		/// <param name="arrayToFill">The ndarray to fill.</param>
+		void Fill<TOther>(TOther value, INDArray arrayToFill);
+
+		/// <summary>
 		/// Add a value to all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>

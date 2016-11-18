@@ -1,4 +1,5 @@
-﻿using Sigma.Core.Math;
+﻿using Sigma.Core.Handlers;
+using Sigma.Core.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace Sigma.Core.Training.Initialisers
 		/// Initialise a certain ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray to initialise.</param>
-		void Initialise(INDArray array);
+		/// <param name="handler">The computation handler to use.</param>
+		/// <param name="random">The randomiser to use (if required).</param>
+		void Initialise(INDArray array, IComputationHandler handler, Random random);
 	}
 }
