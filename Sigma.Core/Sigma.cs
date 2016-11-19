@@ -10,9 +10,13 @@ using log4net;
 using Sigma.Core.Monitors;
 using Sigma.Core.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
+using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core
 {
@@ -21,13 +25,16 @@ namespace Sigma.Core
 	/// </summary>
 	public class SigmaEnvironment
 	{
-		private readonly ISet<IMonitor> _monitors;
-		private ISet<IMonitor> _trainers;
-		private ISet<IMonitor> _operators;
-		private Queue<IPassiveHook> _hooksToExecute;
-		private Queue<IHook> _hooksToAttach;
+		public bool Running { get; private set; }
 
-		private ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ISet<IMonitor> _monitors;
+		private readonly IDictionary<string, ITrainer> _trainersByName;
+		private readonly ISet<IOperator> _runningOperators;
+		private readonly ConcurrentQueue<IPassiveHook> _hooksToExecute;
+		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
+		private bool _requestedStop;
+
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The unique name of this environment. 
@@ -58,15 +65,29 @@ namespace Sigma.Core
 			Name = name;
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
-			_monitors = new HashSet<IMonitor>();
 			Random = new Random();
+			_monitors = new HashSet<IMonitor>();
+			_hooksToExecute = new ConcurrentQueue<IPassiveHook>();
+			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
+			_runningOperators = new HashSet<IOperator>();
+			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
 		}
 
+		/// <summary>
+		/// Set the random seed used for all randomised computations for reproducibility.
+		/// </summary>
+		/// <param name="seed"></param>
 		public void SetRandomSeed(int seed)
 		{
 			Random = new Random(seed);
 		}
 
+		/// <summary>
+		/// Add a monitor to this environment.
+		/// </summary>
+		/// <typeparam name="TMonitor">The type of the monitor to be added.</typeparam>
+		/// <param name="monitor">The monitor to add.</param>
+		/// <returns>The monitor given (for convenience).</returns>
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
 		{
 			monitor.Sigma = this;
@@ -77,6 +98,9 @@ namespace Sigma.Core
 			return monitor;
 		}
 
+		/// <summary>
+		/// Prepare this environment for execution. Start all monitors.
+		/// </summary>
 		public void Prepare()
 		{
 			foreach (IMonitor monitor in _monitors)
@@ -85,17 +109,182 @@ namespace Sigma.Core
 			}
 		}
 
+		/// <summary>
+		/// Create a trainer with a certain unique name and add it to this environment.
+		/// </summary>
+		/// <param name="name">The trainer name.</param>
+		/// <returns>A new trainer with the given name.</returns>
+		public ITrainer CreateTrainer(string name)
+		{
+			return AddTrainer(new Trainer(name));
+		}
+
+		/// <summary>
+		/// Add a trainer to this environment.
+		/// </summary>
+		/// <typeparam name="TTrainer">The type of the trainer to add.</typeparam>
+		/// <param name="trainer">The trainer to add.</param>
+		/// <returns>The given trainer (for convenience).</returns>
+		public TTrainer AddTrainer<TTrainer>(TTrainer trainer) where TTrainer : ITrainer
+		{
+			if (_trainersByName.ContainsKey(trainer.Name))
+			{
+				throw new InvalidOperationException($"Trainer with name {trainer.Name} is already registered in this environment ({Name}).");
+			}
+
+			_trainersByName.Add(trainer.Name, trainer);
+
+			return trainer;
+		}
+
+		/// <summary>
+		/// Run this environment. Execute all registered options until stop is requested.
+		/// Note: This method is blocking and executes in the calling thread. 
+		/// </summary>
 		public void Run()
 		{
+			_logger.Info($"Starting sigma environment {Name}...");
+
 			bool shouldRun = true;
+
+			Running = true;
+
+			FetchRunningOperators();
+			StartRunningOperators();
 
 			while (shouldRun)
 			{
-				foreach (IHook hook in _hooksToAttach)
-				{
+				ProcessHooksToAttach();
+				ProcessHooksToExecute();
 
+				if (_requestedStop)
+				{
+					_logger.Info($"Stopping sigma environment {Name} as request stop flag was set...");
+
+					shouldRun = false;
 				}
 			}
+
+			StopRunningOperators();
+
+			Running = false;
+
+			_logger.Info($"Stopped sigma environment {Name}.");
+		}
+
+		protected void FetchRunningOperators()
+		{
+			if (_trainersByName.Count == 0)
+			{
+				_logger.Info($"No trainers attached to this environment ({Name}).");
+			}
+
+			foreach (ITrainer trainer in _trainersByName.Values)
+			{
+				_runningOperators.Add(trainer.Operator);
+
+				trainer.Operator.Sigma = this;
+			}
+		}
+
+		private void StartRunningOperators()
+		{
+			foreach (IOperator op in _runningOperators)
+			{
+				op.Start();
+			}
+		}
+
+		private void StopRunningOperators()
+		{
+			foreach (IOperator op in _runningOperators)
+			{
+				op.SignalStop();
+			}
+		}
+
+		/// <summary>
+		/// Signal this environment to stop execution as soon as possible (if running).
+		/// </summary>
+		public void SignalStop()
+		{
+			if (!Running)
+			{
+				return;
+			}
+
+			_requestedStop = true;
+		}
+
+		private void ProcessHooksToExecute()
+		{
+			while (!_hooksToExecute.IsEmpty)
+			{
+				IPassiveHook hook;
+
+				if (_hooksToExecute.TryDequeue(out hook))
+				{
+					new Task(() => hook.Execute(hook.RegistryCopy)).Start();
+				}
+			}
+		}
+
+		private void ProcessHooksToAttach()
+		{
+			while (!_hooksToAttach.IsEmpty)
+			{
+				KeyValuePair<IHook, IOperator> hookPair;
+
+				if (_hooksToAttach.TryDequeue(out hookPair))
+				{
+					hookPair.Value.AttachHook(hookPair.Key);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain trainer's operator (identified by its name).
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
+		public void RequestAttachHook(IHook hook, string trainerName)
+		{
+			if (!_trainersByName.ContainsKey((trainerName)))
+			{
+				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
+			}
+
+			RequestAttachHook(hook, _trainersByName[trainerName]);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain trainer's operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainer">The trainer whose operator the hook should be attached to.</param>
+		public void RequestAttachHook(IHook hook, ITrainer trainer)
+		{
+			RequestAttachHook(hook, trainer.Operator);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="operatorToAttachTo">The operator to attach to.</param>
+		public void RequestAttachHook(IHook hook, IOperator operatorToAttachTo)
+		{
+			_hooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+		}
+
+		/// <summary>
+		/// Request the asynchronous execution of a passive hook.
+		/// Note: The required parameter registry must already be set in the given hook.
+		/// </summary>
+		/// <param name="hook">The hook to execute.</param>
+		public void RequestExecuteHookAsync(IPassiveHook hook)
+		{
+			_hooksToExecute.Enqueue(hook);
 		}
 
 		/// <summary>
@@ -151,7 +340,7 @@ namespace Sigma.Core
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
-		{ 
+		{
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
 
@@ -164,9 +353,8 @@ namespace Sigma.Core
 		/// </summary>
 		public static IRegistry Globals { get; }
 
-
 		/// <summary>
-		/// Register all globals with an initial value and required associated type. 
+		/// Register all global parameters with an initial value and required associated type. 
 		/// </summary>
 		private static void RegisterGlobals()
 		{

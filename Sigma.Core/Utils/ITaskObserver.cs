@@ -42,7 +42,7 @@ namespace Sigma.Core.Utils
 		float Progress { get; set; }
 
 		/// <summary>
-		/// The task time, e.g. when <see cref="ITaskManager.BeginTask(ITaskType, string)"/> was called for this task.
+		/// The task time, e.g. when <see cref="ITaskManager.BeginTask(ITaskType,string,bool,bool)"/> was called for this task.
 		/// </summary>
 		DateTime StartTime { get; set; }
 
@@ -61,7 +61,7 @@ namespace Sigma.Core.Utils
 		public const float TaskIndeterminate = -1.0f;
 
 		public string Description { get; set; }
-		public bool Exposed { get; set; } = true;
+		public bool Exposed { get; set; }
 		public float Progress { get; set; }
 		public TaskObserveStatus Status { get; set; }
 		public ITaskType Type { get; set; }
@@ -72,7 +72,7 @@ namespace Sigma.Core.Utils
 		{
 			if (type == null)
 			{
-				throw new ArgumentNullException("Task type cannot be null.");
+				throw new ArgumentNullException(nameof(type));
 			}
 
 			Type = type;
@@ -84,12 +84,14 @@ namespace Sigma.Core.Utils
 		{
 			float newProgress = value / 100.0f;
 
-			if (newProgress != Progress)
+			if (newProgress == Progress)
 			{
-				Progress = value / 100.0f;
-
-				Console.WriteLine($"{Type.ExpressedType} {Description} ({string.Format("{0:00.0}", Progress * 100)}%)");
+				return;
 			}
+
+			Progress = value / 100.0f;
+
+			//Console.WriteLine($"{Type.ExpressedType} {Description} ({Progress * 100:00.0}%)");
 		}
 	}
 

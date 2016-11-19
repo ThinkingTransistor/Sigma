@@ -54,5 +54,20 @@ namespace Sigma.Core.Training.Operators
 		/// Start this operator in a separate thread (return immediately). 
 		/// </summary>
 		void Start();
+
+		/// <summary>
+		/// Signal this operator to pause as soon as possible.
+		/// </summary>
+		void SignalPause();
+
+		/// <summary>
+		/// Signal this operator to resume as soon as possible.
+		/// </summary>
+		void SignalResume();
+
+		/// <summary>
+		/// Signal this operator to stop as soon as possible.
+		/// </summary>
+		void SignalStop();
 	}
 }

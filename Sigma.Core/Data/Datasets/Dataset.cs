@@ -49,7 +49,7 @@ namespace Sigma.Core.Data.Datasets
 
 		public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
-		public int TargetBlockSizeRecords { get; }
+		public int TargetBlockSizeRecords { get; private set; }
 
 		public string[] SectionNames { get; private set; }
 
@@ -75,6 +75,9 @@ namespace Sigma.Core.Data.Datasets
 		private long _totalCachedBlockSizeBytes;
 		private int _lastAvailableBlockIndex = int.MaxValue;
 		private readonly ISet<IRecordExtractor> _recordExtractors;
+
+		private readonly bool _autoSetBlockSize;
+		private bool _autoSetExternalChangeBlockSize;
 
 		private readonly Semaphore _availableBlocksSemaphore;
 
@@ -142,6 +145,8 @@ namespace Sigma.Core.Data.Datasets
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
 				TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
+
+				_autoSetBlockSize = true;
 			}
 			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
 			{
@@ -171,6 +176,27 @@ namespace Sigma.Core.Data.Datasets
 
 				_logger.Info($"Done flushing all caches for dataset {Name}.");
 			}
+		}
+
+		public void TrySetBlockSize(int blockSizeRecords)
+		{
+			if (!_autoSetBlockSize)
+			{
+				throw new InvalidOperationException($"Cannot change block size as block size was not set automatically (attempted to change block size to {blockSizeRecords}.");
+			}
+
+			if (_activeBlocks.Count > 0 || _cachedBlocks.Count > 0)
+			{
+				throw new InvalidOperationException($"Cannot change block size as {_activeBlocks.Count + _cachedBlocks.Count} blocks were already fetched.");
+			}
+
+			if (_autoSetExternalChangeBlockSize && blockSizeRecords != TargetBlockSizeRecords)
+			{
+				throw new InvalidOperationException($"Cannot change block size to {blockSizeRecords}, block size is incompatible with another external block size change request (other request: {TargetBlockSizeRecords})");
+			}
+
+			_autoSetExternalChangeBlockSize = true;
+			TargetBlockSizeRecords = blockSizeRecords;
 		}
 
 		private void AnalyseExtractors(IEnumerable<IRecordExtractor> extractors)

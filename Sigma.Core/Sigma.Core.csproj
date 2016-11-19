@@ -133,6 +133,7 @@
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\NDArray.cs" />
+    <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="Training\ITrainer.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />

@@ -54,9 +54,24 @@ namespace Sigma.Core.Training
 		IDataIterator TrainingDataIterator { get; set; }
 
 		/// <summary>
+		/// The additional named data iterators, apart from the primary training data iterator.
+		/// </summary>
+		IReadOnlyDictionary<string, IDataIterator> AdditionalNameDataIterators { get; }
+
+		/// <summary>
 		/// The hooks attached to this trainer. 
 		/// </summary>
 		IReadOnlyCollection<IHook> Hooks { get; }
+
+		/// <summary>
+		/// The active hooks attached to this trainer.
+		/// </summary>
+		IReadOnlyCollection<IPassiveHook> PassiveHooks { get; }
+
+		/// <summary>
+		/// The passive hooks attached to this trainer.
+		/// </summary>
+		IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
 
 		/// <summary>
 		/// Add a secondary named data iterator to this trainer.
@@ -81,6 +96,6 @@ namespace Sigma.Core.Training
 		/// <summary>
 		/// Initialise this trainer and the network to be trained using the set initialisers.
 		/// </summary>
-		void Initialise();
+		void InitialiseNetwork();
 	}
 }

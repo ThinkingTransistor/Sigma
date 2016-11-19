@@ -8,6 +8,7 @@ using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
 using Sigma.Core.Utils;
 using System;
+using Sigma.Core.Monitors;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -18,6 +19,10 @@ namespace Sigma.Tests.Internals.Backend
 			log4net.Config.XmlConfigurator.Configure();
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+
+			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
+
+			sigma.Prepare();
 
 			//var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
 			//IRecordExtractor irisExtractor = irisReader.Extractor("inputs2", new[] { 0, 3 }, "targets2", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");

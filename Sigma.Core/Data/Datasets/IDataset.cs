@@ -77,6 +77,12 @@ namespace Sigma.Core.Data.Datasets
 		int ActiveBlockRegionCount { get; }
 
 		/// <summary>
+		/// Attempt to set the block size to a new block size if compatible with the current set block size (e.g. if was auto set and this is the first request).
+		/// </summary>
+		/// <param name="blockSizeRecords"></param>
+		void TrySetBlockSize(int blockSizeRecords);
+
+		/// <summary>
 		/// Checks whether a certain block index is currently active and loaded in any format.
 		/// </summary>
 		/// <param name="blockIndex">The block index to check.</param>

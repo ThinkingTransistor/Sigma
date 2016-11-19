@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks
@@ -43,6 +44,10 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public interface IActiveHook : IHook
 	{
+		/// <summary>
+		/// The operator of this hook.
+		/// </summary>
+		IOperator Operator { get; set; }
 	}
 
 	/// <summary>
@@ -110,6 +115,8 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public abstract class ActiveHook : Hook, IActiveHook
 	{
+		public IOperator Operator { get; set; }
+
 		protected ActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}

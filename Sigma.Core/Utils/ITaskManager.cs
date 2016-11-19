@@ -24,7 +24,7 @@ namespace Sigma.Core.Utils
 		{
 			if (taskType == null)
 			{
-				throw new ArgumentNullException("Task type cannot be null.");
+				throw new ArgumentNullException(nameof(taskType));
 			}
 
 			ITaskObserver observer = new TaskObserver(taskType, taskDescription, exposed);
@@ -77,14 +77,17 @@ namespace Sigma.Core.Utils
 			}
 		}
 
-		public IEnumerable<ITaskObserver> GetTasks()
+		public ICollection<ITaskObserver> GetTasks()
 		{
 			return _runningObservers;
 		}
 
 		public IEnumerable<ITaskObserver> GetTasks(ITaskType taskType)
 		{
-			return _runningObservers.Where(observer => observer.Type == taskType && observer.Exposed);
+			lock (_runningObservers)
+			{
+				return _runningObservers.Where(observer => observer.Type == taskType && observer.Exposed);
+			}
 		}
 	}
 
@@ -126,7 +129,7 @@ namespace Sigma.Core.Utils
 		/// Get all running tasks.
 		/// </summary>
 		/// <returns>All currently running tasks.</returns>
-		IEnumerable<ITaskObserver> GetTasks();
+		ICollection<ITaskObserver> GetTasks();
 	}
 
 	/// <summary>
