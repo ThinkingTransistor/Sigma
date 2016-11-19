@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.View.Windows;
-using Brushes = System.Windows.Media.Brushes;
 
 namespace Sigma.Tests.Internals.WPF
 {

@@ -64,7 +64,7 @@ namespace Sigma.Tests.Utils
 			registry.Set("key22", "value2");
 			registry.Set("kay3", "value3");
 
-			Assert.AreEqual(registry.GetAllValues<string>("key.*", typeof(string)), new string[] { "value1", "value2" });
+			Assert.AreEqual(registry.GetAllValues<string>("key.*", typeof(string)), new[] { "value1", "value2" });
 		}
 
 		[TestCase]

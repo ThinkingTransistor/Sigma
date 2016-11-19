@@ -9,11 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using log4net;
 using Sigma.Core.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
@@ -22,7 +18,7 @@ namespace Sigma.Core.Data.Sources
 	/// </summary>
 	public class MultiSource : IDataSetSource
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The data source active in this multi source which this data source will imitate.
@@ -30,13 +26,13 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		public IDataSetSource ActiveSource { get; private set; }
 
-		public string ResourceName { get { return ActiveSource?.ResourceName; } }
+		public string ResourceName => ActiveSource?.ResourceName;
 
-		public bool Seekable { get { return ActiveSource?.Seekable ?? false; } }
+		public bool Seekable => ActiveSource?.Seekable ?? false;
 
-		private bool fetchedActiveSource;
+		private bool _fetchedActiveSource;
 
-		private IDataSetSource[] sources;
+		private readonly IDataSetSource[] _sources;
 
 		/// <summary>
 		/// Create a multi data set source with a certain array of underlying source, of which the first existing source will be exposed.
@@ -46,7 +42,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (sources == null)
 			{
-				throw new ArgumentNullException("Sources cannot be null.");
+				throw new ArgumentNullException(nameof(sources));
 			}
 
 			if (sources.Length == 0)
@@ -62,31 +58,31 @@ namespace Sigma.Core.Data.Sources
 				}
 			}
 
-			this.sources = sources;
+			_sources = sources;
 
 			FetchActiveSource();
 		}
 
 		private void FetchActiveSource()
 		{
-			if (fetchedActiveSource)
+			if (_fetchedActiveSource)
 			{
 				return;
 			}
 
-			foreach (IDataSetSource source in sources)
+			foreach (IDataSetSource source in _sources)
 			{
 				if (source.Exists())
 				{
 					ActiveSource = source;
 
-					logger.Info($"Found existing underlying source {source}, set as active source and forwarding its output.");
+					_logger.Info($"Found existing underlying source {source}, set as active source and forwarding its output.");
 
 					break;
 				}
 			}
 
-			fetchedActiveSource = true;
+			_fetchedActiveSource = true;
 		}
 
 		public bool Exists()
@@ -98,7 +94,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (!Exists())
 			{
-				throw new InvalidOperationException($"Cannot prepare multi source, none of the underlying sources {ArrayUtils.ToString(sources)} exists.");
+				throw new InvalidOperationException($"Cannot prepare multi source, none of the underlying sources {ArrayUtils.ToString(_sources)} exists.");
 			}
 
 			ActiveSource.Prepare();
@@ -108,7 +104,7 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (ActiveSource == null)
 			{
-				throw new InvalidOperationException($"Cannot retrieve multi source, the multi source was not properly prepared (none of the sources exists or missing Prepare() call).");
+				throw new InvalidOperationException("Cannot retrieve multi source, the multi source was not properly prepared (none of the sources exists or missing Prepare() call).");
 			}
 
 			return ActiveSource.Retrieve();

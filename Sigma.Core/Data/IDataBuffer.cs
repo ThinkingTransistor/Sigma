@@ -111,7 +111,7 @@ namespace Sigma.Core.Data
 		/// <param name="buffer">The data buffer to copy the data from.</param>
 		/// <param name="sourceStartIndex">Where to start copying in the source buffer, RELATIVE to the source buffer.</param>
 		/// <param name="destStartIndex">Where to paste within the destination, RELATIVE to the destination buffer (this data buffer).</param>
-		/// <param name="destLength">Starting at the source start index, how many elements to copy.</param>
+		/// <param name="length">How many values to set in the destination.</param>
 		void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length);
 
 		/// <summary>

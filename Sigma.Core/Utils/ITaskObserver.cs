@@ -7,10 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Utils
 {
@@ -62,7 +58,7 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TaskObserver : ITaskObserver
 	{
-		public const float TASK_INDETERMINATE = -1.0f;
+		public const float TaskIndeterminate = -1.0f;
 
 		public string Description { get; set; }
 		public bool Exposed { get; set; } = true;
@@ -70,7 +66,7 @@ namespace Sigma.Core.Utils
 		public TaskObserveStatus Status { get; set; }
 		public ITaskType Type { get; set; }
 		public DateTime StartTime { get; set; }
-		public TimeSpan TimeSinceStarted { get { return DateTime.Now - StartTime; } }
+		public TimeSpan TimeSinceStarted => DateTime.Now - StartTime;
 
 		public TaskObserver(ITaskType type, string description = null, bool exposed = true)
 		{
@@ -79,9 +75,9 @@ namespace Sigma.Core.Utils
 				throw new ArgumentNullException("Task type cannot be null.");
 			}
 
-			this.Type = type;
-			this.Description = description;
-			this.Exposed = exposed;
+			Type = type;
+			Description = description;
+			Exposed = exposed;
 		}
 
 		public void Report(float value)
@@ -90,7 +86,7 @@ namespace Sigma.Core.Utils
 
 			if (newProgress != Progress)
 			{
-				this.Progress = value / 100.0f;
+				Progress = value / 100.0f;
 
 				Console.WriteLine($"{Type.ExpressedType} {Description} ({string.Format("{0:00.0}", Progress * 100)}%)");
 			}
@@ -102,8 +98,8 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public enum TaskObserveStatus
 	{
-		RUNNING,
-		ENDED,
-		CANCELED
+		Running,
+		Ended,
+		Canceled
 	}
 }

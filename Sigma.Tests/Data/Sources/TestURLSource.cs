@@ -14,16 +14,16 @@ using System.Net;
 
 namespace Sigma.Tests.Data.Sources
 {
-	public class TestURLSource
+	public class TestUrlSource
 	{
-		private static bool checkedInternetConnection;
-		private static bool internetConnectionValid;
+		private static bool _checkedInternetConnection;
+		private static bool _internetConnectionValid;
 
 		private static void AsserIgnoreIfNoInternetConnection()
 		{
-			if (!checkedInternetConnection)
+			if (!_checkedInternetConnection)
 			{
-				internetConnectionValid = false;
+				_internetConnectionValid = false;
 
 				try
 				{
@@ -32,38 +32,38 @@ namespace Sigma.Tests.Data.Sources
 						//this framework will be irrelevant long before google goes down
 						using (Stream stream = client.OpenRead("http://www.google.com"))
 						{
-							internetConnectionValid = true;
+							_internetConnectionValid = true;
 						}
 					}
 				}
 				catch
 				{
-					checkedInternetConnection = false;
+					_checkedInternetConnection = false;
 				}
 			}
 
-			if (!internetConnectionValid)
+			if (!_internetConnectionValid)
 			{
 				Assert.Ignore();
 			}
 		}
 
 		[TestCase]
-		public void TestURLSourceCheckNonExisting()
+		public void TestUrlSourceCheckNonExisting()
 		{
 			AsserIgnoreIfNoInternetConnection();
 
-			URLSource source = new URLSource("http://thisisnotavalidwebsiteisitnoitisnt.noitisnt/notexistingfile.dat");
+			UrlSource source = new UrlSource("http://thisisnotavalidwebsiteisitnoitisnt.noitisnt/notexistingfile.dat");
 
 			Assert.IsFalse(source.Exists());
 		}
 
 		[TestCase]
-		public void TestURLSourceAccessNonExisting()
+		public void TestUrlSourceAccessNonExisting()
 		{
 			AsserIgnoreIfNoInternetConnection();
 
-			URLSource source = new URLSource("http://thisisnotavalidwebsiteisitnoitisnt.noitisnt/notexistingfile.dat");
+			UrlSource source = new UrlSource("http://thisisnotavalidwebsiteisitnoitisnt.noitisnt/notexistingfile.dat");
 
 			Assert.Throws<InvalidOperationException>(() => source.Prepare());
 
@@ -71,21 +71,21 @@ namespace Sigma.Tests.Data.Sources
 		}
 
 		[TestCase]
-		public void TestURLSourceCheckExisting()
+		public void TestUrlSourceCheckExisting()
 		{
 			AsserIgnoreIfNoInternetConnection();
 
-			URLSource source = new URLSource("https://www.google.com/robots.txt");
+			UrlSource source = new UrlSource("https://www.google.com/robots.txt");
 
 			Assert.IsTrue(source.Exists());
 		}
 
 		[TestCase]
-		public void TestURLSourceAccessExisting()
+		public void TestUrlSourceAccessExisting()
 		{
 			AsserIgnoreIfNoInternetConnection();
 
-			URLSource source = new URLSource("https://www.google.com/robots.txt", Path.GetTempPath() + ".unittestfileurltest1");
+			UrlSource source = new UrlSource("https://www.google.com/robots.txt", Path.GetTempPath() + ".unittestfileurltest1");
 
 			Assert.Throws<InvalidOperationException>(() => source.Retrieve());
 

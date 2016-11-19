@@ -7,10 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Utils
 {
@@ -41,17 +37,17 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TimeStep : ITimeStep
 	{
-		public const int LIVE_TIME_FOREVER = -1;
+		public const int LiveTimeForever = -1;
 
 		public TimeScale TimeScale { get; internal set; }
 		public int Interval { get; internal set; }
 		public int LiveTime { get; internal set; }
 
-		public TimeStep(TimeScale timeScale, int interval, int liveTime = LIVE_TIME_FOREVER)
+		public TimeStep(TimeScale timeScale, int interval, int liveTime = LiveTimeForever)
 		{
 			if (timeScale == null)
 			{
-				throw new ArgumentNullException("Timescale cannot be null.");
+				throw new ArgumentNullException(nameof(timeScale));
 			}
 
 			if (interval < 0)
@@ -64,9 +60,9 @@ namespace Sigma.Core.Utils
 				throw new ArgumentException($"Live time cannot be zero, but was, well, zero.");
 			}
 
-			this.TimeScale = timeScale;
-			this.Interval = interval;
-			this.LiveTime = liveTime;
+			TimeScale = timeScale;
+			Interval = interval;
+			LiveTime = liveTime;
 		}
 	}
 
@@ -75,7 +71,7 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TimeScale
 	{
-		public static readonly TimeScale EPOCH = new TimeScale();
-		public static readonly TimeScale UPDATE = new TimeScale();
+		public static readonly TimeScale Epoch = new TimeScale();
+		public static readonly TimeScale Update = new TimeScale();
 	}
 }

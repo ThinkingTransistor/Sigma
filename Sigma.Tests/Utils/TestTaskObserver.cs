@@ -9,10 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Utils
 {
@@ -23,9 +19,9 @@ namespace Sigma.Tests.Utils
 		{
 			Assert.Throws<ArgumentNullException>(() => new TaskObserver(null));
 
-			TaskObserver observer = new TaskObserver(TaskType.PREPARE, "description", false);
+			TaskObserver observer = new TaskObserver(TaskType.Prepare, "description", false);
 
-			Assert.AreSame(TaskType.PREPARE, observer.Type);
+			Assert.AreSame(TaskType.Prepare, observer.Type);
 			Assert.AreEqual("description", observer.Description);
 			Assert.IsFalse(observer.Exposed);
 		}

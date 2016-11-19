@@ -6,13 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using System;
 
 namespace Sigma.Core.Training.Initialisers
 {
@@ -25,17 +21,17 @@ namespace Sigma.Core.Training.Initialisers
 		{
 			if (array == null)
 			{
-				throw new ArgumentNullException("Array cannot be null.");
+				throw new ArgumentNullException(nameof(array));
 			}
 
 			if (handler == null)
 			{
-				throw new ArgumentNullException("Handler cannot be null.");
+				throw new ArgumentNullException(nameof(handler));
 			}
 
 			if (random == null)
 			{
-				throw new ArgumentNullException("Random cannot be null.");
+				throw new ArgumentNullException(nameof(random));
 			}
 
 			long[] indices = new long[array.Rank];

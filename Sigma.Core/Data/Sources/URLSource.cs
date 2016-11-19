@@ -17,28 +17,27 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A URL resource used for datasets. Entire resource is downloaded and stored locally for processing.
 	/// </summary>
-	public class URLSource : IDataSetSource
+	public class UrlSource : IDataSetSource
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string ResourceName { get { return url; } }
+		public string ResourceName { get; }
 
-		public bool Seekable { get { return true; } }
+		public bool Seekable => true;
 
-		private bool exists;
-		private bool checkedExists;
-		private bool prepared;
+		private bool _exists;
+		private bool _checkedExists;
+		private bool _prepared;
 
-		private string url;
-		private string localDownloadPath;
-		private FileStream localDownloadedFileStream;
-		private IWebProxy proxy;
+		private readonly string _localDownloadPath;
+		private FileStream _localDownloadedFileStream;
+		private readonly IWebProxy _proxy;
 
 		/// <summary>
 		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
 		/// </summary>
 		/// <param name="url">The URL.</param>
-		public URLSource(string url) : this(url, SigmaEnvironment.Globals["datasets"] + GetFileNameFromURL(url))
+		public UrlSource(string url) : this(url, SigmaEnvironment.Globals["datasets"] + GetFileNameFromUrl(url))
 		{
 		}
 
@@ -47,144 +46,145 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		/// <param name="url">The URL.</param>
 		/// <param name="localDownloadPath">The local download path, where this file will be downloaded to.</param>
-		public URLSource(string url, string localDownloadPath, IWebProxy proxy = null)
+		/// <param name="proxy">The optional web proxy to use for file downloads.</param>
+		public UrlSource(string url, string localDownloadPath, IWebProxy proxy = null)
 		{
 			if (url == null)
 			{
-				throw new ArgumentNullException($"URL cannot be null.");
+				throw new ArgumentNullException(nameof(url));
 			}
 
 			if (localDownloadPath == null)
 			{
-				throw new ArgumentNullException($"Local download path cannot be null.");
+				throw new ArgumentNullException(nameof(localDownloadPath));
 			}
 
-			this.url = url;
-			this.localDownloadPath = localDownloadPath;
+			ResourceName = url;
+			_localDownloadPath = localDownloadPath;
 
-			this.proxy = proxy;
+			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
+		}
 
-			if (this.proxy == null)
+		private static string GetFileNameFromUrl(string url)
+		{
+			return Path.GetFileName(new Uri(url).LocalPath);
+		}
+
+		private void CheckExists()
+		{
+			_logger.Info($"Establishing web connection to check if URL {ResourceName} exists and is accessible...");
+
+			HttpWebRequest request = WebRequest.Create(ResourceName) as HttpWebRequest;
+
+			if (request == null)
 			{
-				this.proxy = SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
+				throw new InvalidOperationException($"Unable to create web request for {ResourceName}.");
 			}
-		}
 
-		private static string GetFileNameFromURL(string url)
-		{
-			return System.IO.Path.GetFileName(new Uri(url).LocalPath);
-		}
-
-		private bool CheckExists()
-		{
-			logger.Info($"Establishing web connection to check if URL {url} exists and is accessible...");
-
-			HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-
-			request.Proxy = proxy;
+			request.Proxy = _proxy;
 			request.Method = "HEAD";
 
 			try
 			{
 				HttpWebResponse response = request.GetResponse() as HttpWebResponse;
 
-				this.exists = response.StatusCode == HttpStatusCode.OK;
+				if (response != null)
+				{
+					_exists = response.StatusCode == HttpStatusCode.OK;
 
-				response.Dispose();
+					response.Dispose();
+				}
 			}
 			catch
 			{
-				this.exists = false;
+				_exists = false;
 			}
 
-			if (exists)
-			{
-				logger.Info($"Web connection ended, URL \"{url}\" exists and is accessible.");
-			}
-			else
-			{
-				logger.Info($"Web connection ended, URL \"{url}\" does not exist or is not accessible.");
-			}
-
-			return this.exists;
+			_logger.Info(_exists
+				? $"Web connection ended, URL \"{ResourceName}\" exists and is accessible."
+				: $"Web connection ended, URL \"{ResourceName}\" does not exist or is not accessible.");
 		}
 
 		public bool Exists()
 		{
-			if (!checkedExists)
+			if (!_checkedExists)
 			{
 				CheckExists();
 
-				checkedExists = true;
+				_checkedExists = true;
 			}
 
-			return exists;
+			return _exists;
 		}
 
 		public void Prepare()
 		{
 			if (!Exists())
 			{
-				throw new InvalidOperationException($"Cannot prepare URL source, underlying URL resource \"{url}\" does not exist or is not accessible.");
+				throw new InvalidOperationException($"Cannot prepare URL source, underlying URL resource \"{ResourceName}\" does not exist or is not accessible.");
 			}
 
-			if (!this.prepared)
+			if (_prepared)
 			{
-				ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.DOWNLOAD, url);
-
-				Directory.CreateDirectory(new FileInfo(localDownloadPath).Directory.FullName);
-
-				if (File.Exists(localDownloadPath))
-				{
-					File.Delete(localDownloadPath);
-				}
-
-				logger.Info($"Downloading URL resource \"{url}\" to local path \"{localDownloadPath}\"...");
-
-				bool downloadSuccessful = false;
-
-				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
-				{
-					downloadSuccessful = client.DownloadFile(url, localDownloadPath, task);
-
-					if (downloadSuccessful)
-					{
-						logger.Info($"Completed download of URL resource \"{url}\" to local path \"{localDownloadPath}\" ({client.previousBytesReceived / 1024}kB).");
-					}
-					else
-					{
-						logger.Warn($"Failed to download URL source \"{url}\", could not prepare this URL source correctly.");
-
-						File.Delete(localDownloadPath);
-
-						SigmaEnvironment.TaskManager.CancelTask(task);
-
-						return; 
-					}
-				}
-
-				logger.Info($"Opened file \"{localDownloadPath}\".");
-				localDownloadedFileStream = new FileStream(localDownloadPath, FileMode.Open);
-
-				prepared = true;
-
-				SigmaEnvironment.TaskManager.EndTask(task);
+				return;
 			}
+
+			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, ResourceName);
+
+			DirectoryInfo directoryInfo = new FileInfo(_localDownloadPath).Directory;
+			if (directoryInfo != null)
+			{
+				Directory.CreateDirectory(directoryInfo.FullName);
+			}
+
+			if (File.Exists(_localDownloadPath))
+			{
+				File.Delete(_localDownloadPath);
+			}
+
+			_logger.Info($"Downloading URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\"...");
+
+			using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
+			{
+				bool downloadSuccessful = client.DownloadFile(ResourceName, _localDownloadPath, task);
+
+				if (downloadSuccessful)
+				{
+					_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\" ({client.PreviousBytesReceived / 1024}kB).");
+				}
+				else
+				{
+					_logger.Warn($"Failed to download URL source \"{ResourceName}\", could not prepare this URL source correctly.");
+
+					File.Delete(_localDownloadPath);
+
+					SigmaEnvironment.TaskManager.CancelTask(task);
+
+					return;
+				}
+			}
+
+			_logger.Info($"Opened file \"{_localDownloadPath}\".");
+			_localDownloadedFileStream = new FileStream(_localDownloadPath, FileMode.Open);
+
+			_prepared = true;
+
+			SigmaEnvironment.TaskManager.EndTask(task);
 		}
 
 		public Stream Retrieve()
 		{
-			if (localDownloadedFileStream == null)
+			if (_localDownloadedFileStream == null)
 			{
 				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not prepared correctly (missing or failed Prepare() call?).");
 			}
 
-			return localDownloadedFileStream;
+			return _localDownloadedFileStream;
 		}
 
 		public void Dispose()
 		{
-			this.localDownloadedFileStream?.Dispose();
+			_localDownloadedFileStream?.Dispose();
 		}
 	}
 }

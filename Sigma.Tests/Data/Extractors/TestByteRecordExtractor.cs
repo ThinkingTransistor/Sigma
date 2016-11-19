@@ -6,15 +6,12 @@ using Sigma.Core.Handlers.Backends;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Extractors
 {
 	public class TestByteRecordExtractor
 	{
-		private static void CreateCSVTempFile(string name)
+		private static void CreateCsvTempFile(string name)
 		{
 			File.Create(Path.GetTempPath() + name).Dispose();
 
@@ -32,7 +29,7 @@ namespace Sigma.Tests.Data.Extractors
 		{
 			string filename = ".unittestfile" + nameof(TestByteRecordExtractorCreate);
 
-			CreateCSVTempFile(filename);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
@@ -41,7 +38,7 @@ namespace Sigma.Tests.Data.Extractors
 
 			ByteRecordExtractor extractor = new ByteRecordExtractor(ByteRecordExtractor.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
 
-			Assert.AreEqual(new string[] { "inputs" }, extractor.SectionNames);
+			Assert.AreEqual(new[] { "inputs" }, extractor.SectionNames);
 
 			source.Dispose();
 
@@ -52,11 +49,11 @@ namespace Sigma.Tests.Data.Extractors
 		public void TestByteRecordExtractorExtract()
 		{
 			ByteRecordExtractor extractor = new ByteRecordExtractor(ByteRecordExtractor.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
-			IComputationHandler handler = new CPUFloat32Handler();
+			IComputationHandler handler = new CpuFloat32Handler();
 
 			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(10, handler));
 
-			byte[][] rawData = new byte[][] { new byte[] { 0 }, new byte[] { 1 } };
+			byte[][] rawData = new[] { new byte[] { 0 }, new byte[] { 1 } };
 
 			Assert.AreEqual(new float[] { 0, 1 }, extractor.ExtractDirectFrom(rawData, 2, handler)["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0L, 2L));
 		}

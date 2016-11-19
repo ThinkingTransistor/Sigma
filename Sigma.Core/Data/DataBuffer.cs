@@ -21,42 +21,21 @@ namespace Sigma.Core.Data
 	public class DataBuffer<T> : IDataBuffer<T>
 	{
 		[NonSerialized]
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-		private ILargeChunkedArray<T> data;
-		private long length;
-		private long offset;
-		private long relativeOffset;
-
+		private readonly IDataBuffer<T> _underlyingBuffer;
 		[NonSerialized]
-		private IDataBuffer<T> underlyingBuffer;
-		[NonSerialized]
-		private IDataBuffer<T> underlyingRootBuffer;
+		private readonly IDataBuffer<T> _underlyingRootBuffer;
 
-		public long Length
-		{
-			get { return length; }
-		}
+		public long Length { get; }
 
-		public long Offset
-		{
-			get { return offset; }
-		}
+		public long Offset { get; }
 
-		public long RelativeOffset
-		{
-			get { return relativeOffset; }
-		}
+		public long RelativeOffset { get; }
 
 		public IDataType Type
 		{
-			get; private set;
-		}
+			get; }
 
-		public ILargeChunkedArray<T> Data
-		{
-			get { return data; }
-		}
+		public ILargeChunkedArray<T> Data { get; }
 
 		/// <summary>
 		/// Create a data buffer of a certain type with a certain underlying buffer.
@@ -68,19 +47,19 @@ namespace Sigma.Core.Data
 		{
 			if (underlyingBuffer == null)
 			{
-				throw new ArgumentNullException("Underlying buffer cannot be null.");
+				throw new ArgumentNullException(nameof(underlyingBuffer));
 			}
 
 			CheckBufferBounds(offset, length, offset + length, underlyingBuffer.Length);
 
-			this.length = length;
-			this.relativeOffset = offset;
-			this.offset = offset + underlyingBuffer.Offset;
+			Length = length;
+			RelativeOffset = offset;
+			Offset = offset + underlyingBuffer.Offset;
 
-			this.data = underlyingBuffer.Data;
-			this.Type = underlyingBuffer.Type;
-			this.underlyingBuffer = underlyingBuffer;
-			this.underlyingRootBuffer = underlyingBuffer.GetUnderlyingRootBuffer() == null ? underlyingBuffer : underlyingBuffer.GetUnderlyingRootBuffer();
+			Data = underlyingBuffer.Data;
+			Type = underlyingBuffer.Type;
+			_underlyingBuffer = underlyingBuffer;
+			_underlyingRootBuffer = underlyingBuffer.GetUnderlyingRootBuffer() == null ? underlyingBuffer : underlyingBuffer.GetUnderlyingRootBuffer();
 		}
 
 		/// <summary>
@@ -88,7 +67,7 @@ namespace Sigma.Core.Data
 		/// </summary>
 		/// <param name="data">The large chunked array data.</param>
 		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
-		public DataBuffer(ILargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
+		public DataBuffer(ILargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data?.Length ?? 0L, underlyingType)
 		{
 		}
 
@@ -103,17 +82,17 @@ namespace Sigma.Core.Data
 		{
 			if (data == null)
 			{
-				throw new ArgumentNullException("Data cannot be null.");
+				throw new ArgumentNullException(nameof(data));
 			}
 
 			CheckBufferBounds(offset, length, offset + length, data.Length);
 
-			this.data = data;
-			this.length = length;
-			this.relativeOffset = offset;
-			this.offset = offset;
+			Data = data;
+			Length = length;
+			RelativeOffset = offset;
+			Offset = offset;
 
-			this.Type = InferDataType(underlyingType);
+			Type = InferDataType(underlyingType);
 		}
 
 		/// <summary>
@@ -121,7 +100,7 @@ namespace Sigma.Core.Data
 		/// </summary>
 		/// <param name="data">The data array.</param>
 		/// <param name="underlyingType">The underlying type (inferred if not explicitly given).</param>
-		public DataBuffer(T[] data, IDataType underlyingType = null) : this(data, 0L, data != null ? data.Length : 0L, underlyingType)
+		public DataBuffer(T[] data, IDataType underlyingType = null) : this(data, 0L, data?.Length ?? 0L, underlyingType)
 		{
 		}
 
@@ -136,17 +115,17 @@ namespace Sigma.Core.Data
 		{
 			if (data == null)
 			{
-				throw new ArgumentNullException("Data cannot be null.");
+				throw new ArgumentNullException(nameof(data));
 			}
 
 			CheckBufferBounds(offset, length, offset + length, data.Length);
 
-			this.data = new LargeChunkedArray<T>(data);
-			this.length = length;
-			this.relativeOffset = offset;
-			this.offset = offset;
+			Data = new LargeChunkedArray<T>(data);
+			Length = length;
+			RelativeOffset = offset;
+			Offset = offset;
 
-			this.Type = InferDataType(underlyingType);
+			Type = InferDataType(underlyingType);
 		}
 
 		/// <summary>
@@ -161,10 +140,10 @@ namespace Sigma.Core.Data
 				throw new ArgumentException($"Length must be >= 1 but was {length}.");
 			}
 
-			this.length = length;
-			this.data = new LargeChunkedArray<T>(length);
+			Length = length;
+			Data = new LargeChunkedArray<T>(length);
 
-			this.Type = InferDataType(underlyingType);
+			Type = InferDataType(underlyingType);
 		}
 
 		/// <summary>
@@ -173,13 +152,13 @@ namespace Sigma.Core.Data
 		/// <param name="other">The buffer to copy.</param>
 		public DataBuffer(DataBuffer<T> other)
 		{
-			this.underlyingBuffer = other.underlyingBuffer;
-			this.underlyingRootBuffer = other.underlyingRootBuffer;
-			this.Type = other.Type;
-			this.data = other.data;
-			this.offset = other.offset;
-			this.relativeOffset = other.relativeOffset;
-			this.length = other.length;
+			_underlyingBuffer = other._underlyingBuffer;
+			_underlyingRootBuffer = other._underlyingRootBuffer;
+			Type = other.Type;
+			Data = other.Data;
+			Offset = other.Offset;
+			RelativeOffset = other.RelativeOffset;
+			Length = other.Length;
 		}
 
 		private void CheckBufferBounds(long offset, long length, long requestedEndPosition, long underlyingLength)
@@ -224,17 +203,17 @@ namespace Sigma.Core.Data
 
 		public object DeepCopy()
 		{
-			return new DataBuffer<T>((ILargeChunkedArray<T>) this.data.DeepCopy(), this.Type);
+			return new DataBuffer<T>((ILargeChunkedArray<T>) Data.DeepCopy(), Type);
 		}
 
 		public T GetValue(long index)
 		{
-			return data.GetValue(offset + index);
+			return Data.GetValue(Offset + index);
 		}
 
 		public TOther GetValueAs<TOther>(long index)
 		{
-			return (TOther) Convert.ChangeType(data.GetValue(offset + index), typeof(TOther));
+			return (TOther) Convert.ChangeType(Data.GetValue(Offset + index), typeof(TOther));
 		}
 
 		public IDataBuffer<T> GetValues(long startIndex, long length)
@@ -246,7 +225,7 @@ namespace Sigma.Core.Data
 		{
 			LargeChunkedArray<TOther> otherData = new LargeChunkedArray<TOther>(length);
 
-			otherData.FillWith<T>(this.data, this.offset + startIndex, 0L, length);
+			otherData.FillWith(Data, Offset + startIndex, 0L, length);
 
 			return new DataBuffer<TOther>(otherData, 0L, length);
 		}
@@ -255,7 +234,7 @@ namespace Sigma.Core.Data
 		{
 			LargeChunkedArray<T> valuesArray = new LargeChunkedArray<T>(length);
 
-			valuesArray.FillWith(this.data, this.offset + startIndex, 0L, length);
+			valuesArray.FillWith(Data, Offset + startIndex, 0L, length);
 
 			return valuesArray;
 		}
@@ -264,49 +243,49 @@ namespace Sigma.Core.Data
 		{
 			LargeChunkedArray<TOther> valuesArray = new LargeChunkedArray<TOther>(length);
 
-			valuesArray.FillWith<T>(this.data, this.offset + startIndex, 0L, length);
+			valuesArray.FillWith(Data, Offset + startIndex, 0L, length);
 
 			return valuesArray;
 		}
 
 		public void SetValue(T value, long index)
 		{
-			data.SetValue(value, index + this.offset);
+			Data.SetValue(value, index + Offset);
 		}
 
 		public void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length)
 		{
-			this.data.FillWith(buffer.Data, sourceStartIndex + buffer.Offset, destStartIndex + this.offset, length);
+			Data.FillWith(buffer.Data, sourceStartIndex + buffer.Offset, destStartIndex + Offset, length);
 		}
 
 		public void SetValues(T[] values, long sourceStartIndex, long destStartIndex, long length)
 		{
-			this.data.FillWith(values, sourceStartIndex, destStartIndex + this.offset, length);
+			Data.FillWith(values, sourceStartIndex, destStartIndex + Offset, length);
 		}
 
 		public IDataBuffer<T> GetUnderlyingBuffer()
 		{
-			return underlyingBuffer;
+			return _underlyingBuffer;
 		}
 
 		public IDataBuffer<T> GetUnderlyingRootBuffer()
 		{
-			return underlyingRootBuffer;
+			return _underlyingRootBuffer;
 		}
 
 		public IEnumerator<T> GetEnumerator()
 		{
-			for (long i = 0; i < this.length; i++)
+			for (long i = 0; i < Length; i++)
 			{
-				yield return data.GetValue(i);
+				yield return Data.GetValue(i);
 			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			for (long i = 0; i < this.length; i++)
+			for (long i = 0; i < Length; i++)
 			{
-				yield return data.GetValue(i);
+				yield return Data.GetValue(i);
 			}
 		}
 	}

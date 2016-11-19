@@ -12,7 +12,7 @@ using System;
 
 namespace Sigma.Tests
 {
-	class TestSigmaEnvironment
+	internal class TestSigmaEnvironment
 	{
 		[TestCase]
 		public void TestSigmaEnvironmentCreate()

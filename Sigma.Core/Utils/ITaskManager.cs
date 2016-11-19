@@ -9,8 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Utils
 {
@@ -20,7 +18,7 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TaskManager : ITaskManager
 	{
-		private IList<ITaskObserver> runningObservers = new List<ITaskObserver>();
+		private readonly IList<ITaskObserver> _runningObservers = new List<ITaskObserver>();
 
 		public ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = false)
 		{
@@ -31,17 +29,17 @@ namespace Sigma.Core.Utils
 
 			ITaskObserver observer = new TaskObserver(taskType, taskDescription, exposed);
 
-			observer.Status = TaskObserveStatus.RUNNING;
+			observer.Status = TaskObserveStatus.Running;
 			observer.StartTime = DateTime.Now;
 
 			if (indeterminate)
 			{
-				observer.Progress = TaskObserver.TASK_INDETERMINATE;
+				observer.Progress = TaskObserver.TaskIndeterminate;
 			}
 
-			lock (runningObservers)
+			lock (_runningObservers)
 			{
-				runningObservers.Add(observer);
+				_runningObservers.Add(observer);
 			}
 
 			return observer;	
@@ -49,44 +47,44 @@ namespace Sigma.Core.Utils
 
 		public void CancelTask(ITaskObserver task)
 		{
-			if (task.Status != TaskObserveStatus.RUNNING)
+			if (task.Status != TaskObserveStatus.Running)
 			{
 				//nothing to do here, task is not even running
 				return;
 			}
 
-			task.Status = TaskObserveStatus.CANCELED;
+			task.Status = TaskObserveStatus.Canceled;
 
-			lock (runningObservers)
+			lock (_runningObservers)
 			{
-				runningObservers.Remove(task);
+				_runningObservers.Remove(task);
 			}
 		}
 
 		public void EndTask(ITaskObserver task)
 		{
-			if (task.Status != TaskObserveStatus.RUNNING)
+			if (task.Status != TaskObserveStatus.Running)
 			{
 				//nothing to do here, task is not even running
 				return;
 			}
 
-			task.Status = TaskObserveStatus.ENDED;
+			task.Status = TaskObserveStatus.Ended;
 
-			lock (runningObservers)
+			lock (_runningObservers)
 			{
-				runningObservers.Remove(task);
+				_runningObservers.Remove(task);
 			}
 		}
 
 		public IEnumerable<ITaskObserver> GetTasks()
 		{
-			return runningObservers;
+			return _runningObservers;
 		}
 
 		public IEnumerable<ITaskObserver> GetTasks(ITaskType taskType)
 		{
-			return runningObservers.Where(observer => observer.Type == taskType && observer.Exposed);
+			return _runningObservers.Where(observer => observer.Type == taskType && observer.Exposed);
 		}
 	}
 
@@ -153,22 +151,22 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TaskType : ITaskType
 	{
-		public static readonly ITaskType DOWNLOAD = new TaskType("Download", "Downloading");
-		public static readonly ITaskType LOAD = new TaskType("Load", "Loading");
-		public static readonly ITaskType SAVE = new TaskType("Save", "Saving");
-		public static readonly ITaskType UNPACK = new TaskType("Unpack", "Extracting");
-		public static readonly ITaskType EXTRACT = new TaskType("Extract", "Extracting");
-		public static readonly ITaskType PREPROCESS = new TaskType("Preprocess", "Preprocessing");
-		public static readonly ITaskType PREPARE = new TaskType("Prepare", "Preparing");
-		public static readonly ITaskType TRAIN = new TaskType("Train", "Training");
+		public static readonly ITaskType Download = new TaskType("Download", "Downloading");
+		public static readonly ITaskType Load = new TaskType("Load", "Loading");
+		public static readonly ITaskType Save = new TaskType("Save", "Saving");
+		public static readonly ITaskType Unpack = new TaskType("Unpack", "Extracting");
+		public static readonly ITaskType Extract = new TaskType("Extract", "Extracting");
+		public static readonly ITaskType Preprocess = new TaskType("Preprocess", "Preprocessing");
+		public static readonly ITaskType Prepare = new TaskType("Prepare", "Preparing");
+		public static readonly ITaskType Train = new TaskType("Train", "Training");
 
 		public string ExpressedType { get; set; }
 		public string Type { get; set; }
 
 		public TaskType(string type, string expressedType)
 		{
-			this.Type = type;
-			this.ExpressedType = expressedType;
+			Type = type;
+			ExpressedType = expressedType;
 		}
 	}
 }

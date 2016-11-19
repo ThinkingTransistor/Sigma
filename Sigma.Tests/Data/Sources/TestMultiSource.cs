@@ -9,11 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Data.Sources;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Sources
 {
@@ -22,7 +18,7 @@ namespace Sigma.Tests.Data.Sources
 		private static void CreateTempFile(string name)
 		{
 			File.Create(Path.GetTempPath() + "/" + name).Dispose();
-			File.WriteAllLines(Path.GetTempPath() + name, new string[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
+			File.WriteAllLines(Path.GetTempPath() + name, new[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
 		}
 
 		private static void DeleteTempFile(string name)

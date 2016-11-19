@@ -23,11 +23,11 @@ namespace Sigma.Tests.Utils
 		[TestCase]
 		public void TestArrayUtilsRange()
 		{
-			Assert.AreEqual(new int[] { 2, 3, 4, 5 }, ArrayUtils.Range(2, 5, 1));
-			Assert.AreEqual(new int[] { 10, 9, 8, 7 }, ArrayUtils.Range(10, 7, 1));
+			Assert.AreEqual(new[] { 2, 3, 4, 5 }, ArrayUtils.Range(2, 5, 1));
+			Assert.AreEqual(new[] { 10, 9, 8, 7 }, ArrayUtils.Range(10, 7, 1));
 
-			Assert.AreEqual(new int[] { 2, 4 }, ArrayUtils.Range(2, 5, 2));
-			Assert.AreEqual(new int[] { 5, 3 }, ArrayUtils.Range(5, 2, 2));
+			Assert.AreEqual(new[] { 2, 4 }, ArrayUtils.Range(2, 5, 2));
+			Assert.AreEqual(new[] { 5, 3 }, ArrayUtils.Range(5, 2, 2));
 
 			Assert.Throws<System.ArgumentException>(() => ArrayUtils.Range(1, 2, -1));
 		}
@@ -35,13 +35,13 @@ namespace Sigma.Tests.Utils
 		[TestCase]
 		public void TestArrayUtilsPermuteArray()
 		{
-			Assert.AreEqual(new long[] { 4, 2, 1, 3 }, ArrayUtils.PermuteArray(new long[] { 1, 2, 3, 4 }, new int[] { 3, 1, 0, 2 }));
+			Assert.AreEqual(new long[] { 4, 2, 1, 3 }, ArrayUtils.PermuteArray(new long[] { 1, 2, 3, 4 }, new[] { 3, 1, 0, 2 }));
 		}
 
 		[TestCase]
 		public void TestArrayUtilsGetFlatColumnMappings()
 		{
-			Assert.AreEqual(new int[] { 1, 2, 3, 4, 5, 9 }, ArrayUtils.GetFlatColumnMappings(new int[][] { new[] { 1, 5 }, new[] { 9 } }));
+			Assert.AreEqual(new[] { 1, 2, 3, 4, 5, 9 }, ArrayUtils.GetFlatColumnMappings(new[] { new[] { 1, 5 }, new[] { 9 } }));
 		}
 	}
 }
