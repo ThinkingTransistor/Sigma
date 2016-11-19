@@ -37,7 +37,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// This property returns the current window. 
 		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
 		/// </summary>
-		public WpfWindow Window { get; private set; }
+		public WPFWindow Window { get; private set; }
 
 		/// <summary>
 		/// When the <see cref="Start"/> method is called, the thread should block
@@ -101,7 +101,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// Actions assigned to this list will listen
 		/// to the onStart-event of the <see cref="_app"/>.
 		/// </summary>
-		private List<Action<WpfWindow>> _onWindowStartup;
+		private List<Action<object>> _onWindowStartup;
 
 		/// <summary>
 		/// The constructor for the WPF Monitor that relies on <see cref="SigmaWindow"/>.
@@ -113,13 +113,13 @@ namespace Sigma.Core.Monitors.WPF
 		/// The constructor for the WPF Monitor.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
-		/// <param name="window">The type of the <see cref="WpfWindow"/> that will be displayed. This window requires a constructor
-		/// whit the same arguments as <see cref="WpfWindow"/>.</param>
+		/// <param name="window">The type of the <see cref="WPFWindow"/> that will be displayed. This window requires a constructor
+		/// whit the same arguments as <see cref="WPFWindow"/>.</param>
 		public WPFMonitor(string title, Type window)
 		{
-			if (!window.IsSubclassOf(typeof(WpfWindow)))
+			if (!window.IsSubclassOf(typeof(WPFWindow)))
 			{
-				throw new ArgumentException($"Type {window} does not extend from {typeof(WpfWindow)}!");
+				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}!");
 			}
 
 			Title = title;
@@ -144,7 +144,7 @@ namespace Sigma.Core.Monitors.WPF
 				_app = new App(this);
 				ColorManager.App = _app;
 
-				Window = (WpfWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
 				ColorManager.Window = Window;
 
 				if (_onWindowStartup != null)
@@ -173,38 +173,49 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
-		/// This method allows to access the <see cref="WpfWindow"/>. 
+		/// This method allows to access the <see cref="WPFWindow"/>. 
 		/// All commands will be executed in the thread of the window!
 		/// If the environment has note been prepared, the function will be executed 
 		/// in OnStartup function of the window. 
 		/// </summary>
-		/// <param name="action">The action that should be executed from the <see cref="WpfWindow"/>.</param>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
 		/// <param name="priority">The priority of the execution.</param>
 		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
 		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
-		public void WindowDispatcher(Action<WpfWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null) where T : WPFWindow
 		{
+			if (typeof(T) != _windowType) throw new ArgumentException($"Type mismatch between {typeof(T)} and {_windowType}");
+
 			if (Window == null)
 			{
 				if (_onWindowStartup == null)
 				{
-					_onWindowStartup = new List<Action<WpfWindow>>();
+					_onWindowStartup = new List<Action<object>>();
 				}
 
-				_onWindowStartup.Add(action);
+				_onWindowStartup.Add((obj) => action((T) obj));
 			}
 			else
 			{
-				Window.Dispatcher.Invoke(() =>
-				{
-					action(Window);
-				});
+				Window.Dispatcher.Invoke(() => action((T) Window), priority);
 			}
 
-			if (onFinished != null)
-			{
-				throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
-			}
+			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow"/>. 
+		/// All commands will be executed in the thread of the window!
+		/// If the environment has note been prepared, the function will be executed 
+		/// in OnStartup function of the window. 
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
+		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
+		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		{
+			WindowDispatcher<SigmaWindow>(action, priority, onFinished);
 		}
 	}
 }

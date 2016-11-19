@@ -83,7 +83,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			public INewTabHost<Window> GetNewHost (IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
 				T window = Construct(new Type[] { typeof(WPFMonitor), typeof(App), typeof(string), typeof(bool) }, new object[] { _monitor, _app, _title, false });
-				return new NewTabHost<WpfWindow>(window, window.TabControl.InitialTabablzControl);
+				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 
 			public TabEmptiedResponse TabEmptiedHandler (TabablzControl tabControl, Window window)
