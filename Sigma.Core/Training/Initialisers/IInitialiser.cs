@@ -1,10 +1,6 @@
 ﻿using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Training.Initialisers
 {

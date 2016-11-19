@@ -87,6 +87,7 @@ namespace Sigma.Core.Data.Datasets
 		/// Checks whether a certain block index is currently active and loaded in a certain handler format.
 		/// </summary>
 		/// <param name="blockIndex">The block index to check.</param>
+		/// <param name="handler">The handler of which the format should match.</param>
 		/// <returns>A boolean indicating if the given block index is active and loaded in the given handler format.</returns>
 		bool IsBlockActive(int blockIndex, IComputationHandler handler);
 

@@ -1,19 +1,14 @@
 ﻿using NUnit.Framework;
-using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Readers
 {
 	public class TestByteRecordExtractor
 	{
-		private static void CreateCSVTempFile(string name)
+		private static void CreateCsvTempFile(string name)
 		{
 			File.Create(Path.GetTempPath() + name).Dispose();
 
@@ -31,7 +26,7 @@ namespace Sigma.Tests.Data.Readers
 		{
 			string filename = ".unittestfile" + nameof(TestByteRecordReaderCreate);
 
-			CreateCSVTempFile(filename);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
@@ -51,7 +46,7 @@ namespace Sigma.Tests.Data.Readers
 		{
 			string filename = ".unittestfile" + nameof(TestByteRecordReaderCreate);
 
-			CreateCSVTempFile(filename);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
@@ -61,7 +56,7 @@ namespace Sigma.Tests.Data.Readers
 
 			reader.Prepare();
 
-			Assert.AreEqual(new byte[][] { new byte[] { 5 }, new byte[] { 3 }, new byte[] { 4 } }, reader.Read(4));
+			Assert.AreEqual(new[] { new byte[] { 5 }, new byte[] { 3 }, new byte[] { 4 } }, reader.Read(4));
 
 			source.Dispose();
 			reader.Dispose();

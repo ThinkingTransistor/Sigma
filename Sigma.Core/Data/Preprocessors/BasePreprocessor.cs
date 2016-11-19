@@ -9,12 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.Utils;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Preprocessors
 {
@@ -43,7 +39,7 @@ namespace Sigma.Core.Data.Preprocessors
 				processedSectionNames = null;
 			}
 
-			this.ProcessedSectionNames = processedSectionNames;
+			ProcessedSectionNames = processedSectionNames;
 		}
 
 		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)

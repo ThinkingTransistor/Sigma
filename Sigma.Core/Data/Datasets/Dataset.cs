@@ -25,31 +25,31 @@ namespace Sigma.Core.Data.Datasets
 	/// </summary>
 	public class Dataset : IDataset
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// Automatically size blocks according to estimated data metrics (e.g. physical memory available, record size).
 		/// </summary>
-		public const int BLOCK_SIZE_AUTO = -1;
+		public const int BlockSizeAuto = -1;
 
 		/// <summary>
 		/// Assign all available data to the first block (one block fits it all - literally).
 		/// </summary>
-		public const int BLOCK_SIZE_ALL = -2;
+		public const int BlockSizeAll = -2;
 
-		public int MaxConcurrentActiveBlocks { get; private set; } = 24; //24 seems like a good number, right?
+		public int MaxConcurrentActiveBlocks { get; } = 24; //24 seems like a good number, right?
 
-		public long MaxTotalActiveBlockSizeBytes { get; private set; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
+		public long MaxTotalActiveBlockSizeBytes { get; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
 
-		public IReadOnlyCollection<int> ActiveBlockIndices { get { return activeBlocks.Keys.ToList<int>(); } }
+		public IReadOnlyCollection<int> ActiveBlockIndices => _activeBlocks.Keys.ToList();
 
-		public string Name { get; private set; }
+		public string Name { get; }
 
-		public int ActiveBlockRegionCount { get { return activeBlocks.Count; } }
+		public int ActiveBlockRegionCount => _activeBlocks.Count;
 
-		public int ActiveIndividualBlockCount { get { return activeBlocks.Values.Sum(set => set.Count); } }
+		public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
-		public int TargetBlockSizeRecords { get; private set; }
+		public int TargetBlockSizeRecords { get; }
 
 		public string[] SectionNames { get; private set; }
 
@@ -67,23 +67,23 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public bool AllowRawReadDataCaching { get; set; } = true;
 
-		private Dictionary<int, ISet<RecordBlock>> activeBlocks;
-		private Dictionary<int, ISet<RecordBlock>> cachedBlocks;
-		private ICacheProvider cacheProvider;
+		private readonly Dictionary<int, ISet<RecordBlock>> _activeBlocks;
+		private readonly Dictionary<int, ISet<RecordBlock>> _cachedBlocks;
+		private readonly ICacheProvider _cacheProvider;
 
-		private int lastReadRawDataBlockIndex = -1;
-		private long totalCachedBlockSizeBytes;
-		private int lastAvailableBlockIndex = Int32.MaxValue;
-		private ISet<IRecordExtractor> recordExtractors;
+		private int _lastReadRawDataBlockIndex = -1;
+		private long _totalCachedBlockSizeBytes;
+		private int _lastAvailableBlockIndex = int.MaxValue;
+		private readonly ISet<IRecordExtractor> _recordExtractors;
 
-		private Semaphore availableBlocksSemaphore;
+		private readonly Semaphore _availableBlocksSemaphore;
 
 		/// <summary>
 		/// Create a dataset with a certain unique name and the record extractors to use. 
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
-		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
-		public Dataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BLOCK_SIZE_AUTO, recordExtractors)
+		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
+		public Dataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BlockSizeAuto, recordExtractors)
 		{
 		}
 
@@ -91,7 +91,7 @@ namespace Sigma.Core.Data.Datasets
 		/// Create a dataset with a certain unique name, target block size in records and the record extractors to use.
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
-		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
+		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
 		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
 		public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
 			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache") + name), true, recordExtractors)
@@ -102,7 +102,7 @@ namespace Sigma.Core.Data.Datasets
 		/// Create a dataset with a certain unique name, target block size in records, specific cache provider and the record extractors to use.
 		/// </summary>
 		/// <param name="name">The unique dataset name.</param>
-		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BLOCK_SIZE_AUTO"/> or <see cref="BLOCK_SIZE_ALL"/>.</param>
+		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
 		/// <param name="cacheProvider">The cache provider to use for caching record blocks and raw reader data.</param>
 		/// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
 		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
@@ -110,12 +110,12 @@ namespace Sigma.Core.Data.Datasets
 		{
 			if (name == null)
 			{
-				throw new ArgumentNullException("Name cannot be null.");
+				throw new ArgumentNullException(nameof(name));
 			}
 
 			if (recordExtractors == null)
 			{
-				throw new ArgumentNullException("Record extractors cannot be null.");
+				throw new ArgumentNullException(nameof(recordExtractors));
 			}
 
 			if (recordExtractors.Length == 0)
@@ -125,15 +125,15 @@ namespace Sigma.Core.Data.Datasets
 
 			if (cacheProvider == null)
 			{
-				throw new ArgumentNullException("Cache provider cannot be null.");
+				throw new ArgumentNullException(nameof(cacheProvider));
 			}
 
-			if (blockSizeRecords == BLOCK_SIZE_ALL)
+			if (blockSizeRecords == BlockSizeAll)
 			{
 				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
-				this.TargetBlockSizeRecords = Int32.MaxValue;
+				TargetBlockSizeRecords = Int32.MaxValue;
 			}
-			else if (blockSizeRecords == BLOCK_SIZE_AUTO)
+			else if (blockSizeRecords == BlockSizeAuto)
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
 				long estimatedRecordSizeBytes = 1024;
@@ -141,7 +141,7 @@ namespace Sigma.Core.Data.Datasets
 				long optimalNumberBlocks = 24;
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
-				this.TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
+				TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
 			}
 			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
 			{
@@ -149,31 +149,31 @@ namespace Sigma.Core.Data.Datasets
 			}
 			else
 			{
-				this.TargetBlockSizeRecords = blockSizeRecords;
+				TargetBlockSizeRecords = blockSizeRecords;
 			}
 
-			this.Name = name;
-			this.AnalyseExtractors(recordExtractors);
+			Name = name;
+			AnalyseExtractors(recordExtractors);
 
-			this.cacheProvider = cacheProvider;
-			this.recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
+			_cacheProvider = cacheProvider;
+			_recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
 
-			this.availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
+			_availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
 
-			this.activeBlocks = new Dictionary<int, ISet<RecordBlock>>();
-			this.cachedBlocks = new Dictionary<int, ISet<RecordBlock>>();
+			_activeBlocks = new Dictionary<int, ISet<RecordBlock>>();
+			_cachedBlocks = new Dictionary<int, ISet<RecordBlock>>();
 
 			if (flushCache)
 			{
-				logger.Info($"Flushing all caches for dataset {Name} as flushCache flag was set...");
+				_logger.Info($"Flushing all caches for dataset {Name} as flushCache flag was set...");
 
 				InvalidateAndClearCaches();
 
-				logger.Info($"Done flushing all caches for dataset {Name}.");
+				_logger.Info($"Done flushing all caches for dataset {Name}.");
 			}
 		}
 
-		private void AnalyseExtractors(IRecordExtractor[] extractors)
+		private void AnalyseExtractors(IEnumerable<IRecordExtractor> extractors)
 		{
 			ISet<string> sectionNames = new HashSet<string>();
 
@@ -207,19 +207,19 @@ namespace Sigma.Core.Data.Datasets
 				index++;
 			}
 
-			this.SectionNames = sectionNames.ToArray();
+			SectionNames = sectionNames.ToArray();
 		}
 
 		public bool CanFetchBlocksAfter(int blockIndex)
 		{
-			return blockIndex <= lastAvailableBlockIndex;
+			return blockIndex <= _lastAvailableBlockIndex;
 		}
 
 		public async Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			//TODO check if block even could be fetched to not waste thread resources if shouldWaitUntilAvailable is false anyway
 
-			return await Task.Run<Dictionary<string, INDArray>>(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
+			return await Task.Run(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
 		}
 
 		public Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
@@ -231,10 +231,10 @@ namespace Sigma.Core.Data.Datasets
 			{
 				if (block.Count == 0)
 				{
-					throw new InvalidOperationException($"Fetched block did not contain any named elements (was empty; is the extractor output correct?).");
+					throw new InvalidOperationException("Fetched block did not contain any named elements (was empty; is the extractor output correct?).");
 				}
 
-				availableBlocksSemaphore.WaitOne();
+				_availableBlocksSemaphore.WaitOne();
 
 				RegisterActiveBlock(block, blockIndex, handler);
 
@@ -244,7 +244,7 @@ namespace Sigma.Core.Data.Datasets
 			{
 				if (shouldWaitUntilAvailable)
 				{
-					logger.Info($"Could not directly load block with index {blockIndex} for handler {handler} and shouldWaitUntilAvailable flag is set to true, waiting for available space...");
+					_logger.Info($"Could not directly load block with index {blockIndex} for handler {handler} and shouldWaitUntilAvailable flag is set to true, waiting for available space...");
 
 					return FetchBlockWhenAvailable(blockIndex, handler);
 				}
@@ -265,27 +265,27 @@ namespace Sigma.Core.Data.Datasets
 				return;
 			}
 
-			RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
-
-			recordBlock.loadedAndActive = true;
+			RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0],
+				handler.GetSizeBytes(block.Values.ToArray()), handler)
+			{ LoadedAndActive = true };
 
 			lock (this)
 			{
-				TotalActiveBlockSizeBytes += recordBlock.estimatedSizeBytes;
-				TotalActiveRecords += recordBlock.numberRecords;
+				TotalActiveBlockSizeBytes += recordBlock.EstimatedSizeBytes;
+				TotalActiveRecords += recordBlock.NumberRecords;
 
-				if (!activeBlocks.ContainsKey(blockIndex))
+				if (!_activeBlocks.ContainsKey(blockIndex))
 				{
-					activeBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+					_activeBlocks.Add(blockIndex, new HashSet<RecordBlock>());
 				}
 
-				activeBlocks[blockIndex].Add(recordBlock);
+				_activeBlocks[blockIndex].Add(recordBlock);
 			}
 		}
 
 		private void DeregisterActiveBlock(RecordBlock recordBlock)
 		{
-			if (!IsBlockActive(recordBlock.blockIndex, recordBlock.handler))
+			if (!IsBlockActive(recordBlock.BlockIndex, recordBlock.Handler))
 			{
 				//block that should be deregistered is not even registered
 				return;
@@ -293,14 +293,14 @@ namespace Sigma.Core.Data.Datasets
 
 			lock (this)
 			{
-				TotalActiveBlockSizeBytes -= recordBlock.estimatedSizeBytes;
-				TotalActiveRecords -= recordBlock.numberRecords;
+				TotalActiveBlockSizeBytes -= recordBlock.EstimatedSizeBytes;
+				TotalActiveRecords -= recordBlock.NumberRecords;
 
-				activeBlocks[recordBlock.blockIndex].Remove(recordBlock);
+				_activeBlocks[recordBlock.BlockIndex].Remove(recordBlock);
 
-				if (activeBlocks[recordBlock.blockIndex].Count == 0)
+				if (_activeBlocks[recordBlock.BlockIndex].Count == 0)
 				{
-					activeBlocks.Remove(recordBlock.blockIndex);
+					_activeBlocks.Remove(recordBlock.BlockIndex);
 				}
 			}
 		}
@@ -313,16 +313,16 @@ namespace Sigma.Core.Data.Datasets
 				return;
 			}
 
-			if (!cachedBlocks.ContainsKey(blockIndex))
+			if (!_cachedBlocks.ContainsKey(blockIndex))
 			{
-				cachedBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+				_cachedBlocks.Add(blockIndex, new HashSet<RecordBlock>());
 			}
 
 			RecordBlock recordBlock = new RecordBlock(null, blockIndex, block.First().Value.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
 
-			recordBlock.loadedAndActive = false;
+			recordBlock.LoadedAndActive = false;
 
-			cachedBlocks[blockIndex].Add(recordBlock);
+			_cachedBlocks[blockIndex].Add(recordBlock);
 		}
 
 		/// <summary>
@@ -332,25 +332,22 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
-			logger.Info("Invalidating and clearning all caches...");
+			_logger.Info("Invalidating and clearning all caches...");
 
-			this.cacheProvider.RemoveAll();
+			_cacheProvider.RemoveAll();
 
-			this.cachedBlocks.Clear();
+			_cachedBlocks.Clear();
 
-			logger.Info("Done invalidating and clearning all caches.");
+			_logger.Info("Done invalidating and clearning all caches.");
 		}
 
 		private Dictionary<string, INDArray> FetchBlockWhenAvailable(int blockIndex, IComputationHandler handler)
 		{
-			//vanity boolean so you don't have to look at while(true)
-			bool fetchedBlockSuccessfully = false;
-
-			while (!fetchedBlockSuccessfully)
+			while (true)
 			{
-				availableBlocksSemaphore.WaitOne();
+				_availableBlocksSemaphore.WaitOne();
 
-				logger.Info($"Block region for request for block index {blockIndex} for handler {handler} became available, attempting to extract block to check if it fits all constraints...");
+				_logger.Info($"Block region for request for block index {blockIndex} for handler {handler} became available, attempting to extract block to check if it fits all constraints...");
 
 				Dictionary<string, INDArray> block = FetchBlockConstrained(blockIndex, handler);
 
@@ -364,29 +361,25 @@ namespace Sigma.Core.Data.Datasets
 				else
 				{
 					//we cannot retrieve any more blocks and shouldn't keep trying 
-					if (blockIndex >= lastAvailableBlockIndex)
+					if (blockIndex >= _lastAvailableBlockIndex)
 					{
 						return null;
 					}
 					else
 					{
-						logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
+						_logger.Info($"Request for block with index {blockIndex} for handler {handler} was returned to the queue, waiting for available space...");
 
-						availableBlocksSemaphore.Release();
+						_availableBlocksSemaphore.Release();
 					}
 				}
 			}
-
-			//but but visual studio, this code is by definition unreachable, don't you see?
-			throw new InvalidOperationException("This should really never happen. Like really. It's by definition unreachable code.");
-			//apparently not
 		}
 
 		private Dictionary<string, INDArray> FetchBlockConstrained(int blockIndex, IComputationHandler handler)
 		{
 			if (ActiveIndividualBlockCount >= MaxConcurrentActiveBlocks)
 			{
-				logger.Info($"Unable to fetch block due to MaxConcurrentActiveBlocks constraint of {MaxConcurrentActiveBlocks}.");
+				_logger.Info($"Unable to fetch block due to MaxConcurrentActiveBlocks constraint of {MaxConcurrentActiveBlocks}.");
 
 				return null;
 			}
@@ -403,7 +396,7 @@ namespace Sigma.Core.Data.Datasets
 
 			if (TotalActiveBlockSizeBytes + blockSizeBytes > MaxTotalActiveBlockSizeBytes)
 			{
-				logger.Info($"Unable to keep requested block {blockIndex} for handler {handler} in memory due to MaxTotalActiveBlockSizeBytes constraint of {MaxTotalActiveBlockSizeBytes} bytes (block of size {blockSizeBytes} would exceed constraint by {TotalActiveBlockSizeBytes + blockSizeBytes - MaxTotalActiveBlockSizeBytes} bytes.).");
+				_logger.Info($"Unable to keep requested block {blockIndex} for handler {handler} in memory due to MaxTotalActiveBlockSizeBytes constraint of {MaxTotalActiveBlockSizeBytes} bytes (block of size {blockSizeBytes} would exceed constraint by {TotalActiveBlockSizeBytes + blockSizeBytes - MaxTotalActiveBlockSizeBytes} bytes.).");
 
 				CacheBlockConstrained(block, blockIndex, handler);
 
@@ -421,17 +414,17 @@ namespace Sigma.Core.Data.Datasets
 			//  - or if none of that, loads and extracts from the original extractors 
 
 			//check whether a block with the same index is already active 
-			if (activeBlocks.ContainsKey(blockIndex))
+			if (_activeBlocks.ContainsKey(blockIndex))
 			{
 				RecordBlock bestMatchedBlock = null;
-				foreach (RecordBlock otherBlock in activeBlocks[blockIndex])
+				foreach (RecordBlock otherBlock in _activeBlocks[blockIndex])
 				{
-					if (handler.CanConvert(otherBlock.firstNamedBlock, otherBlock.handler))
+					if (handler.CanConvert(otherBlock.FirstNamedBlock, otherBlock.Handler))
 					{
-						if (handler.IsInterchangeable(otherBlock.handler))
+						if (handler.IsInterchangeable(otherBlock.Handler))
 						{
 							//no need to look any further, we already found the perfect match and can return without conversion
-							return otherBlock.namedBlocks;
+							return otherBlock.NamedBlocks;
 						}
 
 						bestMatchedBlock = otherBlock;
@@ -443,9 +436,9 @@ namespace Sigma.Core.Data.Datasets
 					//we can just convert from another already loaded block with that index
 					Dictionary<string, INDArray> convertedNamedBlocks = new Dictionary<string, INDArray>();
 
-					foreach (string name in bestMatchedBlock.namedBlocks.Keys)
+					foreach (string name in bestMatchedBlock.NamedBlocks.Keys)
 					{
-						convertedNamedBlocks.Add(name, handler.Convert(bestMatchedBlock.namedBlocks[name], handler));
+						convertedNamedBlocks.Add(name, handler.Convert(bestMatchedBlock.NamedBlocks[name], handler));
 					}
 
 					return convertedNamedBlocks;
@@ -455,11 +448,11 @@ namespace Sigma.Core.Data.Datasets
 			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
 
 			//it's already stored in the cache
-			lock (cacheProvider)
+			lock (_cacheProvider)
 			{
-				if (cacheProvider.IsCached(blockIdentifierInCache))
+				if (_cacheProvider.IsCached(blockIdentifierInCache))
 				{
-					Dictionary<string, INDArray> block = cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
+					Dictionary<string, INDArray> block = _cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
 
 					//if its != null we could read it correctly in the right format
 					if (block != null)
@@ -480,11 +473,11 @@ namespace Sigma.Core.Data.Datasets
 			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and risking corruption of data
 			lock (this)
 			{
-				if (blockIndex >= lastReadRawDataBlockIndex)
+				if (blockIndex >= _lastReadRawDataBlockIndex)
 				{
 					object[] lastRawData = null;
 
-					for (int tempBlockIndex = lastReadRawDataBlockIndex + 1; tempBlockIndex <= blockIndex; tempBlockIndex++)
+					for (int tempBlockIndex = _lastReadRawDataBlockIndex + 1; tempBlockIndex <= blockIndex; tempBlockIndex++)
 					{
 						lastRawData = LoadDirect(tempBlockIndex, handler);
 
@@ -496,7 +489,7 @@ namespace Sigma.Core.Data.Datasets
 
 						if (AllowRawReadDataCaching)
 						{
-							cacheProvider.Store($"raw.{tempBlockIndex}", lastRawData);
+							_cacheProvider.Store($"raw.{tempBlockIndex}", lastRawData);
 						}
 					}
 
@@ -508,16 +501,16 @@ namespace Sigma.Core.Data.Datasets
 					{
 						string cacheIdentifier = $"raw.{blockIndex}";
 
-						if (!cacheProvider.IsCached(cacheIdentifier))
+						if (!_cacheProvider.IsCached(cacheIdentifier))
 						{
-							throw new InvalidOperationException($"Unable to load cached entry for block {blockIndex} for handler {handler}, cache entry does not exist in provider {cacheProvider}.");
+							throw new InvalidOperationException($"Unable to load cached entry for block {blockIndex} for handler {handler}, cache entry does not exist in provider {_cacheProvider}.");
 						}
 
-						return ExtractDirectFrom(cacheProvider.Load<object[]>(cacheIdentifier), blockIndex, handler);
+						return ExtractDirectFrom(_cacheProvider.Load<object[]>(cacheIdentifier), blockIndex, handler);
 					}
 					else
 					{
-						throw new InvalidOperationException($"Cannot load and extract raw block with index {blockIndex} because AllowRawReadDataCaching is set to false and last read position is at {lastReadRawDataBlockIndex}.");
+						throw new InvalidOperationException($"Cannot load and extract raw block with index {blockIndex} because AllowRawReadDataCaching is set to false and last read position is at {_lastReadRawDataBlockIndex}.");
 					}
 				}
 			}
@@ -529,7 +522,7 @@ namespace Sigma.Core.Data.Datasets
 
 			PrepareExtractors();
 
-			foreach (IRecordExtractor extractor in recordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				object data;
 
@@ -541,9 +534,9 @@ namespace Sigma.Core.Data.Datasets
 				//check if block reader could read anything, if not, return null
 				if (data == null)
 				{
-					lastAvailableBlockIndex = blockIndex - 1;
+					_lastAvailableBlockIndex = blockIndex - 1;
 
-					logger.Info($"Cannot load block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
+					_logger.Info($"Cannot load block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
 
 					return null;
 				}
@@ -551,9 +544,9 @@ namespace Sigma.Core.Data.Datasets
 				rawDataPerExtractor.Add(data);
 			}
 
-			if (blockIndex > lastReadRawDataBlockIndex)
+			if (blockIndex > _lastReadRawDataBlockIndex)
 			{
-				lastReadRawDataBlockIndex = blockIndex;
+				_lastReadRawDataBlockIndex = blockIndex;
 			}
 
 			return rawDataPerExtractor.ToArray();
@@ -563,25 +556,25 @@ namespace Sigma.Core.Data.Datasets
 		{
 			Dictionary<string, INDArray> namedBlocks = new Dictionary<string, INDArray>();
 
-			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.PREPARE, "extractors for dataset " + Name, indeterminate: true);
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "extractors for dataset " + Name, indeterminate: true);
 
 			PrepareExtractors();
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.PREPARE, $"block {blockIndex} for dataset {Name}", indeterminate: true);
+			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"block {blockIndex} for dataset {Name}", indeterminate: true);
 
 			int extractorIndex = 0;
-			foreach (IRecordExtractor extractor in recordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractHierarchicalFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
 
 				//check if block size is 0, indicating we reached the end of the stream 
 				if (subNamedBlock == null)
 				{
-					lastAvailableBlockIndex = blockIndex - 1;
+					_lastAvailableBlockIndex = blockIndex - 1;
 
-					logger.Info($"Cannot  extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
+					_logger.Info($"Cannot  extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
 
 					SigmaEnvironment.TaskManager.CancelTask(extractTask);
 
@@ -610,44 +603,44 @@ namespace Sigma.Core.Data.Datasets
 
 		public void FreeBlock(int blockIndex, IComputationHandler handler)
 		{
-			if (!activeBlocks.ContainsKey(blockIndex))
+			if (!_activeBlocks.ContainsKey(blockIndex))
 			{
-				logger.Info($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
+				_logger.Info($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
 
 				return;
 			}
 
-			foreach (RecordBlock block in activeBlocks[blockIndex])
+			foreach (RecordBlock block in _activeBlocks[blockIndex])
 			{
-				if (object.ReferenceEquals(block.handler, handler))
+				if (ReferenceEquals(block.Handler, handler))
 				{
-					logger.Info($"Freeing block with index {blockIndex} for handler {handler}...");
+					_logger.Info($"Freeing block with index {blockIndex} for handler {handler}...");
 
-					CacheBlockConstrained(block.namedBlocks, blockIndex, handler);
+					CacheBlockConstrained(block.NamedBlocks, blockIndex, handler);
 
 					DeregisterActiveBlock(block);
 
-					availableBlocksSemaphore.Release();
+					_availableBlocksSemaphore.Release();
 
-					logger.Info($"Done freeing block with index {blockIndex} for handler {handler}.");
+					_logger.Info($"Done freeing block with index {blockIndex} for handler {handler}.");
 
 					return;
 				}
 			}
 
-			logger.Info($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
+			_logger.Info($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
 		}
 
 		private void CacheBlockConstrained(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler)
 		{
-			if (cachedBlocks.ContainsKey(blockIndex))
+			if (_cachedBlocks.ContainsKey(blockIndex))
 			{
-				foreach (RecordBlock cachedBlock in cachedBlocks[blockIndex])
+				foreach (RecordBlock cachedBlock in _cachedBlocks[blockIndex])
 				{
 					//check if block of the same type and size is already cached, if so, return, because there is no need to cache again
-					if (cachedBlock.blockIndex == blockIndex && cachedBlock.handler.IsInterchangeable(handler) && block.First().Value.Shape[0] == cachedBlock.numberRecords)
+					if (cachedBlock.BlockIndex == blockIndex && cachedBlock.Handler.IsInterchangeable(handler) && block.First().Value.Shape[0] == cachedBlock.NumberRecords)
 					{
-						logger.Info($"Skipping cache request of block {blockIndex} for handler {handler} because interchangeable block of same index, format and size is already cached.");
+						_logger.Info($"Skipping cache request of block {blockIndex} for handler {handler} because interchangeable block of same index, format and size is already cached.");
 
 						return;
 					}
@@ -656,36 +649,36 @@ namespace Sigma.Core.Data.Datasets
 
 			long blockSizeBytes = handler.GetSizeBytes(block.Values.ToArray());
 
-			if (cachedBlocks.Count >= MaxBlocksInCache)
+			if (_cachedBlocks.Count >= MaxBlocksInCache)
 			{
-				logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBlocksInCache constraint of {MaxBlocksInCache}.");
+				_logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBlocksInCache constraint of {MaxBlocksInCache}.");
 
 				return;
 			}
 
-			if (blockSizeBytes + totalCachedBlockSizeBytes >= MaxBytesInCache)
+			if (blockSizeBytes + _totalCachedBlockSizeBytes >= MaxBytesInCache)
 			{
-				logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBytesInCache constraint of {MaxBytesInCache} bytes (block of size {blockSizeBytes} would exceed constraint by {totalCachedBlockSizeBytes + blockSizeBytes - MaxBytesInCache} bytes).");
+				_logger.Info($"Unable to cache block {blockIndex} for handler {handler} due to MaxBytesInCache constraint of {MaxBytesInCache} bytes (block of size {blockSizeBytes} would exceed constraint by {_totalCachedBlockSizeBytes + blockSizeBytes - MaxBytesInCache} bytes).");
 
 				return;
 			}
 
 			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
 
-			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.SAVE, cacheIdentifier, indeterminate: true);
+			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Save, cacheIdentifier, indeterminate: true);
 
-			cacheProvider.Store(cacheIdentifier, block);
+			_cacheProvider.Store(cacheIdentifier, block);
 
 			RegisterCachedBlock(block, blockIndex, handler);
 
 			SigmaEnvironment.TaskManager.EndTask(task);
 
-			totalCachedBlockSizeBytes += blockSizeBytes;
+			_totalCachedBlockSizeBytes += blockSizeBytes;
 		}
 
 		private void PrepareExtractors()
 		{
-			foreach (IRecordExtractor extractor in recordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				lock (extractor)
 				{
@@ -696,16 +689,16 @@ namespace Sigma.Core.Data.Datasets
 
 		public long GetBlockSizeBytes(int blockIndex, IComputationHandler handler)
 		{
-			if (!activeBlocks.ContainsKey(blockIndex))
+			if (!_activeBlocks.ContainsKey(blockIndex))
 			{
 				return -1L;
 			}
 
-			foreach (RecordBlock block in activeBlocks[blockIndex])
+			foreach (RecordBlock block in _activeBlocks[blockIndex])
 			{
-				if (object.ReferenceEquals(block.handler, handler))
+				if (ReferenceEquals(block.Handler, handler))
 				{
-					return block.estimatedSizeBytes;
+					return block.EstimatedSizeBytes;
 				}
 			}
 
@@ -714,19 +707,19 @@ namespace Sigma.Core.Data.Datasets
 
 		public bool IsBlockActive(int blockIndex)
 		{
-			return activeBlocks.ContainsKey(blockIndex);
+			return _activeBlocks.ContainsKey(blockIndex);
 		}
 
 		public bool IsBlockActive(int blockIndex, IComputationHandler handler)
 		{
-			if (!activeBlocks.ContainsKey(blockIndex))
+			if (!_activeBlocks.ContainsKey(blockIndex))
 			{
 				return false;
 			}
 
-			foreach (RecordBlock block in activeBlocks[blockIndex])
+			foreach (RecordBlock block in _activeBlocks[blockIndex])
 			{
-				if (object.ReferenceEquals(block.handler, handler))
+				if (ReferenceEquals(block.Handler, handler))
 				{
 					return true;
 				}
@@ -737,14 +730,14 @@ namespace Sigma.Core.Data.Datasets
 
 		private bool IsBlockCached(int blockIndex, IComputationHandler handler)
 		{
-			if (!cachedBlocks.ContainsKey(blockIndex))
+			if (!_cachedBlocks.ContainsKey(blockIndex))
 			{
 				return false;
 			}
 
-			foreach (RecordBlock block in cachedBlocks[blockIndex])
+			foreach (RecordBlock block in _cachedBlocks[blockIndex])
 			{
-				if (object.ReferenceEquals(block.handler, handler))
+				if (ReferenceEquals(block.Handler, handler))
 				{
 					return true;
 				}
@@ -755,37 +748,37 @@ namespace Sigma.Core.Data.Datasets
 
 		public void Dispose()
 		{
-			foreach (IRecordExtractor extractor in recordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				extractor.Dispose();
 				extractor.Reader?.Dispose();
 			}
 
-			this.cacheProvider.Dispose();
+			_cacheProvider.Dispose();
 		}
 
 		internal class RecordBlock
 		{
-			internal Dictionary<string, INDArray> namedBlocks;
-			internal INDArray firstNamedBlock;
-			internal IComputationHandler handler;
-			internal bool loadedAndActive;
-			internal int blockIndex;
-			internal long numberRecords;
-			internal long estimatedSizeBytes;
+			internal Dictionary<string, INDArray> NamedBlocks;
+			internal INDArray FirstNamedBlock;
+			internal IComputationHandler Handler;
+			internal bool LoadedAndActive;
+			internal int BlockIndex;
+			internal long NumberRecords;
+			internal long EstimatedSizeBytes;
 
 			public RecordBlock(Dictionary<string, INDArray> namedBlocks, int blockIndex, long numberRecords, long estimatedSizeBytes, IComputationHandler handler)
 			{
-				this.namedBlocks = namedBlocks;
-				this.blockIndex = blockIndex;
-				this.numberRecords = numberRecords;
-				this.estimatedSizeBytes = estimatedSizeBytes;
-				this.handler = handler;
+				NamedBlocks = namedBlocks;
+				BlockIndex = blockIndex;
+				NumberRecords = numberRecords;
+				EstimatedSizeBytes = estimatedSizeBytes;
+				Handler = handler;
 
 				//record blocks internal block can be null
 				if (namedBlocks != null)
 				{
-					this.firstNamedBlock = namedBlocks[namedBlocks.First().Key];
+					FirstNamedBlock = namedBlocks[namedBlocks.First().Key];
 				}
 			}
 		}

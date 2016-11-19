@@ -8,11 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sigma.Core.Utils;
 
-namespace Sigma.Core.Utils
+namespace Sigma.Core.Training.Hooks
 {
 	/// <summary>
 	/// A hook which can be used to "hook" into operations and execute custom code at a certain time step. 
@@ -71,12 +69,12 @@ namespace Sigma.Core.Utils
 		/// <summary>
 		/// The time step at which to execute this hook.
 		/// </summary>
-		public ITimeStep TimeStep { get; private set; }
+		public ITimeStep TimeStep { get; }
 
 		/// <summary>
 		/// The global registry entries required for the execution of this hook.
 		/// </summary>
-		public ISet<string> RequiredRegistryEntries { get; private set; }
+		public ISet<string> RequiredRegistryEntries { get; }
 
 		/// <summary>
 		/// Execute this hook with a certain parameter registry.
@@ -89,20 +87,20 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
 		/// <param name="requiredRegistryEntries">The required registry entries.</param>
-		public Hook(ITimeStep timestep, ISet<string> requiredRegistryEntries)
+		protected Hook(ITimeStep timestep, ISet<string> requiredRegistryEntries)
 		{
 			if (timestep == null)
 			{
-				throw new ArgumentNullException("Timestep cannot be null.");
+				throw new ArgumentNullException(nameof(timestep));
 			}
 
 			if (requiredRegistryEntries == null)
 			{
-				throw new ArgumentNullException("Required registry entries cannot be null.");
+				throw new ArgumentNullException(nameof(requiredRegistryEntries));
 			}
 
-			this.TimeStep = timestep;
-			this.RequiredRegistryEntries = requiredRegistryEntries;
+			TimeStep = timestep;
+			RequiredRegistryEntries = requiredRegistryEntries;
 		}
 	}
 
@@ -112,7 +110,7 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public abstract class ActiveHook : Hook, IActiveHook
 	{
-		public ActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected ActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 	}
@@ -125,7 +123,7 @@ namespace Sigma.Core.Utils
 	{
 		public IRegistry RegistryCopy { get; set; }
 
-		public PassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected PassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 	}

@@ -25,7 +25,6 @@ namespace Sigma.Core.Handlers
 		/// Initialise a deserialised ndarray of this handler's format with this handler and register and initialise components relevant to this handler.
 		/// </summary>
 		/// <param name="array">The ndarray to serialise.</param>
-		/// <param name="stream">The stream to serialise to.</param>
 		void InitAfterDeserialisation(INDArray array);
 
 		/// <summary>
@@ -62,6 +61,7 @@ namespace Sigma.Core.Handlers
 		/// Converts a certain ndarray from another handler to this handler's format and returns a COPY of its contents in this handler's format.
 		/// </summary>
 		/// <param name="array">The array for which a copy in this handler's format should be created.</param>
+		/// <param name="otherHandler">The other handler which created the array.</param>
 		/// <returns>A COPY of the contents of the given ndarray in this handler's format.</returns>
 		INDArray Convert(INDArray array, IComputationHandler otherHandler);
 

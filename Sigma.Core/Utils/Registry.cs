@@ -23,8 +23,8 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class Registry : IRegistry
 	{
-		internal Dictionary<string, object> mappedValues;
-		internal Dictionary<string, Type> associatedTypes;
+		internal Dictionary<string, object> MappedValues;
+		internal Dictionary<string, Type> AssociatedTypes;
 
 		public bool CheckTypes
 		{
@@ -36,37 +36,13 @@ namespace Sigma.Core.Utils
 			get; set;
 		}
 
-		public ICollection<string> Keys
-		{
-			get
-			{
-				return mappedValues.Keys;
-			}
-		}
+		public ICollection<string> Keys => MappedValues.Keys;
 
-		public ICollection<object> Values
-		{
-			get
-			{
-				return mappedValues.Values;
-			}
-		}
+		public ICollection<object> Values => MappedValues.Values;
 
-		public int Count
-		{
-			get
-			{
-				return mappedValues.Count;
-			}
-		}
+		public int Count => MappedValues.Count;
 
-		public bool IsReadOnly
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsReadOnly => false;
 
 		public IRegistry Parent
 		{
@@ -80,13 +56,11 @@ namespace Sigma.Core.Utils
 
 		public ISet<string> Tags
 		{
-			get; private set;
-		}
+			get; }
 
 		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
 		{
-			get; private set;
-		}
+			get; }
 
 		/// <summary>
 		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
@@ -95,32 +69,32 @@ namespace Sigma.Core.Utils
 		/// <param name="tags">The optional tags to this registry.</param>
 		public Registry(IRegistry parent = null, params string[] tags)
 		{
-			this.Parent = parent;
-			this.Root = Parent?.Root == null ? Parent : Parent?.Root;
+			Parent = parent;
+			Root = Parent?.Root == null ? Parent : Parent?.Root;
 
-			this.mappedValues = new Dictionary<string, object>();
-			this.associatedTypes = new Dictionary<string, Type>();
+			MappedValues = new Dictionary<string, object>();
+			AssociatedTypes = new Dictionary<string, Type>();
 
 			if (tags == null)
 			{
 				tags = new string[0];
 			}
 
-			this.Tags = new HashSet<string>(tags);
-			this.HierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
+			Tags = new HashSet<string>(tags);
+			HierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
 		}
 
 		public object DeepCopy()
 		{
-			Registry copy = new Registry(this.Parent);
+			Registry copy = new Registry(Parent);
 
-			foreach (string identifier in this.mappedValues.Keys)
+			foreach (string identifier in MappedValues.Keys)
 			{
-				object value = this.mappedValues[identifier];
+				object value = MappedValues[identifier];
 
 				if (value.GetType().IsPrimitive)
 				{
-					copy.mappedValues.Add(identifier, value);
+					copy.MappedValues.Add(identifier, value);
 				}
 				else
 				{
@@ -149,13 +123,13 @@ namespace Sigma.Core.Utils
 						copiedValue = cloneable.DeepCopy();
 					}
 
-					copy.mappedValues.Add(identifier, copiedValue);
+					copy.MappedValues.Add(identifier, copiedValue);
 				}
 			}
 
-			foreach (string identifier in this.associatedTypes.Keys)
+			foreach (string identifier in AssociatedTypes.Keys)
 			{
-				copy.associatedTypes.Add(identifier, this.associatedTypes[identifier]);
+				copy.AssociatedTypes.Add(identifier, AssociatedTypes[identifier]);
 			}
 
 			return copy;
@@ -178,19 +152,19 @@ namespace Sigma.Core.Utils
 		{
 			if (valueType != null)
 			{
-				if (!associatedTypes.ContainsKey(identifier))
+				if (!AssociatedTypes.ContainsKey(identifier))
 				{
-					associatedTypes.Add(identifier, valueType);
+					AssociatedTypes.Add(identifier, valueType);
 				}
 				else
 				{
-					associatedTypes[identifier] = valueType;
+					AssociatedTypes[identifier] = valueType;
 				}
 			}
 
-			if (CheckTypes && associatedTypes.ContainsKey(identifier))
+			if (CheckTypes && AssociatedTypes.ContainsKey(identifier))
 			{
-				Type requiredType = associatedTypes[identifier];
+				Type requiredType = AssociatedTypes[identifier];
 
 				if (value.GetType() != requiredType && !value.GetType().IsSubclassOf(requiredType) && !requiredType.IsAssignableFrom(value.GetType()))
 				{
@@ -201,7 +175,7 @@ namespace Sigma.Core.Utils
 			//check if added object is another registry and if hierarchy listeners should be notified
 			IRegistry valueAsRegistry = value as IRegistry;
 
-			if (!mappedValues.ContainsKey(identifier))
+			if (!MappedValues.ContainsKey(identifier))
 			{
 				Add(identifier, value);
 
@@ -218,7 +192,7 @@ namespace Sigma.Core.Utils
 				{
 					IRegistry previousValue = this[identifier] as IRegistry;
 
-					mappedValues[identifier] = value;
+					MappedValues[identifier] = value;
 
 					if (previousValue != valueAsRegistry)
 					{
@@ -227,14 +201,14 @@ namespace Sigma.Core.Utils
 				}
 				else
 				{
-					mappedValues[identifier] = value;
+					MappedValues[identifier] = value;
 				}
 			}
 		}
 
 		public virtual void Add(string key, object value)
 		{
-			mappedValues.Add(key, value);
+			MappedValues.Add(key, value);
 		}
 
 		public void Add(KeyValuePair<string, object> item)
@@ -252,12 +226,12 @@ namespace Sigma.Core.Utils
 
 		public T Get<T>(string identifier)
 		{
-			return (T) mappedValues[identifier];
+			return (T) MappedValues[identifier];
 		}
 
 		public object Get(string identifier)
 		{
-			return mappedValues[identifier];
+			return MappedValues[identifier];
 		}
 
 		public T[] GetAllValues<T>(string matchIdentifier, Type matchType = null)
@@ -266,11 +240,11 @@ namespace Sigma.Core.Utils
 
 			Regex regex = new Regex(matchIdentifier);
 
-			foreach (string identifier in mappedValues.Keys)
+			foreach (string identifier in MappedValues.Keys)
 			{
-				if (regex.Match(identifier).Success && (matchType == null || matchType == mappedValues[identifier].GetType() || mappedValues[identifier].GetType().IsSubclassOf(matchType)))
+				if (regex.Match(identifier).Success && (matchType == null || matchType == MappedValues[identifier].GetType() || MappedValues[identifier].GetType().IsSubclassOf(matchType)))
 				{
-					matchingValues.Add((T) mappedValues[identifier]);
+					matchingValues.Add((T) MappedValues[identifier]);
 				}
 			}
 
@@ -279,7 +253,7 @@ namespace Sigma.Core.Utils
 
 		public bool TryGetValue(string key, out object value)
 		{
-			return mappedValues.TryGetValue(key, out value);
+			return MappedValues.TryGetValue(key, out value);
 		}
 
 		public T Remove<T>(string identifier)
@@ -289,11 +263,11 @@ namespace Sigma.Core.Utils
 
 		public virtual object Remove(string identifier)
 		{
-			associatedTypes.Remove(identifier);
+			AssociatedTypes.Remove(identifier);
 
-			object previousValue = mappedValues[identifier];
+			object previousValue = MappedValues[identifier];
 
-			mappedValues.Remove(identifier);
+			MappedValues.Remove(identifier);
 
 			return previousValue;
 		}
@@ -312,20 +286,20 @@ namespace Sigma.Core.Utils
 
 		bool IDictionary<string, object>.Remove(string key)
 		{
-			associatedTypes.Remove(key);
+			AssociatedTypes.Remove(key);
 
-			return mappedValues.Remove(key);
+			return MappedValues.Remove(key);
 		}
 
 		public void Clear()
 		{
-			mappedValues.Clear();
-			associatedTypes.Clear();
+			MappedValues.Clear();
+			AssociatedTypes.Clear();
 		}
 
 		public bool ContainsKey(string key)
 		{
-			return mappedValues.ContainsKey(key);
+			return MappedValues.ContainsKey(key);
 		}
 
 		public bool Contains(string key, object value)
@@ -335,7 +309,7 @@ namespace Sigma.Core.Utils
 
 		public bool Contains(KeyValuePair<string, object> item)
 		{
-			return mappedValues.Contains(item);
+			return MappedValues.Contains(item);
 		}
 
 		public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
@@ -345,22 +319,22 @@ namespace Sigma.Core.Utils
 
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			return mappedValues.GetEnumerator();
+			return MappedValues.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return mappedValues.GetEnumerator();
+			return MappedValues.GetEnumerator();
 		}
 
 		public IEnumerator GetKeyIterator()
 		{
-			return mappedValues.Keys.GetEnumerator();
+			return MappedValues.Keys.GetEnumerator();
 		}
 
 		public IEnumerator GetValueIterator()
 		{
-			return mappedValues.Values.GetEnumerator();
+			return MappedValues.Values.GetEnumerator();
 		}
 
 		public override string ToString()
@@ -370,7 +344,7 @@ namespace Sigma.Core.Utils
 			str.Append("\n[Registry]");
 			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : (string.Join("", Tags))));
 
-			foreach (var mappedValue in mappedValues)
+			foreach (var mappedValue in MappedValues)
 			{
 				if (mappedValue.Value is IRegistry)
 				{
@@ -391,7 +365,7 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class ReadOnlyRegistry : Registry, IReadOnlyRegistry
 	{
-		private Registry underlyingRegistry;
+		private Registry _underlyingRegistry;
 
 		public ReadOnlyRegistry(Registry underlyingRegistry)
 		{
@@ -400,9 +374,9 @@ namespace Sigma.Core.Utils
 				throw new ArgumentNullException("Underlying registry cannot be null.");
 			}
 
-			this.underlyingRegistry = underlyingRegistry;
-			this.mappedValues = underlyingRegistry.mappedValues;
-			this.associatedTypes = underlyingRegistry.associatedTypes;
+			_underlyingRegistry = underlyingRegistry;
+			MappedValues = underlyingRegistry.MappedValues;
+			AssociatedTypes = underlyingRegistry.AssociatedTypes;
 		}
 
 		public override void Set(string identifier, object value, Type valueType = null)

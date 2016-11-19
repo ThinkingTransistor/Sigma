@@ -17,15 +17,14 @@ namespace Sigma.Core.Data.Sources
 	/// </summary>
 	public class FileSource : IDataSetSource
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string ResourceName { get; private set; }
+		public string ResourceName { get; }
 
-		private bool exists;
-		private string fullPath;
-		private string localPath;
+		private bool _exists;
+		private readonly string _fullPath;
 
-		private Stream fileStream;
+		private Stream _fileStream;
 
 		/// <summary>
 		/// Create a file source referring to a locally stored file.
@@ -38,71 +37,67 @@ namespace Sigma.Core.Data.Sources
 		/// <summary>
 		/// Create a file source referring to a locally stored file.
 		/// </summary>
-		/// <param name="path">The local fileName (relative to the given dataset fileName).</param>
+		/// <param name="fileName">The file name of this file source.</param>
 		/// <param name="datasetsPath">The data set fileName, within which the local fileName will be stored.</param>
 		public FileSource(string fileName, string datasetsPath)
 		{
 			if (fileName == null)
 			{
-				throw new ArgumentNullException("Path cannot be null.");
+				throw new ArgumentNullException(nameof(fileName));
 			}
 
 			if (datasetsPath == null)
 			{
-				throw new ArgumentNullException("Data sets fileName cannot be null (are the SigmaEnironment.Globals missing?)");
+				throw new ArgumentNullException(nameof(datasetsPath));
 			}
 
-			this.localPath = fileName;
-			this.fullPath = datasetsPath + fileName;
+			_fullPath = datasetsPath + fileName;
 
-			this.ResourceName = new FileInfo(localPath).Name;
+			ResourceName = new FileInfo(fileName).Name;
 
 			CheckExists();
 		}
 
-		private bool CheckExists()
+		private void CheckExists()
 		{
-			return this.exists = File.Exists(fullPath);
+			_exists = File.Exists(_fullPath);
 		}
 
-		public bool Seekable
-		{
-			get { return true; }
-		}
+		public bool Seekable => true;
 
 		public bool Exists()
 		{
-			return exists;
+			return _exists;
 		}
 
 		public void Prepare()
 		{
 			if (!Exists())
 			{
-				throw new InvalidOperationException($"Cannot prepare file source, underlying file \"{fullPath}\" does not exist.");
+				throw new InvalidOperationException($"Cannot prepare file source, underlying file \"{_fullPath}\" does not exist.");
 			}
 
-			if (fileStream == null)
+			if (_fileStream == null)
 			{
-				fileStream = new FileStream(fullPath, FileMode.Open);
+				_fileStream = new FileStream(_fullPath, FileMode.Open);
 
-				logger.Info($"Opened file \"{fullPath}\".");
+				_logger.Info($"Opened file \"{_fullPath}\".");
 			}
 		}
 
 		public Stream Retrieve()
 		{
-			if (fileStream == null)
+			if (_fileStream == null)
 			{
 				throw new InvalidOperationException("Cannot retrieve file source, file stream was not established (missing or failed Prepare() call?).");
 			}
 
-			return fileStream;
+			return _fileStream;
 		}
 
 		public void Dispose()
 		{
-			this.fileStream?.Dispose();
+			_fileStream?.Dispose();
 		}
 	}
 }

@@ -12,6 +12,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core
 {
@@ -20,15 +21,13 @@ namespace Sigma.Core
 	/// </summary>
 	public class SigmaEnvironment
 	{
-		private IRegistry rootRegistry;
-		private IRegistryResolver rootRegistryResolver;
-		private ISet<IMonitor> monitors;
-		private ISet<IMonitor> trainers;
-		private ISet<IMonitor> operators;
-		private Queue<IPassiveHook> hooksToExecute;
-		private Queue<IHook> hooksToAttach;
+		private readonly ISet<IMonitor> _monitors;
+		private ISet<IMonitor> _trainers;
+		private ISet<IMonitor> _operators;
+		private Queue<IPassiveHook> _hooksToExecute;
+		private Queue<IHook> _hooksToAttach;
 
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The unique name of this environment. 
@@ -41,19 +40,13 @@ namespace Sigma.Core
 		/// <summary>
 		/// The root registry of this environment where all exposed parameters are stored hierarchically.
 		/// </summary>
-		public IRegistry Registry
-		{
-			get { return rootRegistry; }
-		}
+		public IRegistry Registry { get; }
 
 		/// <summary>
 		/// The registry resolver corresponding to the registry used in this environment. 
 		/// For easier notation and faster access you can retrieve and using regex-style registry names and dot notation.
 		/// </summary>
-		public IRegistryResolver RegistryResolver
-		{
-			get { return rootRegistryResolver; }
-		}
+		public IRegistryResolver RegistryResolver { get; }
 
 		public Random Random
 		{
@@ -62,16 +55,16 @@ namespace Sigma.Core
 
 		private SigmaEnvironment(string name)
 		{
-			this.Name = name;
-			this.rootRegistry = new Registry();
-			this.rootRegistryResolver = new RegistryResolver(this.rootRegistry);
-			this.monitors = new HashSet<IMonitor>();
-			this.Random = new Random();
+			Name = name;
+			Registry = new Registry();
+			RegistryResolver = new RegistryResolver(Registry);
+			_monitors = new HashSet<IMonitor>();
+			Random = new Random();
 		}
 
 		public void SetRandomSeed(int seed)
 		{
-			this.Random = new Random(seed);
+			Random = new Random(seed);
 		}
 
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
@@ -79,14 +72,14 @@ namespace Sigma.Core
 			monitor.Sigma = this;
 
 			monitor.Initialise();
-			this.monitors.Add(monitor);
+			_monitors.Add(monitor);
 
 			return monitor;
 		}
 
 		public void Prepare()
 		{
-			foreach (IMonitor monitor in monitors)
+			foreach (IMonitor monitor in _monitors)
 			{
 				monitor.Start();
 			}
@@ -98,7 +91,7 @@ namespace Sigma.Core
 
 			while (shouldRun)
 			{
-				foreach (IHook hook in hooksToAttach)
+				foreach (IHook hook in _hooksToAttach)
 				{
 
 				}
@@ -110,11 +103,12 @@ namespace Sigma.Core
 		/// </summary>
 		/// <typeparam name="T">The most specific common type of the variables to retrieve.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier.</param>
+		/// <param name="fullMatchedIdentifierArray">The fully matched identifiers corresponding to the given match identifier.</param>
 		/// <param name="values">An array of values found at the matching identifiers, filled with the values found at all matching identifiers (for reuse and optimisation if request is issued repeatedly).</param>
 		/// <returns>An array of values found at the matching identifiers. The parameter values is used if it is large enough and not null.</returns>
-		T[] ResolveGet<T>(string matchIdentifier, ref string[] fullMatchedIdentifierArray, T[] values = null)
+		public T[] ResolveGet<T>(string matchIdentifier, out string[] fullMatchedIdentifierArray, T[] values = null)
 		{
-			return rootRegistryResolver.ResolveGet<T>(matchIdentifier, ref fullMatchedIdentifierArray, values);
+			return RegistryResolver.ResolveGet(matchIdentifier, out fullMatchedIdentifierArray, values);
 		}
 
 		/// <summary>
@@ -122,12 +116,11 @@ namespace Sigma.Core
 		/// </summary>
 		/// <typeparam name="T">The most specific common type of the variables to retrieve.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier.</param>
-		/// <param name="fullMatchedIdentifierArray">A list of fully qualified matches to the match identifier.</param>
 		/// <param name="values">An array of values found at the matching identifiers, filled with the values found at all matching identifiers (for reuse and optimisation if request is issued repeatedly).</param>
 		/// <returns>An array of values found at the matching identifiers. The parameter values is used if it is large enough and not null.</returns>
-		T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
+		public T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
 		{
-			return rootRegistryResolver.ResolveGet<T>(matchIdentifier, values);
+			return RegistryResolver.ResolveGet(matchIdentifier, values);
 		}
 
 		/// <summary>
@@ -139,9 +132,9 @@ namespace Sigma.Core
 		/// <param name="value"></param>
 		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
 		/// <returns>A list of fully qualified matches to the match identifier.</returns>
-		public string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
 		{
-			return rootRegistryResolver.ResolveSet<T>(matchIdentifier, value, associatedType);
+			return RegistryResolver.ResolveSet(matchIdentifier, value, associatedType);
 		}
 
 		// static part of SigmaEnvironment
@@ -154,12 +147,12 @@ namespace Sigma.Core
 			get; internal set;
 		}
 
-		internal static IRegistry activeSigmaEnvironments;
-		private static readonly ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		internal static IRegistry ActiveSigmaEnvironments;
+		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
 		{ 
-			activeSigmaEnvironments = new Registry();
+			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
 
 			Globals = new Registry();
@@ -169,7 +162,7 @@ namespace Sigma.Core
 		/// <summary>
 		/// A global variable pool for globally relevant constants (e.g. workspace path).
 		/// </summary>
-		public static IRegistry Globals { get; private set; }
+		public static IRegistry Globals { get; }
 
 
 		/// <summary>
@@ -180,7 +173,7 @@ namespace Sigma.Core
 			Globals.Set("workspacePath", "workspace/", typeof(string));
 			Globals.Set("cache", Globals.Get<string>("workspacePath") + "cache/", typeof(string));
 			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
-			Globals.Set("webProxy", System.Net.WebRequest.DefaultWebProxy, typeof(IWebProxy));
+			Globals.Set("webProxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
 		}
 
 		/// <summary>
@@ -199,9 +192,9 @@ namespace Sigma.Core
 
 			//do environment initialisation and registration
 
-			activeSigmaEnvironments.Set(environmentName, environment);
+			ActiveSigmaEnvironments.Set(environmentName, environment);
 
-			clazzLogger.Info($"Created and registered sigma environment \"{environmentName}\"");
+			ClazzLogger.Info($"Created and registered sigma environment \"{environmentName}\"");
 
 			return environment;
 		}
@@ -228,7 +221,7 @@ namespace Sigma.Core
 		/// <returns>The existing with the given name or null.</returns>
 		public static SigmaEnvironment Get(string environmentName)
 		{
-			return activeSigmaEnvironments.Get<SigmaEnvironment>(environmentName);
+			return ActiveSigmaEnvironments.Get<SigmaEnvironment>(environmentName);
 		}
 
 		/// <summary>
@@ -238,7 +231,7 @@ namespace Sigma.Core
 		/// <returns>A boolean indicating if an environment with the given name exists.</returns>
 		public static bool Exists(string environmentName)
 		{
-			return activeSigmaEnvironments.ContainsKey(environmentName);
+			return ActiveSigmaEnvironments.ContainsKey(environmentName);
 		}
 
 		/// <summary>
@@ -247,7 +240,7 @@ namespace Sigma.Core
 		/// <param name="environmentName">The environment name.</param>
 		public static void Remove(string environmentName)
 		{
-			activeSigmaEnvironments.Remove(environmentName);
+			ActiveSigmaEnvironments.Remove(environmentName);
 		}
 
 		/// <summary>
@@ -255,7 +248,7 @@ namespace Sigma.Core
 		/// </summary>
 		public static void Clear()
 		{
-			activeSigmaEnvironments.Clear();
+			ActiveSigmaEnvironments.Clear();
 		}
 	}
 }

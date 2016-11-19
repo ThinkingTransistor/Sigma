@@ -8,12 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using log4net;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
@@ -23,27 +18,26 @@ namespace Sigma.Core.Data.Sources
 	/// </summary>
 	public class CompressedSource : IDataSetSource
 	{
-		private static ILog clazzLogger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public bool Seekable { get { return true; } }
+		public bool Seekable => true;
 
-		public string ResourceName { get { return UnderlyingSource?.ResourceName; } }
+		public string ResourceName => UnderlyingSource?.ResourceName;
 
 		/// <summary>
 		/// The underlying data source which is decompressed.
 		/// </summary>
-		public IDataSetSource UnderlyingSource { get; private set; }
+		public IDataSetSource UnderlyingSource { get; }
 
 
 		/// <summary>
 		/// The unpacker to use to decompress the underlying data source.
 		/// </summary>
-		public IUnpacker Unpacker { get; private set; }
+		public IUnpacker Unpacker { get; }
 
-		private FileStream fileStream;
-		private string localUnpackPath;
-		private bool prepared;
+		private FileStream _fileStream;
+		private readonly string _localUnpackPath;
+		private bool _prepared;
 
 		/// <summary>
 		/// Create a compressed source which automatically decompressed a certain underlying source. 
@@ -75,27 +69,27 @@ namespace Sigma.Core.Data.Sources
 		{
 			if (source == null)
 			{
-				throw new ArgumentNullException("Source cannot be null.");
+				throw new ArgumentNullException(nameof(source));
 			}
 
 			if (localUnpackPath == null)
 			{
-				throw new ArgumentNullException("Local unpack path cannot be null.");
+				throw new ArgumentNullException(nameof(localUnpackPath));
 			}
 
 			if (unpacker == null)
 			{
-				throw new ArgumentNullException("Unpacker cannot be null.");
+				throw new ArgumentNullException(nameof(unpacker));
 			}
 
-			this.UnderlyingSource = source;
-			this.localUnpackPath = localUnpackPath;
-			this.Unpacker = unpacker;
+			UnderlyingSource = source;
+			_localUnpackPath = localUnpackPath;
+			Unpacker = unpacker;
 		}
 
 		public bool Exists()
 		{
-			return this.UnderlyingSource.Exists();
+			return UnderlyingSource.Exists();
 		}
 
 		public void Prepare()
@@ -105,45 +99,49 @@ namespace Sigma.Core.Data.Sources
 				throw new InvalidOperationException($"Cannot prepare compressed source, underlying source \"{UnderlyingSource}\" does not exist.");
 			}
 
-			if (!prepared)
+			if (!_prepared)
 			{
-				this.UnderlyingSource.Prepare();
+				UnderlyingSource.Prepare();
 
-				Directory.CreateDirectory(new FileInfo(localUnpackPath).Directory.FullName);
+				DirectoryInfo directoryInfo = new FileInfo(_localUnpackPath).Directory;
+				if (directoryInfo != null)
+				{
+					Directory.CreateDirectory(directoryInfo.FullName);
+				}
 
-				Stream sourceStream = this.UnderlyingSource.Retrieve();
+				Stream sourceStream = UnderlyingSource.Retrieve();
 
-				logger.Info($"Unpacking source stream using unpacker {Unpacker} to local unpack path \"{localUnpackPath}\"...");
+				_logger.Info($"Unpacking source stream using unpacker {Unpacker} to local unpack path \"{_localUnpackPath}\"...");
 
-				Stream unpackedStream = this.Unpacker.Unpack(sourceStream);
+				Stream unpackedStream = Unpacker.Unpack(sourceStream);
 
-				FileStream decompressedFileStream = new FileStream(localUnpackPath, FileMode.OpenOrCreate);
+				FileStream decompressedFileStream = new FileStream(_localUnpackPath, FileMode.OpenOrCreate);
 
 				unpackedStream.CopyTo(decompressedFileStream);
 
-				logger.Info($"Done unpacking source stream using unpacker {Unpacker} to local unpack path \"{localUnpackPath}\" (unpacked size {decompressedFileStream.Length / 1024L}kB).");
+				_logger.Info($"Done unpacking source stream using unpacker {Unpacker} to local unpack path \"{_localUnpackPath}\" (unpacked size {decompressedFileStream.Length / 1024L}kB).");
 
 				decompressedFileStream.Close();
 
-				this.fileStream = new FileStream(localUnpackPath, FileMode.Open);
+				_fileStream = new FileStream(_localUnpackPath, FileMode.Open);
 
-				prepared = true;
+				_prepared = true;
 			}
 		}
 
 		public Stream Retrieve()
 		{
-			if (!prepared)
+			if (!_prepared)
 			{
 				throw new InvalidOperationException("Cannot retrieve compressed source, compressed source was not prepared correctly (missing or failed Prepare() call?).");
 			}
 
-			return this.fileStream;
+			return _fileStream;
 		}
 
 		public void Dispose()
 		{
-			this.UnderlyingSource.Dispose();
+			UnderlyingSource.Dispose();
 		}
 
 		private static string InferLocalUnpackPath(IDataSetSource source)

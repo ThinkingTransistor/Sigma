@@ -106,15 +106,13 @@ namespace Sigma.Core.Data
 	{
 		// These absolutely need to be constant in order for the C# optimiser to inline the get / set methods (hint: it's much faster). 
 		// The block size is so large that for most use cases, it behaves (and performs) just like a regular array. 
-		internal const int BLOCK_SIZE = 1048576;
-		internal const int BLOCK_SIZE_MASK = BLOCK_SIZE - 1;
-		internal const int BLOCK_SIZE_LOG2 = 20;
+		internal const int BlockSize = 1048576;
+		internal const int BlockSizeMask = BlockSize - 1;
+		internal const int BlockSizeLog2 = 20;
 
-		private T[][] data;
+		public T[][] ChunkedData { get; }
 
-		public T[][] ChunkedData { get { return data; } }
-
-		public long Length { get; private set; }
+		public long Length { get; }
 
 		/// <summary>
 		/// Create a large chunked array representation of a certain data array.
@@ -122,17 +120,17 @@ namespace Sigma.Core.Data
 		/// <param name="data"></param>
 		public LargeChunkedArray(T[] data)
 		{
-			this.data = new T[1][];
+			ChunkedData = new T[1][];
 
-			this.data[0] = data;
+			ChunkedData[0] = data;
 
-			this.Length = data.Length;
+			Length = data.Length;
 		}
 
 		internal LargeChunkedArray(T[][] data, long length)
 		{
-			this.data = data;
-			this.Length = length;
+			ChunkedData = data;
+			Length = length;
 		}
 
 		/// <summary>
@@ -141,64 +139,64 @@ namespace Sigma.Core.Data
 		/// <param name="size">The size this large chunked array should have.</param>
 		public LargeChunkedArray(long size)
 		{
-			int numBlocks = (int) (size / BLOCK_SIZE);
-			bool differentLastArray = (numBlocks * BLOCK_SIZE) < size;
+			int numBlocks = (int) (size / BlockSize);
+			bool differentLastArray = (numBlocks * BlockSize) < size;
 
 			if (differentLastArray)
 			{
 				numBlocks++;
 			}
 
-			data = new T[numBlocks][];
+			ChunkedData = new T[numBlocks][];
 
 			for (int i = 0; i < numBlocks - 1; i++)
 			{
-				data[i] = new T[BLOCK_SIZE];
+				ChunkedData[i] = new T[BlockSize];
 			}
 
 			//Jag the last array if the total size doesn't magically line up with the block size
-			data[numBlocks - 1] = new T[differentLastArray ? size % BLOCK_SIZE : BLOCK_SIZE];
+			ChunkedData[numBlocks - 1] = new T[differentLastArray ? size % BlockSize : BlockSize];
 
 			Length = size;
 		}
 
 		public object DeepCopy()
 		{
-			return new LargeChunkedArray<T>((T[][]) this.data.Clone(), this.Length);
+			return new LargeChunkedArray<T>((T[][]) ChunkedData.Clone(), Length);
 		}
 
 		public T this[long index]
 		{
 			get
 			{
-				int blockIndex = (int) (index >> BLOCK_SIZE_LOG2);
-				int indexWithinBlock = (int) (index & BLOCK_SIZE_MASK);
+				int blockIndex = (int) (index >> BlockSizeLog2);
+				int indexWithinBlock = (int) (index & BlockSizeMask);
 
-				return data[blockIndex][indexWithinBlock];
+				return ChunkedData[blockIndex][indexWithinBlock];
 			}
 			set
 			{
-				int blockIndex = (int) (index >> BLOCK_SIZE_LOG2);
-				int indexWithinBlock = (int) (index & BLOCK_SIZE_MASK);
+				int blockIndex = (int) (index >> BlockSizeLog2);
+				int indexWithinBlock = (int) (index & BlockSizeMask);
 
-				data[blockIndex][indexWithinBlock] = value;
+				ChunkedData[blockIndex][indexWithinBlock] = value;
 			}
 		}
 
 		public T GetValue(long index)
 		{
-			int blockIndex = (int) (index >> BLOCK_SIZE_LOG2);
-			int indexWithinBlock = (int) (index & BLOCK_SIZE_MASK);
+			int blockIndex = (int) (index >> BlockSizeLog2);
+			int indexWithinBlock = (int) (index & BlockSizeMask);
 
-			return data[blockIndex][indexWithinBlock];
+			return ChunkedData[blockIndex][indexWithinBlock];
 		}
 
 		public void SetValue(T value, long index)
 		{
-			int blockIndex = (int) (index >> BLOCK_SIZE_LOG2);
-			int indexWithinBlock = (int) (index & BLOCK_SIZE_MASK);
+			int blockIndex = (int) (index >> BlockSizeLog2);
+			int indexWithinBlock = (int) (index & BlockSizeMask);
 
-			data[blockIndex][indexWithinBlock] = value;
+			ChunkedData[blockIndex][indexWithinBlock] = value;
 		}
 
 		public void FillWith(ILargeChunkedArray<T> data, long sourceStartIndex, long destStartIndex, long length)
@@ -217,7 +215,7 @@ namespace Sigma.Core.Data
 			CheckLength(length);
 			CheckDestStartIndex(destStartIndex);
 
-			System.Type ownType = typeof(T);
+			Type ownType = typeof(T);
 
 			for (long i = 0; i < length; i++)
 			{
@@ -292,7 +290,7 @@ namespace Sigma.Core.Data
 
 		public IEnumerator<T> GetEnumerator()
 		{
-			long length = this.Length;
+			long length = Length;
 			for (long i = 0; i < length; i++)
 			{
 				yield return this[i];
@@ -301,7 +299,7 @@ namespace Sigma.Core.Data
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			long length = this.Length;
+			long length = Length;
 			for (long i = 0; i < length; i++)
 			{
 				yield return this[i];

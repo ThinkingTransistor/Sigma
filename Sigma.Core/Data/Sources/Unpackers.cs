@@ -7,9 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Data.Sources
 {
@@ -31,14 +28,14 @@ namespace Sigma.Core.Data.Sources
 	/// </summary>
 	public static class Unpackers
 	{
-		private static Dictionary<string, IUnpacker> registeredUnpackersByExtension = new Dictionary<string, IUnpacker>();
-		private static ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly Dictionary<string, IUnpacker> RegisteredUnpackersByExtension = new Dictionary<string, IUnpacker>();
+		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static readonly IUnpacker GZIP_UNPACKER = Register(".gz", new GZipUnpacker());
-		public static readonly IUnpacker TAR_UNPACKER = Register(".tar", new GZipUnpacker());
-		public static readonly IUnpacker ZIP_UNPACKER = Register(".zip", new ZipUnpacker());
-		public static readonly IUnpacker BZIP2_UNPACKER = Register(".bz2", new BZip2Unpacker());
-		public static readonly IUnpacker LZW_UNPACKER = Register(".z", new BZip2Unpacker());
+		public static readonly IUnpacker GzipUnpacker = Register(".gz", new GZipUnpacker());
+		public static readonly IUnpacker TarUnpacker = Register(".tar", new GZipUnpacker());
+		public static readonly IUnpacker ZipUnpacker = Register(".zip", new ZipUnpacker());
+		public static readonly IUnpacker Bzip2Unpacker = Register(".bz2", new BZip2Unpacker());
+		public static readonly IUnpacker LzwUnpacker = Register(".z", new BZip2Unpacker());
 
 		public static bool AllowExternalTypeOverwrites { get; set; } = false;
 
@@ -46,19 +43,19 @@ namespace Sigma.Core.Data.Sources
 		{
 			extension = extension.ToLower();
 
-			if (!registeredUnpackersByExtension.ContainsKey(extension))
+			if (!RegisteredUnpackersByExtension.ContainsKey(extension))
 			{
-				registeredUnpackersByExtension.Add(extension, unpacker);
+				RegisteredUnpackersByExtension.Add(extension, unpacker);
 			}
 			else
 			{
 				if (AllowExternalTypeOverwrites)
 				{
-					logger.Info($"Overwrote internal resource extension {extension} to now refer to the unpacker {unpacker} (this may not be what you wanted).");
+					Logger.Info($"Overwrote internal resource extension {extension} to now refer to the unpacker {unpacker} (this may not be what you wanted).");
 				}
 				else
 				{
-					throw new ArgumentException($"Extension {extension} is already registered as {registeredUnpackersByExtension[extension]} and cannot be changed to {unpacker} (AllowExternalTypeOverwrites flag is set to false).");
+					throw new ArgumentException($"Extension {extension} is already registered as {RegisteredUnpackersByExtension[extension]} and cannot be changed to {unpacker} (AllowExternalTypeOverwrites flag is set to false).");
 				}
 			}
 
@@ -69,14 +66,14 @@ namespace Sigma.Core.Data.Sources
 		{
 			extension = extension.ToLower();
 
-			if (!registeredUnpackersByExtension.ContainsKey(extension))
+			if (!RegisteredUnpackersByExtension.ContainsKey(extension))
 			{
-				logger.Info($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
+				Logger.Info($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
 
 				return null;
 			}
 
-			return registeredUnpackersByExtension[extension];
+			return RegisteredUnpackersByExtension[extension];
 		}
 	}
 
@@ -127,7 +124,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A LZW unpacker using the SharpZipLib LzwInputStream implementation.
 	/// </summary>
-	public class LZWUnpacker : IUnpacker
+	public class LzwUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
 		{

@@ -9,22 +9,15 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using System;
-using System.ComponentModel;
 
 namespace Sigma.Core.Handlers.Backends
 {
 	/// <summary>
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
 	/// </summary>
-	public class CPUFloat32Handler : IComputationHandler
+	public class CpuFloat32Handler : IComputationHandler
 	{
-		public IDataType DataType { get { return DataTypes.FLOAT32; } }
-
-		private TypeConverter converter = TypeDescriptor.GetConverter(typeof(float));
-
-		public CPUFloat32Handler()
-		{
-		}
+		public IDataType DataType => DataTypes.Float32;
 
 		public INDArray Create(params long[] shape)
 		{
@@ -44,7 +37,7 @@ namespace Sigma.Core.Handlers.Backends
 			{
 				long sizeBytes = 52L; // let's just assume 52bytes of base fluff, I really have no idea
 
-				sizeBytes += array.Length * this.DataType.SizeBytes;
+				sizeBytes += array.Length * DataType.SizeBytes;
 				sizeBytes += (array.Shape.Length) * 8L * 2;
 
 				totalSizeBytes += sizeBytes;
@@ -56,13 +49,13 @@ namespace Sigma.Core.Handlers.Backends
 		public bool IsInterchangeable(IComputationHandler otherHandler)
 		{
 			//there are no interchangeable implementations so it will have to be the same type 
-			return otherHandler.GetType() == this.GetType();
+			return otherHandler.GetType() == GetType();
 		}
 
 		public bool CanConvert(INDArray array, IComputationHandler otherHandler)
 		{
 			//if it's the same base unit and at least the same precision we can convert
-			return otherHandler.DataType.BaseUnderlyingType == this.DataType.BaseUnderlyingType && otherHandler.DataType.SizeBytes >= this.DataType.SizeBytes;
+			return otherHandler.DataType.BaseUnderlyingType == DataType.BaseUnderlyingType && otherHandler.DataType.SizeBytes >= DataType.SizeBytes;
 		}
 
 		public INDArray Convert(INDArray array, IComputationHandler otherHandler)
@@ -72,81 +65,73 @@ namespace Sigma.Core.Handlers.Backends
 
 		public void Fill(INDArray filler, INDArray arrayToFill)
 		{
-			IDataBuffer<float> _arrayToFillData = ((NDArray<float>) arrayToFill).data;
-			IDataBuffer<float> _fillerData = ((NDArray<float>) filler).data;
+			IDataBuffer<float> arrayToFillData = ((NDArray<float>) arrayToFill).Data;
+			IDataBuffer<float> fillerData = ((NDArray<float>) filler).Data;
 
-			_arrayToFillData.Data.FillWith(_fillerData.Data, 0, 0, System.Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.Data.FillWith(fillerData.Data, 0, 0, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		public void Fill<TOther>(TOther value, INDArray arrayToFill)
 		{
-			IDataBuffer<float> _arrayToFillData = ((NDArray<float>) arrayToFill).data;
+			IDataBuffer<float> arrayToFillData = ((NDArray<float>) arrayToFill).Data;
 
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
 
-			for (int i = 0; i < _arrayToFillData.Length; i++)
+			for (int i = 0; i < arrayToFillData.Length; i++)
 			{
-				_arrayToFillData.Data.SetValue(_value, i);
+				arrayToFillData.Data.SetValue(floatValue, i);
 			}
 		}
 
 		public void Add<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
-			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
+			IDataBuffer<float> outputData = ((NDArray<float>) output).Data;
 
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
 
-			for (long i = 0; i < _arrayData.Length; i++)
+			for (long i = 0; i < arrayData.Length; i++)
 			{
-				_outputData.SetValue(_arrayData.GetValue(i) + _value, i);
+				outputData.SetValue(arrayData.GetValue(i) + floatValue, i);
 			}
 		}
 
 		public void Subtract<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
-			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
+			IDataBuffer<float> outputData = ((NDArray<float>) output).Data;
 
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
 
-			for (long i = 0; i < _arrayData.Length; i++)
+			for (long i = 0; i < arrayData.Length; i++)
 			{
-				_outputData.SetValue(_arrayData.GetValue(i) - _value, i);
+				outputData.SetValue(arrayData.GetValue(i) - floatValue, i);
 			}
 		}
 
 		public void Multiply<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
-			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
+			IDataBuffer<float> outputData = ((NDArray<float>) output).Data;
 
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
 
-			for (long i = 0; i < _arrayData.Length; i++)
+			for (long i = 0; i < arrayData.Length; i++)
 			{
-				_outputData.SetValue(_arrayData.GetValue(i) * _value, i);
+				outputData.SetValue(arrayData.GetValue(i) * floatValue, i);
 			}
 		}
 
 		public void Divide<TOther>(INDArray array, TOther value, INDArray output)
 		{
-			IDataBuffer<float> _arrayData = ((NDArray<float>) array).data;
-			IDataBuffer<float> _outputData = ((NDArray<float>) output).data;
+			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
+			IDataBuffer<float> outputData = ((NDArray<float>) output).Data;
 
-			float _value = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
 
-			for (long i = 0; i < _arrayData.Length; i++)
+			for (long i = 0; i < arrayData.Length; i++)
 			{
-				_outputData.SetValue(_arrayData.GetValue(i) / _value, i);
-			}
-		}
-
-		private void CheckSameLength(INDArray a, INDArray b)
-		{
-			if (a.Length != b.Length)
-			{
-				throw new ArgumentException($"NDArray lengths must be equal, but first array was of length {a.Length} and second {b.Length}.");
+				outputData.SetValue(arrayData.GetValue(i) / floatValue, i);
 			}
 		}
 	}

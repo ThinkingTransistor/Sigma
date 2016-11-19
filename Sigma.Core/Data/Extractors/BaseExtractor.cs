@@ -43,7 +43,7 @@ namespace Sigma.Core.Data.Extractors
 
 			if (handler == null)
 			{
-				throw new ArgumentNullException("Computation handler cannot be null.");
+				throw new ArgumentNullException(nameof(handler));
 			}
 
 			if (numberOfRecords <= 0)
@@ -85,7 +85,7 @@ namespace Sigma.Core.Data.Extractors
 
 			IRecordPreprocessor firstPreprocessor = preprocessors[0];
 
-			firstPreprocessor.Reader = this.Reader;
+			firstPreprocessor.Reader = Reader;
 			firstPreprocessor.ParentExtractor = this;
 
 			//add this extractors section names to the other extractor
@@ -103,7 +103,7 @@ namespace Sigma.Core.Data.Extractors
 		{
 			IRecordExtractor firstExtractor = extractors[0];
 
-			firstExtractor.Reader = this.Reader;
+			firstExtractor.Reader = Reader;
 			firstExtractor.ParentExtractor = this;
 
 			firstExtractor.SectionNames = MergeSectionNames(firstExtractor);
@@ -120,7 +120,7 @@ namespace Sigma.Core.Data.Extractors
 		{
 			ISet<string> allSectionNames = new HashSet<string>();
 
-			foreach (string section in this.SectionNames)
+			foreach (string section in SectionNames)
 			{
 				allSectionNames.Add(section);
 			}

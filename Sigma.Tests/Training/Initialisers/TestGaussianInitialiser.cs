@@ -4,10 +4,6 @@ using Sigma.Core.Handlers.Backends;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Initialisers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Training.Initialisers
 {
@@ -19,7 +15,7 @@ namespace Sigma.Tests.Training.Initialisers
 			ConstantValueInitialiser initialiser = new ConstantValueInitialiser(2.0);
 
 			INDArray array = new NDArray<float>(2, 1, 2, 2);
-			IComputationHandler handler = new CPUFloat32Handler();
+			IComputationHandler handler = new CpuFloat32Handler();
 			Random random = new Random();
 
 			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise(null, handler, random));

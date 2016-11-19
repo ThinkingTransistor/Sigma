@@ -12,11 +12,8 @@ using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Training
 {

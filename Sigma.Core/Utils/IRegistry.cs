@@ -61,7 +61,7 @@ namespace Sigma.Core.Utils
 		/// Get the value associated with a given identifier.  
 		/// </summary>
 		/// <param name="identifier">The identifier.</param>
-		/// <returnsstringThe value (if any) or null.</returns>
+		/// <returns>The value (if any) or null.</returns>
 		object Get(string identifier);
 
 		/// <summary>

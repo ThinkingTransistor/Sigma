@@ -8,10 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using NUnit.Framework;
 using Sigma.Core.Utils;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sigma.Tests.Utils
 {
@@ -22,9 +20,9 @@ namespace Sigma.Tests.Utils
 		{
 			TaskManager manager = new TaskManager();
 
-			ITaskObserver task = manager.BeginTask(TaskType.PREPROCESS, "mnistdataset", exposed: false, indeterminate: true);
+			ITaskObserver task = manager.BeginTask(TaskType.Preprocess, "mnistdataset", exposed: false, indeterminate: true);
 
-			Assert.AreEqual(TaskType.PREPROCESS, task.Type);
+			Assert.AreEqual(TaskType.Preprocess, task.Type);
 			Assert.AreEqual("mnistdataset", task.Description);
 			Assert.IsFalse(task.Exposed);
 			Assert.Less(task.Progress, 0.0f);
@@ -35,14 +33,14 @@ namespace Sigma.Tests.Utils
 		{
 			TaskManager manager = new TaskManager();
 
-			ITaskObserver task = manager.BeginTask(TaskType.PREPROCESS, "mnistdataset", exposed: true, indeterminate: true);
+			ITaskObserver task = manager.BeginTask(TaskType.Preprocess, "mnistdataset", exposed: true, indeterminate: true);
 
 			Assert.IsTrue(manager.GetTasks().Contains(task));
 
 			manager.EndTask(task);
 
 			Assert.IsFalse(manager.GetTasks().Contains(task));
-			Assert.AreEqual(TaskObserveStatus.ENDED, task.Status);
+			Assert.AreEqual(TaskObserveStatus.Ended, task.Status);
 		}
 
 		[TestCase]
@@ -50,14 +48,14 @@ namespace Sigma.Tests.Utils
 		{
 			TaskManager manager = new TaskManager();
 
-			ITaskObserver task = manager.BeginTask(TaskType.PREPROCESS, "mnistdataset", exposed: true, indeterminate: true);
+			ITaskObserver task = manager.BeginTask(TaskType.Preprocess, "mnistdataset", exposed: true, indeterminate: true);
 
 			Assert.IsTrue(manager.GetTasks().Contains(task));
 
 			manager.CancelTask(task);
 
 			Assert.IsFalse(manager.GetTasks().Contains(task));
-			Assert.AreEqual(TaskObserveStatus.CANCELED, task.Status);
+			Assert.AreEqual(TaskObserveStatus.Canceled, task.Status);
 		}
 
 		[TestCase]
@@ -65,11 +63,11 @@ namespace Sigma.Tests.Utils
 		{
 			TaskManager manager = new TaskManager();
 
-			ITaskObserver task1 = manager.BeginTask(TaskType.DOWNLOAD, "mnistdataset", exposed: true);
-			ITaskObserver task2 = manager.BeginTask(TaskType.DOWNLOAD, "mnistdataset", exposed: false);
-			ITaskObserver task3 = manager.BeginTask(TaskType.DOWNLOAD, "mnistdataset", exposed: true);
+			ITaskObserver task1 = manager.BeginTask(TaskType.Download, "mnistdataset", exposed: true);
+			ITaskObserver task2 = manager.BeginTask(TaskType.Download, "mnistdataset", exposed: false);
+			ITaskObserver task3 = manager.BeginTask(TaskType.Download, "mnistdataset", exposed: true);
 
-			IEnumerable<ITaskObserver> tasks = manager.GetTasks(TaskType.DOWNLOAD);
+			IEnumerable<ITaskObserver> tasks = manager.GetTasks(TaskType.Download);
 
 			Assert.IsTrue(tasks.Contains(task1));
 			Assert.IsFalse(tasks.Contains(task2));

@@ -7,11 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Handlers;
 
 namespace Sigma.Core.Training.Initialisers
 {
@@ -37,8 +32,8 @@ namespace Sigma.Core.Training.Initialisers
 		/// <param name="mean">The mean.</param>
 		public GaussianInitialiser(double standardDeviation, double mean = 0.0)
 		{
-			this.Mean = mean;
-			this.StandardDeviation = standardDeviation;
+			Mean = mean;
+			StandardDeviation = standardDeviation;
 		}
 
 		/// <summary>
@@ -58,7 +53,7 @@ namespace Sigma.Core.Training.Initialisers
 			// see http://stackoverflow.com/questions/218060/random-gaussian-variables
 			double u1 = random.NextDouble(); 
 			double u2 = random.NextDouble();
-			double randStdNormal = System.Math.Sqrt(-2.0 * System.Math.Log(u1)) * System.Math.Sin(2.0 * System.Math.PI * u2); 
+			double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); 
 
 			return Mean + StandardDeviation * randStdNormal;
 		}

@@ -14,8 +14,6 @@ using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Preprocessors
 {
@@ -38,18 +36,18 @@ namespace Sigma.Tests.Data.Preprocessors
 			Assert.AreEqual(3, normaliser.MaxInputValue);
 			Assert.AreEqual(0, normaliser.MinOutputValue);
 			Assert.AreEqual(1, normaliser.MaxOutputValue);
-			Assert.AreEqual(new string[] { "test" }, normaliser.ProcessedSectionNames);
+			Assert.AreEqual(new[] { "test" }, normaliser.ProcessedSectionNames);
 		}
 
 		[TestCase]
 		public void TestNormalisingPreprocessorExtractDirect()
 		{
 			NormalisingPreprocessor normaliser = new NormalisingPreprocessor(1, 9, 0, 1, "test");
-			IComputationHandler handler = new CPUFloat32Handler();
+			IComputationHandler handler = new CpuFloat32Handler();
 
 			Dictionary<string, INDArray> extracted = normaliser.ExtractDirectFrom(GetNamedArrayTestData(), 1, handler);
 
-			Assert.AreEqual(new float[] { 0.0f, 0.125f, 0.25f, 0.375f, 0.5f, 0.625f, 0.75f, 0.875f, 1.0f }, extracted["test"].GetDataAs<float>().GetValuesArrayAs<float>(0, 9).ToArray());
+			Assert.AreEqual(new[] { 0.0f, 0.125f, 0.25f, 0.375f, 0.5f, 0.625f, 0.75f, 0.875f, 1.0f }, extracted["test"].GetDataAs<float>().GetValuesArrayAs<float>(0, 9).ToArray());
 		}
 	}
 }

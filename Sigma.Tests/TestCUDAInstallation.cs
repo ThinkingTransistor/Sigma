@@ -12,47 +12,47 @@ using NUnit.Framework;
 
 namespace Sigma.Tests
 {
-	public class TestCUDAInstallation
+	public class TestCudaInstallation
 	{
-		private static bool cudaInstalled;
-		private static bool checkedCudaInstalled;
+		private static bool _cudaInstalled;
+		private static bool _checkedCudaInstalled;
 
-		public static void AssertIgnoreIfCUDAUnavailable()
+		public static void AssertIgnoreIfCudaUnavailable()
 		{
-			if (!checkedCudaInstalled)
+			if (!_checkedCudaInstalled)
 			{
 				try
 				{
 					new CudaContext();
 
-					cudaInstalled = true;
+					_cudaInstalled = true;
 				}
 				catch
 				{
-					cudaInstalled = false;
+					_cudaInstalled = false;
 				}
 
-				checkedCudaInstalled = true;
+				_checkedCudaInstalled = true;
 			}
 
-			if (!cudaInstalled)
+			if (!_cudaInstalled)
 			{
 				Assert.Ignore("CUDA installation not found or not working. As CUDA is optional, this test will be ignored.");
 			}
 		}
 
 		[TestCase]
-		public void TestCUDAInstallationCreateContext()
+		public void TestCudaInstallationCreateContext()
 		{
-			AssertIgnoreIfCUDAUnavailable();
+			AssertIgnoreIfCudaUnavailable();
 
 			CudaContext context = new CudaContext();
 		}
 
 		[TestCase]
-		public void TestCUDAInstallationCreateCudaBlas()
+		public void TestCudaInstallationCreateCudaBlas()
 		{
-			AssertIgnoreIfCUDAUnavailable();
+			AssertIgnoreIfCudaUnavailable();
 
 			CudaBlas cublas = new CudaBlas();
 		}
