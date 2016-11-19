@@ -18,11 +18,11 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		/// <summary>
 		/// Count of rows.
 		/// </summary>
-		private int rows;
+		private int _rows;
 		/// <summary>
 		/// Count of columns.
 		/// </summary>
-		private int columns;
+		private int _columns;
 
 		/// <summary>
 		/// Property for the row count. Row count must be bigger than zero.
@@ -31,7 +31,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		{
 			get
 			{
-				return rows;
+				return _rows;
 			}
 			set
 			{
@@ -40,7 +40,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 					throw new ArgumentException("Rows may not be smaller or equal to zero.");
 				}
 
-				rows = value;
+				_rows = value;
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		{
 			get
 			{
-				return columns;
+				return _columns;
 			}
 			set
 			{
@@ -60,7 +60,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 					throw new ArgumentException("Columns may not be smaller or equal to zero.");
 				}
 
-				columns = value;
+				_columns = value;
 			}
 		}
 

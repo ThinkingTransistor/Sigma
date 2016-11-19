@@ -12,41 +12,30 @@ using MahApps.Metro.Controls;
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
 
-	public abstract class WPFWindow : MetroWindow
+	public abstract class WpfWindow : MetroWindow
 	{
 		/// <summary>
 		/// The corresponding WPFMonitor
 		/// </summary>
-		protected WPFMonitor monitor;
-
-		/// <summary>
-		/// The app-environment. 
-		/// </summary>
-		protected App app;
+		protected WPFMonitor Monitor;
 
 		/// <summary>
 		/// The root application environment for all WPF interactions. 
 		/// </summary>
-		public App @App
-		{
-			get
-			{
-				return app;
-			}
-		}
+		public App @App { get; }
 
 		/// <summary>
-		/// The constructor for the <see cref="WPFWindow"/>.
+		/// The constructor for the <see cref="WpfWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
-		/// <param name="app">The <see cref="Application"/> environment.</param>
-		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
-		public WPFWindow(WPFMonitor monitor, App app, string title) : base()
+		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
+		/// <param name="title">The <see cref="System.Windows.Window.Title"/> of the window.</param>
+		public WpfWindow(WPFMonitor monitor, App app, string title) : base()
 		{
 			CheckArgs(monitor, app);
 
-			this.monitor = monitor;
-			this.app = app;
+			Monitor = monitor;
+			App = app;
 			Title = title;
 
 			InitialiseComponents();
@@ -61,22 +50,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="app">The <see cref="Application"/> environment.</param>
 		private static void CheckArgs(WPFMonitor monitor, App app)
 		{
-			if (monitor == null)
-			{
-				throw new ArgumentNullException("Monitor may not be null!");
-			}
-
-			if (app == null)
-			{
-				throw new ArgumentNullException("App may not be null");
-			}
+			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
+			if (app == null) throw new ArgumentNullException(nameof(app));
 		}
 
 		/// <summary>
 		/// In this function components should be initialised that
 		/// don't depend on constructor arguments. This function
 		/// will be invoked as the last operation
-		/// of the <see cref="WPFWindow"/>'s constructor. 
+		/// of the <see cref="WpfWindow"/>'s constructor. 
 		/// </summary>
 		protected abstract void InitialiseComponents();
 	}

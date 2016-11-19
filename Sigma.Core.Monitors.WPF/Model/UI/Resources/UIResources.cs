@@ -11,7 +11,7 @@ using System.Windows.Media;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 {
-	public static class UIResources
+	public static class UiResources
 	{
 		#region Font
 		public static FontFamily @FontFamily { get; private set; }
@@ -84,7 +84,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		#endregion
 		#endregion
 
-		static UIResources ()
+		static UiResources ()
 		{
 			Application app = Application.Current;
 

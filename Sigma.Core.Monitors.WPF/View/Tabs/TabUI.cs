@@ -14,13 +14,13 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 	/// <summary>
 	/// This class is basically only a wrapper for the tabs to be handled easily (and future proof)
 	/// </summary>
-	internal class TabUI : UIWrapper<TabItem>
+	internal class TabUi : UiWrapper<TabItem>
 	{
 		public GridSize @GridSize { get; set; }
 
-		public TabUI(string header, GridSize gridsize) : base()
+		public TabUi(string header, GridSize gridsize) : base()
 		{
-			content.Header = header;
+			Content.Header = header;
 			GridSize = gridsize;
 		}
 	}

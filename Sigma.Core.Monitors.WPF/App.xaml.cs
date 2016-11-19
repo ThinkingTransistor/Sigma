@@ -15,16 +15,18 @@ namespace Sigma.Core.Monitors.WPF
 	/// This file contains the general interaction logic for App.xaml.
 	/// See App.xaml for why these files are required. 
 	/// </summary>
+	// ReSharper disable once RedundantExtendsListEntry
 	public partial class App : Application
 	{
 		/// <summary>
 		/// The corresponding WPF monitor.
 		/// </summary>
-		protected WPFMonitor monitor;
+		protected WPFMonitor Monitor;
 
+		// ReSharper disable once RedundantBaseConstructorCall
 		public App(WPFMonitor monitor) : base()
 		{
-			this.monitor = monitor;
+			Monitor = monitor;
 
 			InitializeComponent();
 		}

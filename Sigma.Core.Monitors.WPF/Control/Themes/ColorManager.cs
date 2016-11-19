@@ -7,10 +7,17 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
@@ -19,28 +26,44 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// <summary>
 		/// The application environment.
 		/// </summary>
-		private Application app;
+		private Application _app;
+
+		/// <summary>
+		/// The corresponding <see cref="SigmaWindow"/>.
+		/// </summary>
+		private SigmaWindow _sigmaWindow;
+
+		public Window Window
+		{
+			get { return _sigmaWindow; }
+			set
+			{
+				_sigmaWindow = value as SigmaWindow;
+			}
+		}
+
 		/// <summary>
 		/// Tells whether onStartup has already been called on the app.
 		/// </summary>
-		private bool appStarted;
+		private bool _appStarted;
 
 		/// <summary>
 		/// The primary colour.
 		/// </summary>
-		private Swatch primaryColor;
+		private Swatch _primaryColor;
 		/// <summary>
 		/// The secondary colour.
 		/// </summary>
-		private Swatch secondaryColor;
+		private Swatch _secondaryColor;
 		/// <summary>
 		/// Whether a dark or a light theme should be applied.
 		/// </summary>
-		private bool dark;
+		private bool _dark;
+
 		/// <summary>
 		/// Option for an alternate style for tabs.
 		/// </summary>
-		private bool alternate;
+		private bool _alternate;
 
 		/// <summary>
 		/// Create a new <see cref="ColorManager"/>.
@@ -49,8 +72,8 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// <param name="defaultSecondary">The default secondary colour (if none has been set).</param>
 		public ColorManager(Swatch defaultPrimary, Swatch defaultSecondary)
 		{
-			this.primaryColor = defaultPrimary;
-			this.secondaryColor = defaultSecondary;
+			_primaryColor = defaultPrimary;
+			_secondaryColor = defaultSecondary;
 		}
 
 		/// <summary>
@@ -58,9 +81,10 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// </summary>
 		public Application App
 		{
+
 			get
 			{
-				return app;
+				return _app;
 			}
 
 			set
@@ -70,21 +94,20 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 					throw new ArgumentNullException("App cannot be null!");
 				}
 
-				//If the value has changed
-				if (value != app)
+				//If the value has not changed
+				if (value == _app) return;
+
+				_app = value;
+
+				//reset the values
+				_appStarted = false;
+
+				if (_app != null)
 				{
-					app = value;
-
-					//reset appstarted
-					appStarted = false;
-
-					if (app != null)
-					{
-						app.Startup -= AppStartup;
-					}
-
-					app.Startup += AppStartup;
+					_app.Startup -= AppStartup;
 				}
+
+				_app.Startup += AppStartup;
 			}
 		}
 
@@ -95,12 +118,85 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// <param name="e">The <see cref="StartupEventArgs"/>.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
-			appStarted = true;
+			_appStarted = true;
 
-			new PaletteHelper().ReplacePrimaryColor(primaryColor);
-			new PaletteHelper().ReplaceAccentColor(secondaryColor);
+			ReplacePrimaryColor(_primaryColor);
+			ReplaceSecondaryColor(_secondaryColor);
+			SetLightDark(_dark);
+
+			ApplyStyle(_alternate);
+		}
+
+		/// <summary>
+		/// Change the theme to dark or light depending on the given parameter.
+		/// </summary>
+		/// <param name="dark">If this value is <c>true</c>, a dark theme will be applied.
+		/// Otherwise a light theme. </param>
+		private void SetLightDark(bool dark)
+		{
 			new PaletteHelper().SetLightDark(dark);
-			ApplyStyle(alternate);
+
+			//Fix the MenuBar
+			var correctBrush = (dark
+				? UiResources.IdealForegroundColorBrush
+				: Application.Current.Resources["SigmaMenuItemForegroundLight"]) as Brush;
+
+			Application.Current.Resources["SigmaMenuItemForeground"] = correctBrush;
+
+			if (_sigmaWindow != null)
+			{
+				foreach (TitleBarItem tabChild in _sigmaWindow.TitleBar)
+				{
+					foreach (KeyValuePair<string, UIElement> menuElement in tabChild.Children)
+					{
+						ApplyStyleToUIElements(menuElement.Value, correctBrush);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Apply the passed foregroundBrush as foreground colour to the passed
+		/// parent and all its children.
+		/// </summary>
+		/// <param name="element">The parent element. </param>
+		/// <param name="foregroundBrush">The correct foreground colour.</param>
+		private void ApplyStyleToUIElements(object element, Brush foregroundBrush)
+		{
+			MenuItem menuItem = element as MenuItem;
+
+			if (menuItem != null)
+			{
+				menuItem.Foreground = foregroundBrush;
+
+				if (menuItem.Items.Count > 0)
+				{
+					foreach (UIElement menuItemChild in menuItem.Items)
+					{
+						ApplyStyleToUIElements(menuItemChild, foregroundBrush);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Replace the secondary colour.
+		/// </summary>
+		/// <param name="secondaryColor">The specified <see cref="Swatch"/> that will
+		/// be the new secondary colour.</param>
+		private static void ReplaceSecondaryColor(Swatch secondaryColor)
+		{
+			new PaletteHelper().ReplaceAccentColor(secondaryColor);
+		}
+
+		/// <summary>
+		/// Replace the primary colour.
+		/// </summary>
+		/// <param name="primaryColor">The specified <see cref="Swatch"/> that will
+		/// be the new primary colour.</param>
+		private static void ReplacePrimaryColor(Swatch primaryColor)
+		{
+			new PaletteHelper().ReplacePrimaryColor(primaryColor);
 		}
 
 		/// <summary>
@@ -110,7 +206,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		{
 			get
 			{
-				return primaryColor;
+				return _primaryColor;
 			}
 
 			set
@@ -120,11 +216,11 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 					throw new ArgumentNullException("SecondaryColor cannot be null!");
 				}
 
-				primaryColor = value;
+				_primaryColor = value;
 
-				if (appStarted)
+				if (_appStarted)
 				{
-					app.Dispatcher.Invoke(() => new PaletteHelper().ReplacePrimaryColor(primaryColor));
+					_app.Dispatcher.Invoke(() => new PaletteHelper().ReplacePrimaryColor(_primaryColor));
 				}
 			}
 		}
@@ -136,7 +232,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		{
 			get
 			{
-				return secondaryColor;
+				return _secondaryColor;
 			}
 
 			set
@@ -146,11 +242,11 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 					throw new ArgumentNullException("SecondaryColor cannot be null!");
 				}
 
-				secondaryColor = value;
+				_secondaryColor = value;
 
-				if (appStarted)
+				if (_appStarted)
 				{
-					app.Dispatcher.Invoke(() => new PaletteHelper().ReplaceAccentColor(secondaryColor));
+					_app.Dispatcher.Invoke(() => new PaletteHelper().ReplaceAccentColor(_secondaryColor));
 				}
 			}
 		}
@@ -162,15 +258,15 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		{
 			get
 			{
-				return dark;
+				return _dark;
 			}
 			set
 			{
-				dark = value;
+				_dark = value;
 
-				if (appStarted)
+				if (_appStarted)
 				{
-					app.Dispatcher.Invoke(() => new PaletteHelper().SetLightDark(dark));
+					_app.Dispatcher.Invoke(() => SetLightDark(_dark));
 				}
 			}
 		}
@@ -182,16 +278,16 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		{
 			get
 			{
-				return alternate;
+				return _alternate;
 			}
 
 			set
 			{
-				alternate = value;
+				_alternate = value;
 
-				if (appStarted)
+				if (_appStarted)
 				{
-					app.Dispatcher.Invoke(() => ApplyStyle(alternate));
+					_app.Dispatcher.Invoke(() => ApplyStyle(_alternate));
 				}
 			}
 		}
@@ -203,7 +299,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		private void ApplyStyle(bool alternate)
 		{
 			var styleKey = alternate ? "MaterialDesignAlternateTabablzControlStyle" : "MaterialDesignTabablzControlStyle";
-			var style = app.TryFindResource(styleKey) as Style;
+			var style = _app.TryFindResource(styleKey) as Style;
 
 			App.Resources[typeof(TabablzControl)] = style;
 		}
