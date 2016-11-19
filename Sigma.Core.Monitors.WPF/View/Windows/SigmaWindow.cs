@@ -20,11 +20,11 @@ using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
-	public class SigmaWindow : WpfWindow
+	public class SigmaWindow : WPFWindow
 	{
 		#region DependencyProperties
 
-		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize", typeof(GridSize), typeof(WpfWindow), new UIPropertyMetadata(new GridSize(3, 4)));
+		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize", typeof(GridSize), typeof(WPFWindow), new UIPropertyMetadata(new GridSize(3, 4)));
 
 		#endregion DependencyProperties
 
@@ -55,7 +55,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public TabControlUi<SigmaWindow> TabControl { get; set; }
 
 		/// <summary>
-		/// The constructor for the <see cref="WpfWindow"/>.
+		/// The constructor for the <see cref="WPFWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>
@@ -66,7 +66,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		/// <summary>
-		/// The constructor for the <see cref="WpfWindow"/>.
+		/// The constructor for the <see cref="WPFWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>

@@ -12,7 +12,8 @@ using MahApps.Metro.Controls;
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
 
-	public abstract class WpfWindow : MetroWindow
+	// ReSharper disable once InconsistentNaming
+	public abstract class WPFWindow : MetroWindow
 	{
 		/// <summary>
 		/// The corresponding WPFMonitor
@@ -25,12 +26,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public App @App { get; }
 
 		/// <summary>
-		/// The constructor for the <see cref="WpfWindow"/>.
+		/// The constructor for the <see cref="WPFWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
 		/// <param name="title">The <see cref="System.Windows.Window.Title"/> of the window.</param>
-		public WpfWindow(WPFMonitor monitor, App app, string title) : base()
+		public WPFWindow(WPFMonitor monitor, App app, string title) : base()
 		{
 			CheckArgs(monitor, app);
 
@@ -58,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// In this function components should be initialised that
 		/// don't depend on constructor arguments. This function
 		/// will be invoked as the last operation
-		/// of the <see cref="WpfWindow"/>'s constructor. 
+		/// of the <see cref="WPFWindow"/>'s constructor. 
 		/// </summary>
 		protected abstract void InitialiseComponents();
 	}

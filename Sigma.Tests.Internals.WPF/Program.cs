@@ -10,9 +10,9 @@ using Sigma.Core.Monitors.WPF.Control.Themes;
 
 namespace Sigma.Tests.Internals.WPF
 {
-	internal class Program
+	class Program
 	{
-		private static void Main(string[] args)
+		static void Main(string[] args)
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
