@@ -128,7 +128,7 @@
     <Compile Include="Data\Sources\IDataSetSource.cs" />
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
-    <Compile Include="Data\Sources\UrlSource.cs" />
+    <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
