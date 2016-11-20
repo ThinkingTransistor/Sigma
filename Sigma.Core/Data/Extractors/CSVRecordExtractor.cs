@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using log4net;
 using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
@@ -20,24 +20,19 @@ namespace Sigma.Core.Data.Extractors
 	/// <summary>
 	/// A CSV record extractor, which extracts string based records as columns.
 	/// </summary>
-	public class CSVRecordExtractor : BaseExtractor
+	public class CsvRecordExtractor : BaseExtractor
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Dictionary<string, IList<int>> namedColumnIndexMappings;
-		private Dictionary<int, Dictionary<object, object>> columnValueMappings;
+		private readonly Dictionary<int, Dictionary<object, object>> _columnValueMappings;
 
-		public Dictionary<string, IList<int>> NamedColumnIndexMapping
-		{
-			get { return namedColumnIndexMappings; }
-		}
+		public Dictionary<string, IList<int>> NamedColumnIndexMapping { get; }
 
 		/// <summary>
 		/// Create a CSV record extractor with a certain named column index mapping and an optional value mapping.
 		/// </summary>
 		/// <param name="namedColumnIndexMappings">The named column index mapping (not flattened).</param>
-		/// <param name="columnValueMappings">The optional value mapping.</param>
-		public CSVRecordExtractor(Dictionary<string, int[][]> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null) : this(ArrayUtils.GetFlatColumnMappings(namedColumnIndexMappings))
+		public CsvRecordExtractor(Dictionary<string, int[][]> namedColumnIndexMappings) : this(ArrayUtils.GetFlatColumnMappings(namedColumnIndexMappings))
 		{
 		}
 
@@ -46,9 +41,9 @@ namespace Sigma.Core.Data.Extractors
 		/// </summary>
 		/// <param name="namedColumnIndexMappings">The named column index mapping (flattened).</param>
 		/// <param name="columnValueMappings">The optional value mapping.</param>
-		public CSVRecordExtractor(Dictionary<string, IList<int>> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null)
+		public CsvRecordExtractor(Dictionary<string, IList<int>> namedColumnIndexMappings, Dictionary<int, Dictionary<object, object>> columnValueMappings = null)
 		{
-			this.namedColumnIndexMappings = namedColumnIndexMappings;
+			NamedColumnIndexMapping = namedColumnIndexMappings;
 
 			if (columnValueMappings == null)
 			{
@@ -60,8 +55,8 @@ namespace Sigma.Core.Data.Extractors
 				throw new ArgumentException("There must be at least one named column index mapping, but the given dictionary was empty.");
 			}
 
-			this.columnValueMappings = columnValueMappings;
-			this.SectionNames = namedColumnIndexMappings.Keys.ToArray();
+			_columnValueMappings = columnValueMappings;
+			SectionNames = namedColumnIndexMappings.Keys.ToArray();
 		}
 
 		/// <summary>
@@ -70,7 +65,7 @@ namespace Sigma.Core.Data.Extractors
 		/// <param name="column">The column to add the value mapping to.</param>
 		/// <param name="objects">The values to map.</param>
 		/// <returns>This record extractor (for convenience).</returns>
-		public CSVRecordExtractor AddValueMapping(int column, params object[] objects)
+		public CsvRecordExtractor AddValueMapping(int column, params object[] objects)
 		{
 			return AddValueMapping(column, mapping: ArrayUtils.MapToOrder(objects));
 		}
@@ -79,11 +74,11 @@ namespace Sigma.Core.Data.Extractors
 		/// Add a value mapping for a certain column and certain key value pairs. Each key will be replaced with its value during extraction. 
 		/// </summary>
 		/// <param name="column">The column to add the value mapping to.</param>
-		/// <param name="objects">The values to map.</param>
+		/// <param name="mapping">The object to object mapping to use to automatically replace certain values.</param>
 		/// <returns>This record extractor (for convenience).</returns>
-		public CSVRecordExtractor AddValueMapping(int column, Dictionary<object, object> mapping)
+		public CsvRecordExtractor AddValueMapping(int column, Dictionary<object, object> mapping)
 		{
-			this.columnValueMappings.Add(column, mapping);
+			_columnValueMappings.Add(column, mapping);
 
 			return this;
 		}
@@ -98,15 +93,15 @@ namespace Sigma.Core.Data.Extractors
 
 			string[][] lineParts = (string[][]) readData;
 
-			int numberOfRecordsToExtract = System.Math.Min(lineParts.Length, numberOfRecords);
+			int numberOfRecordsToExtract = Math.Min(lineParts.Length, numberOfRecords);
 
-			logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
+			_logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
-			foreach (string name in namedColumnIndexMappings.Keys)
+			foreach (string name in NamedColumnIndexMapping.Keys)
 			{
-				IList<int> mappings = namedColumnIndexMappings[name];
+				IList<int> mappings = NamedColumnIndexMapping[name];
 				INDArray array = handler.Create(numberOfRecordsToExtract, 1, mappings.Count);
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
@@ -119,9 +114,9 @@ namespace Sigma.Core.Data.Extractors
 
 						try
 						{
-							if (columnValueMappings.ContainsKey(column) && columnValueMappings[column].ContainsKey(value))
+							if (_columnValueMappings.ContainsKey(column) && _columnValueMappings[column].ContainsKey(value))
 							{
-								array.SetValue(columnValueMappings[column][value], i, 0, y);
+								array.SetValue(_columnValueMappings[column][value], i, 0, y);
 							}
 							else
 							{
@@ -138,7 +133,7 @@ namespace Sigma.Core.Data.Extractors
 				namedArrays.Add(name, array);
 			}
 
-			logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
+			_logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
 		}
@@ -162,9 +157,10 @@ namespace Sigma.Core.Data.Extractors
 
 			foreach (object param in parameters)
 			{
-				if (param is string)
+				string namedSection = param as string;
+				if (namedSection != null)
 				{
-					currentNamedSection = (string) param;
+					currentNamedSection = namedSection;
 
 					if (columnMappings.ContainsKey(currentNamedSection))
 					{
@@ -196,9 +192,9 @@ namespace Sigma.Core.Data.Extractors
 
 						int[] flatRange = ArrayUtils.Range(range[0], range[1]);
 
-						for (int i = 0; i < flatRange.Length; i++)
+						foreach (int column in flatRange)
 						{
-							currentColumnMapping.Add(flatRange[i]);
+							currentColumnMapping.Add(column);
 						}
 					}
 				}

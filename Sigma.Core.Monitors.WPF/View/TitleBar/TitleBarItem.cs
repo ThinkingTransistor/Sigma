@@ -1,3 +1,11 @@
+/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,15 +19,15 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <summary>
 		/// The <see cref="MenuItem"/> behind the <see cref="TitleBarItem"/>.
 		/// </summary>
-		public MenuItem Content { get; private set; }
+		public MenuItem Content { get; }
 
 		/// <summary>
 		/// The child UIElements that are inside this <see cref="MenuItem"/>.
 		/// </summary>
-		public Dictionary<string, UIElement> Children { get; private set; }
+		public Dictionary<string, UIElement> Children { get; }
 
 		/// <summary>
-		/// The logiacl parent of this <see cref="TitleBarItem"/>.
+		/// The logical parent of this <see cref="TitleBarItem"/>.
 		/// </summary>
 		public TitleBarItem Parent { get; private set; }
 
@@ -50,13 +58,13 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			for (int i = 0; i < children.Length; i++)
 			{
 				string newElementKey = null;
-				UIElement newElement = null;
+				UIElement newElement;
 
 				if (children[i] is string)
 				{
 					//The key and header are simply the string
 					newElementKey = (string) children[i];
-					newElement = new MenuItem() { Header = (string) children[i] };
+					newElement = new MenuItem { Header = (string) children[i] };
 				}
 				else if (children[i] is TitleBarItem)
 				{
@@ -138,23 +146,17 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// <returns>The <see cref="TitleBarItem"/> for concatenation. </returns>
 		public TitleBarItem SetFunction(UIElement item, Action action)
 		{
-			if (item == null)
-			{
-				throw new ArgumentNullException($"{nameof(item)} may not be null!");
-			}
-			else if (action == null)
-			{
-				throw new ArgumentNullException($"{nameof(action)} may not be null!");
-			}
+			if (item == null) throw new ArgumentNullException(nameof(item));
+			if (action == null) throw new ArgumentNullException(nameof(action));
 
 			Debug.WriteLine($"Added function for {item}");
 
-			item.MouseLeftButtonUp += (sender, args) => action?.Invoke();
-			item.TouchDown += (sender, args) => action?.Invoke();
+			item.MouseLeftButtonUp += (sender, args) => action();
+			item.TouchDown += (sender, args) => action();
 
 			if (item is MenuItem)
 			{
-				((MenuItem) item).Click += (sender, args) => action?.Invoke();
+				((MenuItem) item).Click += (sender, args) => action();
 			}
 
 			return this;

@@ -17,12 +17,12 @@ using System.IO;
 
 namespace Sigma.Tests.Data.Preprocessors
 {
-	public class TestCSVRecordExtractor
+	public class TestCsvRecordExtractor
 	{
-		private static void CreateCSVTempFile(string name)
+		private static void CreateCsvTempFile(string name)
 		{
 			File.Create(Path.GetTempPath() + name).Dispose();
-			File.WriteAllLines(Path.GetTempPath() + name, new string[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
+			File.WriteAllLines(Path.GetTempPath() + name, new[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
 		}
 
 		private static void DeleteTempFile(string name)
@@ -31,17 +31,17 @@ namespace Sigma.Tests.Data.Preprocessors
 		}
 
 		[TestCase]
-		public void TestCSVRecordExtractorCreate()
+		public void TestCsvRecordExtractorCreate()
 		{
-			string filename = ".unittestfile" + nameof(TestCSVRecordExtractorCreate);
+			string filename = ".unittestfile" + nameof(TestCsvRecordExtractorCreate);
 
-			CreateCSVTempFile(filename);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
-			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new int[][] { new int[] { 0 } } }));
+			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
 
 			Assert.AreSame(source, extractor.Reader.Source);
-			Assert.AreEqual(new string[] { "inputs" }, extractor.SectionNames);
+			Assert.AreEqual(new[] { "inputs" }, extractor.SectionNames);
 
 			source.Dispose();
 
@@ -49,23 +49,23 @@ namespace Sigma.Tests.Data.Preprocessors
 		}
 
 		[TestCase]
-		public void TestCSVRecordExtractorExtract()
+		public void TestCsvRecordExtractorExtract()
 		{
-			string filename = ".unittestfile" + nameof(TestCSVRecordExtractorCreate);
+			string filename = ".unittestfile" + nameof(TestCsvRecordExtractorCreate);
 
-			CreateCSVTempFile(filename);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
-			CSVRecordExtractor extractor = (CSVRecordExtractor) new CSVRecordReader(source).Extractor(new CSVRecordExtractor(new Dictionary<string, IList<int>>() { ["inputs"] = new[] { 0, 1, 2 } }));
+			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, IList<int>>() { ["inputs"] = new[] { 0, 1, 2 } }));
 
-			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(3, new CPUFloat32Handler()));
+			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(3, new CpuFloat32Handler()));
 
 			extractor.Prepare();
 
 			Assert.Throws<ArgumentNullException>(() => extractor.ExtractDirect(3, null));
-			Assert.Throws<ArgumentException>(() => extractor.ExtractDirect(-1, new CPUFloat32Handler()));
+			Assert.Throws<ArgumentException>(() => extractor.ExtractDirect(-1, new CpuFloat32Handler()));
 
-			Assert.AreEqual(5, extractor.ExtractDirect(3, new CPUFloat32Handler())["inputs"].GetValue<int>(0, 0, 0));
+			Assert.AreEqual(5, extractor.ExtractDirect(3, new CpuFloat32Handler())["inputs"].GetValue<int>(0, 0, 0));
 
 			source.Dispose();
 

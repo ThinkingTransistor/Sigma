@@ -1,4 +1,4 @@
-/* 
+﻿/* 
 MIT License
 
 Copyright (c) 2016 Florian Cäsar, Michael Plainer
@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
-using System.Diagnostics;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -20,6 +19,7 @@ namespace Sigma.Core.Monitors.WPF
 	/// This <see cref="IMonitor"/> is the default visualisation monitor shipped with the big Sigma.
 	/// The <see cref="WPFMonitor"/> is designed to run on Windows.
 	/// </summary>
+	// ReSharper disable once InconsistentNaming
 	public class WPFMonitor : MonitorAdapter
 	{
 		/// <summary>
@@ -31,46 +31,38 @@ namespace Sigma.Core.Monitors.WPF
 		/// <summary>
 		/// The root application for all WPF interactions. 
 		/// </summary>
-		private App app;
-
-		/// <summary>
-		/// The active WPF window that will be maintained. 
-		/// </summary>
-		private WPFWindow window;
+		private App _app;
 
 		/// <summary>
 		/// This property returns the current window. 
 		/// <see cref="Window"/> is <see langword="null"/> until <see cref="SigmaEnvironment.Prepare"/> has been called.
 		/// </summary>
-		internal WPFWindow Window
-		{
-			get { return window; }
-		}
+		public WPFWindow Window { get; private set; }
 
 		/// <summary>
 		/// When the <see cref="Start"/> method is called, the thread should block
 		/// until WPF is up and running.
 		/// </summary>
-		private ManualResetEvent waitForStart;
+		private readonly ManualResetEvent _waitForStart;
 
 		/// <summary>
 		/// The title of the window.
 		/// </summary>
-		private string title;
+		private string _title;
 
 		/// <summary>
 		/// Property for the title of the window. 
 		/// </summary>
 		public string Title
 		{
-			get { return title; }
+			get { return _title; }
 			set
 			{
-				title = value;
+				_title = value;
 
-				if (window != null)
+				if (Window != null)
 				{
-					window.Title = title;
+					Window.Title = _title;
 				}
 			}
 		}
@@ -80,7 +72,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// A type is passed in order to prevent generics.
 		/// (Mostly that user does not have to care about it)
 		/// </summary>
-		private Type windowType;
+		private readonly Type _windowType;
 
 		//HACK: decide what Tabs is
 		/// <summary>
@@ -100,17 +92,16 @@ namespace Sigma.Core.Monitors.WPF
 		/// <summary>
 		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
 		/// </summary>
-		public IColorManager @ColorManager
+		public IColorManager ColorManager
 		{
 			get;
-			private set;
 		}
 
 		/// <summary>
 		/// Actions assigned to this list will listen
-		/// to the onStart-event of the <see cref="app"/>.
+		/// to the onStart-event of the <see cref="_app"/>.
 		/// </summary>
-		private List<Action<WPFWindow>> onWindowStartup;
+		private List<Action<object>> _onWindowStartup;
 
 		/// <summary>
 		/// The constructor for the WPF Monitor that relies on <see cref="SigmaWindow"/>.
@@ -132,11 +123,11 @@ namespace Sigma.Core.Monitors.WPF
 			}
 
 			Title = title;
-			windowType = window;
+			_windowType = window;
 
 			ColorManager = new ColorManager(MaterialDesignSwatches.BLUE, MaterialDesignSwatches.AMBER);
 
-			waitForStart = new ManualResetEvent(false);
+			_waitForStart = new ManualResetEvent(false);
 		}
 
 		public override void Initialise()
@@ -150,25 +141,25 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			Thread wpfThread = new Thread(() =>
 			{
-				app = new App(this);
-				ColorManager.App = app;
+				_app = new App(this);
+				ColorManager.App = _app;
 
-				window = (WPFWindow) Activator.CreateInstance(windowType, this, app, title);
+				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+				ColorManager.Window = Window;
 
-				if (onWindowStartup != null)
+				if (_onWindowStartup != null)
 				{
-					foreach (var action in onWindowStartup)
+					foreach (var action in _onWindowStartup)
 					{
-						app.Startup += (sender, args) => action?.Invoke(window);
+						_app.Startup += (sender, args) => action?.Invoke(Window);
 					}
 				}
 
-				app.Startup += (sender, args) =>
+				_app.Startup += (sender, args) =>
 				{
-					Debug.WriteLine("after lock");
-					waitForStart.Set();
+					_waitForStart.Set();
 				};
-				app.Run(window);
+				_app.Run(Window);
 			});
 
 			//Start the new thread with the given priority and set it to a STAThread (required for WPF windows)
@@ -177,8 +168,8 @@ namespace Sigma.Core.Monitors.WPF
 			wpfThread.Start();
 
 			//Wait until the thread has finished execution
-			waitForStart.WaitOne();
-			waitForStart.Reset();
+			_waitForStart.WaitOne();
+			_waitForStart.Reset();
 		}
 
 		/// <summary>
@@ -190,29 +181,41 @@ namespace Sigma.Core.Monitors.WPF
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
 		/// <param name="priority">The priority of the execution.</param>
 		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
-		public void WindowDispatcher(Action<WPFWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
+		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null) where T : WPFWindow
 		{
-			if (window == null)
+			if (typeof(T) != _windowType) throw new ArgumentException($"Type mismatch between {typeof(T)} and {_windowType}");
+
+			if (Window == null)
 			{
-				if (onWindowStartup == null)
+				if (_onWindowStartup == null)
 				{
-					onWindowStartup = new List<Action<WPFWindow>>();
+					_onWindowStartup = new List<Action<object>>();
 				}
 
-				onWindowStartup.Add(action);
+				_onWindowStartup.Add((obj) => action((T) obj));
 			}
 			else
 			{
-				window.Dispatcher.Invoke(() =>
-				{
-					action(window);
-				});
+				Window.Dispatcher.Invoke(() => action((T) Window), priority);
 			}
 
-			if (onFinished != null)
-			{
-				throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
-			}
+			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow"/>. 
+		/// All commands will be executed in the thread of the window!
+		/// If the environment has note been prepared, the function will be executed 
+		/// in OnStartup function of the window. 
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
+		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
+		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
+		{
+			WindowDispatcher<SigmaWindow>(action, priority, onFinished);
 		}
 	}
 }

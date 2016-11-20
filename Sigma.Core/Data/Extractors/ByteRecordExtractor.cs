@@ -6,16 +6,13 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
+using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Handlers;
-using Sigma.Core.Math;
-using System.ComponentModel;
-using log4net;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -24,9 +21,9 @@ namespace Sigma.Core.Data.Extractors
 	/// </summary>
 	public class ByteRecordExtractor : BaseExtractor
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Dictionary<string, long[][]> indexMappings;
+		private readonly Dictionary<string, long[][]> _indexMappings;
 
 		/// <summary>
 		/// Create a byte record extractor with a certain named index mapping.
@@ -36,7 +33,7 @@ namespace Sigma.Core.Data.Extractors
 		{
 			if (indexMappings == null)
 			{
-				throw new ArgumentNullException("Index mappings cannot be null.");
+				throw new ArgumentNullException(nameof(indexMappings));
 			}
 
 			foreach (string name in indexMappings.Keys)
@@ -47,8 +44,8 @@ namespace Sigma.Core.Data.Extractors
 				}
 			}
 
-			this.indexMappings = indexMappings;
-			this.SectionNames = indexMappings.Keys.ToArray();
+			_indexMappings = indexMappings;
+			SectionNames = indexMappings.Keys.ToArray();
 		}
 
 		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
@@ -61,15 +58,15 @@ namespace Sigma.Core.Data.Extractors
 
 			byte[][] rawRecords = (byte[][]) readData;
 
-			int numberOfRecordsToExtract = System.Math.Min(rawRecords.Length, numberOfRecords);
+			int numberOfRecordsToExtract = Math.Min(rawRecords.Length, numberOfRecords);
 
-			logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
+			_logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
-			foreach (string name in indexMappings.Keys)
+			foreach (string name in _indexMappings.Keys)
 			{
-				long[][] mappings = indexMappings[name];
+				long[][] mappings = _indexMappings[name];
 				long[][] perMappingShape = new long[mappings.Length / 2][];
 				long[] perMappingLength = new long[mappings.Length / 2];
 				long[] featureShape = new long[mappings[0].Length];
@@ -96,7 +93,6 @@ namespace Sigma.Core.Data.Extractors
 				Array.Copy(featureShape, 0, shape, 2, featureShape.Length);
 
 				INDArray array = handler.Create(shape);
-				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
 				long[] globalBufferIndices = new long[shape.Length];
 
@@ -123,13 +119,15 @@ namespace Sigma.Core.Data.Extractors
 
 							Array.Copy(localBufferIndices, 0, globalBufferIndices, 2, localBufferIndices.Length);
 
-							array.SetValue<byte>(record[beginFlatIndex + y], globalBufferIndices);
+							array.SetValue(record[beginFlatIndex + y], globalBufferIndices);
 						}
 					}
 				}
 
 				namedArrays.Add(name, array);
 			}
+
+			_logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
 		}
@@ -153,10 +151,11 @@ namespace Sigma.Core.Data.Extractors
 
 			foreach (object param in parameters)
 			{
-				if (param is string)
+				string sectionName = param as string;
+				if (sectionName != null)
 				{
 					string previousSection = currentNamedSection;
-					currentNamedSection = (string) param;
+					currentNamedSection = sectionName;
 
 					if (indexMappings.ContainsKey(currentNamedSection))
 					{

@@ -7,7 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -77,6 +77,13 @@ namespace Sigma.Core.Data.Datasets
 		int ActiveBlockRegionCount { get; }
 
 		/// <summary>
+		/// Attempt to set the block size to a new block size if compatible with the current set block size (e.g. if was auto set and this is the first request).
+		/// </summary>
+		/// <param name="blockSizeRecords"></param>
+		/// <returns>A boolean indicating whether the block size could be set to the requested block size.</returns>
+		bool TrySetBlockSize(int blockSizeRecords);
+
+		/// <summary>
 		/// Checks whether a certain block index is currently active and loaded in any format.
 		/// </summary>
 		/// <param name="blockIndex">The block index to check.</param>
@@ -87,6 +94,7 @@ namespace Sigma.Core.Data.Datasets
 		/// Checks whether a certain block index is currently active and loaded in a certain handler format.
 		/// </summary>
 		/// <param name="blockIndex">The block index to check.</param>
+		/// <param name="handler">The handler of which the format should match.</param>
 		/// <returns>A boolean indicating if the given block index is active and loaded in the given handler format.</returns>
 		bool IsBlockActive(int blockIndex, IComputationHandler handler);
 

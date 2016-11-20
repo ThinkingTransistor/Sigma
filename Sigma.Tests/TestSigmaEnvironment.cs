@@ -12,7 +12,7 @@ using System;
 
 namespace Sigma.Tests
 {
-	class TestSigmaEnvironment
+	internal class TestSigmaEnvironment
 	{
 		[TestCase]
 		public void TestSigmaEnvironmentCreate()
@@ -27,6 +27,8 @@ namespace Sigma.Tests
 		[TestCase]
 		public void TestSigmaEnvironmentAlreadyCreated()
 		{
+			SigmaEnvironment.Clear();
+
 			SigmaEnvironment.Create("test");
 
 			Assert.Throws<ArgumentException>(() => SigmaEnvironment.Create("test"));

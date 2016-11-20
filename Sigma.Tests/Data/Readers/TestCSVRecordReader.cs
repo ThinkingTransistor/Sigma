@@ -14,12 +14,12 @@ using System.IO;
 
 namespace Sigma.Tests.Data.Readers
 {
-	public class TestCSVRecordReader
+	public class TestCsvRecordReader
 	{
-		private static void CreateCSVTempFile(string name)
+		private static void CreateCsvTempFile(string name)
 		{
 			File.Create(Path.GetTempPath() + name).Dispose();
-			File.WriteAllLines(Path.GetTempPath() + name, new string[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
+			File.WriteAllLines(Path.GetTempPath() + name, new[] { "5.1,3.5,1.4,0.2,Iris-setosa", "4.9,3.0,1.4,0.2,Iris-setosa", "4.7,3.2,1.3,0.2,Iris-setosa" });
 		}
 
 		private static void DeleteTempFile(string name)
@@ -28,30 +28,30 @@ namespace Sigma.Tests.Data.Readers
 		}
 
 		[TestCase]
-		public void TestCSVRecordReaderCreate()
+		public void TestCsvRecordReaderCreate()
 		{
-			string filename = ".unittestscsvrecorreader" + nameof(TestCSVRecordReaderCreate);
-			CreateCSVTempFile(filename);
+			string filename = ".unittestscsvrecorreader" + nameof(TestCsvRecordReaderCreate);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
-			CSVRecordReader reader = new CSVRecordReader(source);
+			CsvRecordReader reader = new CsvRecordReader(source);
 
 			Assert.AreSame(source, reader.Source);
-			Assert.Throws<ArgumentNullException>(() => new CSVRecordReader(null));
+			Assert.Throws<ArgumentNullException>(() => new CsvRecordReader(null));
 
 			DeleteTempFile(filename);
 		}
 
 		[TestCase]
-		public void TestCSVRecordReaderRead()
+		public void TestCsvRecordReaderRead()
 		{
-			string filename = ".unittestscsvrecorreader" + nameof(TestCSVRecordReaderRead);
-			CreateCSVTempFile(filename);
+			string filename = ".unittestscsvrecorreader" + nameof(TestCsvRecordReaderRead);
+			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
-			CSVRecordReader reader = new CSVRecordReader(source);
+			CsvRecordReader reader = new CsvRecordReader(source);
 
 			Assert.Throws<InvalidOperationException>(() => reader.Read(3));
 
@@ -61,7 +61,7 @@ namespace Sigma.Tests.Data.Readers
 
 			Assert.AreEqual(2, lineparts.Length);
 			Assert.AreEqual(5, lineparts[0].Length);
-			Assert.AreEqual(new string[] { "5.1", "3.5", "1.4", "0.2", "Iris-setosa" }, lineparts[0]);
+			Assert.AreEqual(new[] { "5.1", "3.5", "1.4", "0.2", "Iris-setosa" }, lineparts[0]);
 
 			lineparts = (string[][]) reader.Read(3);
 
@@ -74,15 +74,15 @@ namespace Sigma.Tests.Data.Readers
 		}
 
 		[TestCase]
-		public void TestCSVRecordReaderExtract()
+		public void TestCsvRecordReaderExtract()
 		{
-			CSVRecordReader reader = new CSVRecordReader(new FileSource("."));
+			CsvRecordReader reader = new CsvRecordReader(new FileSource("."));
 
 			Assert.Throws<ArgumentException>(() => reader.Extractor());
 			Assert.Throws<ArgumentException>(() => reader.Extractor("name", "name"));
 			Assert.Throws<ArgumentException>(() => reader.Extractor(1));
 
-			Assert.AreEqual(new[] { 0, 1, 2, 3, 6 }, reader.Extractor("inputs", new int[] { 0, 3 }, 6).NamedColumnIndexMapping["inputs"]);
+			Assert.AreEqual(new[] { 0, 1, 2, 3, 6 }, reader.Extractor("inputs", new[] { 0, 3 }, 6).NamedColumnIndexMapping["inputs"]);
 		}
 	}
 }

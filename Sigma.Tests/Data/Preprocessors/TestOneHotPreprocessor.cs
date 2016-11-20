@@ -1,13 +1,19 @@
-﻿using NUnit.Framework;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using NUnit.Framework;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sigma.Tests.Data.Preprocessors
 {
@@ -21,18 +27,18 @@ namespace Sigma.Tests.Data.Preprocessors
 		[TestCase]
 		public void TestOneHotPreprocessorCreate()
 		{
-			Assert.Throws<ArgumentNullException>(() => new OneHotPreprocessor(sectionName: "section"));
+			Assert.Throws<ArgumentException>(() => new OneHotPreprocessor(sectionName: "section"));
 
 			OneHotPreprocessor preprocessor = new OneHotPreprocessor("section", 1, 2, 3, 4);
 
-			Assert.AreEqual(new string[] { "section" }, preprocessor.ProcessedSectionNames);
+			Assert.AreEqual(new[] { "section" }, preprocessor.ProcessedSectionNames);
 		}
 
 		[TestCase]
 		public void TestOneHotPreprocessorExtract()
 		{
 			OneHotPreprocessor preprocessor = new OneHotPreprocessor("test", minValue: 0, maxValue: 2);
-			IComputationHandler handler = new CPUFloat32Handler();
+			IComputationHandler handler = new CpuFloat32Handler();
 
 			Dictionary<string, INDArray> extracted = preprocessor.ExtractDirectFrom(GetNamedArrayTestData(), 2, handler);
 

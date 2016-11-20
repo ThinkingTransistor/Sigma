@@ -104,6 +104,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Architecture\INetwork.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
@@ -113,6 +114,10 @@
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
+    <Compile Include="Data\Iterators\BaseIterator.cs" />
+    <Compile Include="Data\Iterators\IDataIterator.cs" />
+    <Compile Include="Data\Iterators\MinibatchIterator.cs" />
+    <Compile Include="Data\Iterators\UndividedIterator.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
@@ -129,28 +134,41 @@
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
-    <Compile Include="Math\INDArray.cs" />
-    <Compile Include="Math\NDArray.cs" />
+    <Compile Include="MathAbstract\INDArray.cs" />
+    <Compile Include="MathAbstract\NDArray.cs" />
+    <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
+    <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
+    <Compile Include="Training\Initialisers\IInitialiser.cs" />
+    <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Operators\IOperator.cs" />
+    <Compile Include="Training\ITrainer.cs" />
+    <Compile Include="Training\Operators\Workers\IWorker.cs" />
+    <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />
+    <Compile Include="Utils\IDeepCopyable.cs" />
+    <Compile Include="Training\Hooks\IHook.cs" />
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
+    <Compile Include="Utils\ITaskObserver.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
+    <Compile Include="Utils\ITaskManager.cs" />
+    <Compile Include="Utils\TimeStep.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Architecture\" />
     <Folder Include="Layers\" />
     <Folder Include="Persistence\" />
-    <Folder Include="Training\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

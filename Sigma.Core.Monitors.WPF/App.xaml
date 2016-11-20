@@ -22,12 +22,13 @@
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Blue.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
 
-				<!-- Material Design: MahApps Compatibility -->
+				<!-- Material Design and MahApps compatibility -->
 				<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml "/>
 
-				<!-- Dragablz Material Design -->
+				<!-- Apply material Design to Dragablz -->
 				<ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/materialdesign.xaml"/>
 
+				<ResourceDictionary Source="View/Styles/CustomStyles.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 			
 			<!-- MahApps Brushes -->

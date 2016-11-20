@@ -6,7 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 
@@ -26,9 +26,9 @@ namespace Sigma.Core.Utils
 		{
 			long product = 1L;
 
-			for (int i = 0; i < array.Length; i++)
+			foreach (long element in array)
 			{
-				product *= array[i];
+				product *= element;
 			}
 
 			return product;
@@ -76,8 +76,8 @@ namespace Sigma.Core.Utils
 				throw new ArgumentException($"Step size must be >= 1, but step size was {stepSize} (swap start and end for a reversed range).");
 			}
 
-			int span = System.Math.Abs(end - start) + 1;
-			int length = (int) System.Math.Ceiling((double) span / stepSize);
+			int span = Math.Abs(end - start) + 1;
+			int length = (int) Math.Ceiling((double) span / stepSize);
 			int[] result = new int[length];
 
 			if (end > start)
@@ -128,7 +128,7 @@ namespace Sigma.Core.Utils
 		{
 			if (columnMappings == null)
 			{
-				throw new ArgumentNullException("Column mappings cannot be null.");
+				throw new ArgumentNullException(nameof(columnMappings));
 			}
 
 			Dictionary<string, IList<int>> flatMappings = new Dictionary<string, IList<int>>();
@@ -150,7 +150,7 @@ namespace Sigma.Core.Utils
 		{
 			if (columnMappings == null)
 			{
-				throw new ArgumentNullException("Column mappings cannot be null.");
+				throw new ArgumentNullException(nameof(columnMappings));
 			}
 
 			IList<int> individualMappings = new List<int>();
@@ -172,7 +172,7 @@ namespace Sigma.Core.Utils
 				}
 				else
 				{
-					foreach (int y in ArrayUtils.Range(columnMappings[i][0], columnMappings[i][1]))
+					foreach (int y in Range(columnMappings[i][0], columnMappings[i][1]))
 					{
 						individualMappings.Add(y);
 					}
@@ -219,7 +219,7 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
-		/// A helper function to call the toString method of the default NDArray<T> implementation.
+		/// A helper function to call the toString method of the default NDArray implementation.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="array"></param>
@@ -246,6 +246,13 @@ namespace Sigma.Core.Utils
 			return "[" + string.Join(", ", array) + "]";
 		}
 
+		/// <summary>
+		/// Convert any array to an array of another type (and convert the contents as needed).
+		/// </summary>
+		/// <typeparam name="T">The current type of the array elements.</typeparam>
+		/// <typeparam name="TOther">The new type which the array elements should have.</typeparam>
+		/// <param name="array">The array to convert.</param>
+		/// <returns>A new converted array with the given element type and converted elements.</returns>
 		public static TOther[] As<T, TOther>(this T[] array)
 		{
 			TOther[] otherArray = new TOther[array.Length];

@@ -6,14 +6,11 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Handlers;
-using Sigma.Core.Math;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Preprocessors
 {
@@ -30,9 +27,9 @@ namespace Sigma.Core.Data.Preprocessors
 	/// </summary>
 	public class OneHotPreprocessor : BasePreprocessor
 	{
-		public override bool AffectsDataShape { get { return true; } }
+		public override bool AffectsDataShape => true;
 
-		private Dictionary<object, int> valueToIndexMapping;
+		private readonly Dictionary<object, int> _valueToIndexMapping;
 
 		/// <summary>
 		/// Create a one-hot preprocessor with possible values within a certain integer range for all sections.
@@ -58,28 +55,28 @@ namespace Sigma.Core.Data.Preprocessors
 		/// </summary>
 		/// <param name="sectionName">The optional specific this processor should be applied to.</param>
 		/// <param name="possibleValues">All possible values that this one-hot preprocessor should encode (have to be known ahead of time).</param>
-		public OneHotPreprocessor(string sectionName, params object[] possibleValues) : base(sectionName == null ? null : new string[] { sectionName})
+		public OneHotPreprocessor(string sectionName, params object[] possibleValues) : base(sectionName == null ? null : new[] { sectionName})
 		{
 			if (possibleValues == null)
 			{
-				throw new ArgumentNullException("Possible values cannot be null.");
+				throw new ArgumentNullException(nameof(possibleValues));
 			}
 
 			if (possibleValues.Length == 0)
 			{
-				throw new ArgumentNullException("Possible values cannot be empty.");
+				throw new ArgumentException("Possible values cannot be empty.");
 			}
 
-			this.valueToIndexMapping = new Dictionary<object, int>();
+			_valueToIndexMapping = new Dictionary<object, int>();
 
 			for (int i = 0; i < possibleValues.Length; i++)
 			{
-				if (this.valueToIndexMapping.ContainsKey(possibleValues[i]))
+				if (_valueToIndexMapping.ContainsKey(possibleValues[i]))
 				{
 					throw new ArgumentException($"Possible values must be unique, but there was a duplicate value {possibleValues[i]} at index {i}.");
 				}
 
-				this.valueToIndexMapping.Add(possibleValues[i], i);
+				_valueToIndexMapping.Add(possibleValues[i], i);
 			}
 		}
 
@@ -96,7 +93,7 @@ namespace Sigma.Core.Data.Preprocessors
 				throw new ArgumentException($"Cannot one-hot encode ndarrays whose feature shape (index 2) is not 1, but ndarray.shape[2] was {array.Shape[2]}");
 			}
 
-			INDArray encodedArray = handler.Create(array.Shape[0], array.Shape[1], valueToIndexMapping.Count);
+			INDArray encodedArray = handler.Create(array.Shape[0], array.Shape[1], _valueToIndexMapping.Count);
 
 			long[] bufferIndices = new long[3];
 
@@ -106,14 +103,14 @@ namespace Sigma.Core.Data.Preprocessors
 
 				object value = array.GetValue<int>(bufferIndices);
 
-				if (!valueToIndexMapping.ContainsKey(value))
+				if (!_valueToIndexMapping.ContainsKey(value))
 				{
 					throw new ArgumentException($"Cannot one-hot encode unknown value {value}, value was not registered as a possible value.");
 				}
 
-				bufferIndices[2] = valueToIndexMapping[value];
+				bufferIndices[2] = _valueToIndexMapping[value];
 
-				encodedArray.SetValue<int>(1, bufferIndices);
+				encodedArray.SetValue(1, bufferIndices);
 			}
 
 			return encodedArray;

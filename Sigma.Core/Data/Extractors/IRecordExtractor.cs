@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 

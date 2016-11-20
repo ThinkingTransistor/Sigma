@@ -7,8 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Data;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Sigma.Core.Math
+namespace Sigma.Core.MathAbstract
 {
 	/// <summary>
 	/// An n-dimensional array of any data type with C-like ordering. Includes utility functions for scalar, vector and matrix manipulation. 
@@ -18,6 +19,7 @@ namespace Sigma.Core.Math
 	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon, ...).
 	/// </summary>
 	/// <author>flo.caesar</author>
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public interface INDArray
 	{
 		/// <summary>

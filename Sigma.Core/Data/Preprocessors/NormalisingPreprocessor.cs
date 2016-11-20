@@ -6,13 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sigma.Core.Handlers;
-using Sigma.Core.Math;
+using Sigma.Core.MathAbstract;
+using System;
 
 namespace Sigma.Core.Data.Preprocessors
 {
@@ -21,16 +17,14 @@ namespace Sigma.Core.Data.Preprocessors
 	/// </summary>
 	public class NormalisingPreprocessor : BasePreprocessor
 	{
-		public override bool AffectsDataShape { get { return false; } }
+		public override bool AffectsDataShape => false;
 
-		public int MinInputValue { get; private set; }
+		public int MinInputValue { get; }
 		public int MaxInputValue { get; private set; }
-		public int MinOutputValue { get; private set; }
+		public int MinOutputValue { get; }
 		public int MaxOutputValue { get; private set; }
 
-		private int inputRange;
-		private int outputRange;
-		private double outputScale;
+		private readonly double _outputScale;
 
 		/// <summary>
 		/// Create a normalising preprocessor with a certain input and an output range of [0, 1] and optionally specify for which sections this processor should be applied.
@@ -62,20 +56,20 @@ namespace Sigma.Core.Data.Preprocessors
 				throw new ArgumentException($"Minimum output value must be < maximum output value, but minimum output value was {minOutputValue} and maximum output value {maxOutputValue}.");
 			}
 
-			this.MinInputValue = minInputValue;
-			this.MaxInputValue = maxInputValue;
-			this.MinOutputValue = minOutputValue;
-			this.MaxOutputValue = maxOutputValue;
+			MinInputValue = minInputValue;
+			MaxInputValue = maxInputValue;
+			MinOutputValue = minOutputValue;
+			MaxOutputValue = maxOutputValue;
 
-			this.inputRange = maxInputValue - minInputValue;
-			this.outputRange = maxOutputValue - minOutputValue;
-			this.outputScale = ((double) outputRange) / inputRange;
+			int inputRange = maxInputValue - minInputValue;
+			int outputRange = maxOutputValue - minOutputValue;
+			_outputScale = ((double) outputRange) / inputRange;
 		}
 
 		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
 			handler.Subtract(array, MinInputValue, array);
-			handler.Multiply(array, outputScale, array);
+			handler.Multiply(array, _outputScale, array);
 			handler.Add(array, MinOutputValue, array);
 
 			return array;

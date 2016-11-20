@@ -9,18 +9,20 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data;
 using Sigma.Core.Utils;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace Sigma.Core.Math
+namespace Sigma.Core.MathAbstract
 {
 	/// <summary>
 	/// A default, in system memory implementation of the INDArray interface. 
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	public class NDArray<T> : INDArray
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	public class NDArray<T> : INDArray, IDeepCopyable
 	{
-		internal IDataBuffer<T> data;
+		internal IDataBuffer<T> Data;
 
 		public long Length { get; private set; }
 
@@ -44,7 +46,7 @@ namespace Sigma.Core.Math
 		{
 			Initialise(new long[] { 1, (int) buffer.Length }, GetStrides(1, (int) buffer.Length));
 
-			this.data = buffer;
+			Data = buffer;
 		}
 
 		/// <summary>
@@ -61,7 +63,7 @@ namespace Sigma.Core.Math
 
 			Initialise(CheckShape(shape), GetStrides(shape));
 
-			this.data = buffer;
+			Data = buffer;
 		}
 
 		/// <summary>
@@ -70,9 +72,9 @@ namespace Sigma.Core.Math
 		/// <param name="data">The data to use to fill this ndarray.</param>
 		public NDArray(T[] data)
 		{
-			Initialise(new long[] { 1, (int) data.Length }, GetStrides(1, (int) data.Length));
+			Initialise(new long[] { 1, data.Length }, GetStrides(1, data.Length));
 
-			this.data = new DataBuffer<T>(data, 0L, data.Length);
+			Data = new DataBuffer<T>(data, 0L, data.Length);
 		}
 
 		/// <summary>
@@ -90,7 +92,7 @@ namespace Sigma.Core.Math
 
 			Initialise(CheckShape(shape), GetStrides(shape));
 
-			this.data = new DataBuffer<T>(data, 0L, this.Length);
+			Data = new DataBuffer<T>(data, 0L, Length);
 		}
 
 		/// <summary>
@@ -101,12 +103,17 @@ namespace Sigma.Core.Math
 		{
 			Initialise(CheckShape(shape), GetStrides(shape));
 
-			this.data = new DataBuffer<T>(this.Length);
+			Data = new DataBuffer<T>(Length);
 		}
 
 		public NDArray<T> Copy()
 		{
-			return new NDArray<T>(this.data, this.Shape);
+			return new NDArray<T>(Data, Shape);
+		}
+
+		public object DeepCopy()
+		{
+			return new NDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone());
 		}
 
 		private void Initialise(long[] shape, long[] strides)
@@ -114,34 +121,34 @@ namespace Sigma.Core.Math
 			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
 			if (shape.Length == 1 && shape[0] > 1)
 			{
-				shape = new long[] { 1, shape[0] };
+				shape = new[] { 1, shape[0] };
 				strides = GetStrides(shape);
 			}
 
-			this.Shape = shape;
-			this.Strides = strides;
-			this.Length = ArrayUtils.Product(shape);
+			Shape = shape;
+			Strides = strides;
+			Length = ArrayUtils.Product(shape);
 
-			this.Rank = shape.Length;
+			Rank = shape.Length;
 
-			this.IsScalar = Rank == 1 && shape[0] == 1;
-			this.IsVector = Rank == 2 && shape[0] == 1 ^ shape[1] == 1;
-			this.IsMatrix = Rank == 2 && shape[0] > 1 && shape[1] > 1;
+			IsScalar = Rank == 1 && shape[0] == 1;
+			IsVector = Rank == 2 && shape[0] == 1 ^ shape[1] == 1;
+			IsMatrix = Rank == 2 && shape[0] > 1 && shape[1] > 1;
 		}
 
 		public IDataBuffer<TOther> GetDataAs<TOther>()
 		{
-			return this.data.GetValuesAs<TOther>(0L, this.data.Length);
+			return Data.GetValuesAs<TOther>(0L, Data.Length);
 		}
 
 		public TOther GetValue<TOther>(params long[] indices)
 		{
-			return this.data.GetValueAs<TOther>(GetFlatIndex(this.Shape, this.Strides, indices));
+			return Data.GetValueAs<TOther>(GetFlatIndex(Shape, Strides, indices));
 		}
 
 		public void SetValue<TOther>(TOther value, params long[] indices)
 		{
-			this.data.SetValue((T) Convert.ChangeType(value, this.data.Type.UnderlyingType), GetFlatIndex(this.Shape, this.Strides, indices));
+			Data.SetValue((T) Convert.ChangeType(value, Data.Type.UnderlyingType), GetFlatIndex(Shape, Strides, indices));
 		}
 
 		public INDArray Slice(long[] beginIndices, long[] endIndices)
@@ -166,21 +173,21 @@ namespace Sigma.Core.Math
 				endIndices[i]--;
 			}
 
-			long absoluteBeginOffset = GetFlatIndex(this.Shape, this.Strides, beginIndices);
-			long absoluteEndOffset = GetFlatIndex(this.Shape, this.Strides, endIndices);
+			long absoluteBeginOffset = GetFlatIndex(Shape, Strides, beginIndices);
+			long absoluteEndOffset = GetFlatIndex(Shape, Strides, endIndices);
 			long length = absoluteEndOffset - absoluteBeginOffset + 1;
 
-			return new NDArray<T>(new DataBuffer<T>(this.data, absoluteBeginOffset, length), slicedShape);
+			return new NDArray<T>(new DataBuffer<T>(Data, absoluteBeginOffset, length), slicedShape);
 		}
 
 		public INDArray Flatten()
 		{
-			return this.Reshape(0, this.Length);
+			return Reshape(0, Length);
 		}
 
 		public INDArray FlattenSelf()
 		{
-			return this.ReshapeSelf(0, this.Length);
+			return ReshapeSelf(0, Length);
 		}
 
 		public INDArray Reshape(params long[] newShape)
@@ -190,7 +197,7 @@ namespace Sigma.Core.Math
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			return new NDArray<T>(this.data, newShape);
+			return new NDArray<T>(Data, newShape);
 		}
 
 		public INDArray ReshapeSelf(params long[] newShape)
@@ -200,7 +207,7 @@ namespace Sigma.Core.Math
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			this.Initialise(CheckShape(newShape), GetStrides(newShape));
+			Initialise(CheckShape(newShape), GetStrides(newShape));
 
 			return this;
 		}
@@ -226,9 +233,9 @@ namespace Sigma.Core.Math
 
 			CheckRearrangedDimensions(rearrangedDimensions);
 
-			long[] newShape = ArrayUtils.PermuteArray(this.Shape, rearrangedDimensions);
+			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			return new NDArray<T>(this.data, newShape);
+			return new NDArray<T>(Data, newShape);
 		}
 
 		public INDArray PermuteSelf(params int[] rearrangedDimensions)
@@ -252,30 +259,30 @@ namespace Sigma.Core.Math
 
 			CheckRearrangedDimensions(rearrangedDimensions);
 
-			long[] newShape = ArrayUtils.PermuteArray(this.Shape, rearrangedDimensions);
+			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			this.Initialise(newShape, GetStrides(newShape));
+			Initialise(newShape, GetStrides(newShape));
 
 			return this;
 		}
 
 		public INDArray Transpose()
 		{
-			return Permute(ArrayUtils.Range(this.Rank - 1, 0));
+			return Permute(ArrayUtils.Range(Rank - 1, 0));
 		}
 
 		public INDArray TransposeSelf()
 		{
-			return PermuteSelf(ArrayUtils.Range(this.Rank - 1, 0));
+			return PermuteSelf(ArrayUtils.Range(Rank - 1, 0));
 		}
 
 		private void CheckRearrangedDimensions(int[] rearrangedDimensions)
 		{
-			int rank = this.Rank;
+			int rank = Rank;
 
 			if (rearrangedDimensions.Length != rank)
 			{
-				throw new ArgumentException($"Rearrange dimensions array must of be same length as shape array (i.e. rank), but rearrange dimensions array was of size {rearrangedDimensions.Length} and this ndarray is of rank {this.Rank}");
+				throw new ArgumentException($"Rearrange dimensions array must of be same length as shape array (i.e. rank), but rearrange dimensions array was of size {rearrangedDimensions.Length} and this ndarray is of rank {Rank}");
 			}
 
 			for (int i = 0; i < rank; i++)
@@ -297,7 +304,7 @@ namespace Sigma.Core.Math
 
 		public override string ToString()
 		{
-			return this.ToString();
+			return ToString(element => element.ToString());
 		}
 
 		public delegate string ToStringElement(T element);
@@ -306,21 +313,21 @@ namespace Sigma.Core.Math
 		/// Constructs a string representing the contents of this ndarray, formatted properly and somewhat customisable. 
 		/// </summary>
 		/// <returns>A fancy string representing the contents of this ndarray.</returns>
-		public string ToString(ToStringElement toStringElement = null, int dimensionNewLine = 1)
+		public string ToString(ToStringElement toStringElement, int dimensionNewLine = 1)
 		{
 			if (toStringElement == null)
 			{
 				toStringElement = element => element.ToString();
 			}
 
-			int rank = this.Rank;
+			int rank = Rank;
 			int lastIndex = rank - 1;
 			int openBraces = 0;
 
 			long[] indices = new long[rank];
-			long[] shape = this.Shape;
-			long[] strides = this.Strides;
-			long length = this.Length;
+			long[] shape = Shape;
+			long[] strides = Strides;
+			long length = Length;
 
 			StringBuilder builder = new StringBuilder();
 
@@ -341,7 +348,7 @@ namespace Sigma.Core.Math
 					}
 				}
 
-				builder.Append(toStringElement(this.data.GetValue(i)));
+				builder.Append(toStringElement(Data.GetValue(i)));
 
 				if (indices[lastIndex] < shape[lastIndex] - 1)
 				{

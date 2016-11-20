@@ -18,6 +18,8 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// </summary>
 		Application App { get; set; }
 
+		Window @Window { get; set; }
+
 		/// <summary>
 		/// The primary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
 		/// </summary>

@@ -18,8 +18,8 @@ namespace Sigma.Core.Monitors
 		void Initialise();
 
 		/// <summary>
-		/// In this function, the <see cref="IMonitor"/> should start.
-		/// If the <see cref="IMonitor"/> runs in a new <see cref="Thread"/> , this function should block until fully up and running. 
+		/// Start this <see cref="IMonitor"/>.
+		/// If the <see cref="IMonitor"/> runs in a new <see cref="Thread"/>, this function should block until the monitor is completely up and running. 
 		/// </summary>
 		void Start();
 

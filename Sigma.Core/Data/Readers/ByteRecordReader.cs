@@ -6,17 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using log4net;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
-using log4net;
-using Sigma.Core.Math;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Readers
 {
@@ -25,14 +20,14 @@ namespace Sigma.Core.Data.Readers
 	/// </summary>
 	public class ByteRecordReader : IRecordReader
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public IDataSetSource Source { get; private set; }
+		public IDataSetSource Source { get; }
 
-		private int headerBytes;
-		private int recordSizeBytes;
-		private bool prepared;
-		private bool processedHeaderBytes;
+		private readonly int _headerBytes;
+		private readonly int _recordSizeBytes;
+		private bool _prepared;
+		private bool _processedHeaderBytes;
 
 		/// <summary>
 		/// Create a byte record reader with a certain header size and per record size.
@@ -44,7 +39,7 @@ namespace Sigma.Core.Data.Readers
 		{
 			if (source == null)
 			{
-				throw new ArgumentNullException("Source cannot be null.");
+				throw new ArgumentNullException(nameof(source));
 			}
 
 			if (headerLengthBytes < 0)
@@ -57,39 +52,39 @@ namespace Sigma.Core.Data.Readers
 				throw new ArgumentException($"Record size bytes must be > 0, but record size bytes was {recordSizeBytes}.");
 			}
 
-			this.Source = source;
-			this.headerBytes = headerLengthBytes;
-			this.recordSizeBytes = recordSizeBytes;
+			Source = source;
+			_headerBytes = headerLengthBytes;
+			_recordSizeBytes = recordSizeBytes;
 		}
 
 		public void Prepare()
 		{
 			Source.Prepare();
 
-			prepared = true;
+			_prepared = true;
 		}
 
 		public object Read(int numberOfRecords)
 		{
-			if (!prepared)
+			if (!_prepared)
 			{
 				throw new InvalidOperationException("Cannot read from source before preparing this reader (missing Prepare() call?).");
 			}
 
 			Stream stream = Source.Retrieve();
 
-			if (!processedHeaderBytes)
+			if (!_processedHeaderBytes)
 			{
-				byte[] header = new byte[headerBytes];
-				int read = stream.Read(header, 0, headerBytes);
+				byte[] header = new byte[_headerBytes];
+				int read = stream.Read(header, 0, _headerBytes);
 
-				ProcessHeader(header, headerBytes);
+				ProcessHeader(header, _headerBytes);
 
-				processedHeaderBytes = true;
+				_processedHeaderBytes = true;
 
-				if (read != headerBytes)
+				if (read != _headerBytes)
 				{
-					logger.Warn($"Could not read the requested number of header bytes ({headerBytes} bytes), could only read {read} bytes.");
+					_logger.Warn($"Could not read the requested number of header bytes ({_headerBytes} bytes), could only read {read} bytes.");
 
 					return null;
 				}
@@ -99,16 +94,23 @@ namespace Sigma.Core.Data.Readers
 
 			for (int numberOfRecordsRead = 0;  numberOfRecordsRead < numberOfRecords; numberOfRecordsRead++)
 			{
-				byte[] buffer = new byte[recordSizeBytes];
+				byte[] buffer = new byte[_recordSizeBytes];
 
-				int readBytes = stream.Read(buffer, 0, recordSizeBytes);
+				int readBytes = stream.Read(buffer, 0, _recordSizeBytes);
 
-				if (readBytes != recordSizeBytes)
+				if (readBytes != _recordSizeBytes)
 				{
 					break;
 				}
 
 				records.Add(buffer);
+			}
+
+			if (records.Count == 0)
+			{
+				_logger.Info($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
+
+				return null;
 			}
 
 			return records.ToArray();

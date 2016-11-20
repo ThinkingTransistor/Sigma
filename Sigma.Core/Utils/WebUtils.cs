@@ -16,7 +16,7 @@ namespace Sigma.Core.Utils
 {
 	public class WebUtils
 	{
-		private static ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// Reads a proxy configuration from a file and returns a custom proxy if file exists and is valid, get a default proxy otherwise.
@@ -28,7 +28,7 @@ namespace Sigma.Core.Utils
 		{
 			if (defaultProxy == null)
 			{
-				defaultProxy = System.Net.WebRequest.DefaultWebProxy;
+				defaultProxy = WebRequest.DefaultWebProxy;
 			}
 
 			if (!File.Exists(filepath))
@@ -36,14 +36,13 @@ namespace Sigma.Core.Utils
 				return defaultProxy;
 			}
 
-			WebProxy tempProxy = new WebProxy();
 			string address = null;
 			int port = 80;
 
 			string username = null;
 			string password = "";
 
-			using (StreamReader file = System.IO.File.OpenText(filepath))
+			using (StreamReader file = File.OpenText(filepath))
 			{
 				string line;
 				while ((line = file.ReadLine()) != null)
@@ -73,7 +72,7 @@ namespace Sigma.Core.Utils
 					}
 					catch (Exception ex)
 					{
-						logger.Warn($"Invalid entry at line {line} in file {filepath}.", ex);	
+						Logger.Warn($"Invalid entry at line {line} in file {filepath}.", ex);	
 					}
 				}
 			}
@@ -99,64 +98,57 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class BlockingWebClient : WebClient
 	{
-		private ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private int timeoutMilliseconds;
+		private readonly int _timeoutMilliseconds;
 
-		public long previousBytesReceived;
+		public long PreviousBytesReceived;
 
-		private bool downloadSuccess;
+		private bool _downloadSuccess;
+		private IProgress<float> _downloadProgress;
 
-		private EventWaitHandle asyncWait = new ManualResetEvent(false);
-		private Timer timeoutTimer = null;
+		private readonly EventWaitHandle _asyncWait = new ManualResetEvent(false);
+		private readonly Timer _timeoutTimer;
 
 		public delegate void ProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage);
 
-		public event ProgressChanged progressChangedEvent;
+		public event ProgressChanged ProgressChangedEvent;
 
-		public BlockingWebClient(int timeoutMilliseconds = 16000, WebProxy proxy = null)
+		public BlockingWebClient(int timeoutMilliseconds = 16000, IWebProxy proxy = null)
 		{
 			if (timeoutMilliseconds <= 0)
 			{
 				throw new ArgumentException($"Timeout must be > 0, but timeout was {timeoutMilliseconds}.");
 			}
 
-			this.timeoutMilliseconds = timeoutMilliseconds;
+			_timeoutMilliseconds = timeoutMilliseconds;
 
-			this.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler(DownloadFileCompletedHandle);
-			this.DownloadProgressChanged += new DownloadProgressChangedEventHandler(DownloadProgressChangedHandle);
+			DownloadFileCompleted += DownloadFileCompletedHandle;
+			DownloadProgressChanged += DownloadProgressChangedHandle;
 
-			this.timeoutTimer = new Timer(this.OnTimeout, null, this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
+			_timeoutTimer = new Timer(OnTimeout, null, _timeoutMilliseconds, Timeout.Infinite);
 
-			this.Proxy = proxy;
-
-			if (this.Proxy == null)
-			{
-				this.Proxy = SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
-			}
+			Proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
 		}
 
 		private void OnProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage)
 		{
-			if (this.progressChangedEvent != null)
-			{
-				this.progressChangedEvent(newBytesReceived, totalBytesReceived, totalBytes, progressPercentage);
-			}
+			ProgressChangedEvent?.Invoke(newBytesReceived, totalBytesReceived, totalBytes, progressPercentage);
 		}
 
 		private void OnTimeout(object ignored)
 		{
-			if (this.downloadSuccess)
+			if (_downloadSuccess)
 			{
 				return;
 			}
 
-			this.CancelAsync();
-			this.downloadSuccess = false;
+			CancelAsync();
+			_downloadSuccess = false;
 
-			this.logger.Warn($"Aborted download, connection timed out (more than {timeoutMilliseconds}ms passed since client last received anything).");
+			_logger.Warn($"Aborted download, connection timed out (more than {_timeoutMilliseconds}ms passed since client last received anything).");
 
-			this.asyncWait.Set();
+			_asyncWait.Set();
 		}
 
 		/// <summary>
@@ -164,49 +156,56 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <param name="url">The url to download from.</param>
 		/// <param name="outputPath">The output path (where the downloaded file will be stored).</param>
+		/// <param name="progress">The optional progress reporter to report progress to.</param>
 		/// <returns>A boolean indicating whether the download was successful.</returns>
-		public new bool DownloadFile(string url, string outputPath)
+		public bool DownloadFile(string url, string outputPath, IProgress<float> progress = null)
 		{
-			this.downloadSuccess = false;
+			_downloadSuccess = false;
+			_downloadProgress = progress;
 
-			this.asyncWait.Reset();
+			_asyncWait.Reset();
 
 			Uri uri = new Uri(url);
 
-			base.DownloadFileAsync(uri, outputPath);
+			DownloadFileAsync(uri, outputPath);
 
-			this.asyncWait.WaitOne();
+			_asyncWait.WaitOne();
 
-			if (previousBytesReceived <= 0)
+			if (PreviousBytesReceived <= 0)
 			{
-				downloadSuccess = false;
+				_downloadSuccess = false;
 			}
 
-			return downloadSuccess;
+			return _downloadSuccess;
 		}
 
 		private void DownloadFileCompletedHandle(object sender, System.ComponentModel.AsyncCompletedEventArgs ev)
 		{
-			this.asyncWait.Set();
+			_asyncWait.Set();
 
-			this.downloadSuccess = true;
+			_downloadSuccess = true;
 		}
 
 		private void DownloadProgressChangedHandle(object sender, DownloadProgressChangedEventArgs ev)
 		{
-			long newBytesReceived = ev.BytesReceived - previousBytesReceived;
-			previousBytesReceived = ev.BytesReceived;
+			long newBytesReceived = ev.BytesReceived - PreviousBytesReceived;
+			PreviousBytesReceived = ev.BytesReceived;
 
-			OnProgressChanged(newBytesReceived, previousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
+			OnProgressChanged(newBytesReceived, PreviousBytesReceived, ev.TotalBytesToReceive, ev.ProgressPercentage);
 
-			this.timeoutTimer.Change(this.timeoutMilliseconds, System.Threading.Timeout.Infinite);
+			_downloadProgress?.Report(ev.ProgressPercentage);
+
+			_timeoutTimer.Change(_timeoutMilliseconds, Timeout.Infinite);
 		}
 
 		protected override WebRequest GetWebRequest(Uri address)
 		{
 			WebRequest request = base.GetWebRequest(address);
 
-			request.Timeout = this.timeoutMilliseconds;
+			if (request != null)
+			{
+				request.Timeout = _timeoutMilliseconds;
+			}
 
 			return request;
 		}

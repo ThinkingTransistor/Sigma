@@ -64,7 +64,28 @@ namespace Sigma.Tests.Utils
 			registry.Set("key22", "value2");
 			registry.Set("kay3", "value3");
 
-			Assert.AreEqual(registry.GetAllValues<string>("key.*", typeof(string)), new string[]{ "value1", "value2" });
+			Assert.AreEqual(registry.GetAllValues<string>("key.*", typeof(string)), new[] { "value1", "value2" });
+		}
+
+		[TestCase]
+		public void TestRegistryDeepCopy()
+		{
+			Registry registry = new Registry();
+
+			registry.Set("key1", "value1");
+			registry.Set("key22", "value2");
+			registry.Set("kay3", "value3");
+
+			registry["subregistry"] = new Registry(registry);
+			registry.Get<Registry>("subregistry")["subtest"] = 4;
+
+			Registry copy = (Registry) registry.DeepCopy();
+
+			Assert.AreEqual("value1", registry["key1"]);
+			Assert.AreEqual("value2", registry["key22"]);
+			Assert.AreEqual("value3", registry["kay3"]);
+
+			Assert.AreEqual(4, registry.Get<Registry>("subregistry")["subtest"]);
 		}
 
 		[TestCase]

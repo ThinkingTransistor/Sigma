@@ -16,25 +16,25 @@ namespace Sigma.Core.Monitors.WPF.View
 	/// simply extend from this class and implement your custom behaviour.
 	/// </summary>
 	/// <typeparam name="T">The type that is wrapped.</typeparam>
-	public abstract class UIWrapper<T> where T : ContentControl, new()
+	public abstract class UiWrapper<T> where T : ContentControl, new()
 	{
 		/// <summary>
 		/// The content that is contained.
 		/// </summary>
-		protected T content;
+		protected T Content;
 
 		/// <summary>
-		/// Create a new <see cref="UIWrapper{T}"/> with a new T (e.g. new TabItem) as content.
+		/// Create a new <see cref="UiWrapper{T}"/> with a new T (e.g. new TabItem) as content.
 		/// </summary>
-		public UIWrapper() : this(new T()) { }
+		public UiWrapper() : this(new T()) { }
 
 		/// <summary>
-		/// Create a new <see cref="UIWrapper{T}"/> with a passed T as content.
+		/// Create a new <see cref="UiWrapper{T}"/> with a passed T as content.
 		/// </summary>
 		/// <param name="content">The data that will be set to content.</param>
-		public UIWrapper(T content)
+		public UiWrapper(T content)
 		{
-			this.content = content;
+			Content = content;
 		}
 
 		/// <summary>
@@ -45,23 +45,23 @@ namespace Sigma.Core.Monitors.WPF.View
 		{
 			get
 			{
-				return content;
+				return Content;
 			}
 			set
 			{
-				content = value;
+				Content = value;
 			}
 		}
 
 
 
 		/// <summary>
-		/// Convert the <see cref="UIWrapper{T}"/> to the wrapped content.
+		/// Convert the <see cref="UiWrapper{T}"/> to the wrapped content.
 		/// </summary>
 		/// <param name="wrapper">The wrapper containing the content.</param>
-		public static explicit operator T(UIWrapper<T> wrapper)
+		public static explicit operator T(UiWrapper<T> wrapper)
 		{
-			return wrapper.content;
+			return wrapper.Content;
 		}
 	}
 }

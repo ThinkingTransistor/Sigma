@@ -16,7 +16,7 @@ namespace Sigma.Core.Utils
 	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. 
 	/// Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
 	/// </summary>
-	public interface IRegistry : IDictionary<string, object>
+	public interface IRegistry : IDictionary<string, object>, IDeepCopyable
 	{
 		/// <summary>
 		/// The property for the registries parent. Returns null when no parent has been set.
@@ -61,7 +61,7 @@ namespace Sigma.Core.Utils
 		/// Get the value associated with a given identifier.  
 		/// </summary>
 		/// <param name="identifier">The identifier.</param>
-		/// <returnsstringThe value (if any) or null.</returns>
+		/// <returns>The value (if any) or null.</returns>
 		object Get(string identifier);
 
 		/// <summary>
@@ -93,6 +93,16 @@ namespace Sigma.Core.Utils
 		IEnumerator GetValueIterator();
 	}
 
+	/// <summary>
+	/// A read only view of a registry.
+	/// </summary>
+	public interface IReadOnlyRegistry : IRegistry
+	{
+	}
+
+	/// <summary>
+	/// A registry hierarchy change listener that listens for changes in values of type IRegistry (e.g. for caching purposes). 
+	/// </summary>
 	public interface IRegistryHierarchyChangeListener
 	{
 		void OnChildHierarchyChanged(string identifier, IRegistry previousChild, IRegistry newChild);

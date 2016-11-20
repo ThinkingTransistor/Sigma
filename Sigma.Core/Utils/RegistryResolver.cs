@@ -27,13 +27,13 @@ namespace Sigma.Core.Utils
 	{
 		public IRegistry Root
 		{
-			get; private set;
+			get;
 		}
 
-		private static string[] EMPTY_ARRAY = new string[0] { };
+		private static readonly string[] EmptyArray = new string[0] { };
 
-		private Dictionary<string, MatchIdentifierRequestCacheEntry> matchIdentifierCache;
-		private ISet<string> fullIdentifiersToInvalidate;
+		private readonly Dictionary<string, MatchIdentifierRequestCacheEntry> _matchIdentifierCache;
+		private readonly ISet<string> _fullIdentifiersToInvalidate;
 
 		/// <summary>
 		/// Create a registry resolver with a certain root registry.
@@ -43,31 +43,31 @@ namespace Sigma.Core.Utils
 		{
 			if (root == null)
 			{
-				throw new ArgumentNullException("Registry root may not be null.");
+				throw new ArgumentNullException(nameof(root));
 			}
 
 			root.HierarchyChangeListeners.Add(this);
 
-			this.Root = root;
-			this.matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>(8);
-			this.fullIdentifiersToInvalidate = new HashSet<string>();
+			Root = root;
+			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>(8);
+			_fullIdentifiersToInvalidate = new HashSet<string>();
 		}
 
 		public void OnChildHierarchyChanged(string identifier, IRegistry previousChild, IRegistry newChild)
 		{
-			foreach (string fullIdentifier in matchIdentifierCache.Keys)
+			foreach (string fullIdentifier in _matchIdentifierCache.Keys)
 			{
-				MatchIdentifierRequestCacheEntry entry = matchIdentifierCache[fullIdentifier];
+				MatchIdentifierRequestCacheEntry entry = _matchIdentifierCache[fullIdentifier];
 
-				if (entry.allReferredRegistries.Contains<IRegistry>(previousChild))
+				if (entry.AllReferredRegistries.Contains<IRegistry>(previousChild))
 				{
-					fullIdentifiersToInvalidate.Add(fullIdentifier);
+					_fullIdentifiersToInvalidate.Add(fullIdentifier);
 				}
 			}
 
-			foreach (string fullIdentifier in fullIdentifiersToInvalidate)
+			foreach (string fullIdentifier in _fullIdentifiersToInvalidate)
 			{
-				matchIdentifierCache.Remove(fullIdentifier);
+				_matchIdentifierCache.Remove(fullIdentifier);
 			}
 
 			RemoveChildHierarchyListener(previousChild);
@@ -103,9 +103,10 @@ namespace Sigma.Core.Utils
 
 			foreach (object value in child.Values)
 			{
-				if (value is IRegistry)
+				IRegistry childRegistry = value as IRegistry;
+				if (childRegistry != null)
 				{
-					RemoveChildHierarchyListener((IRegistry) value);
+					RemoveChildHierarchyListener(childRegistry);
 				}
 			}
 		}
@@ -121,18 +122,19 @@ namespace Sigma.Core.Utils
 
 			foreach (object value in child.Values)
 			{
-				if (child is IRegistry)
+				IRegistry childRegistry = value as IRegistry;
+				if (childRegistry != null)
 				{
-					AddChildHierarchyListener((IRegistry) value);
+					AddChildHierarchyListener(childRegistry);
 				}
 			}
 		}
 
-		private void CheckMatchIdentifier(String matchIdentifier)
+		private static void CheckMatchIdentifier(string matchIdentifier)
 		{
 			if (matchIdentifier == null)
 			{
-				throw new ArgumentNullException("Match identifier cannot be null.");
+				throw new ArgumentNullException(nameof(matchIdentifier));
 			}
 
 			if (matchIdentifier.Length == 0)
@@ -143,90 +145,88 @@ namespace Sigma.Core.Utils
 
 		public T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
 		{
-			string[] emptyArrayThrowaway = EMPTY_ARRAY;
+			string[] emptyArrayThrowaway = EmptyArray;
 
-			return ResolveGet<T>(matchIdentifier, ref emptyArrayThrowaway, values);
+			return ResolveGet(matchIdentifier, out emptyArrayThrowaway, values);
 		}
 
-		public T[] ResolveGet<T>(string matchIdentifier, ref string[] fullMatchedIdentifierArray, T[] values = null)
+		public T[] ResolveGet<T>(string matchIdentifier, out string[] fullMatchedIdentifierArray, T[] values = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
 			MatchIdentifierRequestCacheEntry cacheEntry = GetOrCreateCacheEntry(matchIdentifier);
 
-			if (values == null || values.Length < cacheEntry.fullMatchedIdentifierArray.Length)
+			if (values == null || values.Length < cacheEntry.FullMatchedIdentifierArray.Length)
 			{
-				values = new T[cacheEntry.fullMatchedIdentifierArray.Length];
+				values = new T[cacheEntry.FullMatchedIdentifierArray.Length];
 			}
 
-			for (int i = 0; i < cacheEntry.fullMatchedIdentifierArray.Length; i++)
+			for (int i = 0; i < cacheEntry.FullMatchedIdentifierArray.Length; i++)
 			{
-				string fullIdentifier = cacheEntry.fullMatchedIdentifierArray[i];
+				string fullIdentifier = cacheEntry.FullMatchedIdentifierArray[i];
 
-				values[i] = cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier].Get<T>(cacheEntry.fullMatchedIdentifierLocals[fullIdentifier]);
+				values[i] = cacheEntry.FullMatchedIdentifierRegistries[fullIdentifier].Get<T>(cacheEntry.FullMatchedIdentifierLocals[fullIdentifier]);
 			}
 
-			fullMatchedIdentifierArray = cacheEntry.fullMatchedIdentifierArray;
+			fullMatchedIdentifierArray = cacheEntry.FullMatchedIdentifierArray;
 
 			return values;
 		}
 
-		public string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
 			MatchIdentifierRequestCacheEntry cacheEntry = GetOrCreateCacheEntry(matchIdentifier);
 
-			string localIdentifier = matchIdentifier.Contains<char>('.') ? matchIdentifier.Substring(matchIdentifier.LastIndexOf('.') + 1) : matchIdentifier;
+			string localIdentifier = matchIdentifier.Contains('.') ? matchIdentifier.Substring(matchIdentifier.LastIndexOf('.') + 1) : matchIdentifier;
 
-			for (int i = 0; i < cacheEntry.fullMatchedIdentifierArray.Length; i++)
+			foreach (string fullIdentifier in cacheEntry.FullMatchedIdentifierArray)
 			{
-				string fullIdentifier = cacheEntry.fullMatchedIdentifierArray[i];
-
-				cacheEntry.fullMatchedIdentifierRegistries[fullIdentifier].Set(localIdentifier, value, associatedType);
+				cacheEntry.FullMatchedIdentifierRegistries[fullIdentifier].Set(localIdentifier, value, associatedType);
 			}
 
-			return cacheEntry.fullMatchedIdentifierArray;
+			return cacheEntry.FullMatchedIdentifierArray;
 		}
 
 		private MatchIdentifierRequestCacheEntry GetOrCreateCacheEntry(string matchIdentifier)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
-			if (!matchIdentifierCache.ContainsKey(matchIdentifier))
+			if (_matchIdentifierCache.ContainsKey(matchIdentifier))
 			{
-				string[] matchIdentifierParts = matchIdentifier.Split('.');
-
-				ISet<string>[] conditionalTagsPerLevel = new HashSet<string>[matchIdentifierParts.Length];
-
-				for (int i = 0; i < matchIdentifierParts.Length; i++)
-				{
-					matchIdentifierParts[i] = ParseMatchIdentifier(i, matchIdentifierParts[i], conditionalTagsPerLevel);
-				}
-
-				Dictionary<string, IRegistry> fullMatchedIdentifierRegistries = new Dictionary<string, IRegistry>();
-
-				MatchIdentifierRequestCacheEntry newCacheEntry = new MatchIdentifierRequestCacheEntry(matchIdentifier, fullMatchedIdentifierRegistries, new Dictionary<string, string>(), null, null);
-
-				AddMatchingIdentifiersFromRegistryTree(0, matchIdentifierParts.Length - 1, Root, "", matchIdentifierParts, conditionalTagsPerLevel, newCacheEntry);
-
-				newCacheEntry.fullMatchedIdentifierArray = fullMatchedIdentifierRegistries.Keys.ToArray<string>();
-
-				newCacheEntry.allReferredRegistries = GetReferredRegistries(newCacheEntry.fullMatchedIdentifierRegistries.Values.ToList<IRegistry>());
-
-				//only cache if the last identifier level did not contain a blank unrestricted wildcard (wildcard without conditional tags, meaning we can't cache anything as it could be any value)
-				int lastLevel = matchIdentifierParts.Length - 1;
-				bool shouldCache = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
-
-				if (shouldCache)
-				{
-					matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
-				}
-
-				return newCacheEntry;				
+				return _matchIdentifierCache[matchIdentifier];
 			}
 
-			return matchIdentifierCache[matchIdentifier];
+			string[] matchIdentifierParts = matchIdentifier.Split('.');
+
+			ISet<string>[] conditionalTagsPerLevel = new HashSet<string>[matchIdentifierParts.Length];
+
+			for (int i = 0; i < matchIdentifierParts.Length; i++)
+			{
+				matchIdentifierParts[i] = ParseMatchIdentifier(i, matchIdentifierParts[i], conditionalTagsPerLevel);
+			}
+
+			Dictionary<string, IRegistry> fullMatchedIdentifierRegistries = new Dictionary<string, IRegistry>();
+
+			MatchIdentifierRequestCacheEntry newCacheEntry = new MatchIdentifierRequestCacheEntry(matchIdentifier, fullMatchedIdentifierRegistries, new Dictionary<string, string>(), null, null);
+
+			AddMatchingIdentifiersFromRegistryTree(0, matchIdentifierParts.Length - 1, Root, "", matchIdentifierParts, conditionalTagsPerLevel, newCacheEntry);
+
+			newCacheEntry.FullMatchedIdentifierArray = fullMatchedIdentifierRegistries.Keys.ToArray();
+
+			newCacheEntry.AllReferredRegistries = GetReferredRegistries(newCacheEntry.FullMatchedIdentifierRegistries.Values.ToList());
+
+			//only cache if the last identifier level did not contain a blank unrestricted wildcard (wildcard without conditional tags, meaning we can't cache anything as it could be any value)
+			int lastLevel = matchIdentifierParts.Length - 1;
+			bool shouldCache = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
+
+			if (shouldCache)
+			{
+				_matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
+			}
+
+			return newCacheEntry;
 		}
 
 		private void AddMatchingIdentifiersFromRegistryTree(int hierarchyLevel, int lastHierarchySearchLevel, IRegistry currentRootAtLevel, string currentFullIdentifier, string[] parsedMatchIdentifierParts, ISet<string>[] conditionalTagsPerLevel, MatchIdentifierRequestCacheEntry newCacheEntry)
@@ -259,8 +259,8 @@ namespace Sigma.Core.Utils
 
 						string globalFullIdentifier = (String.IsNullOrEmpty(currentFullIdentifier) ? "" : currentFullIdentifier + ".") + identifier;
 
-						newCacheEntry.fullMatchedIdentifierRegistries.Add(globalFullIdentifier, currentRootAtLevel);
-						newCacheEntry.fullMatchedIdentifierLocals.Add(globalFullIdentifier, identifier);
+						newCacheEntry.FullMatchedIdentifierRegistries.Add(globalFullIdentifier, currentRootAtLevel);
+						newCacheEntry.FullMatchedIdentifierLocals.Add(globalFullIdentifier, identifier);
 					}
 				}
 			}
@@ -288,11 +288,11 @@ namespace Sigma.Core.Utils
 
 		private string ParseMatchIdentifier(int hierarchyLevel, string partialMatchIdentifier, ISet<string>[] conditionalTagsPerLevel)
 		{
-			if (partialMatchIdentifier.Contains<char>('*'))
+			if (partialMatchIdentifier.Contains('*'))
 			{
 				partialMatchIdentifier = partialMatchIdentifier.Replace("*", ".*");
 
-				if (partialMatchIdentifier.Contains<char>('<'))
+				if (partialMatchIdentifier.Contains('<'))
 				{
 					int conditionStart = partialMatchIdentifier.IndexOf('<');
 					int conditionEnd = partialMatchIdentifier.IndexOf('>');
@@ -306,7 +306,7 @@ namespace Sigma.Core.Utils
 					string tag = partialMatchIdentifier.Substring(conditionStart + 1, conditionEnd - conditionStart - 1);
 					conditionalTagsPerLevel[hierarchyLevel] = new HashSet<string>();
 
-					if (tag.Contains<char>(','))
+					if (tag.Contains(','))
 					{
 						conditionalTagsPerLevel[hierarchyLevel].UnionWith(tag.Split(','));
 					}
@@ -324,19 +324,19 @@ namespace Sigma.Core.Utils
 
 		private class MatchIdentifierRequestCacheEntry
 		{
-			internal string matchIdentifier;
-			internal Dictionary<string, IRegistry> fullMatchedIdentifierRegistries;
-			internal Dictionary<string, string> fullMatchedIdentifierLocals;
-			internal string[] fullMatchedIdentifierArray;
-			internal ISet<IRegistry> allReferredRegistries;
+			internal string MatchIdentifier;
+			internal readonly Dictionary<string, IRegistry> FullMatchedIdentifierRegistries;
+			internal readonly Dictionary<string, string> FullMatchedIdentifierLocals;
+			internal string[] FullMatchedIdentifierArray;
+			internal ISet<IRegistry> AllReferredRegistries;
 
 			internal MatchIdentifierRequestCacheEntry(string matchIdentifier, Dictionary<string, IRegistry> fullMatchedIdentifierRegistries, Dictionary<string, string> fullMatchedIdentifierLocals, string[] fullMatchedIdentifierArray, ISet<IRegistry> allReferredRegistries)
 			{
-				this.matchIdentifier = matchIdentifier;
-				this.fullMatchedIdentifierRegistries = fullMatchedIdentifierRegistries;
-				this.fullMatchedIdentifierLocals = fullMatchedIdentifierLocals;
-				this.fullMatchedIdentifierArray = fullMatchedIdentifierArray;
-				this.allReferredRegistries = allReferredRegistries;
+				MatchIdentifier = matchIdentifier;
+				FullMatchedIdentifierRegistries = fullMatchedIdentifierRegistries;
+				FullMatchedIdentifierLocals = fullMatchedIdentifierLocals;
+				FullMatchedIdentifierArray = fullMatchedIdentifierArray;
+				AllReferredRegistries = allReferredRegistries;
 			}
 		}
 	}
