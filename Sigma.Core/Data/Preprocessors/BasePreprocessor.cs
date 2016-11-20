@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -57,7 +58,7 @@ namespace Sigma.Core.Data.Preprocessors
 					long[] endIndices = processedArray.Shape.ToArray();
 
 					beginIndices[0] = 0;
-					endIndices[0] = numberOfRecords;
+					endIndices[0] = Math.Min(numberOfRecords, processedArray.Shape[0]);
 
 					for (int i = 1; i < processedArray.Rank; i++)
 					{

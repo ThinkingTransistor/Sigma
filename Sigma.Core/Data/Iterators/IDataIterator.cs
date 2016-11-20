@@ -6,7 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Collections.Generic;
 using Sigma.Core.Data.Datasets;
+using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 
 namespace Sigma.Core.Data.Iterators
@@ -23,10 +25,12 @@ namespace Sigma.Core.Data.Iterators
 		IDataset UnderlyingDataset { get; }
 
 		/// <summary>
-		/// Yield a block from this data iterator.
+		/// Yield a block from this data iterator for and with a certain handler within a certain environment.
 		/// If no more blocks can be yielded, return null. 
 		/// </summary>
+		/// <param name="handler">The computation handler to fetch a block for (used for block creation and computations).</param>
+		/// <param name="environment">The sigma environment within the block should be yielded.</param>
 		/// <returns>A block from the underlying dataset.</returns>
-		INDArray Yield();
+		Dictionary<string, INDArray> Yield(IComputationHandler handler, SigmaEnvironment environment);
 	}
 }

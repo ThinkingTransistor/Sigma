@@ -127,6 +127,8 @@ namespace Sigma.Core.Data.Extractors
 				namedArrays.Add(name, array);
 			}
 
+			_logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
+
 			return namedArrays;
 		}
 

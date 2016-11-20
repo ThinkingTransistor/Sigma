@@ -134,14 +134,14 @@ namespace Sigma.Core.Data.Datasets
 			if (blockSizeRecords == BlockSizeAll)
 			{
 				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
-				TargetBlockSizeRecords = Int32.MaxValue;
+				TargetBlockSizeRecords = int.MaxValue;
 			}
 			else if (blockSizeRecords == BlockSizeAuto)
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
-				long estimatedRecordSizeBytes = 1024;
-				double memoryToConsume = 0.5f;
-				long optimalNumberBlocks = 24;
+				const long estimatedRecordSizeBytes = 1024;
+				const double memoryToConsume = 0.5f;
+				const long optimalNumberBlocks = 24;
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
 				TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
@@ -170,33 +170,47 @@ namespace Sigma.Core.Data.Datasets
 
 			if (flushCache)
 			{
-				_logger.Info($"Flushing all caches for dataset {Name} as flushCache flag was set...");
+				_logger.Info($"Flushing all caches for dataset \"{Name}\" as flushCache flag was set...");
 
 				InvalidateAndClearCaches();
 
-				_logger.Info($"Done flushing all caches for dataset {Name}.");
+				_logger.Info($"Done flushing all caches for dataset \"{Name}.\"");
 			}
 		}
 
-		public void TrySetBlockSize(int blockSizeRecords)
+		public bool TrySetBlockSize(int blockSizeRecords)
 		{
+			if (blockSizeRecords == TargetBlockSizeRecords)
+			{
+				//nothing to do here
+				return true;
+			}
+
 			if (!_autoSetBlockSize)
 			{
-				throw new InvalidOperationException($"Cannot change block size as block size was not set automatically (attempted to change block size to {blockSizeRecords}.");
+				_logger.Info($"Cannot change block size as block size was not set automatically (attempted to change block size to {blockSizeRecords}.");
+
+				return false;
 			}
 
 			if (_activeBlocks.Count > 0 || _cachedBlocks.Count > 0)
 			{
-				throw new InvalidOperationException($"Cannot change block size as {_activeBlocks.Count + _cachedBlocks.Count} blocks were already fetched.");
+				_logger.Info($"Cannot change block size as {_activeBlocks.Count + _cachedBlocks.Count} blocks were already fetched and are active or cached.");
+
+				return false;
 			}
 
 			if (_autoSetExternalChangeBlockSize && blockSizeRecords != TargetBlockSizeRecords)
 			{
-				throw new InvalidOperationException($"Cannot change block size to {blockSizeRecords}, block size is incompatible with another external block size change request (other request: {TargetBlockSizeRecords})");
+				_logger.Info($"Cannot change block size to {blockSizeRecords}, block size is incompatible with another external block size change request (other request: {TargetBlockSizeRecords})");
+
+				return false;
 			}
 
 			_autoSetExternalChangeBlockSize = true;
 			TargetBlockSizeRecords = blockSizeRecords;
+
+			return true;
 		}
 
 		private void AnalyseExtractors(IEnumerable<IRecordExtractor> extractors)
@@ -582,17 +596,19 @@ namespace Sigma.Core.Data.Datasets
 		{
 			Dictionary<string, INDArray> namedBlocks = new Dictionary<string, INDArray>();
 
-			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "extractors for dataset " + Name, indeterminate: true);
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "extractors for dataset \"" + Name + "\"", indeterminate: true);
 
 			PrepareExtractors();
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"block {blockIndex} for dataset {Name}", indeterminate: true);
+			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"block {blockIndex} for dataset \"{Name}\"", indeterminate: true);
 
 			int extractorIndex = 0;
 			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
+				_logger.Info($"Extracting hierarchically from extractor {extractor} at index {extractorIndex}...");
+
 				Dictionary<string, INDArray> subNamedBlock = extractor.ExtractHierarchicalFrom(data[extractorIndex++], TargetBlockSizeRecords, handler);
 
 				//check if block size is 0, indicating we reached the end of the stream 

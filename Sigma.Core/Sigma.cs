@@ -55,6 +55,9 @@ namespace Sigma.Core
 		/// </summary>
 		public IRegistryResolver RegistryResolver { get; }
 
+		/// <summary>
+		/// The random number generator to use for randomised operations for reproducibility. 
+		/// </summary>
 		public Random Random
 		{
 			get; private set;

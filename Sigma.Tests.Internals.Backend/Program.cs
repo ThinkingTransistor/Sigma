@@ -8,7 +8,10 @@ using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
 using Sigma.Core.Utils;
 using System;
-using Sigma.Core.Monitors;
+using System.Collections.Generic;
+using System.Threading;
+using Sigma.Core.Data.Iterators;
+using Sigma.Core.MathAbstract;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -42,17 +45,21 @@ namespace Sigma.Tests.Internals.Backend
 
 			if (block == null)
 			{
-				Console.WriteLine(@"Fetch block 0 FAILED.");
+				Console.WriteLine("Fetch block 0 FAILED.");
 			}
 			else
 			{
-				foreach (string name in block.Keys)
-				{
-					string blockString = name == "inputs" ? ArrayUtils.ToString<float>(block[name], e => $"{e:0.000}".Replace('0', '.'), maxDimensionNewLine: 0) : block[name].ToString();
-
-					Console.WriteLine($@"[{name}]=" + blockString);
-				}
+				PrintFormattedBlock(block);
 			}
+
+			//MinibatchIterator iterator = new MinibatchIterator(MinibatchIterator.MinibatchSizeAuto, dataset);
+
+			//while (true)
+			//{
+			//	PrintFormattedBlock(iterator.Yield(handler, sigma));
+
+			//	Thread.Sleep(1000);
+			//}
 
 			//IComputationHandler handler = new CPUFloat32Handler();
 			//Random random = new Random();
@@ -67,6 +74,18 @@ namespace Sigma.Tests.Internals.Backend
 			//Console.WriteLine(array);
 
 			Console.ReadKey();
+		}
+
+		private static void PrintFormattedBlock(Dictionary<string, INDArray> block)
+		{
+			foreach (string name in block.Keys)
+			{
+				string blockString = name == "inputs"
+					? ArrayUtils.ToString<float>(block[name], e => $"{e:0.000}".Replace('0', '.'), maxDimensionNewLine: 0)
+					: block[name].ToString();
+
+				Console.WriteLine($@"[{name}]=" + blockString);
+			}
 		}
 	}
 }

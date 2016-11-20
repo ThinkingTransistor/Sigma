@@ -80,7 +80,8 @@ namespace Sigma.Core.Data.Datasets
 		/// Attempt to set the block size to a new block size if compatible with the current set block size (e.g. if was auto set and this is the first request).
 		/// </summary>
 		/// <param name="blockSizeRecords"></param>
-		void TrySetBlockSize(int blockSizeRecords);
+		/// <returns>A boolean indicating whether the block size could be set to the requested block size.</returns>
+		bool TrySetBlockSize(int blockSizeRecords);
 
 		/// <summary>
 		/// Checks whether a certain block index is currently active and loaded in any format.

@@ -114,6 +114,7 @@
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
     <Compile Include="Data\DataType.cs" />
+    <Compile Include="Data\Iterators\BaseIterator.cs" />
     <Compile Include="Data\Iterators\IDataIterator.cs" />
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
