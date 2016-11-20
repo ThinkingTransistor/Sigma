@@ -1,12 +1,12 @@
-﻿using System;
+﻿using MaterialDesignColors;
+using Sigma.Core;
+using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Control.Themes;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Controls;
-using MaterialDesignColors;
-using Sigma.Core;
-using Sigma.Core.Monitors.WPF;
-using Sigma.Core.Monitors.WPF.Control.Themes;
 
 namespace Sigma.Tests.Internals.WPF
 {

@@ -6,12 +6,10 @@ using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.MathAbstract;
 
 namespace Sigma.Tests.Internals.Backend
 {

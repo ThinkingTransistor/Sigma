@@ -27,6 +27,8 @@ namespace Sigma.Tests
 		[TestCase]
 		public void TestSigmaEnvironmentAlreadyCreated()
 		{
+			SigmaEnvironment.Clear();
+
 			SigmaEnvironment.Create("test");
 
 			Assert.Throws<ArgumentException>(() => SigmaEnvironment.Create("test"));

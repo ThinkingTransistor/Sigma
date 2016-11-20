@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Architecture;
+﻿using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Sigma.Core.Training
 {

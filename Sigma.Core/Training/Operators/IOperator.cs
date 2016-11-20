@@ -9,7 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators
 {
