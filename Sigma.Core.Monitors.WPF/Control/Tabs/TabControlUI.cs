@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using Dragablz;
@@ -16,28 +17,21 @@ using Dragablz.Dockablz;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View;
 using Sigma.Core.Monitors.WPF.View.Windows;
+// ReSharper disable InconsistentNaming
 
 namespace Sigma.Core.Monitors.WPF.Control.Tabs
 {
-	public class TabControlUi<T> : UiWrapper<Layout> where T : SigmaWindow
+	public class TabControlUI<TWindow, TTabWrapper> : UIWrapper<Layout> where TWindow : SigmaWindow where TTabWrapper : UIWrapper<TabItem>
 	{
 		public TabablzControl InitialTabablzControl { get; set; }
 
-		private TabablzControl _tabControl;
+		private readonly TabablzControl _tabControl;
 
-		private List<UiWrapper<TabItem>> _tabs;
+		private Dictionary<string, TTabWrapper> Tabs { get; }
 
-		public List<UiWrapper<TabItem>> Tabs
+		public TabControlUI (WPFMonitor monitor, App app, string title)
 		{
-			get
-			{
-				return _tabs;
-			}
-		}
-
-		public TabControlUi (WPFMonitor monitor, App app, string title) : base()
-		{
-			_tabs = new List<UiWrapper<TabItem>>();
+			Tabs = new Dictionary<string, TTabWrapper>();
 
 			if (_tabControl == null)
 			{
@@ -49,6 +43,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 				}
 			}
 
+			//TODO: Change with style
 			//Restore tabs if they are closed
 			_tabControl.ConsolidateOrphanedItems = true;
 
@@ -61,10 +56,10 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			Content.Content = _tabControl;
 		}
 
-		public void AddTab (UiWrapper<TabItem> tabUi)
+		public void AddTab (string header, TTabWrapper tabUI)
 		{
-			_tabs.Add(tabUi);
-			_tabControl.Items.Add((TabItem) tabUi);
+			Tabs.Add(header, tabUI);
+			_tabControl.Items.Add((TabItem) tabUI);
 		}
 
 		private class CustomInterTabClient : IInterTabClient
@@ -82,7 +77,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 
 			public INewTabHost<Window> GetNewHost (IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
-				T window = Construct(new Type[] { typeof(WPFMonitor), typeof(App), typeof(string), typeof(bool) }, new object[] { _monitor, _app, _title, false });
+				TWindow window = Construct(new[] { typeof(WPFMonitor), typeof(App), typeof(string), typeof(bool) }, new object[] { _monitor, _app, _title, false });
 				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 
@@ -92,16 +87,18 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 				return TabEmptiedResponse.CloseWindowOrLayoutBranch;
 			}
 
-			private static T Construct (Type[] paramTypes, object[] paramValues)
+			private static TWindow Construct (Type[] paramTypes, object[] paramValues)
 			{
-				Type t = typeof(T);
+				Type t = typeof(TWindow);
 
 				ConstructorInfo ci = t.GetConstructor(
 					BindingFlags.Instance | BindingFlags.NonPublic,
 					null, paramTypes, null);
 
-				return (T) ci.Invoke(paramValues);
+				return (TWindow) ci.Invoke(paramValues);
 			}
 		}
+
+		public TTabWrapper this[string tabname] => Tabs[tabname];
 	}
 }

@@ -7,8 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -16,7 +14,6 @@ using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
@@ -132,7 +129,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// </summary>
 		/// <param name="dark">If this value is <c>true</c>, a dark theme will be applied.
 		/// Otherwise a light theme. </param>
-		private void SetLightDark(bool dark)
+		private static void SetLightDark(bool dark)
 		{
 			new PaletteHelper().SetLightDark(dark);
 
@@ -141,42 +138,9 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 				? UiResources.IdealForegroundColorBrush
 				: Application.Current.Resources["SigmaMenuItemForegroundLight"]) as Brush;
 
-			Application.Current.Resources["SigmaMenuItemForeground"] = correctBrush;
-
-			if (_sigmaWindow != null)
-			{
-				foreach (TitleBarItem tabChild in _sigmaWindow.TitleBar)
-				{
-					foreach (KeyValuePair<string, UIElement> menuElement in tabChild.Children)
-					{
-						ApplyStyleToUIElements(menuElement.Value, correctBrush);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Apply the passed foregroundBrush as foreground colour to the passed
-		/// parent and all its children.
-		/// </summary>
-		/// <param name="element">The parent element. </param>
-		/// <param name="foregroundBrush">The correct foreground colour.</param>
-		private void ApplyStyleToUIElements(object element, Brush foregroundBrush)
-		{
-			MenuItem menuItem = element as MenuItem;
-
-			if (menuItem != null)
-			{
-				menuItem.Foreground = foregroundBrush;
-
-				if (menuItem.Items.Count > 0)
-				{
-					foreach (UIElement menuItemChild in menuItem.Items)
-					{
-						ApplyStyleToUIElements(menuItemChild, foregroundBrush);
-					}
-				}
-			}
+			Style newStyle = new Style(typeof(MenuItem), Application.Current.Resources["SigmaMaterialDesignMenuItem"] as Style);
+			newStyle.Setters.Add(new Setter(MenuItem.ForegroundProperty, correctBrush));
+			Application.Current.Resources[typeof(MenuItem)] = newStyle;
 		}
 
 		/// <summary>

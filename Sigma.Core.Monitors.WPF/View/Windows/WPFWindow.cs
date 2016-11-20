@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using MahApps.Metro.Controls;
+// ReSharper disable VirtualMemberCallInConstructor
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
@@ -31,7 +32,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
 		/// <param name="title">The <see cref="System.Windows.Window.Title"/> of the window.</param>
-		public WPFWindow(WPFMonitor monitor, App app, string title) : base()
+		public WPFWindow(WPFMonitor monitor, App app, string title)
 		{
 			CheckArgs(monitor, app);
 
@@ -48,7 +49,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// Returns or throws Exception. 
 		/// </summary>
 		/// <param name="monitor">The <see cref="WPFMonitor"/>.</param>
-		/// <param name="app">The <see cref="Application"/> environment.</param>
+		/// <param name="app">The <see cref="App"/> environment.</param>
 		private static void CheckArgs(WPFMonitor monitor, App app)
 		{
 			if (monitor == null) throw new ArgumentNullException(nameof(monitor));

@@ -212,7 +212,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
 		/// <param name="priority">The priority of the execution.</param>
 		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
-		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
+		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not implemented.</exception>
 		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
 		{
 			WindowDispatcher<SigmaWindow>(action, priority, onFinished);

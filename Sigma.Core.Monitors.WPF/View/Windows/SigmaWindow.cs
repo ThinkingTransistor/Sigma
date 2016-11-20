@@ -24,6 +24,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	{
 		#region DependencyProperties
 
+		// ReSharper disable once InconsistentNaming
 		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize", typeof(GridSize), typeof(WPFWindow), new UIPropertyMetadata(new GridSize(3, 4)));
 
 		#endregion DependencyProperties
@@ -31,13 +32,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		#region Properties
 
 		/// <summary>
-		/// The DefaultGridSize for each newly created <see cref="Tab"/>.
+		/// The DefaultGridSize for each newly created <see cref="TabItem"/>.
 		/// The default <see cref="DefaultGridSize"/> is 3, 4.
 		/// </summary>
 		public GridSize DefaultGridSize
 		{
 			get { return (GridSize) GetValue(DefaultGridSizeProperty); }
-			set { SetValue(DefaultGridSizeProperty, value); }
+			set
+			{
+				DefaultGridSize.Rows = value.Rows;
+				DefaultGridSize.Columns = value.Columns;
+				DefaultGridSize.Sealed = value.Sealed;
+			}
 		}
 
 		#endregion Properties
@@ -49,10 +55,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public TitleBarControl TitleBar { get; }
 
 		/// <summary>
-		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUi"/>
+		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUI"/>
 		/// and therefore, the <see cref="TabItem"/>.
 		/// </summary>
-		public TabControlUi<SigmaWindow> TabControl { get; set; }
+		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
 		/// <summary>
 		/// The constructor for the <see cref="WPFWindow"/>.
@@ -131,14 +137,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 
 		}
-
 		/// <summary>
-		/// THis function creates the <see cref="TabControlUi{T}"/>.
+		/// THis function creates the <see cref="TabControlUI{TWindow,TTabWrapper}"/>.
 		/// </summary>
-		/// <returns>The newly created <see cref="TabControlUi{T}"/>.</returns>
-		protected virtual TabControlUi<SigmaWindow> CreateTabControl()
+		/// <returns>The newly created <see cref="TabControlUI{TWindow,TTabWrapper}"/>.</returns>
+		protected virtual TabControlUI<SigmaWindow, TabUI> CreateTabControl()
 		{
-			return new TabControlUi<SigmaWindow>(Monitor, App, Title);
+			return new TabControlUI<SigmaWindow, TabUI>(Monitor, App, Title);
 		}
 
 		/// <summary>
@@ -168,15 +173,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		/// <summary>
-		/// Adds the tabs to the given <see cref="TabControlUi{T}"/>.
+		/// Adds the tabs to the given <see cref="TabControlUI{T}"/>.
 		/// </summary>
-		/// <param name="tabControl">The <see cref="TabControlUi{T}"/>, where the <see cref="TabItem"/>s will be added to.</param>
+		/// <param name="tabControl">The <see cref="TabControlUI{T}"/>, where the <see cref="TabItem"/>s will be added to.</param>
 		/// <param name="names">A list that contains the names of each tab that will be created. </param>
-		protected virtual void AddTabs(TabControlUi<SigmaWindow> tabControl, List<string> names)
+		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
 		{
 			for (int i = 0; i < names.Count; i++)
 			{
-				tabControl.AddTab(new TabUi(names[i], DefaultGridSize));
+				tabControl.AddTab(names[i], new TabUI(names[i], DefaultGridSize));
 			}
 		}
 

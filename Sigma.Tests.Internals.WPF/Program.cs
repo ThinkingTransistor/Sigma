@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Controls;
 using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -28,6 +31,14 @@ namespace Sigma.Tests.Internals.WPF
 			});
 
 			sigma.Prepare();
+
+			guiMonitor.WindowDispatcher((window) =>
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					window.TabControl["Overview"].AddCard(new Card { Content = "HEEE!" + i }, 0, i);
+				}
+			});
 
 			guiMonitor.ColorManager.Dark = true;
 			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.TEAL;
