@@ -8,15 +8,15 @@ For full license see LICENSE in the root directory of this project.
 
 using log4net;
 using Sigma.Core.Monitors;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core
 {

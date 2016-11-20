@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System.Windows;
 using System.Windows.Controls;
-using MahApps.Metro.Behaviours;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 // ReSharper disable InconsistentNaming

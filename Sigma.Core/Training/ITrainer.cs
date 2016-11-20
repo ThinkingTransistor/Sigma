@@ -8,12 +8,11 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
-using Sigma.Core.Utils;
 using System.Collections.Generic;
-using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Training
 {

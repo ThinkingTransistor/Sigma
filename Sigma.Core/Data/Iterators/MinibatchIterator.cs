@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
 using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using System;
+using System.Collections.Generic;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -102,11 +102,24 @@ namespace Sigma.Core.Data.Iterators
 			{
 				yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count)];
 				RequireBlocks(handler, yieldedIndex);
+
+				// looks like the end of the dataset is still the end of the dataset, let's try again every now again 
+				// (index after last possible is also in possible list for online datasets)
+				if (_fetchedBlocks[yieldedIndex] == null)
+				{
+					_currentBatchNotTraversedIndices.Remove(yieldedIndex);
+
+					ResetNotTraversedIndicesIfAllTraversed();
+
+					// Count - 1 to exclude last index which was the test for online dataset index, but as it apparently still hasn't expanded, exclude it
+					yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)]; 
+					RequireBlocks(handler, yieldedIndex);
+				}
 			}
 
 			if (yieldedIndex < 0)
 			{
-				throw new InvalidOperationException($"Unable to yield block for {handler}, yielded index was {yieldedIndex} (internal error).");
+				throw new InvalidOperationException($"Unable to yield block for {handler}, suggested yielded index was {yieldedIndex} (internal error).");
 			}
 
 			if (_lastTraversedIndex >= 0)
@@ -117,14 +130,22 @@ namespace Sigma.Core.Data.Iterators
 			_lastTraversedIndex = yieldedIndex;
 			_currentBatchNotTraversedIndices.Remove(yieldedIndex);
 
-			if (_traversedUntilEnd && _currentBatchNotTraversedIndices.Count == 0)
+			if (_traversedUntilEnd)
 			{
-				ResetNotTraversedIndices();
+				ResetNotTraversedIndicesIfAllTraversed();
 			}
 
 			_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler}.");
 
 			return _fetchedBlocks[yieldedIndex];
+		}
+
+		private void ResetNotTraversedIndicesIfAllTraversed()
+		{
+			if (_currentBatchNotTraversedIndices.Count == 0)
+			{
+				ResetNotTraversedIndices();
+			}
 		}
 
 		private void ResetNotTraversedIndices()

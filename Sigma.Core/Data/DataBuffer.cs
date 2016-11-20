@@ -6,7 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
 using System;
 using System.Collections;
 using System.Collections.Generic;
