@@ -14,6 +14,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
 	public static class MaterialDesignSwatches
 	{
+		//TODO: validate that case change from Primar50 -> PRIMARY
 		private const string PRIMARY50 = nameof(PRIMARY50);
 		private const string PRIMARY100 = nameof(PRIMARY100);
 		private const string PRIMARY200 = nameof(PRIMARY200);

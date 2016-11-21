@@ -107,6 +107,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
+    <Compile Include="Control\SigmaGrid\GridLayout.cs" />
     <Compile Include="Control\Themes\ColorManager.cs" />
     <Compile Include="Control\Themes\IColorManager.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
@@ -175,6 +177,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="View\Styles\CustomStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\SigmaGrid\CardStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

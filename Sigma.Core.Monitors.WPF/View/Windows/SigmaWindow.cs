@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Dragablz.Dockablz;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
@@ -16,6 +17,8 @@ using Sigma.Core.Monitors.WPF.View.TitleBar;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using MahApps.Metro.Controls.Dialogs;
+
 // ReSharper disable VirtualMemberCallInConstructor
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
@@ -173,18 +176,22 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		/// <summary>
-		/// Adds the tabs to the given <see cref="TabControlUI{T}"/>.
+		/// Adds the tabs to the given <see cref="TabControlUI{T, U}"/>.
 		/// </summary>
-		/// <param name="tabControl">The <see cref="TabControlUI{T}"/>, where the <see cref="TabItem"/>s will be added to.</param>
+		/// <param name="tabControl">The <see cref="TabControlUI{T, U}"/>, where the <see cref="TabItem"/>s will be added to.</param>
 		/// <param name="names">A list that contains the names of each tab that will be created. </param>
 		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
 		{
-			for (int i = 0; i < names.Count; i++)
+			foreach (string name in names)
 			{
-				tabControl.AddTab(names[i], new TabUI(names[i], DefaultGridSize));
+				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
 			}
 		}
 
-
+		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			Exception exception = (Exception) e.ExceptionObject;
+			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
+		}
 	}
 }

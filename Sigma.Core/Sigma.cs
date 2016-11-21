@@ -25,6 +25,9 @@ namespace Sigma.Core
 	/// </summary>
 	public class SigmaEnvironment
 	{
+		/// <summary>
+		/// If the <see cref="SigmaEnvironment"/> is currently running. 
+		/// </summary>
 		public bool Running { get; private set; }
 
 		private readonly ISet<IMonitor> _monitors;
@@ -397,12 +400,7 @@ namespace Sigma.Core
 		/// <returns>A new environment with the given name or the environment already associated with the name.</returns>
 		public static SigmaEnvironment GetOrCreate(string environmentName)
 		{
-			if (!Exists(environmentName))
-			{
-				return Create(environmentName);
-			}
-
-			return Get(environmentName);
+			return Exists(environmentName) ? Get(environmentName) : Create(environmentName);
 		}
 
 		/// <summary>

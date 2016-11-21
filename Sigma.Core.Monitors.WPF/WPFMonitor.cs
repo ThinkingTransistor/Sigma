@@ -145,11 +145,15 @@ namespace Sigma.Core.Monitors.WPF
 				ColorManager.App = _app;
 
 				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+
+				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
+
+
 				ColorManager.Window = Window;
 
 				if (_onWindowStartup != null)
 				{
-					foreach (var action in _onWindowStartup)
+					foreach (Action<object> action in _onWindowStartup)
 					{
 						_app.Startup += (sender, args) => action?.Invoke(Window);
 					}
@@ -200,7 +204,7 @@ namespace Sigma.Core.Monitors.WPF
 				Window.Dispatcher.Invoke(() => action((T) Window), priority);
 			}
 
-			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} not yet implemented... Sorry");
 		}
 
 		/// <summary>

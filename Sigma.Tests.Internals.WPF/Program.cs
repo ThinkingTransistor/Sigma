@@ -1,13 +1,18 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.View.Tabs;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -32,10 +37,11 @@ namespace Sigma.Tests.Internals.WPF
 
 			guiMonitor.WindowDispatcher((window) =>
 			{
-				for (int i = 0; i < 4; i++)
-				{
-					window.TabControl["Overview"].AddCard(new Card { Content = "HEEE!" + i }, 0, i);
-				}
+				TabUI tab = window.TabControl["Overview"];
+
+				CreateDefaultCards(tab);
+
+				Debug.WriteLine(tab.Grid.ActualWidth + " " + tab.Grid.ActualWidth);
 			});
 
 			guiMonitor.ColorManager.Dark = true;
@@ -47,6 +53,23 @@ namespace Sigma.Tests.Internals.WPF
 			//ExtractSwatches();
 		}
 
+		private static void CreateDefaultCards(TabUI tab)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				tab.AddCumulativeElement(new Card { Content = "Card No. " + i });
+			}
+
+			tab.AddCumulativeElement(new Card { Content = "Big card" }, 3);
+			tab.AddCumulativeElement(new Card { Content = "Tall card" }, 2);
+			for (int i = 0; i < 2; i++)
+			{
+				tab.AddCumulativeElement(new Card { Content = "Small card" });
+			}
+
+			tab.AddCumulativeElement(new Card { Content = "Wide card" }, 1, 2);
+		}
+
 		private static void ExtractSwatches()
 		{
 			StringBuilder builder = new StringBuilder();
@@ -54,14 +77,14 @@ namespace Sigma.Tests.Internals.WPF
 
 			foreach (Swatch swatch in swatches)
 			{
-				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new Hue[] " + "{ ");
+				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new [] " + "{ ");
 
 				foreach (Hue hue in swatch.PrimaryHues)
 				{
 					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
 				}
 
-				builder.Append("}, new Hue[] { ");
+				builder.Append("}, new [] { ");
 
 				foreach (Hue hue in swatch.AccentHues)
 				{
