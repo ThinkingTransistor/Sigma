@@ -95,7 +95,7 @@ namespace Sigma.Core.Data.Sources
 			return _fileStream;
 		}
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
 			_fileStream?.Dispose();
 		}

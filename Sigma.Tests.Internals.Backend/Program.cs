@@ -10,6 +10,7 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Sigma.Core.Data.Iterators;
 
 namespace Sigma.Tests.Internals.Backend
@@ -40,24 +41,24 @@ namespace Sigma.Tests.Internals.Backend
 
 			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
 
-			//var block = dataset.FetchBlock(0, handler);
+			var block = dataset.FetchBlock(0, handler);
 
-			//if (block == null)
-			//{
-			//	Console.WriteLine("Fetch block 0 FAILED.");
-			//}
-			//else
-			//{
-			//	PrintFormattedBlock(block);
-			//}
+			if (block == null)
+			{
+				Console.WriteLine("Fetch block 0 FAILED.");
+			}
+			else
+			{
+				PrintFormattedBlock(block);
+			}
 
-			//MinibatchIterator iterator = new MinibatchIterator(MinibatchIterator.MinibatchSizeAuto, dataset);
+			//MinibatchIterator iterator = new MinibatchIterator(1, dataset);
 
 			//while (true)
 			//{
 			//	PrintFormattedBlock(iterator.Yield(handler, sigma));
 
-			//	Thread.Sleep(1000);
+			//	Thread.Sleep(3000);
 			//}
 
 			//IComputationHandler handler = new CPUFloat32Handler();

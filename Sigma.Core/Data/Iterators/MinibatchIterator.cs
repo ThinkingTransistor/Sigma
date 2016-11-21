@@ -48,6 +48,8 @@ namespace Sigma.Core.Data.Iterators
 				//not sure yet if this is the best way to handle auto mini batch size
 				if (dataset.TrySetBlockSize(optimalMinibatchSizeRecords))
 				{
+					minibatchSizeRecords = optimalMinibatchSizeRecords;
+
 					_logger.Info($"Set block size in dataset {dataset} to optimal minibatch size of {optimalMinibatchSizeRecords}.");
 				}
 				else
