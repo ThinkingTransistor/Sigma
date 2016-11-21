@@ -51,11 +51,6 @@ namespace Sigma.Tests.Internals.Backend
 			//	PrintFormattedBlock(block);
 			//}
 
-			UndividedIterator iterator = new UndividedIterator(dataset);
-
-			iterator.Yield(handler, sigma);
-			//PrintFormattedBlock(iterator.Yield(handler, sigma));
-
 			//MinibatchIterator iterator = new MinibatchIterator(MinibatchIterator.MinibatchSizeAuto, dataset);
 
 			//while (true)
