@@ -14,6 +14,13 @@ namespace Sigma.Core.Monitors.WPF.Control.SigmaGrid
 
 	public class GridLayout : System.Windows.Controls.Grid
 	{
+
+		public new Thickness Margin
+		{
+			get { return ChildMargin; }
+			set { ChildMargin = value; }
+		}
+
 		public static readonly DependencyProperty ChildMarginProperty = DependencyProperty.Register(
 			"ChildMargin",
 			typeof(Thickness),
@@ -84,10 +91,10 @@ namespace Sigma.Core.Monitors.WPF.Control.SigmaGrid
 					// Rightmost column - no right margin
 					if (column + columnSpan >= maxColumn)
 						factorRight = 1;
-					fe.Margin = new Thickness(ChildMargin.Left*factorLeft,
-						ChildMargin.Top*factorTop,
-						ChildMargin.Right*factorRight,
-						ChildMargin.Bottom*factorBottom);
+					fe.Margin = new Thickness(ChildMargin.Left * factorLeft,
+						ChildMargin.Top * factorTop,
+						ChildMargin.Right * factorRight,
+						ChildMargin.Bottom * factorBottom);
 				}
 			}
 		}
