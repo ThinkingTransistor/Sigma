@@ -140,11 +140,12 @@ namespace Sigma.Core.Data.Datasets
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
 				const long estimatedRecordSizeBytes = 1024;
-				const double memoryToConsume = 0.5f;
-				const long optimalNumberBlocks = 24;
+				const double memoryToConsume = 0.04f;
+				const long optimalNumberBlocks = 64;
+				const int maxBlockSizeRecords = 1024;
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
-				TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
+				TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
 
 				_autoSetBlockSize = true;
 			}

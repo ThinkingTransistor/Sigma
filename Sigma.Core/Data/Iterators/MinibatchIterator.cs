@@ -12,6 +12,7 @@ using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -135,7 +136,7 @@ namespace Sigma.Core.Data.Iterators
 				ResetNotTraversedIndicesIfAllTraversed();
 			}
 
-			_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler}.");
+			_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler} consisting of {_fetchedBlocks[yieldedIndex].First().Value.Shape[0]} records.");
 
 			return _fetchedBlocks[yieldedIndex];
 		}

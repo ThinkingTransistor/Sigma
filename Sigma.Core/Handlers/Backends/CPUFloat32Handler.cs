@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using System;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends
 {
@@ -22,6 +23,35 @@ namespace Sigma.Core.Handlers.Backends
 		public INDArray Create(params long[] shape)
 		{
 			return new NDArray<float>(shape: shape);
+		}
+
+		public INDArray MergeBatch(params INDArray[] arrays)
+		{
+			NDArray<float>[] castArrays = arrays.As<INDArray, NDArray<float>>();
+
+			long[] totalShape = new long[castArrays[0].Rank];
+
+			Array.Copy(arrays[0].Shape, 1, totalShape, 1, totalShape.Length - 1);
+
+			foreach (NDArray<float> array in castArrays)
+			{
+				totalShape[0] += array.Shape[0];
+			}
+
+			NDArray<float> merged = new NDArray<float>(totalShape);
+			DataBuffer<float> mergedData = (DataBuffer<float>) merged.Data;
+
+			long lastIndex = 0L;
+			foreach (NDArray<float> array in castArrays)
+			{
+				DataBuffer<float> arrayData = (DataBuffer<float>) array.Data;
+
+				mergedData.Data.FillWith(arrayData.Data, 0, lastIndex, arrayData.Length);
+
+				lastIndex += arrayData.Length;
+			}
+
+			return merged;
 		}
 
 		public void InitAfterDeserialisation(INDArray array)
