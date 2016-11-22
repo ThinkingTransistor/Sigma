@@ -51,7 +51,7 @@ namespace Sigma.Core.Data.Iterators
 			_pendingFetchBlockTasks = new Dictionary<int, Task<Dictionary<string, INDArray>>>();
 		}
 
-		public abstract Dictionary<string, INDArray> Yield(IComputationHandler handler, SigmaEnvironment environment);
+		public abstract IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
 
 		protected void RequireBlocks(IComputationHandler handler, params int[] indices)
 		{

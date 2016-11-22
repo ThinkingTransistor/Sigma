@@ -73,81 +73,85 @@ namespace Sigma.Core.Data.Iterators
 			_allPossibleIndices = new HashSet<int>();
 		}
 
-		public override Dictionary<string, INDArray> Yield(IComputationHandler handler, SigmaEnvironment environment)
+		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
-			int yieldedIndex = -1;
-
-			if (!_traversedUntilEnd)
+			while (!_traversedUntilEnd || _currentBatchNotTraversedIndices.Count > 0)
 			{
-				RequireBlocks(handler, _highestTraversedIndex + 1);
-				PrepareBlocksAsync(handler, _highestTraversedIndex + 2);
+				int yieldedIndex = -1;
 
-				yieldedIndex = ++_highestTraversedIndex;
-
-				if (!_allPossibleIndices.Contains(yieldedIndex))
+				if (!_traversedUntilEnd)
 				{
-					_allPossibleIndices.Add(yieldedIndex);
+					RequireBlocks(handler, _highestTraversedIndex + 1);
+					PrepareBlocksAsync(handler, _highestTraversedIndex + 2);
+
+					yieldedIndex = ++_highestTraversedIndex;
+
+					if (!_allPossibleIndices.Contains(yieldedIndex))
+					{
+						_allPossibleIndices.Add(yieldedIndex);
+					}
+
+					if (_fetchedBlocks[yieldedIndex] == null)
+					{
+						_fetchedBlocks.Remove(yieldedIndex);
+
+						_traversedUntilEnd = true;
+
+						_logger.Info($"Completed initial traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
+
+						ResetNotTraversedIndices();
+
+						break;
+					}
 				}
 
-				if (_fetchedBlocks[yieldedIndex] == null)
+				if (_traversedUntilEnd)
 				{
-					_fetchedBlocks.Remove(yieldedIndex);
-
-					_traversedUntilEnd = true;
-
-					_logger.Info($"Completed initial traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
-
-					ResetNotTraversedIndices();
-				}
-			}
-
-			if (_traversedUntilEnd)
-			{
-				yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count)];
-				RequireBlocks(handler, yieldedIndex);
-
-				// looks like the end of the dataset is still the end of the dataset, let's try again every now again 
-				// (index after last possible is also in possible list for online datasets)
-				if (_fetchedBlocks[yieldedIndex] == null)
-				{
-					_currentBatchNotTraversedIndices.Remove(yieldedIndex);
-
-					ResetNotTraversedIndicesIfAllTraversed();
-
-					// Count - 1 to exclude last index which was the test for online dataset index, but as it apparently still hasn't expanded, exclude it
-					yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)]; 
+					yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count)];
 					RequireBlocks(handler, yieldedIndex);
+
+					// looks like the end of the dataset is still the end of the dataset, let's try again every now again 
+					// (index after last possible is also in possible list for online datasets)
+					if (_fetchedBlocks[yieldedIndex] == null)
+					{
+						_currentBatchNotTraversedIndices.Remove(yieldedIndex);
+
+						if (_currentBatchNotTraversedIndices.Count == 0)
+						{
+							ResetNotTraversedIndices();
+
+							yield break;
+						}
+						// Count - 1 to exclude last index which was the test for online dataset index, but as it apparently still hasn't expanded, exclude it
+						yieldedIndex =
+							_currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)];
+						RequireBlocks(handler, yieldedIndex);
+					}
 				}
-			}
 
-			if (yieldedIndex < 0)
-			{
-				throw new InvalidOperationException($"Unable to yield block for {handler}, suggested yielded index was {yieldedIndex} (internal error).");
-			}
+				if (yieldedIndex < 0)
+				{
+					throw new InvalidOperationException($"Unable to yield block for {handler}, suggested yielded index was {yieldedIndex} (internal error).");
+				}
 
-			if (_lastTraversedIndex >= 0)
-			{
-				UnderlyingDataset.FreeBlock(_lastTraversedIndex, handler);
-			}
+				if (_lastTraversedIndex >= 0)
+				{
+					UnderlyingDataset.FreeBlock(_lastTraversedIndex, handler);
+				}
 
-			_lastTraversedIndex = yieldedIndex;
-			_currentBatchNotTraversedIndices.Remove(yieldedIndex);
+				_lastTraversedIndex = yieldedIndex;
+				_currentBatchNotTraversedIndices.Remove(yieldedIndex);
 
-			if (_traversedUntilEnd)
-			{
-				ResetNotTraversedIndicesIfAllTraversed();
-			}
+				if (_traversedUntilEnd && _currentBatchNotTraversedIndices.Count == 0)
+				{
+					ResetNotTraversedIndices();
 
-			_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler} consisting of {_fetchedBlocks[yieldedIndex].First().Value.Shape[0]} records.");
+					yield break;
+				}
 
-			return _fetchedBlocks[yieldedIndex];
-		}
+				_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler} consisting of {_fetchedBlocks[yieldedIndex].First().Value.Shape[0]} records.");
 
-		private void ResetNotTraversedIndicesIfAllTraversed()
-		{
-			if (_currentBatchNotTraversedIndices.Count == 0)
-			{
-				ResetNotTraversedIndices();
+				yield return _fetchedBlocks[yieldedIndex];
 			}
 		}
 

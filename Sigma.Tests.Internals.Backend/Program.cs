@@ -41,25 +41,17 @@ namespace Sigma.Tests.Internals.Backend
 
 			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
 
-			var block = dataset.FetchBlock(0, handler);
+			MinibatchIterator iterator = new MinibatchIterator(1, dataset);
 
-			if (block == null)
+			while (true)
 			{
-				Console.WriteLine("Fetch block 0 FAILED.");
+				foreach (var block in iterator.Yield(handler, sigma))
+				{
+					PrintFormattedBlock(block);
+
+					Thread.Sleep(1000);
+				}
 			}
-			else
-			{
-				PrintFormattedBlock(block);
-			}
-
-			//MinibatchIterator iterator = new MinibatchIterator(1, dataset);
-
-			//while (true)
-			//{
-			//	PrintFormattedBlock(iterator.Yield(handler, sigma));
-
-			//	Thread.Sleep(3000);
-			//}
 
 			//IComputationHandler handler = new CPUFloat32Handler();
 			//Random random = new Random();
@@ -78,7 +70,7 @@ namespace Sigma.Tests.Internals.Backend
 			Console.ReadKey();
 		}
 
-		private static void PrintFormattedBlock(Dictionary<string, INDArray> block)
+		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)
 		{
 			foreach (string name in block.Keys)
 			{

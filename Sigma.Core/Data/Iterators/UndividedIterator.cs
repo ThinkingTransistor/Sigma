@@ -34,7 +34,7 @@ namespace Sigma.Core.Data.Iterators
 		{
 		}
 
-		public override Dictionary<string, INDArray> Yield(IComputationHandler handler, SigmaEnvironment environment)
+		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
 			if (_unifiedBlock == null)
 			{
@@ -45,7 +45,7 @@ namespace Sigma.Core.Data.Iterators
 
 			_logger.Info($"Yielding undivided block for handler {handler} consisting of {_unifiedBlock.First().Value.Shape[0]} records.");
 
-			return _unifiedBlock;
+			yield return _unifiedBlock;
 		}
 
 		private Dictionary<string, INDArray> FetchAndMergeFromDataset(IComputationHandler handler)

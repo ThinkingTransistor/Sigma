@@ -70,9 +70,16 @@ namespace Sigma.Tests.Data.Iterators
 			IComputationHandler handler = new CpuFloat32Handler();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
-			for (int i = 0; i < 20; i++)
+			int index = 0;
+			foreach (var block in iterator.Yield(handler, sigma))
 			{
-				Assert.Contains(iterator.Yield(handler, sigma)["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
+				//pass through each more than 5 times to ensure consistency
+				if (index++ > 20)
+				{
+					break;
+				}
+
+				Assert.Contains(block["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
 			}
 
 			dataset.Dispose();
