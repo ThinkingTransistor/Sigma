@@ -134,6 +134,7 @@
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
+    <Compile Include="Layers\ILayer.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\NDArray.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
@@ -167,7 +168,6 @@
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Layers\" />
     <Folder Include="Persistence\" />
   </ItemGroup>
   <ItemGroup>

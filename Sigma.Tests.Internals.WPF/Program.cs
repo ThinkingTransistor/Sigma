@@ -46,7 +46,7 @@ namespace Sigma.Tests.Internals.WPF
 				Debug.WriteLine(tab.Grid.ActualWidth + " " + tab.Grid.ActualWidth);
 			});
 
-			//guiMonitor.ColorManager.Dark = true;
+			guiMonitor.ColorManager.Dark = true;
 			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.TEAL;
 			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.AMBER;
 
