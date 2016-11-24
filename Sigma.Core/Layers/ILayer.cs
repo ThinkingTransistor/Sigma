@@ -34,18 +34,37 @@ namespace Sigma.Core.Layers
 	/// <summary>
 	/// A layer construct representing a certain named layer construct, where all parameters are stored in a parameter registry.
 	/// </summary>
-	public interface ILayerConstruct
+	public abstract class LayerConstruct
 	{
 		/// <summary>
 		/// The unique name of the layer created in this layer construct.
 		/// </summary>
-		string Name { get; set; }
+		public string Name { get; set; }
 
 		/// <summary>
 		/// The parameters of the layer created in this layer construct.
 		/// </summary>
-		IRegistry Parameters { get; }
+		public IRegistry Parameters { get; protected set; }
 
-		ILayer CreateLayer(IComputationHandler handler);
+		private readonly Type LayerInterfaceType = typeof(ILayer);
+		private Type _layerClassType;
+
+		protected LayerConstruct(Type layerClassType)
+		{
+			if (layerClassType == null)
+			{
+				throw new ArgumentNullException(nameof(layerClassType));
+			}
+
+			if (layerClassType.IsSubclassOf(LayerInterfaceType))
+			{
+				throw new ArgumentException($"Layer class type must be subclass of layer interface type IInterface, but was {layerClassType}.");
+			}
+		}
+
+		public virtual ILayer InstantiateLayer(IComputationHandler handler)
+		{
+			return (ILayer) Activator.CreateInstance(_layerClassType, Parameters);
+		}
 	}
 }

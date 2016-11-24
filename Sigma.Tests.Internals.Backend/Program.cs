@@ -47,6 +47,8 @@ namespace Sigma.Tests.Internals.Backend
 			{
 				foreach (var block in iterator.Yield(handler, sigma))
 				{
+					Thread.Sleep(100);
+
 					PrintFormattedBlock(block);
 
 					Thread.Sleep(1000);
