@@ -105,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Architecture\INetwork.cs" />
+    <Compile Include="Architecture\INetworkArchitecture.cs" />
+    <Compile Include="Architecture\LayerConstruct.cs" />
+    <Compile Include="Architecture\LinearNetworkArchitecture.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
@@ -134,6 +137,7 @@
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
+    <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\NDArray.cs" />

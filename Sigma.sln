@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Core", "Sigma.Core\Sigma.Core.csproj", "{92B1BB1D-7F6A-4BD7-820C-46454F9AF8B3}"
 EndProject
@@ -18,9 +18,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sigma.Core.Monitors.WPF.Tests", "Sigma.Core.Monitors.WPF.Tests\Sigma.Core.Monitors.WPF.Tests.csproj", "{B3E3B0BE-2F6E-4E29-BAC2-10BA6EC4DEA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2CE7A746-335C-48AF-B985-9CDAE1B8FBDD}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

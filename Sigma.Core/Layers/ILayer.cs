@@ -8,16 +8,13 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers
 {
 	/// <summary>
-	/// A layer in a neural network model.
+	/// A neural layer in a neural network model with some [parameters].
 	/// </summary>
 	public interface ILayer
 	{
@@ -26,45 +23,23 @@ namespace Sigma.Core.Layers
 		/// </summary>
 		string Name { get; }
 
+		/// <summary>
+		/// The trainable parameters of this layer, e.g. "weights".
+		/// </summary>
+		string[] TrainableParameters { get; }
+
+		/// <summary>
+		/// The parameters of this layer, e.g. "weights", "size", "dropout_probability".
+		/// </summary>
 		IRegistry Parameters { get; }
 
-		void Run(IRegistry inputs, IRegistry parameters, IRegistry outputs);
-	}
-
-	/// <summary>
-	/// A layer construct representing a certain named layer construct, where all parameters are stored in a parameter registry.
-	/// </summary>
-	public abstract class LayerConstruct
-	{
 		/// <summary>
-		/// The unique name of the layer created in this layer construct.
+		/// Run this layer. Take relevant input values from inputs and put relevant output values in outputs registry.
 		/// </summary>
-		public string Name { get; set; }
-
-		/// <summary>
-		/// The parameters of the layer created in this layer construct.
-		/// </summary>
-		public IRegistry Parameters { get; protected set; }
-
-		private readonly Type LayerInterfaceType = typeof(ILayer);
-		private Type _layerClassType;
-
-		protected LayerConstruct(Type layerClassType)
-		{
-			if (layerClassType == null)
-			{
-				throw new ArgumentNullException(nameof(layerClassType));
-			}
-
-			if (layerClassType.IsSubclassOf(LayerInterfaceType))
-			{
-				throw new ArgumentException($"Layer class type must be subclass of layer interface type IInterface, but was {layerClassType}.");
-			}
-		}
-
-		public virtual ILayer InstantiateLayer(IComputationHandler handler)
-		{
-			return (ILayer) Activator.CreateInstance(_layerClassType, Parameters);
-		}
+		/// <param name="inputs">The inputs respective to this layer.</param>
+		/// <param name="parameters">The parameters of this layer.</param>
+		/// <param name="outputs">The outputs respective to this layer.</param>
+		/// <param name="handler">The computation handler to use for computations (duh).</param>
+		void Run(IRegistry inputs, IRegistry parameters, IRegistry outputs, IComputationHandler handler);
 	}
 }
