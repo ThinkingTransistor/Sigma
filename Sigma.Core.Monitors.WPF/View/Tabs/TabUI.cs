@@ -1,4 +1,4 @@
-﻿/* 
+/* 
 MIT License
 
 Copyright (c) 2016 Florian Cäsar, Michael Plainer
@@ -10,7 +10,6 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Dragablz.Dockablz;
 using WPFGrid = System.Windows.Controls.Grid;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.SigmaGrid;
@@ -57,21 +56,6 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 			Content.Header = header;
 			GridSize = gridsize;
 		}
-
-		///// <summary>
-		///// Check whether a position of a grid is empty. Also check if the position would
-		///// be out of the grid.
-		///// </summary>
-		///// <param name="grid">The grid, positions will be checked against.</param>
-		///// <param name="row">The index of the row to check whether its occupied.</param>
-		///// <param name="column">The index of the column to check whether its occupied.</param>
-		///// <returns><code>false</code> when the position is occupied or the element is out of range - <code>true</code> otherwise. </returns>
-		//private bool IsEmpty(Grid grid, int row, int column)
-		//{
-		//	if (row >= GridSize.Rows || column >= GridSize.Columns) return false;
-
-		//	return IsEmptyFast(grid, row, column);
-		//}
 
 		/// <summary>
 		/// Check whether a position of a grid is empty. It does not check if the position would be

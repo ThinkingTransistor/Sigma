@@ -1,7 +1,6 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using MaterialDesignThemes.Wpf;
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -9,7 +8,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 {
 	public abstract class SigmaPanel : Card
 	{
-		public new string Name { get; set; }
+		public string Title { get; set; }
 
 		private static Style _cardStyle;
 
@@ -36,7 +35,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 			}
 		}
 
-		protected SigmaPanel(string name)
+		protected SigmaPanel(string title)
 		{
 			//Don't do this in static constructor, otherwise
 			//we cannot guarantee that the application is already running
@@ -47,7 +46,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 
 			Style = _cardStyle;
 
-			Name = name;
+			Title = title;
 
 			_rootPanel = CreateDockPanel();
 			Header = CreateHeader();
@@ -64,7 +63,11 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 			header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
 			header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 
-			header.Children.Add(new Label { Content = Name });
+			header.Children.Add(new Label
+			{
+				Content = Title
+			});
+
 
 			return header;
 		}
