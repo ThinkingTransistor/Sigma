@@ -21,6 +21,17 @@ namespace Sigma.Core.Architecture
 		int LayerCount { get; }
 
 		/// <summary>
+		/// Validate this network architecture.
+		/// </summary>
+		void Validate();
+
+		/// <summary>
+		/// Resolve all layer names. 
+		/// </summary>
+		/// <returns>The underlying layer constructs (for convenience).</returns>
+		LayerConstruct[] ResolveAllNames();
+
+		/// <summary>
 		/// Yield all layers in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>

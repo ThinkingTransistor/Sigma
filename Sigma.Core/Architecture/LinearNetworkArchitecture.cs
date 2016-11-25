@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sigma.Core.Layers;
 
 namespace Sigma.Core.Architecture
 {
@@ -42,6 +43,24 @@ namespace Sigma.Core.Architecture
 		public IEnumerable<LayerConstruct> YieldLayerConstructs()
 		{
 			return _layerConstructs;
+		}
+
+		public void Validate()
+		{
+			throw new NotImplementedException();
+		}
+
+		public LayerConstruct[] ResolveAllNames()
+		{
+			for (int i = 0; i < _layerConstructs.Count; i++)
+			{
+				if (_layerConstructs[i].Name.Contains('#'))
+				{
+					_layerConstructs[i].Name = _layerConstructs[i].Name.Replace("#", i.ToString());
+				}
+			}
+
+			return _layerConstructs.ToArray();
 		}
 
 		public LinearNetworkArchitecture AppendEnd(LinearNetworkArchitecture other)
@@ -90,8 +109,8 @@ namespace Sigma.Core.Architecture
 				lastOther.AddOutput(firstOwn);
 				firstOwn.AddInput(lastOther);
 			}
-	
-			for (int i = other._layerConstructs.Count; i >= 0; i --)
+
+			for (int i = other._layerConstructs.Count; i >= 0; i--)
 			{
 				_layerConstructs.Insert(0, other._layerConstructs[i]);
 			}
@@ -123,7 +142,15 @@ namespace Sigma.Core.Architecture
 
 			for (int i = 0; i < multiplier; i++)
 			{
-				LinearNetworkArchitecture copy = new LinearNetworkArchitecture(self._layerConstructs.ConvertAll(x => x.Copy()));
+				LinearNetworkArchitecture copy = new LinearNetworkArchitecture(self._layerConstructs.ConvertAll(x =>
+				{
+					if (!x.Name.Contains('#'))
+					{
+						throw new ArgumentException("Attempted to multiply linear network architecture containing layer construct with static name, which cannot be multiplied. Include '#' in layer name for dynamic auto naming.");
+					}
+
+					return x.Copy();
+				}));
 
 				LayerConstruct lastOwn = self._layerConstructs.Last();
 				LayerConstruct firstOther = copy._layerConstructs.First();

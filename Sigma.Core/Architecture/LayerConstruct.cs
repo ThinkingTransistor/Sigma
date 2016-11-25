@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.Utils;
@@ -34,18 +35,20 @@ namespace Sigma.Core.Architecture
 		/// <summary>
 		/// The inputs connected to this layer construct. 
 		/// </summary>
-		public ISet<LayerConstruct> Inputs { get; }
+		public IDictionary<string, LayerConstruct> Inputs { get; }
 
 		/// <summary>
 		/// The outputs connected to this layer construct. 
 		/// </summary>
-		public ISet<LayerConstruct> Outputs { get; }
+		public IDictionary<string, LayerConstruct> Outputs { get; }
 
 		private readonly Type _layerInterfaceType = typeof(ILayer);
 		private readonly Type _layerClassType;
 
-		protected LayerConstruct(Type layerClassType)
+		public LayerConstruct(string name, Type layerClassType)
 		{
+			ValidateLayerName(name);
+
 			if (layerClassType == null)
 			{
 				throw new ArgumentNullException(nameof(layerClassType));
@@ -58,38 +61,64 @@ namespace Sigma.Core.Architecture
 
 			_layerClassType = layerClassType;
 
-			Inputs = new HashSet<LayerConstruct>();
-			Outputs = new HashSet<LayerConstruct>();
+			Inputs = new Dictionary<string, LayerConstruct>();
+			Outputs = new Dictionary<string, LayerConstruct>();
+			Parameters = new Registry(tags: "layer");
+		}
+
+		private static void ValidateLayerName(string name)
+		{
+			if (name == null)
+			{
+				throw new ArgumentNullException(nameof(name));
+			}
+
+			int autoNameCharacterCount = name.Count(c => c == '#');
+
+			if (autoNameCharacterCount >= 2)
+			{
+				throw new ArgumentException($"There can be at most one auto name character '#' in a layer name, but given name {name} had more.");
+			}
 		}
 
 		public virtual LayerConstruct Copy()
 		{
-			return new LayerConstruct(_layerClassType);
+			return new LayerConstruct(Name, _layerClassType);
 		}
 
 		public virtual ILayer InstantiateLayer(IComputationHandler handler)
 		{
-			return (ILayer) Activator.CreateInstance(_layerClassType, Parameters);
+			return (ILayer) Activator.CreateInstance(_layerClassType, Parameters, handler);
 		}
 
-		public void AddOutput(LayerConstruct output)
+		public void AddOutput(LayerConstruct output, string alias = "default")
 		{
 			if (output == null)
 			{
 				throw new ArgumentNullException(nameof(output));
 			}
 
-			Outputs.Add(output);
+			if (Outputs.ContainsKey(alias))
+			{
+				throw new ArgumentException($"Attempted to add duplicate input to construct {Name} with alias {alias}.");
+			}
+
+			Outputs.Add(alias, output);
 		}
 
-		public void AddInput(LayerConstruct input)
+		public void AddInput(LayerConstruct input, string alias = "default")
 		{
 			if (input == null)
 			{
 				throw new ArgumentNullException(nameof(input));
 			}
 
-			Inputs.Add(input);
+			if (Inputs.ContainsKey(alias))
+			{
+				throw new ArgumentException($"Attempted to add duplicate output to construct {Name} with alias {alias}.");
+			}
+
+			Inputs.Add(alias, input);
 		}
 
 		public static LinearNetworkArchitecture operator +(LayerConstruct self, LayerConstruct other)

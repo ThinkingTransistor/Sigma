@@ -107,6 +107,7 @@
     <Compile Include="Architecture\INetwork.cs" />
     <Compile Include="Architecture\INetworkArchitecture.cs" />
     <Compile Include="Architecture\LayerConstruct.cs" />
+    <Compile Include="Architecture\LinearNetwork.cs" />
     <Compile Include="Architecture\LinearNetworkArchitecture.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
+    <Compile Include="Layers\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\NDArray.cs" />
@@ -155,6 +157,7 @@
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
     <Compile Include="Training\Trainer.cs" />
+    <Compile Include="Utils\AliasRegistry.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />

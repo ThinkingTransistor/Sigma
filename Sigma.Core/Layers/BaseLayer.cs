@@ -14,20 +14,38 @@ namespace Sigma.Core.Layers
 	public abstract class BaseLayer : ILayer
 	{
 		public string Name { get; }
-		public string[] TrainableParameters { get; protected set; }
+		public string[] ExpectedInputs { get; protected set; } = { "default" };
+		public string[] ExpectedOutputs { get; protected set; } = { "default" };
+		public string[] TrainableParameters { get; protected set; } = { };
 		public IRegistry Parameters { get; }
 
-		protected BaseLayer(string name)
+		/// <summary>
+		/// Create a base layer with a certain unique name.
+		/// </summary>
+		/// <param name="name">The unique name of this layer.</param>
+		/// <param name="parameters">The parameters to this layer.</param>
+		/// <param name="handler">The handler to use for ndarray parameter creation.</param>
+		protected BaseLayer(string name, IRegistry parameters, IComputationHandler handler)
 		{
 			if (name == null)
 			{
 				throw new ArgumentNullException(nameof(name));
 			}
 
+			if (parameters == null)
+			{
+				throw new ArgumentNullException(nameof(parameters));
+			}
+
+			if (handler == null)
+			{
+				throw new ArgumentNullException(nameof(parameters));
+			}
+
 			Name = name;
-			Parameters = new Registry(tags: "layer");
+			Parameters = parameters;
 		}
 
-		public abstract void Run(IRegistry inputs, IRegistry parameters, IRegistry outputs, IComputationHandler handler);
+		public abstract void Run(AliasRegistry inputs, IRegistry parameters, AliasRegistry outputs, IComputationHandler handler, bool trainingPass = true);
 	}
 }

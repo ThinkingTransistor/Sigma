@@ -11,7 +11,9 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
+using Sigma.Core.Layers;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -31,29 +33,29 @@ namespace Sigma.Tests.Internals.Backend
 			//IRecordExtractor irisExtractor = irisReader.Extractor("inputs2", new[] { 0, 3 }, "targets2", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
 			//irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets2", minValue: 0, maxValue: 2), new NormalisingPreprocessor(sectionNames: "inputs2", minInputValue: 0, maxInputValue: 6));
 
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+			//ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
+			//IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
-			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+			//ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			//IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-			IComputationHandler handler = new CpuFloat32Handler();
+			//IComputationHandler handler = new CpuFloat32Handler();
 
-			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			//Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
 
-			MinibatchIterator iterator = new MinibatchIterator(1, dataset);
+			//MinibatchIterator iterator = new MinibatchIterator(1, dataset);
 
-			while (true)
-			{
-				foreach (var block in iterator.Yield(handler, sigma))
-				{
-					Thread.Sleep(100);
+			//while (true)
+			//{
+			//	foreach (var block in iterator.Yield(handler, sigma))
+			//	{
+			//		Thread.Sleep(100);
 
-					PrintFormattedBlock(block);
+			//		PrintFormattedBlock(block);
 
-					Thread.Sleep(1000);
-				}
-			}
+			//		Thread.Sleep(1000);
+			//	}
+			//}
 
 			//IComputationHandler handler = new CPUFloat32Handler();
 			//Random random = new Random();
@@ -67,7 +69,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			//Console.WriteLine(array);
 
-			dataset.InvalidateAndClearCaches();
+			//dataset.InvalidateAndClearCaches();
 
 			Console.ReadKey();
 		}
@@ -80,7 +82,7 @@ namespace Sigma.Tests.Internals.Backend
 					? ArrayUtils.ToString<float>(block[name], e => $"{e:0.000}".Replace('0', '.'), maxDimensionNewLine: 0)
 					: block[name].ToString();
 
-				Console.WriteLine($@"[{name}]=" + blockString);
+				Console.WriteLine($"[{name}]=\n" + blockString);
 			}
 		}
 	}
