@@ -157,7 +157,6 @@
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
     <Compile Include="Training\Trainer.cs" />
-    <Compile Include="Utils\AliasRegistry.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />
@@ -166,6 +165,7 @@
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
+    <Compile Include="Utils\ILayerBuffer.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
