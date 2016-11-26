@@ -39,9 +39,11 @@ namespace Sigma.Core.Layers
 			return layer;
 		}
 
-		public override void Run(AliasRegistry inputs, IRegistry parameters, AliasRegistry outputs, IComputationHandler handler, bool trainingPass = true)
+		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true)
 		{
+			INDArray inputActivations = buffer.Inputs["default"].Get<INDArray>("activations");
 
+			buffer.Outputs["default"]["activations"] = "whatever";
 		}
 	}
 }

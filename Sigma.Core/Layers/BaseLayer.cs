@@ -46,6 +46,6 @@ namespace Sigma.Core.Layers
 			Parameters = parameters;
 		}
 
-		public abstract void Run(AliasRegistry inputs, IRegistry parameters, AliasRegistry outputs, IComputationHandler handler, bool trainingPass = true);
+		public abstract void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true);
 	}
 }

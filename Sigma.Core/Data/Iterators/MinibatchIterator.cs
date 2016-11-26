@@ -101,7 +101,7 @@ namespace Sigma.Core.Data.Iterators
 
 						ResetNotTraversedIndices();
 
-						break;
+						yield break;
 					}
 				}
 
@@ -122,9 +122,9 @@ namespace Sigma.Core.Data.Iterators
 
 							yield break;
 						}
+
 						// Count - 1 to exclude last index which was the test for online dataset index, but as it apparently still hasn't expanded, exclude it
-						yieldedIndex =
-							_currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)];
+						yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)];
 						RequireBlocks(handler, yieldedIndex);
 					}
 				}

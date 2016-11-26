@@ -33,12 +33,12 @@ namespace Sigma.Core.Architecture
 		public IRegistry Parameters { get; protected set; }
 
 		/// <summary>
-		/// The inputs connected to this layer construct. 
+		/// The inputs connected to this layer construct by their alias name.
 		/// </summary>
 		public IDictionary<string, LayerConstruct> Inputs { get; }
 
 		/// <summary>
-		/// The outputs connected to this layer construct. 
+		/// The outputs connected to this layer construct by their alias name.
 		/// </summary>
 		public IDictionary<string, LayerConstruct> Outputs { get; }
 
