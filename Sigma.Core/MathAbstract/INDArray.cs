@@ -18,7 +18,6 @@ namespace Sigma.Core.MathAbstract
 	/// Not exposing the internal data directly makes it easier to define the general workflow of how INDArrays should interact in an algorithm without having to think about underlying system data types. 
 	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon, ...).
 	/// </summary>
-	/// <author>flo.caesar</author>
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public interface INDArray
 	{
