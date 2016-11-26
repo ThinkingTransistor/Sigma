@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using MaterialDesignColors;
 using System.Windows;
+using MaterialDesignColors;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
-	public interface IColorManager
+	public interface IColourManager
 	{
 		/// <summary>
 		/// The application environment. 

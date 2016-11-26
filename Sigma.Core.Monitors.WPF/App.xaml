@@ -2,7 +2,6 @@
 <Application x:Class="Sigma.Core.Monitors.WPF.App"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:local="clr-namespace:Sigma.Core.Monitors.WPF"
 		xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz">
 	<Application.Resources>
 		<ResourceDictionary>
@@ -28,7 +27,7 @@
 				<!-- Apply material Design to Dragablz -->
 				<ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/materialdesign.xaml"/>
 
-				<ResourceDictionary Source="View/Styles/CustomStyles.xaml"/>
+				<ResourceDictionary Source="View/Styles/SigmaStyles.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 			
 			<!-- MahApps Brushes -->

@@ -10,10 +10,10 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using WPFGrid = System.Windows.Controls.Grid;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.SigmaGrid;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using WPFGrid = System.Windows.Controls.Grid;
 // ReSharper disable InconsistentNaming
 
 namespace Sigma.Core.Monitors.WPF.View.Tabs

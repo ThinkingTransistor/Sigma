@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
+using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -90,9 +90,9 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
-		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
+		/// The <see cref="IColourManager"/> to control the look and feel of the application. 
 		/// </summary>
-		public IColorManager ColorManager
+		public IColourManager ColorManager
 		{
 			get;
 		}
@@ -125,7 +125,7 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			ColorManager = new ColorManager(MaterialDesignSwatches.BLUE, MaterialDesignSwatches.AMBER);
+			ColorManager = new ColourManager(MaterialDesignSwatches.Blue, MaterialDesignSwatches.Amber);
 
 			_waitForStart = new ManualResetEvent(false);
 		}

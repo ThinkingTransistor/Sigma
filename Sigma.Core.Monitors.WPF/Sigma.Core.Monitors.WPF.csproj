@@ -111,8 +111,8 @@
     </Compile>
     <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
     <Compile Include="Control\SigmaGrid\GridLayout.cs" />
-    <Compile Include="Control\Themes\ColorManager.cs" />
-    <Compile Include="Control\Themes\IColorManager.cs" />
+    <Compile Include="Control\Themes\ColourManager.cs" />
+    <Compile Include="Control\Themes\IColourManager.cs" />
     <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
     <Compile Include="Control\TitleBar\TitleBarControl.cs" />
     <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
@@ -179,7 +179,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\Styles\CustomStyles.xaml">
+    <Page Include="View\Styles\DarkStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\SigmaStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\LightStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\SigmaGrid\CardColoursDark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\SigmaGrid\CardColoursLight.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

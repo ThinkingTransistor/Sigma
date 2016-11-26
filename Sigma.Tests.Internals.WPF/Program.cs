@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,14 +9,12 @@ using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View.Tabs;
-using System.Windows.Media;
-using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace Sigma.Tests.Internals.WPF
 {
-	class Program
+	public class Program
 	{
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
@@ -36,15 +33,20 @@ namespace Sigma.Tests.Internals.WPF
 			{
 				TabUI tab = window.TabControl["Overview"];
 
-				tab.AddCumulativeElement(new TestPanel("Test") { Content = new Rectangle { Fill = Brushes.Red } });
+				tab.AddCumulativeElement(new TestPanel("Control") { Content = "TestLabel" });
 				//CreateDefaultCards(tab);
-
-				Debug.WriteLine(tab.Grid.ActualWidth + " " + tab.Grid.ActualWidth);
 			});
 
 			guiMonitor.ColorManager.Dark = true;
-			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.TEAL;
-			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.AMBER;
+			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.Teal;
+			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.Amber;
+
+			while (true)
+			{
+				Thread.Sleep(1500);
+
+				guiMonitor.ColorManager.Dark = !guiMonitor.ColorManager.Dark;
+			}
 
 			//SwitchColor(guiMonitor);
 

@@ -15,10 +15,11 @@ using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.Windows;
+// ReSharper disable AccessToStaticMemberViaDerivedType
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
-	public class ColorManager : IColorManager
+	public class ColourManager : IColourManager
 	{
 		/// <summary>
 		/// The application environment.
@@ -63,11 +64,33 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		private bool _alternate;
 
 		/// <summary>
-		/// Create a new <see cref="ColorManager"/>.
+		/// The path for the Sigma light style theme.
+		/// </summary>
+		private const string SIGMA_STYLE_LIGHT_PATH = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/View/Styles/LightStyle.xaml";
+		/// <summary>
+		/// The path for the Sigma dark style theme.
+		/// </summary>
+		private const string SIGMA_STYLE_DARK_PATH = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/View/Styles/DarkStyle.xaml";
+
+		/// <summary>
+		/// The resource dictionary for the light theme.
+		/// This parameter is null until the application started event
+		/// has been called.
+		/// </summary>
+		private ResourceDictionary _sigmaStyleLightDictionary;
+		/// <summary>
+		/// The resource dictionary for the dark theme.
+		/// This parameter is null until the application started event
+		/// has been called.
+		/// </summary>
+		private ResourceDictionary _sigmaStyleDarkDictionary;
+
+		/// <summary>
+		/// Create a new <see cref="ColourManager"/>.
 		/// </summary>
 		/// <param name="defaultPrimary">The default primary colour (if none has been set).</param>
 		/// <param name="defaultSecondary">The default secondary colour (if none has been set).</param>
-		public ColorManager(Swatch defaultPrimary, Swatch defaultSecondary)
+		public ColourManager(Swatch defaultPrimary, Swatch defaultSecondary)
 		{
 			_primaryColor = defaultPrimary;
 			_secondaryColor = defaultSecondary;
@@ -115,6 +138,9 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// <param name="e">The <see cref="StartupEventArgs"/>.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
+			_sigmaStyleLightDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_LIGHT_PATH, UriKind.Absolute) };
+			_sigmaStyleDarkDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_DARK_PATH, UriKind.Absolute) };
+
 			_appStarted = true;
 
 			ReplacePrimaryColor(_primaryColor);
@@ -129,18 +155,41 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// </summary>
 		/// <param name="dark">If this value is <c>true</c>, a dark theme will be applied.
 		/// Otherwise a light theme. </param>
-		private static void SetLightDark(bool dark)
+		private void SetLightDark(bool dark)
 		{
 			new PaletteHelper().SetLightDark(dark);
 
+			LoadNewSigmaStyle(dark);
+
 			//Fix the MenuBar
 			var correctBrush = (dark
-				? UiResources.IdealForegroundColorBrush
+				? UIResources.IdealForegroundColorBrush
 				: Application.Current.Resources["SigmaMenuItemForegroundLight"]) as Brush;
 
 			Style newStyle = new Style(typeof(MenuItem), Application.Current.Resources["SigmaMaterialDesignMenuItem"] as Style);
 			newStyle.Setters.Add(new Setter(MenuItem.ForegroundProperty, correctBrush));
 			Application.Current.Resources[typeof(MenuItem)] = newStyle;
+		}
+
+		/// <summary>
+		/// Load the new sigma style depending on the passed boolean.
+		/// </summary>
+		/// <param name="dark">If this value is <c>true</c>, a dark theme will be applied.
+		/// Otherwise a light theme. </param>
+		private void LoadNewSigmaStyle(bool dark)
+		{
+			ResourceDictionary oldResourceDictionary = dark ? _sigmaStyleLightDictionary : _sigmaStyleDarkDictionary;
+			ResourceDictionary newResourceDictionary = dark ? _sigmaStyleDarkDictionary : _sigmaStyleLightDictionary;
+
+			if (!App.Resources.MergedDictionaries.Contains(newResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Add(newResourceDictionary);
+			}
+
+			if (App.Resources.MergedDictionaries.Contains(oldResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Remove(oldResourceDictionary);
+			}
 		}
 
 		/// <summary>

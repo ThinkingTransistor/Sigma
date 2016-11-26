@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using MahApps.Metro.Controls;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
@@ -38,7 +38,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 
 		/// <summary>
 		/// Add a <see cref="TitleBarItem"/> to the <see cref="TitleBarControl"/>.
-		/// Do not use <see cref="ItemCollection.Add"/> ore <see cref="Menu.Items.Add"/>. (Although it will be called internally) 
+		/// Do not use <see cref="ItemCollection.Add"/> ore Menu.Items.Add. (Although it will be called internally) 
 		/// </summary>
 		/// <param name="item">The item to add.</param>
 		/// <param name="applyColor">This boolean decides whether the foreground colour should be changed to white.
@@ -50,7 +50,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 
 			if (applyColor)
 			{
-				item.Content.Foreground = UiResources.IdealForegroundColorBrush;
+				item.Content.Foreground = UIResources.IdealForegroundColorBrush;
 			}
 		}
 

@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Windows;
 
 //SOURCE: (with adaptations)
 //https://daniel-albuschat.blogspot.co.at/2011/07/gridlayout-for-wpf-escape-margin-hell.html

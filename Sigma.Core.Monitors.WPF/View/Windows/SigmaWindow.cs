@@ -7,17 +7,17 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 using Dragablz.Dockablz;
+using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using MahApps.Metro.Controls.Dialogs;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -83,7 +83,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
 		{
-			FontFamily = UiResources.FontFamily;
+			FontFamily = UIResources.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
 
@@ -123,12 +123,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			//This can only be set in the constructor or on start
 			BorderThickness = new Thickness(1);
-			BorderBrush = UiResources.AccentColorBrush;
-			GlowBrush = UiResources.AccentColorBrush;
+			BorderBrush = UIResources.AccentColorBrush;
+			GlowBrush = UIResources.AccentColorBrush;
 
 			//Disable that the title bar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = UiResources.AccentColorBrush;
+			NonActiveWindowTitleBrush = UIResources.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}

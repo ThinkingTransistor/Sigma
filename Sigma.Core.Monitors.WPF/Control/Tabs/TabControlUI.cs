@@ -6,7 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -51,8 +50,8 @@ namespace Sigma.Core.Monitors.WPF.Control.Tabs
 			//Allow to create new dragged out windows
 			_tabControl.InterTabController = new InterTabController() { InterTabClient = new CustomInterTabClient(monitor, app, title) };
 
-			_tabControl.FontFamily = UiResources.FontFamily;
-			_tabControl.FontSize = UiResources.P1;
+			_tabControl.FontFamily = UIResources.FontFamily;
+			_tabControl.FontSize = UIResources.P1;
 
 			Content.Content = _tabControl;
 		}

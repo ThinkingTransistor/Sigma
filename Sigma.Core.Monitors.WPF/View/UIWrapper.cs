@@ -27,20 +27,20 @@ namespace Sigma.Core.Monitors.WPF.View
 		/// <summary>
 		/// Create a new <see cref="UIWrapper{T}"/> with a new T (e.g. new TabItem) as content.
 		/// </summary>
-		public UIWrapper() : this(new T()) { }
+		protected UIWrapper() : this(new T()) { }
 
 		/// <summary>
 		/// Create a new <see cref="UIWrapper{T}"/> with a passed T as content.
 		/// </summary>
 		/// <param name="content">The data that will be set to content.</param>
-		public UIWrapper(T content)
+		protected UIWrapper(T content)
 		{
 			Content = content;
 		}
 
 		/// <summary>
 		/// Property for the content. (The actual data which is wrapped). If you want to
-		/// set the content of the <see cref="WrappedContent"/> use <see cref="WrappedContent.Content"/>.
+		/// set the content of the <see cref="WrappedContent"/> use <code>WrappedContent.Content</code>.
 		/// </summary>
 		public T WrappedContent
 		{

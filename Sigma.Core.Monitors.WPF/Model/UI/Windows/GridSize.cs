@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections.Generic;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
@@ -149,7 +148,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		/// <summary>
 		/// Convert a given Array to a <see cref="GridSize"/>.
 		/// </summary>
-		/// <param name="arr">The passed <see cref="int[]"/> has to contain two parameters which both are greater than zero.</param>
+		/// <param name="arr">The passed <code>int[]</code> has to contain two parameters which both are greater than zero.</param>
 		public static implicit operator GridSize(int[] arr)
 		{
 			CheckDimensions(arr);
@@ -158,7 +157,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		}
 
 		/// <summary>
-		/// Implicitly convert given <see cref="GridSize"/> to a <see cref="int[]"/>.
+		/// Implicitly convert given <see cref="GridSize"/> to a <code>int[]</code>.
 		/// </summary>
 		/// <param name="grid">The <see cref="GridSize"/> subject of conversion.</param>
 		public static explicit operator int[] (GridSize grid)

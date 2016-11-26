@@ -7,10 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
