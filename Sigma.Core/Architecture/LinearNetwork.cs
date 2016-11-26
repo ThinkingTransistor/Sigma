@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 
 namespace Sigma.Core.Architecture
 {
+	/// <summary>
+	/// A linear neural network with linear acyclic connections between layers. 
+	/// </summary>
 	public class LinearNetwork : INetwork
 	{
 		public INetworkArchitecture Architecture { get; set; }

@@ -14,6 +14,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -140,8 +141,8 @@ namespace Sigma.Core.Data.Datasets
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
 				const long estimatedRecordSizeBytes = 1024;
-				const double memoryToConsume = 0.04f;
-				const long optimalNumberBlocks = 64;
+				const double memoryToConsume = 0.2f;
+				const long optimalNumberBlocks = 8;
 				const int maxBlockSizeRecords = 1024;
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
@@ -177,6 +178,16 @@ namespace Sigma.Core.Data.Datasets
 
 				_logger.Info($"Done flushing all caches for dataset \"{Name}.\"");
 			}
+		}
+
+		public IDataset[] SplitBlockwise(params int[] parts)
+		{
+			return SplitBlockwise(this, parts);
+		}
+
+		public IDataset[] SplitRecordwise(params double[] parts)
+		{
+			return SplitRecordwise(this, parts);
 		}
 
 		public bool TrySetBlockSize(int blockSizeRecords)
@@ -828,6 +839,52 @@ namespace Sigma.Core.Data.Datasets
 			}
 
 			_cacheProvider.Dispose();
+		}
+
+		public static IDataset[] SplitBlockwise(IDataset dataset, params int[] parts)
+		{
+			if (parts.Length == 0)
+			{
+				throw new ArgumentException("Parts cannot be an empty collection.");
+			}
+
+			int splitInterval = parts.Sum();
+			int lastEnd = 0;
+			IDataset[] slices = new IDataset[parts.Length];
+
+			for (int i = 0; i < parts.Length; i++)
+			{
+				slices[i] = new DatasetBlockwiseSlice(dataset, lastEnd, lastEnd + parts[i] - 1, splitInterval);
+				lastEnd += parts[i];
+			}
+
+			return slices;
+		}
+
+		public static IDataset[] SplitRecordwise(IDataset dataset, params double[] parts)
+		{
+			if (parts.Length == 0)
+			{
+				throw new ArgumentException("Percentages cannot be an empty collection.");
+			}
+
+			if (parts.Sum() > 1.0)
+			{
+				throw new ArgumentException($"Percentages sum cannot be > 1.0, but parts sum was {parts.Sum()}.");
+			}
+
+			IDataset[] slices = new IDataset[parts.Length];
+
+			double lastOffset = 0.0;
+
+			for (int i = 0; i < slices.Length; i++)
+			{
+				slices[i] = new DatasetRecordwiseSlice(dataset, lastOffset, parts[i]);
+
+				lastOffset += parts[i];
+			}
+
+			return slices;
 		}
 
 		internal abstract class RecordBlockBase

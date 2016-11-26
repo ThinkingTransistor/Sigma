@@ -77,6 +77,20 @@ namespace Sigma.Core.Data.Datasets
 		int ActiveBlockRegionCount { get; }
 
 		/// <summary>
+		/// Split this dataset block-wise into certain parts.
+		/// </summary>
+		/// <param name="parts">The parts to split into.</param>
+		/// <returns>The dataset slices split according to the given parts.</returns>
+		IDataset[] SplitBlockwise(params int[] parts);
+
+		/// <summary>
+		/// Split the dataset record-wise into certain parts.
+		/// </summary>
+		/// <param name="percentages">The percentages to split into.</param>
+		/// <returns>The dataset slices split according to the given percentages (0.0 - x - 1.0).</returns>
+		IDataset[] SplitRecordwise(params double[] percentages);
+
+		/// <summary>
 		/// Attempt to set the block size to a new block size if compatible with the current set block size (e.g. if was auto set and this is the first request).
 		/// </summary>
 		/// <param name="blockSizeRecords"></param>

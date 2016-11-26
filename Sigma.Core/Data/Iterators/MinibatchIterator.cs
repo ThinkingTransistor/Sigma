@@ -177,6 +177,8 @@ namespace Sigma.Core.Data.Iterators
 
 				_currentHighestTraversedBlockIndex = 0;
 				yieldedIndex = 0;
+
+				PrepareBlocksAsync(handler, 0);
 			}
 
 			return yieldedIndex;
