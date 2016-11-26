@@ -10,9 +10,9 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Control.SigmaGrid;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.View.Panels;
 using WPFGrid = System.Windows.Controls.Grid;
 // ReSharper disable InconsistentNaming
 
@@ -43,14 +43,20 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// The grid that holds the actual content.
-		/// Use this value with caution - only use it to layout
-		/// it in code. 
+		/// Use this value with caution - only for 
+		/// layout modification at runtime!
 		/// </summary>
 		public GridLayout Grid { get; private set; }
 
+		/// <summary>
+		/// Create a new <see cref="TabUI"/> - this basically is a 
+		/// <see cref="TabItem"/> with additional control. 
+		/// </summary>
+		/// <param name="header">The header of the tab (name in the <see cref="TabControl"/>)</param>
+		/// <param name="gridsize">The <see cref="GridSize"/>. Use <see cref="Sigma.Core.Monitors.WPF.View.Windows.SigmaWindow.DefaultGridSize"/>. </param>
 		public TabUI(string header, GridSize gridsize)
 		{
 			Content.Header = header;
@@ -100,6 +106,15 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 			return true;
 		}
 
+		/// <summary>
+		/// This method finds an empty area suitable for an object with given <see cref="rowSpan"/> and <see cref="columnSpan"/>.
+		/// </summary>
+		/// <param name="grid">The grid it will be checked against.</param>
+		/// <param name="rowSpan">How many rows the new element requires.</param>
+		/// <param name="columnSpan">How many columns the new element requires.</param>
+		/// <param name="rowPosition">The index of the row where the element will fit. </param>
+		/// <param name="columnPosition">The index of the column where the element will fit.</param>
+		/// <returns><c>True</c> if there is enough room for the new element. <c>False</c> otherwise. </returns>
 		private bool FindEmptyArea(WPFGrid grid, int rowSpan, int columnSpan, out int rowPosition, out int columnPosition)
 		{
 			for (int row = 0; row < GridSize.Rows; row++)
@@ -125,6 +140,33 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 			return false;
 		}
 
+		/// <summary>
+		/// Add a <see cref="SigmaPanel"/> cumulatively to the tab. (At
+		/// the next free position; may skips empty panels if <see cref="columnSpan"/>
+		/// or <see cref="rowSpan"/> is too big. 
+		/// </summary>
+		/// <param name="panel">The <see cref="SigmaPanel"/> that will be added.</param>
+		/// <param name="rowSpan">How many rows the panel requires. </param>
+		/// <param name="columnSpan">How many columns the panel requires. </param>
+		/// <exception cref="ArgumentOutOfRangeException">If <see cref="rowSpan"/> is smaller or equal to zero or if <see cref="columnSpan"/>
+		/// is smaller or equal to zero. </exception>
+		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel"/>. </exception>
+		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1)
+		{
+			AddCumulativeElement(panel, rowSpan, columnSpan);
+		}
+
+		/// <summary>
+		/// Add a <see cref="UIElement"/> cumulatively to the tab. (At
+		/// the next free position; may skips empty panels if <see cref="columnSpan"/>
+		/// or <see cref="rowSpan"/> is too big. 
+		/// </summary>
+		/// <param name="element">The <see cref="UIElement"/> that will be added.</param>
+		/// <param name="rowSpan">How many rows the panel requires. </param>
+		/// <param name="columnSpan">How many columns the panel requires. </param>
+		/// <exception cref="ArgumentOutOfRangeException">If <see cref="rowSpan"/> is smaller or equal to zero or if <see cref="columnSpan"/>
+		/// is smaller or equal to zero. </exception>
+		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement"/>. </exception>
 		public void AddCumulativeElement(UIElement element, int rowSpan = 1, int columnSpan = 1)
 		{
 			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
@@ -145,32 +187,34 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 		}
 
 		/// <summary>
-		/// Add a card onto the grid. 
-		/// If (for some reasons) a <see cref="UIElement"/> has to be placed use <see cref="AddElement"/> instead.
+		/// Place an <see cref="SigmaPanel"/> onto the grid. For granular control use
+		/// <see cref="AddElement"/>.
 		/// </summary>
-		/// <param name="card">The card that will be added.</param>
-		/// <param name="row">The row in which the card should be added.</param>
-		/// <param name="column">The column in which the card should be added.</param>
-		/// <param name="rowSpan">How many rows the card uses.</param>
-		/// <param name="columnSpan">How many columns the card uses.</param>
-		public void AddCard(Card card, int row, int column, int rowSpan = 1, int columnSpan = 1)
+		/// <param name="panel">The <see cref="SigmaPanel"/> that will be added.</param>
+		/// <param name="row">The row in which the <see cref="SigmaPanel"/> should be added.</param>
+		/// <param name="column">The column in which the <see cref="SigmaPanel"/> should be added.</param>
+		/// <param name="rowSpan">How many rows the <see cref="SigmaPanel"/> uses.</param>
+		/// <param name="columnSpan">How many columns the <see cref="SigmaPanel"/> uses.</param>
+		/// <exception cref="ArgumentOutOfRangeException">If <see cref="rowSpan"/> is smaller or equal to zero or if <see cref="columnSpan"/>
+		/// is smaller or equal to zero. </exception>
+		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel"/>. </exception>
+		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1)
 		{
-			AddElement(card, row, column, rowSpan, columnSpan);
-
-			//TODO: change in style? 
-			card.HorizontalAlignment = HorizontalAlignment.Stretch;
-			card.VerticalAlignment = VerticalAlignment.Stretch;
+			AddElement(panel, row, column, rowSpan, columnSpan);
 		}
 
 		/// <summary>
-		/// Place an element onto the grid. Normally a <see cref="Card"/> should be added
-		/// for a consistent UI look-
+		/// Place an <see cref="UIElement"/> onto the grid. Normally a <see cref="SigmaPanel"/> should be added
+		/// to the UI for a consistent look and feel of the UI.
 		/// </summary>
-		/// <param name="element">The element that will be added.</param>
-		/// <param name="row">The row in which the element should be added.</param>
-		/// <param name="column">The column in which the element should be added.</param>
-		/// <param name="rowSpan">How many rows the element uses.</param>
-		/// <param name="columnSpan">How many columns the element uses.</param>
+		/// <param name="element">The <see cref="UIElement"/> that will be added.</param>
+		/// <param name="row">The row in which the <see cref="UIElement"/> should be added.</param>
+		/// <param name="column">The column in which the <see cref="UIElement"/> should be added.</param>
+		/// <param name="rowSpan">How many rows the <see cref="UIElement"/> uses.</param>
+		/// <param name="columnSpan">How many columns the <see cref="UIElement"/> uses.</param>
+		/// <exception cref="ArgumentOutOfRangeException">If <see cref="rowSpan"/> is smaller or equal to zero or if <see cref="columnSpan"/>
+		/// is smaller or equal to zero. </exception>
+		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement"/>. </exception>
 		public void AddElement(UIElement element, int row, int column, int rowSpan = 1, int columnSpan = 1)
 		{
 			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
@@ -178,8 +222,8 @@ namespace Sigma.Core.Monitors.WPF.View.Tabs
 
 			EnsureGrid();
 
-			if (row + rowSpan > GridSize.Rows) throw new ArgumentException("Element would be out of range! (Too few rows)");
-			if (column + columnSpan > GridSize.Columns) throw new ArgumentException("Element would be out of range! (Too few columns)");
+			if (row + rowSpan > GridSize.Rows) throw new IndexOutOfRangeException("Element would be out of range! (Too few rows)");
+			if (column + columnSpan > GridSize.Columns) throw new IndexOutOfRangeException("Element would be out of range! (Too few columns)");
 
 			Grid.Children.Add(element);
 			WPFGrid.SetRow(element, row);

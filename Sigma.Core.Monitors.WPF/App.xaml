@@ -27,9 +27,45 @@
 				<!-- Apply material Design to Dragablz -->
 				<ResourceDictionary Source="pack://application:,,,/Dragablz;component/Themes/materialdesign.xaml"/>
 
+
+
+				<!-- LiveCharts -->
+				<!--Material design colors-->
+				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Colors/material.xaml" />
+				<!--Metro colors-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Colors/metro.xaml" />-->
+				<!--Blue gradient-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Colors/blue.xaml" />-->
+				<!--white gradient-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Colors/white.xaml" />-->
+				<!--black gradient-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Colors/black.xaml" />-->
+
+				<!--Select size, options are small, medium and large-->
+
+				<!--small-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Size/s.xaml" />-->
+				<!--medium-->
+				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Size/m.xaml" />
+				<!--large-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Size/l.xaml" />-->
+
+				<!--Select weight, options are light, normal and bold-->
+				<!--light-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Weight/light.xaml" />-->
+				<!--normal-->
+				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Weight/normal.xaml" />
+				<!--bold-->
+				<!--<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/Weight/bold.xaml" />-->
+
+				<!--Also add the base theme, this is required always-->
+				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/base.xaml" />
+
+
+
 				<ResourceDictionary Source="View/Styles/SigmaStyles.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
-			
+
 			<!-- MahApps Brushes -->
 			<SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource Primary700}"/>
 			<SolidColorBrush x:Key="AccentColorBrush" Color="{DynamicResource Primary500}"/>

@@ -43,7 +43,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 		/// The Grid for the content (only to be
 		/// future proof)
 		/// </summary>
-		private readonly Grid _contentGrid;
+		protected readonly Grid ContentGrid;
 
 		/// <summary>
 		/// The content that will be inside the contentGrid.
@@ -60,7 +60,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 			{
 				if (_content != null)
 				{
-					_contentGrid.Children.Remove(_content);
+					ContentGrid.Children.Remove(_content);
 				}
 
 				if (value == null)
@@ -70,7 +70,7 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 				else
 				{
 					_content = value as UIElement ?? new Label { Content = value.ToString() };
-					_contentGrid.Children.Add(_content);
+					ContentGrid.Children.Add(_content);
 				}
 			}
 		}
@@ -97,8 +97,8 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 			Header = CreateHeader();
 			AddHeader(RootPanel, Header);
 
-			_contentGrid = CreateContentGrid();
-			AddContentGrid(RootPanel, _contentGrid);
+			ContentGrid = CreateContentGrid();
+			AddContentGrid(RootPanel, ContentGrid);
 
 			base.Content = RootPanel;
 		}

@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -149,14 +148,15 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			if (item == null) throw new ArgumentNullException(nameof(item));
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
-			Debug.WriteLine($"Added function for {item}");
+			//BUG: If window is dragged outside - the onClick does not work
 
 			item.MouseLeftButtonUp += (sender, args) => action();
 			item.TouchDown += (sender, args) => action();
 
-			if (item is MenuItem)
+			MenuItem menuItem = item as MenuItem;
+			if (menuItem != null)
 			{
-				((MenuItem) item).Click += (sender, args) => action();
+				menuItem.Click += (sender, args) => action();
 			}
 
 			return this;

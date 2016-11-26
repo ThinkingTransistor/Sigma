@@ -171,7 +171,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		private static void AddTitleBarItems(TitleBarControl titleBarControl)
 		{
 			titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
-			titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
+			titleBarControl.AddItem(new TitleBarItem("Settings", "Toggle Dark", "Setting 2"));
 			titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
 		}
 

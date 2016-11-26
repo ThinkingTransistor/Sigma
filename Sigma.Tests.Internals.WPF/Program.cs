@@ -8,6 +8,7 @@ using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.View.Panels;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 
 namespace Sigma.Tests.Internals.WPF
@@ -25,6 +26,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.WindowDispatcher((window) =>
 			{
 				window.TitleCharacterCasing = CharacterCasing.Normal;
+				window.TitleBar["Settings"].SetFunction("Toggle Dark", () => guiMonitor.ColorManager.Dark = !guiMonitor.ColorManager.Dark);
 			});
 
 			sigma.Prepare();
@@ -34,19 +36,14 @@ namespace Sigma.Tests.Internals.WPF
 				TabUI tab = window.TabControl["Overview"];
 
 				tab.AddCumulativeElement(new TestPanel("Control") { Content = "TestLabel" });
+				tab.AddCumulativeElement(new LineChartPanel("Control"), 2, 3);
+
 				//CreateDefaultCards(tab);
 			});
 
 			guiMonitor.ColorManager.Dark = true;
 			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.Teal;
 			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.Amber;
-
-			while (true)
-			{
-				Thread.Sleep(1500);
-
-				guiMonitor.ColorManager.Dark = !guiMonitor.ColorManager.Dark;
-			}
 
 			//SwitchColor(guiMonitor);
 
