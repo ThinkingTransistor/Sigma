@@ -3,7 +3,7 @@
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
 
-The following libraries / frameworks have been included (in alphabetical order):
+The following libraries / frameworks are used (in alphabetical order):
 
 1. [Dragablz](https://github.com/ButchersBoy/Dragablz)
 2. [LiveCharts](https://github.com/beto-rodriguez/Live-Charts)
