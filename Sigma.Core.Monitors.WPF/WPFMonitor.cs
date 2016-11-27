@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
-using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {

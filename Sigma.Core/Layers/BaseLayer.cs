@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sigma.Core.Handlers;
+﻿using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Layers
 {

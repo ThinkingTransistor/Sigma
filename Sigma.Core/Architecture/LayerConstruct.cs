@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Architecture
 {

@@ -1,6 +1,7 @@
 ﻿using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
@@ -11,9 +12,6 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Sigma.Core.Architecture;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.Layers;
 
 namespace Sigma.Tests.Internals.Backend
 {

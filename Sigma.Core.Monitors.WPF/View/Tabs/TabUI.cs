@@ -6,13 +6,13 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Monitors.WPF.Control.SigmaGrid;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.View.Panels;
 using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Sigma.Core.Monitors.WPF.Control.SigmaGrid;
-using Sigma.Core.Monitors.WPF.Model.UI.Windows;
-using Sigma.Core.Monitors.WPF.View.Panels;
 using WPFGrid = System.Windows.Controls.Grid;
 // ReSharper disable InconsistentNaming
 

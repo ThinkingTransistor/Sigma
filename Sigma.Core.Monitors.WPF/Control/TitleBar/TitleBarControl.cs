@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Collections;
-using System.Collections.Generic;
-using System.Windows.Controls;
 using MahApps.Metro.Controls;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
+using System.Collections;
+using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {

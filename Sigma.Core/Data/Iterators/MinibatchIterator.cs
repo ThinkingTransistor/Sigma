@@ -10,10 +10,10 @@ using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Iterators
 {

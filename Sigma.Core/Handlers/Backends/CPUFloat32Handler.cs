@@ -8,8 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using System;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Handlers.Backends
 {

@@ -6,15 +6,15 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.Windows;
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 // ReSharper disable AccessToStaticMemberViaDerivedType
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
