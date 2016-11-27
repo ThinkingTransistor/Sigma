@@ -166,9 +166,9 @@ namespace Sigma.Core.Utils
 			{
 				Type requiredType = AssociatedTypes[identifier];
 
-				if (value.GetType() != requiredType && !value.GetType().IsSubclassOf(requiredType) && !requiredType.IsAssignableFrom(value.GetType()))
+				if (value.GetType() != requiredType && !value.GetType().IsSubclassOf(requiredType) && !requiredType.IsInstanceOfType(value))
 				{
-					throw new ArgumentException($"Values for identifier {identifier} must be of type {requiredType} (but given value {value} had type {value?.GetType()})");
+					throw new ArgumentException($"Values for identifier {identifier} must be of type {requiredType} (but given value {value} had type {value.GetType()})");
 				}
 			}
 

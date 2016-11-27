@@ -150,12 +150,10 @@ namespace Sigma.Core.Data.Iterators
 
 		private int YieldBlock(IComputationHandler handler, SigmaEnvironment environment)
 		{
-			int yieldedIndex = -1;
-
 			RequireBlocks(handler, _currentHighestTraversedBlockIndex + 1);
 			PrepareBlocksAsync(handler, _currentHighestTraversedBlockIndex + 2);
 
-			yieldedIndex = ++_currentHighestTraversedBlockIndex;
+			int yieldedIndex = ++_currentHighestTraversedBlockIndex;
 
 			if (_currentHighestTraversedBlockIndex > _totalHighestTraversedBlockIndex)
 			{

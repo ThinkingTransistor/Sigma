@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
-using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers
@@ -36,9 +35,7 @@ namespace Sigma.Core.Layers
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true)
 		{
-			INDArray inputActivations = buffer.Inputs["default"].Get<INDArray>("activations");
-
-			buffer.Outputs["default"]["activations"] = "whatever";
+			
 		}
 	}
 }
