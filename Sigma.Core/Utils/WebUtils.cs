@@ -47,9 +47,8 @@ namespace Sigma.Core.Utils
 				string line;
 				while ((line = file.ReadLine()) != null)
 				{
-					string[] parts = line.Split('=');
-					string key = parts[0];
-					string value = parts[1];
+					string key = line.Substring(0, line.IndexOf('='));
+					string value = line.Substring(line.IndexOf('=') + 1);
 
 					try
 					{
