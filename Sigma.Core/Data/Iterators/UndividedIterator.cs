@@ -24,6 +24,8 @@ namespace Sigma.Core.Data.Iterators
 
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
+			CheckNotNull(handler, environment);
+
 			int currentIndex = 0;
 
 			while (true)
@@ -38,11 +40,11 @@ namespace Sigma.Core.Data.Iterators
 				PrepareBlocksAsync(handler, currentIndex + 1);
 
 				var currentBlock = _fetchedBlocks[currentIndex];
-				currentIndex++;
 
 				yield return currentBlock;
 
 				UnderlyingDataset.FreeBlock(currentIndex, handler);
+				currentIndex++;
 			}
 		}
 	}

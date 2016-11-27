@@ -6,6 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -16,13 +19,10 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Sigma.Tests.Data.Iterators
 {
-	public class TestMinibatchIterator
+	public class TestUndividedIterator
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -36,19 +36,17 @@ namespace Sigma.Tests.Data.Iterators
 		}
 
 		[TestCase]
-		public void TestMinibatchIteratorCreate()
+		public void TestUndividedIteratorCreate()
 		{
-			string filename = ".unittestfile" + nameof(TestMinibatchIteratorCreate);
+			string filename = ".unittestfile" + nameof(TestUndividedIteratorCreate);
 
 			CreateCsvTempFile(filename);
-			SigmaEnvironment.Clear();
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
+			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
 
-			Assert.Throws<ArgumentException>(() => new MinibatchIterator(-3, dataset));
-			Assert.Throws<ArgumentNullException>(() => new MinibatchIterator(1, null));
+			Assert.Throws<ArgumentNullException>(() => new UndividedIterator(null));
 
 			dataset.Dispose();
 
@@ -56,45 +54,38 @@ namespace Sigma.Tests.Data.Iterators
 		}
 
 		[TestCase]
-		public void TestMinibatchIteratorYieldAligned()
+		public void TestUndividedIteratorYield()
 		{
-			TestMinibatchIteratorYield(3);
-		}
-
-		[TestCase]
-		public void TestMinibatchIteratorYieldUnaligned()
-		{
-			TestMinibatchIteratorYield(1);
-		}
-
-		public void TestMinibatchIteratorYield(int minibatchSize)
-		{
-			string filename = ".unittestfile" + nameof(TestMinibatchIteratorYield);
+			string filename = ".unittestfile" + nameof(TestUndividedIteratorCreate);
 
 			CreateCsvTempFile(filename);
+
 			SigmaEnvironment.Clear();
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
-			MinibatchIterator iterator = new MinibatchIterator(minibatchSize, dataset);
-			IComputationHandler handler = new CpuFloat32Handler();
+			Dataset dataset = new Dataset("test", 2, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
+			UndividedIterator iterator = new UndividedIterator(dataset);
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
-
-			Assert.Throws<ArgumentNullException>(() => iterator.Yield(null, null).GetEnumerator().MoveNext());
-			Assert.Throws<ArgumentNullException>(() => iterator.Yield(handler, null).GetEnumerator().MoveNext());
-			Assert.Throws<ArgumentNullException>(() => iterator.Yield(null, sigma).GetEnumerator().MoveNext());
+			IComputationHandler handler = new CpuFloat32Handler();
 
 			int index = 0;
 			foreach (var block in iterator.Yield(handler, sigma))
 			{
-				//pass through each more than 5 times to ensure consistency
-				if (index++ > 20)
+				if (index == 0)
 				{
-					break;
+					Assert.AreEqual(new float[] {5.1f, 4.9f}, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+				}
+				else if (index == 1)
+				{
+					Assert.AreEqual(new float[] { 4.7f }, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 1));
+				}
+				else
+				{
+					Assert.Fail("There can be a maximum of two iterations, but this is yield iteration 3 (index 2).");
 				}
 
-				Assert.Contains(block["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
+				index++;
 			}
 
 			dataset.Dispose();

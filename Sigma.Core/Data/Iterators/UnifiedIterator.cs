@@ -36,6 +36,8 @@ namespace Sigma.Core.Data.Iterators
 
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
+			CheckNotNull(handler, environment);
+
 			if (_unifiedBlock == null)
 			{
 				_logger.Info("First time yielding from this iterator, fetching and unifying all blocks from dataset...");

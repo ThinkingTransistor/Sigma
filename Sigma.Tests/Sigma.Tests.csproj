@@ -116,6 +116,8 @@
     <Compile Include="Data\Extractors\TestByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
     <Compile Include="Data\Iterators\TestMinibatchIterator.cs" />
+    <Compile Include="Data\Iterators\TestUnifiedIterator.cs" />
+    <Compile Include="Data\Iterators\TestUndividedIterator.cs" />
     <Compile Include="Data\Preprocessors\TestNormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\TestOneHotPreprocessor.cs" />
     <Compile Include="Data\Readers\TestByteRecordExtractor.cs" />

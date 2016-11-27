@@ -73,6 +73,8 @@ namespace Sigma.Core.Data.Iterators
 
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
+			CheckNotNull(handler, environment);
+
 			while (!_traversedAllBlocks || _currentBatchNotTraversedBlockIndices.Count > 0)
 			{
 				if (_requireNewBlock)

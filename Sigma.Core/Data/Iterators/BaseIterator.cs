@@ -53,6 +53,19 @@ namespace Sigma.Core.Data.Iterators
 
 		public abstract IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
 
+		protected void CheckNotNull(IComputationHandler handler, SigmaEnvironment environment)
+		{
+			if (handler == null)
+			{
+				throw new ArgumentNullException(nameof(handler));
+			}
+
+			if (environment == null)
+			{
+				throw new ArgumentNullException(nameof(environment));
+			}
+		}
+
 		protected void RequireBlocks(IComputationHandler handler, params int[] indices)
 		{
 			foreach (int index in indices)
