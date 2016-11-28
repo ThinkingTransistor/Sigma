@@ -38,7 +38,7 @@ namespace Sigma.Core.Monitors.WPF.Tests.View
 			public string Test { get; set; }
 		}
 
-		private class TestUIWrapperClass : UiWrapper<TestControl>
+		private class TestUIWrapperClass : UIWrapper<TestControl>
 		{
 
 		}

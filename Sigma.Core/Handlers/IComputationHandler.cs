@@ -50,6 +50,13 @@ namespace Sigma.Core.Handlers
 		INDArray Create(params long[] shape);
 
 		/// <summary>
+		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
+		/// </summary>
+		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>
+		/// <returns>The merged ndarray consisting of the given ndarrays contents.</returns>
+		INDArray MergeBatch(params INDArray[] arrays);
+
+		/// <summary>
 		/// Check whether this handler can (and should) convert an ndarray coming from another handler to this handler's ndarray format.
 		/// </summary>
 		/// <param name="array">The array which should be checked for convertibility.</param>

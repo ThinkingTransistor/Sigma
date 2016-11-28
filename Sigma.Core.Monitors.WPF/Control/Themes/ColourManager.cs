@@ -10,17 +10,16 @@ using Dragablz;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+// ReSharper disable AccessToStaticMemberViaDerivedType
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
-	public class ColorManager : IColorManager
+	public class ColourManager : IColourManager
 	{
 		/// <summary>
 		/// The application environment.
@@ -65,11 +64,33 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		private bool _alternate;
 
 		/// <summary>
-		/// Create a new <see cref="ColorManager"/>.
+		/// The path for the Sigma light style theme.
+		/// </summary>
+		private const string SIGMA_STYLE_LIGHT_PATH = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/View/Styles/LightStyle.xaml";
+		/// <summary>
+		/// The path for the Sigma dark style theme.
+		/// </summary>
+		private const string SIGMA_STYLE_DARK_PATH = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/View/Styles/DarkStyle.xaml";
+
+		/// <summary>
+		/// The resource dictionary for the light theme.
+		/// This parameter is null until the application started event
+		/// has been called.
+		/// </summary>
+		private ResourceDictionary _sigmaStyleLightDictionary;
+		/// <summary>
+		/// The resource dictionary for the dark theme.
+		/// This parameter is null until the application started event
+		/// has been called.
+		/// </summary>
+		private ResourceDictionary _sigmaStyleDarkDictionary;
+
+		/// <summary>
+		/// Create a new <see cref="ColourManager"/>.
 		/// </summary>
 		/// <param name="defaultPrimary">The default primary colour (if none has been set).</param>
 		/// <param name="defaultSecondary">The default secondary colour (if none has been set).</param>
-		public ColorManager(Swatch defaultPrimary, Swatch defaultSecondary)
+		public ColourManager(Swatch defaultPrimary, Swatch defaultSecondary)
 		{
 			_primaryColor = defaultPrimary;
 			_secondaryColor = defaultSecondary;
@@ -117,6 +138,9 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		/// <param name="e">The <see cref="StartupEventArgs"/>.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
+			_sigmaStyleLightDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_LIGHT_PATH, UriKind.Absolute) };
+			_sigmaStyleDarkDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_DARK_PATH, UriKind.Absolute) };
+
 			_appStarted = true;
 
 			ReplacePrimaryColor(_primaryColor);
@@ -135,46 +159,36 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		{
 			new PaletteHelper().SetLightDark(dark);
 
+			LoadNewSigmaStyle(dark);
+
 			//Fix the MenuBar
 			var correctBrush = (dark
-				? UiResources.IdealForegroundColorBrush
+				? UIResources.IdealForegroundColorBrush
 				: Application.Current.Resources["SigmaMenuItemForegroundLight"]) as Brush;
 
-			Application.Current.Resources["SigmaMenuItemForeground"] = correctBrush;
-
-			if (_sigmaWindow != null)
-			{
-				foreach (TitleBarItem tabChild in _sigmaWindow.TitleBar)
-				{
-					foreach (KeyValuePair<string, UIElement> menuElement in tabChild.Children)
-					{
-						ApplyStyleToUIElements(menuElement.Value, correctBrush);
-					}
-				}
-			}
+			Style newStyle = new Style(typeof(MenuItem), Application.Current.Resources["SigmaMaterialDesignMenuItem"] as Style);
+			newStyle.Setters.Add(new Setter(MenuItem.ForegroundProperty, correctBrush));
+			Application.Current.Resources[typeof(MenuItem)] = newStyle;
 		}
 
 		/// <summary>
-		/// Apply the passed foregroundBrush as foreground colour to the passed
-		/// parent and all its children.
+		/// Load the new sigma style depending on the passed boolean.
 		/// </summary>
-		/// <param name="element">The parent element. </param>
-		/// <param name="foregroundBrush">The correct foreground colour.</param>
-		private void ApplyStyleToUIElements(object element, Brush foregroundBrush)
+		/// <param name="dark">If this value is <c>true</c>, a dark theme will be applied.
+		/// Otherwise a light theme. </param>
+		private void LoadNewSigmaStyle(bool dark)
 		{
-			MenuItem menuItem = element as MenuItem;
+			ResourceDictionary oldResourceDictionary = dark ? _sigmaStyleLightDictionary : _sigmaStyleDarkDictionary;
+			ResourceDictionary newResourceDictionary = dark ? _sigmaStyleDarkDictionary : _sigmaStyleLightDictionary;
 
-			if (menuItem != null)
+			if (!App.Resources.MergedDictionaries.Contains(newResourceDictionary))
 			{
-				menuItem.Foreground = foregroundBrush;
+				App.Resources.MergedDictionaries.Add(newResourceDictionary);
+			}
 
-				if (menuItem.Items.Count > 0)
-				{
-					foreach (UIElement menuItemChild in menuItem.Items)
-					{
-						ApplyStyleToUIElements(menuItemChild, foregroundBrush);
-					}
-				}
+			if (App.Resources.MergedDictionaries.Contains(oldResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Remove(oldResourceDictionary);
 			}
 		}
 
@@ -199,7 +213,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		}
 
 		/// <summary>
-		/// The primary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The primary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		public Swatch PrimaryColor
 		{
@@ -225,7 +239,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		}
 
 		/// <summary>
-		/// The secondary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The secondary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		public Swatch SecondaryColor
 		{

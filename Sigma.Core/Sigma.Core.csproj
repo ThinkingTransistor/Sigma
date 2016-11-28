@@ -105,8 +105,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Architecture\INetwork.cs" />
+    <Compile Include="Architecture\INetworkArchitecture.cs" />
+    <Compile Include="Architecture\LayerConstruct.cs" />
+    <Compile Include="Architecture\LinearNetwork.cs" />
+    <Compile Include="Architecture\LinearNetworkArchitecture.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
+    <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
+    <Compile Include="Data\Datasets\DatasetRecordwiseSlice.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
     <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
@@ -118,6 +124,7 @@
     <Compile Include="Data\Iterators\IDataIterator.cs" />
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\Iterators\UndividedIterator.cs" />
+    <Compile Include="Data\Iterators\UnifiedIterator.cs" />
     <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
@@ -134,6 +141,9 @@
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
+    <Compile Include="Layers\BaseLayer.cs" />
+    <Compile Include="Layers\ElementwiseLayer.cs" />
+    <Compile Include="Layers\ILayer.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\NDArray.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
@@ -158,6 +168,7 @@
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
+    <Compile Include="Utils\ILayerBuffer.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
@@ -167,7 +178,6 @@
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Layers\" />
     <Folder Include="Persistence\" />
   </ItemGroup>
   <ItemGroup>

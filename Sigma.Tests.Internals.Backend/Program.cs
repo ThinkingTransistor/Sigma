@@ -1,6 +1,7 @@
 ﻿using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
@@ -10,6 +11,7 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -33,31 +35,29 @@ namespace Sigma.Tests.Internals.Backend
 			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
 			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L });
 
 			IComputationHandler handler = new CpuFloat32Handler();
 
-			Dataset dataset = new Dataset("mnist-training", 5, mnistImageExtractor, mnistTargetExtractor);
+			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
+			IDataset trainingData = slices[0];
+			IDataset validationData = slices[1];
 
-			var block = dataset.FetchBlock(0, handler);
+			MinibatchIterator trainingIterator = new MinibatchIterator(1, trainingData);
+			MinibatchIterator validationIterator = new MinibatchIterator(1, validationData);
 
-			if (block == null)
+			while (true)
 			{
-				Console.WriteLine("Fetch block 0 FAILED.");
+				foreach (var block in trainingIterator.Yield(handler, sigma))
+				{
+					Thread.Sleep(100);
+
+					PrintFormattedBlock(block);
+
+					Thread.Sleep(1000);
+				}
 			}
-			else
-			{
-				PrintFormattedBlock(block);
-			}
-
-			//MinibatchIterator iterator = new MinibatchIterator(MinibatchIterator.MinibatchSizeAuto, dataset);
-
-			//while (true)
-			//{
-			//	PrintFormattedBlock(iterator.Yield(handler, sigma));
-
-			//	Thread.Sleep(1000);
-			//}
 
 			//IComputationHandler handler = new CPUFloat32Handler();
 			//Random random = new Random();
@@ -71,10 +71,12 @@ namespace Sigma.Tests.Internals.Backend
 
 			//Console.WriteLine(array);
 
+			//dataset.InvalidateAndClearCaches();
+
 			Console.ReadKey();
 		}
 
-		private static void PrintFormattedBlock(Dictionary<string, INDArray> block)
+		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)
 		{
 			foreach (string name in block.Keys)
 			{
@@ -82,7 +84,7 @@ namespace Sigma.Tests.Internals.Backend
 					? ArrayUtils.ToString<float>(block[name], e => $"{e:0.000}".Replace('0', '.'), maxDimensionNewLine: 0)
 					: block[name].ToString();
 
-				Console.WriteLine($@"[{name}]=" + blockString);
+				Console.WriteLine($"[{name}]=\n" + blockString);
 			}
 		}
 	}

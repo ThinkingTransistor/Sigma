@@ -11,7 +11,7 @@ using System.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Control.Themes
 {
-	public interface IColorManager
+	public interface IColourManager
 	{
 		/// <summary>
 		/// The application environment. 
@@ -21,12 +21,12 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		Window @Window { get; set; }
 
 		/// <summary>
-		/// The primary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The primary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		Swatch PrimaryColor { get; set; }
 
 		/// <summary>
-		/// The secondary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The secondary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		Swatch SecondaryColor { get; set; }
 

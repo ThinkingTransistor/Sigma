@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using log4net;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -47,32 +48,31 @@ namespace Sigma.Core.Utils
 				string line;
 				while ((line = file.ReadLine()) != null)
 				{
-					string[] parts = line.Split('=');
-					string key = parts[0];
-					string value = parts[1];
+					string key = line.Substring(0, line.IndexOf('='));
+					string value = line.Substring(line.IndexOf('=') + 1);
 
 					try
 					{
-						if (key == "address" || key == "proxyaddress")
+						if (Match(key, "address", "proxyaddress"))
 						{
 							address = value.Trim();
 						}
-						else if (key == "port" || key == "proxyport")
+						else if (Match(key, "port", "proxyport"))
 						{
 							port = int.Parse(value.Trim());
 						}
-						else if (key == "user" || key == "username")
+						else if (Match(key, "user", "username"))
 						{
 							username = value.Trim();
 						}
-						else if (key == "pass" || key == "password")
+						else if (Match(key, "pass", "password"))
 						{
 							password = value.Trim();
 						}
 					}
 					catch (Exception ex)
 					{
-						Logger.Warn($"Invalid entry at line {line} in file {filepath}.", ex);	
+						Logger.Warn($"Invalid entry at line {line} in file {filepath}.", ex);
 					}
 				}
 			}
@@ -90,6 +90,11 @@ namespace Sigma.Core.Utils
 			}
 
 			return customProxy;
+		}
+
+		private static bool Match(string actual, params string[] toMatch)
+		{
+			return toMatch.Any(match => actual.Equals(match, StringComparison.OrdinalIgnoreCase));
 		}
 	}
 

@@ -2,6 +2,7 @@
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
 	<!--Copied and modified from MaterialDesignMenu definition-->
+	<!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
 	<Style TargetType="{x:Type Menu}" BasedOn="{StaticResource MaterialDesignMenu}">
 		<Setter Property="FontSize" Value="{DynamicResource P1}"/>
 		<Setter Property="Height" Value="30"/>
@@ -24,6 +25,7 @@
 	<SolidColorBrush x:Key="SigmaMenuItemForeground" Color="{Binding Source={StaticResource SigmaMenuItemForegroundLight}, Path=Color}"/>
 
 
+	<!-- ReSharper disable once Xaml.StaticResourceNotResolved -->
 	<Style x:Key="SigmaMaterialDesignMenuItem" TargetType="{x:Type MenuItem}" BasedOn="{StaticResource MaterialDesignMenuItem}">
 		<Setter Property="VerticalAlignment" Value="Center"/>
 		<Setter Property="Foreground" Value="{DynamicResource SigmaMenuItemForeground}"/>

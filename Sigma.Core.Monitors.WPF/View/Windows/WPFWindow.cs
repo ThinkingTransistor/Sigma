@@ -9,6 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using MahApps.Metro.Controls;
 using System;
 
+// ReSharper disable VirtualMemberCallInConstructor
+
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
 
@@ -31,9 +33,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
 		/// <param name="title">The <see cref="System.Windows.Window.Title"/> of the window.</param>
-		public WPFWindow(WPFMonitor monitor, App app, string title) : base()
+		public WPFWindow(WPFMonitor monitor, App app, string title)
 		{
-			CheckArgs(monitor, app);
+			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
+			if (app == null) throw new ArgumentNullException(nameof(app));
 
 			Monitor = monitor;
 			App = app;
@@ -44,23 +47,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 
 		/// <summary>
-		/// Check whether the arguments are correct.
-		/// Returns or throws Exception. 
-		/// </summary>
-		/// <param name="monitor">The <see cref="WPFMonitor"/>.</param>
-		/// <param name="app">The <see cref="Application"/> environment.</param>
-		private static void CheckArgs(WPFMonitor monitor, App app)
-		{
-			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
-			if (app == null) throw new ArgumentNullException(nameof(app));
-		}
-
-		/// <summary>
 		/// In this function components should be initialised that
 		/// don't depend on constructor arguments. This function
 		/// will be invoked as the last operation
 		/// of the <see cref="WPFWindow"/>'s constructor. 
 		/// </summary>
 		protected abstract void InitialiseComponents();
+
+		/// <summary>
+		/// This method handles all unhandled dispatcher exceptions (see <see cref="UnhandledExceptionEventArgs"/>).
+		/// </summary>
+		/// <param name="sender">The sender of the exception.</param>
+		/// <param name="e">The information of the exception.</param>
+		public abstract void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e);
 	}
 }

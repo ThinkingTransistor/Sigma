@@ -15,6 +15,7 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. 
 	/// Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
+	/// Note: For readability and consistency, snake_case should be used for identifiers.
 	/// </summary>
 	public interface IRegistry : IDictionary<string, object>, IDeepCopyable
 	{

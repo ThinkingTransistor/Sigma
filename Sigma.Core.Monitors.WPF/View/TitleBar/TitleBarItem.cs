@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -30,6 +29,8 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// The logical parent of this <see cref="TitleBarItem"/>.
 		/// </summary>
 		public TitleBarItem Parent { get; private set; }
+
+		public List<TitleBarItem> TitleBarItemChildren;
 
 		/// <summary>
 		/// Create a <see cref="TitleBarItem"/> with given header and children.
@@ -54,6 +55,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		{
 			Content = item;
 			Children = new Dictionary<string, UIElement>();
+			TitleBarItemChildren = new List<TitleBarItem>();
 
 			for (int i = 0; i < children.Length; i++)
 			{
@@ -69,6 +71,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 				else if (children[i] is TitleBarItem)
 				{
 					TitleBarItem childAsTitleBar = (TitleBarItem) children[i];
+					TitleBarItemChildren.Add(childAsTitleBar);
 
 					if (childAsTitleBar.Parent != null)
 					{
@@ -149,14 +152,15 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 			if (item == null) throw new ArgumentNullException(nameof(item));
 			if (action == null) throw new ArgumentNullException(nameof(action));
 
-			Debug.WriteLine($"Added function for {item}");
+			//BUG: If window is dragged outside - the onClick does not work
 
 			item.MouseLeftButtonUp += (sender, args) => action();
 			item.TouchDown += (sender, args) => action();
 
-			if (item is MenuItem)
+			MenuItem menuItem = item as MenuItem;
+			if (menuItem != null)
 			{
-				((MenuItem) item).Click += (sender, args) => action();
+				menuItem.Click += (sender, args) => action();
 			}
 
 			return this;

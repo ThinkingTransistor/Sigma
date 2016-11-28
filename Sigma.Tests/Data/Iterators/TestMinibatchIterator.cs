@@ -56,7 +56,18 @@ namespace Sigma.Tests.Data.Iterators
 		}
 
 		[TestCase]
-		public void TestMinibatchIteratorYield()
+		public void TestMinibatchIteratorYieldAligned()
+		{
+			TestMinibatchIteratorYield(3);
+		}
+
+		[TestCase]
+		public void TestMinibatchIteratorYieldUnaligned()
+		{
+			TestMinibatchIteratorYield(1);
+		}
+
+		public void TestMinibatchIteratorYield(int minibatchSize)
 		{
 			string filename = ".unittestfile" + nameof(TestMinibatchIteratorYield);
 
@@ -66,13 +77,24 @@ namespace Sigma.Tests.Data.Iterators
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
 			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
-			MinibatchIterator iterator = new MinibatchIterator(1, dataset);
+			MinibatchIterator iterator = new MinibatchIterator(minibatchSize, dataset);
 			IComputationHandler handler = new CpuFloat32Handler();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
-			for (int i = 0; i < 20; i++)
+			Assert.Throws<ArgumentNullException>(() => iterator.Yield(null, null).GetEnumerator().MoveNext());
+			Assert.Throws<ArgumentNullException>(() => iterator.Yield(handler, null).GetEnumerator().MoveNext());
+			Assert.Throws<ArgumentNullException>(() => iterator.Yield(null, sigma).GetEnumerator().MoveNext());
+
+			int index = 0;
+			foreach (var block in iterator.Yield(handler, sigma))
 			{
-				Assert.Contains(iterator.Yield(handler, sigma)["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
+				//pass through each more than 5 times to ensure consistency
+				if (index++ > 20)
+				{
+					break;
+				}
+
+				Assert.Contains(block["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
 			}
 
 			dataset.Dispose();

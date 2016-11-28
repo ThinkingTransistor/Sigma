@@ -6,16 +6,19 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 using Dragablz.Dockablz;
+using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
+
 // ReSharper disable VirtualMemberCallInConstructor
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
@@ -24,6 +27,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	{
 		#region DependencyProperties
 
+		// ReSharper disable once InconsistentNaming
 		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize", typeof(GridSize), typeof(WPFWindow), new UIPropertyMetadata(new GridSize(3, 4)));
 
 		#endregion DependencyProperties
@@ -31,13 +35,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		#region Properties
 
 		/// <summary>
-		/// The DefaultGridSize for each newly created <see cref="Tab"/>.
+		/// The DefaultGridSize for each newly created <see cref="TabItem"/>.
 		/// The default <see cref="DefaultGridSize"/> is 3, 4.
 		/// </summary>
 		public GridSize DefaultGridSize
 		{
 			get { return (GridSize) GetValue(DefaultGridSizeProperty); }
-			set { SetValue(DefaultGridSizeProperty, value); }
+			set
+			{
+				DefaultGridSize.Rows = value.Rows;
+				DefaultGridSize.Columns = value.Columns;
+				DefaultGridSize.Sealed = value.Sealed;
+			}
 		}
 
 		#endregion Properties
@@ -49,10 +58,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public TitleBarControl TitleBar { get; }
 
 		/// <summary>
-		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUi"/>
+		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUI"/>
 		/// and therefore, the <see cref="TabItem"/>.
 		/// </summary>
-		public TabControlUi<SigmaWindow> TabControl { get; set; }
+		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
 		/// <summary>
 		/// The constructor for the <see cref="WPFWindow"/>.
@@ -60,7 +69,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
-		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, true)
+		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, null)
 		{
 
 		}
@@ -71,21 +80,24 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
-		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
-		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
+		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
+		protected SigmaWindow(WPFMonitor monitor, App app, string title, SigmaWindow other) : base(monitor, app, title)
 		{
-			FontFamily = UiResources.FontFamily;
+			MinHeight = 500;
+			MinWidth = 750;
+
+			FontFamily = UIResources.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
 
 			TitleBar = CreateTitleBar();
 			LeftWindowCommands = TitleBar;
 
-			AddTitleBarItems(TitleBar);
+			AddTitleBarItems(TitleBar/*, other*/);
 
 			TabControl = CreateTabControl();
 
-			if (addTabs)
+			if (other == null)
 			{
 				//HACK: not Thread safe, if user is stupid and adds tabs 
 				//to the registry after start (and calls this constructor via reflection)
@@ -114,12 +126,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			//This can only be set in the constructor or on start
 			BorderThickness = new Thickness(1);
-			BorderBrush = UiResources.AccentColorBrush;
-			GlowBrush = UiResources.AccentColorBrush;
+			BorderBrush = UIResources.AccentColorBrush;
+			GlowBrush = UIResources.AccentColorBrush;
 
 			//Disable that the title bar will get grey if not focused. 
 			//And any other changes that may occur when the window is not focused.
-			NonActiveWindowTitleBrush = UiResources.AccentColorBrush;
+			NonActiveWindowTitleBrush = UIResources.AccentColorBrush;
 			NonActiveBorderBrush = BorderBrush;
 			NonActiveGlowBrush = GlowBrush;
 		}
@@ -131,14 +143,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 
 		}
-
 		/// <summary>
-		/// THis function creates the <see cref="TabControlUi{T}"/>.
+		/// THis function creates the <see cref="TabControlUI{TWindow,TTabWrapper}"/>.
 		/// </summary>
-		/// <returns>The newly created <see cref="TabControlUi{T}"/>.</returns>
-		protected virtual TabControlUi<SigmaWindow> CreateTabControl()
+		/// <returns>The newly created <see cref="TabControlUI{TWindow,TTabWrapper}"/>.</returns>
+		protected virtual TabControlUI<SigmaWindow, TabUI> CreateTabControl()
 		{
-			return new TabControlUi<SigmaWindow>(Monitor, App, Title);
+			return new TabControlUI<SigmaWindow, TabUI>(Monitor, App, Title);
 		}
 
 		/// <summary>
@@ -160,26 +171,42 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// Add specified <see cref="TitleBarItem"/>s to a given <see cref="TitleBarControl"/>.
 		/// </summary>
 		/// <param name="titleBarControl">The specified <see cref="TitleBarControl"/>.</param>
-		private static void AddTitleBarItems(TitleBarControl titleBarControl)
+		private void AddTitleBarItems(TitleBarControl titleBarControl/*, SigmaWindow other*/)
 		{
-			titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
-			titleBarControl.AddItem(new TitleBarItem("Settings", "Setting 1", "Setting 2"));
-			titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
-		}
-
-		/// <summary>
-		/// Adds the tabs to the given <see cref="TabControlUi{T}"/>.
-		/// </summary>
-		/// <param name="tabControl">The <see cref="TabControlUi{T}"/>, where the <see cref="TabItem"/>s will be added to.</param>
-		/// <param name="names">A list that contains the names of each tab that will be created. </param>
-		protected virtual void AddTabs(TabControlUi<SigmaWindow> tabControl, List<string> names)
-		{
-			for (int i = 0; i < names.Count; i++)
+			//if (other == null)
 			{
-				tabControl.AddTab(new TabUi(names[i], DefaultGridSize));
+				titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store",
+					new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
+				titleBarControl.AddItem(new TitleBarItem("Settings", "Toggle Dark", (Action) (() => Monitor.ColorManager.Dark = !Monitor.ColorManager.Dark), "Toggle Alternate", (Action) (() => Monitor.ColorManager.Alternate = !Monitor.ColorManager.Alternate)));
+				titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
+			}
+			//else
+			{
+				//TODO: copy from other?
+				//load from file?
+				//set this function? probably the best
+				// --SetHowToAddTitleBar(...)
+				//GenerateTitleBarAsUserSpecified.Invoke();
 			}
 		}
 
+		/// <summary>
+		/// Adds the tabs to the given <see cref="TabControlUI{T, U}"/>.
+		/// </summary>
+		/// <param name="tabControl">The <see cref="TabControlUI{T, U}"/>, where the <see cref="TabItem"/>s will be added to.</param>
+		/// <param name="names">A list that contains the names of each tab that will be created. </param>
+		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
+		{
+			foreach (string name in names)
+			{
+				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
+			}
+		}
 
+		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			Exception exception = (Exception) e.ExceptionObject;
+			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
+		}
 	}
 }

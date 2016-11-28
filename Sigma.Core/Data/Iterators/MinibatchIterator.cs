@@ -10,8 +10,10 @@ using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -25,13 +27,23 @@ namespace Sigma.Core.Data.Iterators
 		/// </summary>
 		public const int MinibatchSizeAuto = -1;
 
+		/// <summary>
+		/// The minibatch size used in this minibatch iterator.
+		/// </summary>
+		public int MinibatchSize { get; }
+
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private readonly IList<int> _currentBatchNotTraversedIndices;
-		private readonly ISet<int> _allPossibleIndices;
-		private int _lastTraversedIndex = -1;
-		private int _highestTraversedIndex = -1;
-		private bool _traversedUntilEnd;
+		private readonly IList<int> _currentBatchNotTraversedBlockIndices;
+		private readonly ISet<int> _allAvailableBlockIndices;
+		private readonly IList<int> _currentBlockNotTraversedSlices;
+		private IDictionary<string, INDArray> _currentBlock;
+		private long _currentBlockSizeRecords;
+		private int _currentBlockIndex = -1;
+		private int _currentHighestTraversedBlockIndex = -1;
+		private int _totalHighestTraversedBlockIndex = -1;
+		private bool _traversedAllBlocks;
+		private bool _requireNewBlock = true;
 
 		/// <summary>
 		/// Create a minibatch iterator with a certain minibatch size in records for a certain dataset.
@@ -45,119 +57,143 @@ namespace Sigma.Core.Data.Iterators
 				const int optimalMinibatchSizeRecords = 16; //idk, 16 maybe
 
 				//not sure yet if this is the best way to handle auto mini batch size
-				if (dataset.TrySetBlockSize(optimalMinibatchSizeRecords))
-				{
-					_logger.Info($"Set block size in dataset {dataset} to optimal minibatch size of {optimalMinibatchSizeRecords}.");
-				}
-				else
-				{
-					minibatchSizeRecords = dataset.TargetBlockSizeRecords;
-
-					_logger.Info($"Unable to set block size of dataset {dataset} to the optimal size of {optimalMinibatchSizeRecords}, minibatch size is dataset block size of {minibatchSizeRecords}.");
-				}
+				minibatchSizeRecords = optimalMinibatchSizeRecords;
 			}
 			else if (minibatchSizeRecords <= 0)
 			{
 				throw new ArgumentException($"Minibatch size records must be >= 1 or MinibatchSizeAuto ({MinibatchSizeAuto}).");
 			}
 
-			if (!dataset.TrySetBlockSize(minibatchSizeRecords))
-			{
-				throw new InvalidOperationException($"Unable to align minibatch size of {minibatchSizeRecords} with dataset block size of {dataset.TargetBlockSizeRecords}, block overloading with different size is not supported.");
-			}
+			_currentBatchNotTraversedBlockIndices = new List<int>();
+			_currentBlockNotTraversedSlices = new List<int>();
+			_allAvailableBlockIndices = new HashSet<int>();
 
-			_currentBatchNotTraversedIndices = new List<int>();
-			_allPossibleIndices = new HashSet<int>();
+			MinibatchSize = minibatchSizeRecords;
 		}
 
-		public override Dictionary<string, INDArray> Yield(IComputationHandler handler, SigmaEnvironment environment)
+		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
-			int yieldedIndex = -1;
+			CheckNotNull(handler, environment);
 
-			if (!_traversedUntilEnd)
+			while (!_traversedAllBlocks || _currentBatchNotTraversedBlockIndices.Count > 0)
 			{
-				RequireBlocks(handler, _highestTraversedIndex + 1);
-				PrepareBlocksAsync(handler, _highestTraversedIndex + 2);
-
-				yieldedIndex = ++_highestTraversedIndex;
-
-				if (!_allPossibleIndices.Contains(yieldedIndex))
+				if (_requireNewBlock)
 				{
-					_allPossibleIndices.Add(yieldedIndex);
+					int yieldedIndex = YieldBlock(handler, environment);
+
+					if (_currentBlockIndex >= 0)
+					{
+						UnderlyingDataset.FreeBlock(_currentBlockIndex, handler);
+					}
+
+					_currentBlockIndex = yieldedIndex;
+					_currentBlock = _fetchedBlocks[_currentBlockIndex];
+					_currentBatchNotTraversedBlockIndices.Remove(yieldedIndex);
+					_currentBlockSizeRecords = _currentBlock.First().Value.Shape[0];
+
+					if (_traversedAllBlocks)
+					{
+						ResetNotTraversedBlockIndices();
+
+						yield break;
+					}
+
+					_currentBlockNotTraversedSlices.Clear();
+
+					int numSlices = (int) Math.Ceiling((double) (_currentBlockSizeRecords - 1) / MinibatchSize);
+					foreach (int sliceIndex in ArrayUtils.Range(0, numSlices))
+					{
+						_currentBlockNotTraversedSlices.Add(sliceIndex);
+					}
+
+					_requireNewBlock = false;
 				}
 
-				if (_fetchedBlocks[yieldedIndex] == null)
+				int index = _currentBlockNotTraversedSlices[environment.Random.Next(_currentBlockNotTraversedSlices.Count)];
+				int beginRecordIndex = index * MinibatchSize;
+				long endRecordIndex = Math.Min(_currentBlockSizeRecords, (index + 1) * MinibatchSize);
+
+				_currentBlockNotTraversedSlices.Remove(index);
+
+				if (_currentBlockNotTraversedSlices.Count == 0)
 				{
-					_fetchedBlocks.Remove(yieldedIndex);
-
-					_traversedUntilEnd = true;
-
-					_logger.Info($"Completed initial traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
-
-					ResetNotTraversedIndices();
+					_requireNewBlock = true;
 				}
-			}
 
-			if (_traversedUntilEnd)
-			{
-				yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count)];
-				RequireBlocks(handler, yieldedIndex);
-
-				// looks like the end of the dataset is still the end of the dataset, let's try again every now again 
-				// (index after last possible is also in possible list for online datasets)
-				if (_fetchedBlocks[yieldedIndex] == null)
-				{
-					_currentBatchNotTraversedIndices.Remove(yieldedIndex);
-
-					ResetNotTraversedIndicesIfAllTraversed();
-
-					// Count - 1 to exclude last index which was the test for online dataset index, but as it apparently still hasn't expanded, exclude it
-					yieldedIndex = _currentBatchNotTraversedIndices[environment.Random.Next(_currentBatchNotTraversedIndices.Count - 1)]; 
-					RequireBlocks(handler, yieldedIndex);
-				}
-			}
-
-			if (yieldedIndex < 0)
-			{
-				throw new InvalidOperationException($"Unable to yield block for {handler}, suggested yielded index was {yieldedIndex} (internal error).");
-			}
-
-			if (_lastTraversedIndex >= 0)
-			{
-				UnderlyingDataset.FreeBlock(_lastTraversedIndex, handler);
-			}
-
-			_lastTraversedIndex = yieldedIndex;
-			_currentBatchNotTraversedIndices.Remove(yieldedIndex);
-
-			if (_traversedUntilEnd)
-			{
-				ResetNotTraversedIndicesIfAllTraversed();
-			}
-
-			_logger.Info($"Yielding block with index {yieldedIndex} for handler {handler}.");
-
-			return _fetchedBlocks[yieldedIndex];
-		}
-
-		private void ResetNotTraversedIndicesIfAllTraversed()
-		{
-			if (_currentBatchNotTraversedIndices.Count == 0)
-			{
-				ResetNotTraversedIndices();
+				yield return SliceBlock(_fetchedBlocks[_currentBlockIndex], beginRecordIndex, endRecordIndex);
 			}
 		}
 
-		private void ResetNotTraversedIndices()
+		private IDictionary<string, INDArray> SliceBlock(Dictionary<string, INDArray> block, int beginRecordIndex, long endRecordIndex)
 		{
-			_currentBatchNotTraversedIndices.Clear();
+			IDictionary<string, INDArray> slice = new Dictionary<string, INDArray>();
 
-			foreach (int index in _allPossibleIndices)
+			foreach (string section in block.Keys)
 			{
-				_currentBatchNotTraversedIndices.Add(index);
+				int rank = block[section].Rank;
+				long[] beginIndices = new long[rank];
+				long[] endIndices = new long[rank];
+
+				beginIndices[0] = beginRecordIndex;
+				endIndices[0] = endRecordIndex;
+
+				for (int i = 1; i < rank; i++)
+				{
+					endIndices[i] = block[section].Shape[i];
+				}
+
+				slice.Add(section, block[section].Slice(beginIndices, endIndices));
 			}
 
-			_logger.Info($"Reset indices to traverse for next full batch, total of {_allPossibleIndices.Count} indices/minibatches.");
+			return slice;
+		}
+
+		private int YieldBlock(IComputationHandler handler, SigmaEnvironment environment)
+		{
+			RequireBlocks(handler, _currentHighestTraversedBlockIndex + 1);
+			PrepareBlocksAsync(handler, _currentHighestTraversedBlockIndex + 2);
+
+			int yieldedIndex = ++_currentHighestTraversedBlockIndex;
+
+			if (_currentHighestTraversedBlockIndex > _totalHighestTraversedBlockIndex)
+			{
+				_totalHighestTraversedBlockIndex = _currentHighestTraversedBlockIndex;
+			}
+
+			if (!_allAvailableBlockIndices.Contains(yieldedIndex))
+			{
+				_allAvailableBlockIndices.Add(yieldedIndex);
+			}
+
+			if (_fetchedBlocks[yieldedIndex] == null)
+			{
+				_fetchedBlocks.Remove(yieldedIndex);
+
+				_traversedAllBlocks = true;
+
+				_logger.Info($"Completed traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
+
+				ResetNotTraversedBlockIndices();
+
+				_currentHighestTraversedBlockIndex = 0;
+				yieldedIndex = 0;
+
+				PrepareBlocksAsync(handler, 0);
+			}
+
+			return yieldedIndex;
+		}
+
+		private void ResetNotTraversedBlockIndices()
+		{
+			_currentBatchNotTraversedBlockIndices.Clear();
+
+			foreach (int index in _allAvailableBlockIndices)
+			{
+				_currentBatchNotTraversedBlockIndices.Add(index);
+			}
+
+			_logger.Info($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} indices/minibatches.");
 		}
 	}
 }

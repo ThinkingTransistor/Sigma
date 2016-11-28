@@ -90,9 +90,9 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
-		/// The <see cref="IColorManager"/> to control the look and feel of the application. 
+		/// The <see cref="IColourManager"/> to control the look and feel of the application. 
 		/// </summary>
-		public IColorManager ColorManager
+		public IColourManager ColorManager
 		{
 			get;
 		}
@@ -125,7 +125,7 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			ColorManager = new ColorManager(MaterialDesignSwatches.BLUE, MaterialDesignSwatches.AMBER);
+			ColorManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
 
 			_waitForStart = new ManualResetEvent(false);
 		}
@@ -145,11 +145,15 @@ namespace Sigma.Core.Monitors.WPF
 				ColorManager.App = _app;
 
 				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+
+				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
+
+
 				ColorManager.Window = Window;
 
 				if (_onWindowStartup != null)
 				{
-					foreach (var action in _onWindowStartup)
+					foreach (Action<object> action in _onWindowStartup)
 					{
 						_app.Startup += (sender, args) => action?.Invoke(Window);
 					}
@@ -200,7 +204,7 @@ namespace Sigma.Core.Monitors.WPF
 				Window.Dispatcher.Invoke(() => action((T) Window), priority);
 			}
 
-			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} action not yet implemented... Sorry");
+			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} not yet implemented... Sorry");
 		}
 
 		/// <summary>
@@ -212,7 +216,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow"/>.</param>
 		/// <param name="priority">The priority of the execution.</param>
 		/// <param name="onFinished">The action that should be called after the action has been finished. This action will be called from the caller thread.</param>
-		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not yet implemented.</exception>
+		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished"/> is not implemented.</exception>
 		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal, Action onFinished = null)
 		{
 			WindowDispatcher<SigmaWindow>(action, priority, onFinished);

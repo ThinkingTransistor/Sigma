@@ -11,7 +11,8 @@ using System.Windows.Media;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 {
-	public static class UiResources
+	// ReSharper disable once InconsistentNaming
+	public static class UIResources
 	{
 		#region Font
 		public static FontFamily @FontFamily { get; private set; }
@@ -84,7 +85,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		#endregion
 		#endregion
 
-		static UiResources ()
+		static UIResources()
 		{
 			Application app = Application.Current;
 

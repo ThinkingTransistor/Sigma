@@ -68,7 +68,7 @@ namespace Sigma.Core.Data.Datasets
 		public bool AllowRawReadDataCaching { get; set; } = true;
 
 		private readonly Dictionary<int, ISet<RecordBlock>> _activeBlocks;
-		private readonly Dictionary<int, ISet<RecordBlock>> _cachedBlocks;
+		private readonly Dictionary<int, ISet<WeakRecordBlock>> _cachedBlocks;
 		private readonly ICacheProvider _cacheProvider;
 
 		private int _lastReadRawDataBlockIndex = -1;
@@ -140,11 +140,12 @@ namespace Sigma.Core.Data.Datasets
 			{
 				//somewhat temporary guesstimate, should probably expose the individual parameters 
 				const long estimatedRecordSizeBytes = 1024;
-				const double memoryToConsume = 0.5f;
-				const long optimalNumberBlocks = 24;
+				const double memoryToConsume = 0.2f;
+				const long optimalNumberBlocks = 8;
+				const int maxBlockSizeRecords = 1024;
 				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
-				TargetBlockSizeRecords = (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks);
+				TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
 
 				_autoSetBlockSize = true;
 			}
@@ -166,7 +167,7 @@ namespace Sigma.Core.Data.Datasets
 			_availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
 
 			_activeBlocks = new Dictionary<int, ISet<RecordBlock>>();
-			_cachedBlocks = new Dictionary<int, ISet<RecordBlock>>();
+			_cachedBlocks = new Dictionary<int, ISet<WeakRecordBlock>>();
 
 			if (flushCache)
 			{
@@ -176,6 +177,16 @@ namespace Sigma.Core.Data.Datasets
 
 				_logger.Info($"Done flushing all caches for dataset \"{Name}.\"");
 			}
+		}
+
+		public IDataset[] SplitBlockwise(params int[] parts)
+		{
+			return SplitBlockwise(this, parts);
+		}
+
+		public IDataset[] SplitRecordwise(params double[] parts)
+		{
+			return SplitRecordwise(this, parts);
 		}
 
 		public bool TrySetBlockSize(int blockSizeRecords)
@@ -250,6 +261,11 @@ namespace Sigma.Core.Data.Datasets
 			SectionNames = sectionNames.ToArray();
 		}
 
+		public int GetNumberOfLoadedInactiveCachedBlocks()
+		{
+			return _cachedBlocks.Values.SelectMany(blockSet => blockSet).Count(block => block.Loaded);
+		}
+
 		public bool CanFetchBlocksAfter(int blockIndex)
 		{
 			return blockIndex <= _lastAvailableBlockIndex;
@@ -307,7 +323,7 @@ namespace Sigma.Core.Data.Datasets
 
 			RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0],
 				handler.GetSizeBytes(block.Values.ToArray()), handler)
-			{ LoadedAndActive = true };
+			{ Loaded = true, Active = true };
 
 			lock (this)
 			{
@@ -327,7 +343,7 @@ namespace Sigma.Core.Data.Datasets
 		{
 			if (!IsBlockActive(recordBlock.BlockIndex, recordBlock.Handler))
 			{
-				//block that should be deregistered is not even registered
+				//block that should be de-registered is not even registered
 				return;
 			}
 
@@ -345,7 +361,7 @@ namespace Sigma.Core.Data.Datasets
 			}
 		}
 
-		private void RegisterCachedBlock(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler)
+		private void RegisterCachedBlock(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler, bool keepReference)
 		{
 			if (IsBlockCached(blockIndex, handler))
 			{
@@ -355,12 +371,12 @@ namespace Sigma.Core.Data.Datasets
 
 			if (!_cachedBlocks.ContainsKey(blockIndex))
 			{
-				_cachedBlocks.Add(blockIndex, new HashSet<RecordBlock>());
+				_cachedBlocks.Add(blockIndex, new HashSet<WeakRecordBlock>());
 			}
 
-			RecordBlock recordBlock = new RecordBlock(null, blockIndex, block.First().Value.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
+			WeakRecordBlock recordBlock = new WeakRecordBlock(keepReference ? block : null, blockIndex, block.First().Value.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler);
 
-			recordBlock.LoadedAndActive = false;
+			recordBlock.Loaded = false;
 
 			_cachedBlocks[blockIndex].Add(recordBlock);
 		}
@@ -372,13 +388,13 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
-			_logger.Info("Invalidating and clearning all caches...");
+			_logger.Info("Invalidating and clearing all caches...");
 
 			_cacheProvider.RemoveAll();
 
 			_cachedBlocks.Clear();
 
-			_logger.Info("Done invalidating and clearning all caches.");
+			_logger.Info("Done invalidating and clearing all caches.");
 		}
 
 		private Dictionary<string, INDArray> FetchBlockWhenAvailable(int blockIndex, IComputationHandler handler)
@@ -453,43 +469,33 @@ namespace Sigma.Core.Data.Datasets
 			//  - or checking whether the index is already cached in the right format and loads
 			//  - or if none of that, loads and extracts from the original extractors 
 
-			//check whether a block with the same index is already active 
+			//check whether a block with the same index and format is already active 
 			if (_activeBlocks.ContainsKey(blockIndex))
 			{
-				RecordBlock bestMatchedBlock = null;
-				foreach (RecordBlock otherBlock in _activeBlocks[blockIndex])
+				Dictionary<string, INDArray> block = GetBestMatchedConvertedBlock(_activeBlocks[blockIndex], handler);
+
+				if (block != null)
 				{
-					if (handler.CanConvert(otherBlock.FirstNamedBlock, otherBlock.Handler))
-					{
-						if (handler.IsInterchangeable(otherBlock.Handler))
-						{
-							//no need to look any further, we already found the perfect match and can return without conversion
-							return otherBlock.NamedBlocks;
-						}
-
-						bestMatchedBlock = otherBlock;
-					}
-				}
-
-				if (bestMatchedBlock != null)
-				{
-					//we can just convert from another already loaded block with that index
-					Dictionary<string, INDArray> convertedNamedBlocks = new Dictionary<string, INDArray>();
-
-					foreach (string name in bestMatchedBlock.NamedBlocks.Keys)
-					{
-						convertedNamedBlocks.Add(name, handler.Convert(bestMatchedBlock.NamedBlocks[name], handler));
-					}
-
-					return convertedNamedBlocks;
+					return block;
 				}
 			}
 
-			string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
+			//check whether a block with the same index and format is already loaded and cached but not active
+			if (_cachedBlocks.ContainsKey(blockIndex))
+			{
+				Dictionary<string, INDArray> block = GetBestMatchedConvertedBlock(_cachedBlocks[blockIndex], handler);
 
-			//it's already stored in the cache
+				if (block != null)
+				{
+					return block;
+				}
+			}
+
 			lock (_cacheProvider)
 			{
+				string blockIdentifierInCache = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
+
+				//check whether a block of the same index and format is cached in the cache provider
 				if (_cacheProvider.IsCached(blockIdentifierInCache))
 				{
 					Dictionary<string, INDArray> block = _cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
@@ -497,8 +503,8 @@ namespace Sigma.Core.Data.Datasets
 					//if its != null we could read it correctly in the right format
 					if (block != null)
 					{
-						//register this cache entry as a properly loaded block
-						RegisterCachedBlock(block, blockIndex, handler);
+						//register this cache entry as a properly loaded block in case the cache wasn't flushed and the cache map is outdated
+						RegisterCachedBlock(block, blockIndex, handler, keepReference: false);
 
 						return block;
 					}
@@ -506,6 +512,39 @@ namespace Sigma.Core.Data.Datasets
 			}
 
 			return LoadAndExtractRaw(blockIndex, handler);
+		}
+
+		private Dictionary<string, INDArray> GetBestMatchedConvertedBlock(IEnumerable<RecordBlockBase> blocks, IComputationHandler handler)
+		{
+			RecordBlockBase bestMatchedBlock = null;
+
+			foreach (RecordBlockBase otherBlock in blocks)
+			{
+				if (otherBlock.Loaded && handler.CanConvert(otherBlock.FirstNamedBlock, otherBlock.Handler))
+				{
+					if (handler.IsInterchangeable(otherBlock.Handler))
+					{
+						//no need to look any further, we already found the perfect match and can return without conversion
+						return otherBlock.NamedBlockSections;
+					}
+
+					bestMatchedBlock = otherBlock;
+				}
+			}
+
+			return bestMatchedBlock == null ? null : ConvertNamedBlocks(bestMatchedBlock.NamedBlockSections, handler);
+		}
+
+		private static Dictionary<string, INDArray> ConvertNamedBlocks(Dictionary<string, INDArray> namedBlockSections, IComputationHandler handler)
+		{
+			Dictionary<string, INDArray> convertedNamedBlocks = new Dictionary<string, INDArray>();
+
+			foreach (string name in namedBlockSections.Keys)
+			{
+				convertedNamedBlocks.Add(name, handler.Convert(namedBlockSections[name], handler));
+			}
+
+			return convertedNamedBlocks;
 		}
 
 		private Dictionary<string, INDArray> LoadAndExtractRaw(int blockIndex, IComputationHandler handler)
@@ -658,7 +697,7 @@ namespace Sigma.Core.Data.Datasets
 				{
 					_logger.Info($"Freeing block with index {blockIndex} for handler {handler}...");
 
-					CacheBlockConstrained(block.NamedBlocks, blockIndex, handler);
+					CacheBlockConstrained(block.NamedBlockSections, blockIndex, handler);
 
 					DeregisterActiveBlock(block);
 
@@ -677,7 +716,7 @@ namespace Sigma.Core.Data.Datasets
 		{
 			if (_cachedBlocks.ContainsKey(blockIndex))
 			{
-				foreach (RecordBlock cachedBlock in _cachedBlocks[blockIndex])
+				foreach (WeakRecordBlock cachedBlock in _cachedBlocks[blockIndex])
 				{
 					//check if block of the same type and size is already cached, if so, return, because there is no need to cache again
 					if (cachedBlock.BlockIndex == blockIndex && cachedBlock.Handler.IsInterchangeable(handler) && block.First().Value.Shape[0] == cachedBlock.NumberRecords)
@@ -711,7 +750,9 @@ namespace Sigma.Core.Data.Datasets
 
 			_cacheProvider.Store(cacheIdentifier, block);
 
-			RegisterCachedBlock(block, blockIndex, handler);
+			bool keepReference = TotalActiveBlockSizeBytes + blockSizeBytes < MaxTotalActiveBlockSizeBytes;
+
+			RegisterCachedBlock(block, blockIndex, handler, keepReference);
 
 			SigmaEnvironment.TaskManager.EndTask(task);
 
@@ -777,7 +818,7 @@ namespace Sigma.Core.Data.Datasets
 				return false;
 			}
 
-			foreach (RecordBlock block in _cachedBlocks[blockIndex])
+			foreach (WeakRecordBlock block in _cachedBlocks[blockIndex])
 			{
 				if (ReferenceEquals(block.Handler, handler))
 				{
@@ -799,28 +840,145 @@ namespace Sigma.Core.Data.Datasets
 			_cacheProvider.Dispose();
 		}
 
-		internal class RecordBlock
+		public static IDataset[] SplitBlockwise(IDataset dataset, params int[] parts)
 		{
-			internal Dictionary<string, INDArray> NamedBlocks;
-			internal INDArray FirstNamedBlock;
+			if (parts.Length == 0)
+			{
+				throw new ArgumentException("Parts cannot be an empty collection.");
+			}
+
+			int splitInterval = parts.Sum();
+			int lastEnd = 0;
+			IDataset[] slices = new IDataset[parts.Length];
+
+			for (int i = 0; i < parts.Length; i++)
+			{
+				slices[i] = new DatasetBlockwiseSlice(dataset, lastEnd, lastEnd + parts[i] - 1, splitInterval);
+				lastEnd += parts[i];
+			}
+
+			return slices;
+		}
+
+		public static IDataset[] SplitRecordwise(IDataset dataset, params double[] parts)
+		{
+			if (parts.Length == 0)
+			{
+				throw new ArgumentException("Percentages cannot be an empty collection.");
+			}
+
+			if (parts.Sum() > 1.0)
+			{
+				throw new ArgumentException($"Percentages sum cannot be > 1.0, but parts sum was {parts.Sum()}.");
+			}
+
+			IDataset[] slices = new IDataset[parts.Length];
+
+			double lastOffset = 0.0;
+
+			for (int i = 0; i < slices.Length; i++)
+			{
+				slices[i] = new DatasetRecordwiseSlice(dataset, lastOffset, parts[i]);
+
+				lastOffset += parts[i];
+			}
+
+			return slices;
+		}
+
+		internal abstract class RecordBlockBase
+		{
+			internal abstract Dictionary<string, INDArray> NamedBlockSections { get; set; }
+			internal abstract INDArray FirstNamedBlock { get; set; }
+			internal abstract bool Loaded { get; set; }
+
 			internal IComputationHandler Handler;
-			internal bool LoadedAndActive;
+			internal bool Active;
 			internal int BlockIndex;
 			internal long NumberRecords;
 			internal long EstimatedSizeBytes;
+		}
 
-			public RecordBlock(Dictionary<string, INDArray> namedBlocks, int blockIndex, long numberRecords, long estimatedSizeBytes, IComputationHandler handler)
+		internal class RecordBlock : RecordBlockBase
+		{
+			internal sealed override Dictionary<string, INDArray> NamedBlockSections { get; set; }
+			internal sealed override INDArray FirstNamedBlock { get; set; }
+			internal override bool Loaded { get; set; }
+
+			public RecordBlock(Dictionary<string, INDArray> namedBlockSections, int blockIndex, long numberRecords, long estimatedSizeBytes, IComputationHandler handler)
 			{
-				NamedBlocks = namedBlocks;
+				NamedBlockSections = namedBlockSections;
 				BlockIndex = blockIndex;
 				NumberRecords = numberRecords;
 				EstimatedSizeBytes = estimatedSizeBytes;
 				Handler = handler;
 
 				//record blocks internal block can be null
-				if (namedBlocks != null)
+				if (namedBlockSections != null)
 				{
-					FirstNamedBlock = namedBlocks[namedBlocks.First().Key];
+					FirstNamedBlock = namedBlockSections[namedBlockSections.First().Key];
+				}
+			}
+		}
+
+		internal class WeakRecordBlock : RecordBlockBase
+		{
+			internal override Dictionary<string, INDArray> NamedBlockSections
+			{
+				get
+				{
+					Dictionary<string, INDArray> target;
+
+					return _namedBlockSections.TryGetTarget(out target) ? target : null;
+				}
+				set
+				{
+					_namedBlockSections.SetTarget(value);
+				}
+			}
+
+			internal override INDArray FirstNamedBlock
+			{
+				get
+				{
+					INDArray target;
+
+					return _firstNamedBlock.TryGetTarget(out target) ? target : null;
+				}
+				set
+				{
+					_firstNamedBlock.SetTarget(value);
+				}
+			}
+
+			internal override bool Loaded
+			{
+				get
+				{
+					Dictionary<string, INDArray> target;
+
+					return _namedBlockSections.TryGetTarget(out target);
+				}
+				set
+				{
+				}
+			}
+
+			private readonly WeakReference<Dictionary<string, INDArray>> _namedBlockSections;
+			private readonly WeakReference<INDArray> _firstNamedBlock;
+
+			public WeakRecordBlock(Dictionary<string, INDArray> namedBlockSections, int blockIndex, long numberRecords, long estimatedSizeBytes, IComputationHandler handler)
+			{
+				_namedBlockSections = new WeakReference<Dictionary<string, INDArray>>(namedBlockSections);
+				BlockIndex = blockIndex;
+				NumberRecords = numberRecords;
+				EstimatedSizeBytes = estimatedSizeBytes;
+				Handler = handler;
+
+				//record blocks internal block can be null
+				if (namedBlockSections != null)
+				{
+					_firstNamedBlock = new WeakReference<INDArray>(namedBlockSections[namedBlockSections.First().Key]);
 				}
 			}
 		}
