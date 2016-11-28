@@ -5,6 +5,7 @@
 	<Style TargetType="{x:Type materialDesign:Card}">
 		<Setter Property="VerticalAlignment" Value="Stretch"/>
 		<Setter Property="HorizontalAlignment" Value="Stretch"/>
+		<Setter Property="Padding" Value="0"/>
 	</Style>
 	
 </ResourceDictionary>

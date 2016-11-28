@@ -61,8 +61,10 @@
 				<!--Also add the base theme, this is required always-->
 				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/base.xaml" />
 
+				<!-- Custom colours -->
+				<ResourceDictionary Source="View/Colours/MaterialDesignColours.xaml"/>
 
-
+				<!-- Custom styles -->
 				<ResourceDictionary Source="View/Styles/SigmaStyles.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 

@@ -3,5 +3,6 @@
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="SigmaGrid/CardColoursDark.xaml"/>
+		<ResourceDictionary Source="LiveCharts/AxisDark.xaml"/>
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

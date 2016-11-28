@@ -1,3 +1,8 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Windows.Controls;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
@@ -5,16 +10,17 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View.Panels;
 using Sigma.Core.Monitors.WPF.View.Tabs;
-using System;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Windows.Controls;
 
 namespace Sigma.Tests.Internals.WPF
 {
 	public class Program
 	{
+		private class TestData
+		{
+			public string Name { get; set; }
+			public int Epoch { get; set; }
+		}
+
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
@@ -26,24 +32,38 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.WindowDispatcher((window) =>
 			{
 				window.TitleCharacterCasing = CharacterCasing.Normal;
-				window.TitleBar["Settings"].SetFunction("Toggle Dark", () => guiMonitor.ColorManager.Dark = !guiMonitor.ColorManager.Dark);
 			});
 
 			sigma.Prepare();
 
 			guiMonitor.WindowDispatcher((window) =>
 			{
+
+
 				TabUI tab = window.TabControl["Overview"];
 
-				tab.AddCumulativeElement(new TestPanel("Control") { Content = "TestLabel" });
 				tab.AddCumulativeElement(new LineChartPanel("Control"), 2, 3);
 
-				//CreateDefaultCards(tab);
+				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
+
+
+				panel.Items.Add(new TestData { Name = "SomeOptimizer", Epoch = 14 });
+				panel.Items.Add(new TestData { Name = "OtherOptimizer", Epoch = 1337 });
+
+				tab.AddCumulativeElement(panel);
+
+
+				//DataGridPanel panel2 = new DataGridPanel("compleX");
+				//List<object> items = panel2.AddImageColumn("Images");
+				//items.Add(new Image { Source = new BitmapImage(new Uri(@"C:\Users\Plainer\Desktop\sigma.png")) });
+
+
+				CreateDefaultCards(window.TabControl["Tests"]);
 			});
 
 			guiMonitor.ColorManager.Dark = true;
-			guiMonitor.ColorManager.PrimaryColor = MaterialDesignSwatches.Teal;
-			guiMonitor.ColorManager.SecondaryColor = MaterialDesignSwatches.Amber;
+			guiMonitor.ColorManager.PrimaryColor = MaterialDesignValues.Teal;
+			guiMonitor.ColorManager.SecondaryColor = MaterialDesignValues.Amber;
 
 			//SwitchColor(guiMonitor);
 

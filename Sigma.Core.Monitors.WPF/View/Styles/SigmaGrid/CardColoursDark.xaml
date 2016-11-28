@@ -1,5 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	<SolidColorBrush x:Key="SigmaPanelHeaderBackground" Color="#616161"/>
-	<SolidColorBrush x:Key="SigmaPanelHeaderForeground" Color ="White"/>
+	<SolidColorBrush x:Key="SigmaPanelHeaderBackground" Color="{StaticResource GreyPrimary700}"/>
+	<SolidColorBrush x:Key="SigmaPanelHeaderForeground" Color ="{StaticResource GreyPrimary700Foreground}"/>
 </ResourceDictionary>

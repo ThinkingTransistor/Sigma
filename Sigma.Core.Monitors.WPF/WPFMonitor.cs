@@ -125,7 +125,7 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			ColorManager = new ColourManager(MaterialDesignSwatches.Blue, MaterialDesignSwatches.Amber);
+			ColorManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
 
 			_waitForStart = new ManualResetEvent(false);
 		}

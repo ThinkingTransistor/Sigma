@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using MahApps.Metro.Controls;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
@@ -33,6 +33,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 			Items.Add(Menu);
 
 			//Styling options
+			//TODO: style-file?
 			ShowLastSeparator = false;
 		}
 
@@ -48,6 +49,7 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 			Menu.Items.Add(item.Content);
 			_children.Add(item.ToString(), item);
 
+			//TODO: pass correct ForegroundBrush?
 			if (applyColor)
 			{
 				item.Content.Foreground = UIResources.IdealForegroundColorBrush;

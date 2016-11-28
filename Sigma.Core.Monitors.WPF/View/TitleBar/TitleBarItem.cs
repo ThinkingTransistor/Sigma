@@ -30,6 +30,8 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		/// </summary>
 		public TitleBarItem Parent { get; private set; }
 
+		public List<TitleBarItem> TitleBarItemChildren;
+
 		/// <summary>
 		/// Create a <see cref="TitleBarItem"/> with given header and children.
 		/// </summary>
@@ -53,6 +55,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 		{
 			Content = item;
 			Children = new Dictionary<string, UIElement>();
+			TitleBarItemChildren = new List<TitleBarItem>();
 
 			for (int i = 0; i < children.Length; i++)
 			{
@@ -68,6 +71,7 @@ namespace Sigma.Core.Monitors.WPF.View.TitleBar
 				else if (children[i] is TitleBarItem)
 				{
 					TitleBarItem childAsTitleBar = (TitleBarItem) children[i];
+					TitleBarItemChildren.Add(childAsTitleBar);
 
 					if (childAsTitleBar.Parent != null)
 					{

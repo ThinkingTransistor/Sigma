@@ -54,8 +54,6 @@ namespace Sigma.Core.Monitors.WPF.View
 			}
 		}
 
-
-
 		/// <summary>
 		/// Convert the <see cref="UIWrapper{T}"/> to the wrapped content.
 		/// </summary>

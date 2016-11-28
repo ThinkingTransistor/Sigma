@@ -121,7 +121,7 @@
     <Compile Include="Control\SigmaGrid\GridLayout.cs" />
     <Compile Include="Control\Themes\ColourManager.cs" />
     <Compile Include="Control\Themes\IColourManager.cs" />
-    <Compile Include="Control\Themes\MaterialDesignSwatches.cs" />
+    <Compile Include="Control\Themes\MaterialDesignValues.cs" />
     <Compile Include="Control\TitleBar\TitleBarControl.cs" />
     <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
     <Compile Include="Model\UI\Resources\UIResources.cs" />
@@ -141,6 +141,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Control\Tabs\TabControlUI.cs" />
+    <Compile Include="View\Panels\DataGridPanel.cs" />
+    <Compile Include="View\Panels\SimpleDataGridPanel.cs" />
     <Compile Include="View\Panels\LineChartPanel.cs" />
     <Compile Include="View\Panels\SigmaPanel.cs" />
     <Compile Include="View\Tabs\TabUI.cs" />
@@ -188,7 +190,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="View\Colours\MaterialDesignColours.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Styles\DarkStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\LiveCharts\AxisDark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\Panels\DataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

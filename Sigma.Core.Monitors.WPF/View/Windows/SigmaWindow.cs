@@ -6,6 +6,10 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
@@ -14,10 +18,6 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
-using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -69,7 +69,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
-		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, true)
+		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, null)
 		{
 
 		}
@@ -80,9 +80,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
 		/// <param name="app">The <see cref="Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
-		/// <param name="addTabs">Decides whether the saved <see cref="WPFMonitor.Tabs"/> should be added or not. </param>
-		protected SigmaWindow(WPFMonitor monitor, App app, string title, bool addTabs) : base(monitor, app, title)
+		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
+		protected SigmaWindow(WPFMonitor monitor, App app, string title, SigmaWindow other) : base(monitor, app, title)
 		{
+			MinHeight = 500;
+			MinWidth = 750;
+
 			FontFamily = UIResources.FontFamily;
 
 			TitleAlignment = HorizontalAlignment.Center;
@@ -90,11 +93,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			TitleBar = CreateTitleBar();
 			LeftWindowCommands = TitleBar;
 
-			AddTitleBarItems(TitleBar);
+			AddTitleBarItems(TitleBar/*, other*/);
 
 			TabControl = CreateTabControl();
 
-			if (addTabs)
+			if (other == null)
 			{
 				//HACK: not Thread safe, if user is stupid and adds tabs 
 				//to the registry after start (and calls this constructor via reflection)
@@ -168,11 +171,23 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// Add specified <see cref="TitleBarItem"/>s to a given <see cref="TitleBarControl"/>.
 		/// </summary>
 		/// <param name="titleBarControl">The specified <see cref="TitleBarControl"/>.</param>
-		private static void AddTitleBarItems(TitleBarControl titleBarControl)
+		private void AddTitleBarItems(TitleBarControl titleBarControl/*, SigmaWindow other*/)
 		{
-			titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store", new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
-			titleBarControl.AddItem(new TitleBarItem("Settings", "Toggle Dark", "Setting 2"));
-			titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
+			//if (other == null)
+			{
+				titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store",
+					new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
+				titleBarControl.AddItem(new TitleBarItem("Settings", "Toggle Dark", (Action) (() => Monitor.ColorManager.Dark = !Monitor.ColorManager.Dark), "Toggle Alternate", (Action) (() => Monitor.ColorManager.Alternate = !Monitor.ColorManager.Alternate)));
+				titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
+			}
+			//else
+			{
+				//TODO: copy from other?
+				//load from file?
+				//set this function? probably the best
+				// --SetHowToAddTitleBar(...)
+				//GenerateTitleBarAsUserSpecified.Invoke();
+			}
 		}
 
 		/// <summary>

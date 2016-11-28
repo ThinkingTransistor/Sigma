@@ -6,9 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using MaterialDesignThemes.Wpf;
 using System.Windows;
 using System.Windows.Controls;
+using MaterialDesignThemes.Wpf;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -166,7 +166,23 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 		/// <returns>The newly create <see cref="DockPanel"/>.</returns>
 		protected virtual DockPanel CreateDockPanel()
 		{
-			return new DockPanel { LastChildFill = true };
+			return new DockPanel { LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0) };
 		}
+
+		#region CardProperties
+
+		/// <summary>
+		/// Gets or sets the outer margin of an element. 
+		/// 
+		/// <returns> Provides margin values for the element. The default value is a <see cref="Thickness"/>
+		/// with all properties equal to 0 (zero).</returns>
+		/// </summary>
+		public new Thickness Margin
+		{
+			get { return ContentGrid.Margin; }
+			set { ContentGrid.Margin = value; }
+		}
+
+		#endregion
 	}
 }

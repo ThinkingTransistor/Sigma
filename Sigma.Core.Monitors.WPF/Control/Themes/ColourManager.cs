@@ -213,7 +213,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		}
 
 		/// <summary>
-		/// The primary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The primary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		public Swatch PrimaryColor
 		{
@@ -239,7 +239,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Themes
 		}
 
 		/// <summary>
-		/// The secondary colour of the app. Get via <see cref="MaterialDesignSwatches"/>.
+		/// The secondary colour of the app. Get via <see cref="MaterialDesignValues"/>.
 		/// </summary>
 		public Swatch SecondaryColor
 		{

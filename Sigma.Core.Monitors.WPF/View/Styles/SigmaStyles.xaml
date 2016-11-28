@@ -5,7 +5,10 @@
 
 		<ResourceDictionary Source="TitleBar/MenuStyle.xaml"/>
 		<ResourceDictionary Source="SigmaGrid/CardStyle.xaml"/>
-
+		
+		<!-- Panels -->
+		<ResourceDictionary Source="Panels/DataGrid.xaml"/>
+		
 	</ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>
