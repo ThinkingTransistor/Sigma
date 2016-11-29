@@ -11,6 +11,7 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
@@ -35,7 +36,7 @@ namespace Sigma.Tests.Internals.Backend
 			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
 			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L });
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
 			IComputationHandler handler = new CpuFloat32Handler();
 
@@ -46,7 +47,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			MinibatchIterator trainingIterator = new MinibatchIterator(1, trainingData);
 			MinibatchIterator validationIterator = new MinibatchIterator(1, validationData);
-
+ 
 			while (true)
 			{
 				foreach (var block in trainingIterator.Yield(handler, sigma))

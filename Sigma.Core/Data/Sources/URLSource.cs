@@ -180,7 +180,7 @@ namespace Sigma.Core.Data.Sources
 
 				if (!downloadSuccess && numberRetriesLeft > 0)
 				{
-					_logger.Info($"Retrying download, retry attempt {NumberRetriesOnError - numberRetriesLeft} of {NumberRetriesOnError}...");
+					_logger.Info($"Retrying download, retry attempt {NumberRetriesOnError - numberRetriesLeft + 1} of {NumberRetriesOnError}...");
 				}
 			} while (!downloadSuccess && numberRetriesLeft-- > 0); 
 
