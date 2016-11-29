@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
@@ -21,6 +25,14 @@ namespace Sigma.Tests.Internals.WPF
 			public int Epoch { get; set; }
 		}
 
+		private class ComplexTestData
+		{
+			public ImageSource Picture { get; set; }
+			public string SomeText { get; set; }
+			public string SomeOtherText { get; set; }
+			public int SomeInt { get; set; }
+		}
+
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
@@ -29,10 +41,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 
-			guiMonitor.WindowDispatcher((window) =>
-			{
-				window.TitleCharacterCasing = CharacterCasing.Normal;
-			});
+			guiMonitor.WindowDispatcher((window) => { window.TitleCharacterCasing = CharacterCasing.Normal; });
 
 			sigma.Prepare();
 
@@ -44,17 +53,31 @@ namespace Sigma.Tests.Internals.WPF
 
 				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
 
-
 				panel.Items.Add(new TestData { Name = "SomeOptimizer", Epoch = 14 });
 				panel.Items.Add(new TestData { Name = "OtherOptimizer", Epoch = 1337 });
 
 				tab.AddCumulativeElement(panel);
 
 
-				//DataGridPanel panel2 = new DataGridPanel("compleX");
-				//List<object> items = panel2.AddImageColumn("Images");
-				//items.Add(new Image { Source = new BitmapImage(new Uri(@"C:\Users\Plainer\Desktop\sigma.png")) });
+				DataGridPanel panel2 = new DataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
+				ComplexTestData data = new ComplexTestData
+				{
+					Picture = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png")),
+					SomeInt = 12,
+					SomeOtherText = "other",
+					SomeText = "text"
+				};
 
+				panel2.Content.Items.Add(data);
+
+
+				//panel2.AddImageColumn("Images", nameof(ComplexTestData.Picture));
+				//panel2.Content.Items.Add(
+				//	new ComplexTestData { SomeText = "tesstkd", Picture = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png")) });
+
+				//items.Add(new Image {Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png"))}.Source);
+				//items.Add(new Image { Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma.png")) });
+				tab.AddCumulativeElement(panel2, 1, 3);
 
 				CreateDefaultCards(window.TabControl["Tests"]);
 			});
@@ -92,18 +115,27 @@ namespace Sigma.Tests.Internals.WPF
 
 			foreach (Swatch swatch in swatches)
 			{
-				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new [] " + "{ ");
+				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new [] " +
+							   "{ ");
 
 				foreach (Hue hue in swatch.PrimaryHues)
 				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
+					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " +
+								   $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " +
+								   "new Color() { " +
+								   $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " +
+								   "}), ");
 				}
 
 				builder.Append("}, new [] { ");
 
 				foreach (Hue hue in swatch.AccentHues)
 				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " + "new Color() { " + $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " + "}), ");
+					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " +
+								   $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " +
+								   "new Color() { " +
+								   $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " +
+								   "}), ");
 				}
 
 				builder.Append("});\n");
