@@ -15,6 +15,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -342,11 +343,13 @@ namespace Sigma.Core
 			get; internal set;
 		}
 
+		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB"); 
 		internal static IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
 		{
+			CultureInfo.DefaultThreadCurrentCulture = DefaultCultureInfo;
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
 
