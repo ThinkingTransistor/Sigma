@@ -313,7 +313,7 @@ namespace Sigma.Core.MathAbstract
 		/// Constructs a string representing the contents of this ndarray, formatted properly and somewhat customisable. 
 		/// </summary>
 		/// <returns>A fancy string representing the contents of this ndarray.</returns>
-		public string ToString(ToStringElement toStringElement, int dimensionNewLine = 1)
+		public string ToString(ToStringElement toStringElement, int dimensionNewLine = 1, bool printSeperator = true)
 		{
 			if (toStringElement == null)
 			{
@@ -350,7 +350,7 @@ namespace Sigma.Core.MathAbstract
 
 				builder.Append(toStringElement(Data.GetValue(i)));
 
-				if (indices[lastIndex] < shape[lastIndex] - 1)
+				if (printSeperator && indices[lastIndex] < shape[lastIndex] - 1)
 				{
 					builder.Append(", ");
 				}

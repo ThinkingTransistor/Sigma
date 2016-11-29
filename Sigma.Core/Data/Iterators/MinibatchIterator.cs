@@ -79,6 +79,8 @@ namespace Sigma.Core.Data.Iterators
 			{
 				if (_requireNewBlock)
 				{
+					_logger.Info($"Requiring new block for next yield, fetching block from dataset...");
+
 					int yieldedIndex = YieldBlock(handler, environment);
 
 					if (_currentBlockIndex >= 0)
@@ -119,6 +121,8 @@ namespace Sigma.Core.Data.Iterators
 				{
 					_requireNewBlock = true;
 				}
+
+				_logger.Info($"Yielding minibatch from block with index {_currentBlockIndex}, record range from {beginRecordIndex} to {endRecordIndex}.");
 
 				yield return SliceBlock(_fetchedBlocks[_currentBlockIndex], beginRecordIndex, endRecordIndex);
 			}

@@ -45,7 +45,7 @@ namespace Sigma.Core
 		/// </summary>
 		public string Name
 		{
-			get; internal set;
+			get; private set;
 		}
 
 		/// <summary>

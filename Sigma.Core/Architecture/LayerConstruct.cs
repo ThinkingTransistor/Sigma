@@ -49,15 +49,8 @@ namespace Sigma.Core.Architecture
 		{
 			ValidateLayerName(name);
 
-			if (layerClassType == null)
-			{
-				throw new ArgumentNullException(nameof(layerClassType));
-			}
-
-			if (layerClassType.IsSubclassOf(_layerInterfaceType))
-			{
-				throw new ArgumentException($"Layer class type must be subclass of layer interface type IInterface, but was {layerClassType}.");
-			}
+			if (layerClassType == null) throw new ArgumentNullException(nameof(layerClassType));
+			if (layerClassType.IsSubclassOf(_layerInterfaceType)) throw new ArgumentException($"Layer class type must be subclass of layer interface type IInterface, but was {layerClassType}.");
 
 			_layerClassType = layerClassType;
 

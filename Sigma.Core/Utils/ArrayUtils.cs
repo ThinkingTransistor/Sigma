@@ -226,9 +226,9 @@ namespace Sigma.Core.Utils
 		/// <param name="toStringElement"></param>
 		/// <param name="maxDimensionNewLine"></param>
 		/// <returns></returns>
-		public static string ToString<T>(INDArray array, NDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1)
+		public static string ToString<T>(INDArray array, NDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1, bool printSeperator = true)
 		{
-			return ((NDArray<T>) array).ToString(toStringElement, maxDimensionNewLine);
+			return ((NDArray<T>) array).ToString(toStringElement, maxDimensionNewLine, printSeperator);
 		}
 
 		/// <summary>
