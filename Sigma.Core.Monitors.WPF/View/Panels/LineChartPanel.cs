@@ -1,7 +1,7 @@
-﻿using System;
-using System.Windows;
-using LiveCharts;
+﻿using LiveCharts;
 using LiveCharts.Wpf;
+using System;
+using System.Windows;
 
 namespace Sigma.Core.Monitors.WPF.View.Panels
 {

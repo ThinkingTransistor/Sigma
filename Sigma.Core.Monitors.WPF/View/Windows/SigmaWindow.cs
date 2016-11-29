@@ -6,10 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
@@ -18,6 +14,10 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
 
 // ReSharper disable VirtualMemberCallInConstructor
 

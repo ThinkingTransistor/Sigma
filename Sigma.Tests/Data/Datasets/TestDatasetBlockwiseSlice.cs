@@ -6,8 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -15,6 +13,8 @@ using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends;
+using System;
+using System.IO;
 
 namespace Sigma.Tests.Data.Datasets
 {

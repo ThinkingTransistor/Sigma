@@ -11,7 +11,6 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend

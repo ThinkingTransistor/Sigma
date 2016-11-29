@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sigma.Core.Monitors.WPF.View.Panels;
+using System.Collections.Generic;
 using System.Windows.Controls;
-using Sigma.Core.Monitors.WPF.View.Panels;
 
 namespace Sigma.Tests.Internals.WPF
 {

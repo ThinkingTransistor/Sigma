@@ -1,12 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
@@ -14,6 +5,13 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Control.Themes;
 using Sigma.Core.Monitors.WPF.View.Panels;
 using Sigma.Core.Monitors.WPF.View.Tabs;
+using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Sigma.Tests.Internals.WPF
 {

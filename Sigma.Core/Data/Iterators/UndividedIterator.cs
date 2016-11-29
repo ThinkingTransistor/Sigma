@@ -6,11 +6,11 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System.Collections.Generic;
-using log4net;
 
 namespace Sigma.Core.Data.Iterators
 {
