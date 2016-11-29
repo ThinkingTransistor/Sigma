@@ -38,8 +38,6 @@ namespace Sigma.Tests.Internals.WPF
 
 			guiMonitor.WindowDispatcher((window) =>
 			{
-
-
 				TabUI tab = window.TabControl["Overview"];
 
 				tab.AddCumulativeElement(new LineChartPanel("Control"), 2, 3);
