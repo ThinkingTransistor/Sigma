@@ -102,7 +102,7 @@ namespace Sigma.Core.Data.Extractors
 			foreach (string name in NamedColumnIndexMapping.Keys)
 			{
 				IList<int> mappings = NamedColumnIndexMapping[name];
-				INDArray array = handler.Create(numberOfRecordsToExtract, 1, mappings.Count);
+				INDArray array = handler.NDArray(numberOfRecordsToExtract, 1, mappings.Count);
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(double));
 
 				for (int i = 0; i < numberOfRecordsToExtract; i++)

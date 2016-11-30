@@ -139,13 +139,15 @@
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
-    <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\NativeCpu\CPUFloat32Handler.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
-    <Compile Include="MathAbstract\NDArray.cs" />
+    <Compile Include="MathAbstract\INumber.cs" />
+    <Compile Include="MathAbstract\Backends\NativeCpu\NDArray.cs" />
+    <Compile Include="MathAbstract\Backends\NativeCpu\Number.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />

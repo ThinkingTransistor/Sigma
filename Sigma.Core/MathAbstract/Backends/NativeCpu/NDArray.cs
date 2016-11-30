@@ -6,23 +6,23 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Data;
-using Sigma.Core.Utils;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Sigma.Core.Data;
+using Sigma.Core.Utils;
 
-namespace Sigma.Core.MathAbstract
+namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 {
 	/// <summary>
-	/// A default, in system memory implementation of the INDArray interface. 
+	/// A default, in-system-memory implementation of the INDArray interface.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">The data type of this ndarray.</typeparam>
 	[Serializable]
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[SuppressMessage("ReSharper", "InconsistentNaming")] //INdArray looks stupid
 	public class NDArray<T> : INDArray, IDeepCopyable
 	{
-		internal IDataBuffer<T> Data;
+		internal readonly IDataBuffer<T> Data;
 
 		public long Length { get; private set; }
 

@@ -6,12 +6,13 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.NativeCpu;
 using Sigma.Core.Utils;
-using System;
 
-namespace Sigma.Core.Handlers.Backends
+namespace Sigma.Core.Handlers.Backends.NativeCpu
 {
 	/// <summary>
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
@@ -20,9 +21,14 @@ namespace Sigma.Core.Handlers.Backends
 	{
 		public IDataType DataType => DataTypes.Float32;
 
-		public INDArray Create(params long[] shape)
+		public INDArray NDArray(params long[] shape)
 		{
 			return new NDArray<float>(shape: shape);
+		}
+
+		public INumber Number(object value)
+		{
+			return new Number<float>((float) System.Convert.ChangeType(value, typeof(float)));
 		}
 
 		public INDArray MergeBatch(params INDArray[] arrays)

@@ -13,6 +13,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sigma.Core.MathAbstract.Backends.NativeCpu;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -92,7 +93,7 @@ namespace Sigma.Core.Data.Extractors
 
 				Array.Copy(featureShape, 0, shape, 2, featureShape.Length);
 
-				INDArray array = handler.Create(shape);
+				INDArray array = handler.NDArray(shape);
 
 				long[] globalBufferIndices = new long[shape.Length];
 

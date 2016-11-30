@@ -15,6 +15,7 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends;
 using System;
 using System.IO;
+using Sigma.Core.Handlers.Backends.NativeCpu;
 
 namespace Sigma.Tests.Data.Datasets
 {

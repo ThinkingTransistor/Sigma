@@ -47,7 +47,14 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
 		/// <returns>An ndarray with the given shape.</returns>
-		INDArray Create(params long[] shape);
+		INDArray NDArray(params long[] shape);
+
+		/// <summary>
+		/// Create a single value (i.e. number) with a certain initial value.
+		/// </summary>
+		/// <param name="value">The value to wrap in a single value wrapper.</param>
+		/// <returns>A single value wrapper with the given value for computation.</returns>
+		INumber Number(object value);
 
 		/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).

@@ -6,16 +6,16 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends;
-using System;
-using System.Collections.Generic;
-using System.IO;
+using Sigma.Core.Handlers.Backends.NativeCpu;
 
-namespace Sigma.Tests.Data.Preprocessors
+namespace Sigma.Tests.Data.Extractors
 {
 	public class TestCsvRecordExtractor
 	{

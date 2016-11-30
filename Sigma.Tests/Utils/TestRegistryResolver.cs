@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Utils;
 
-namespace Sigma.Tests.Data
+namespace Sigma.Tests.Utils
 {
 	public class TestRegistryResolver
 	{

@@ -12,6 +12,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Sigma.Core.Handlers.Backends.NativeCpu;
 
 namespace Sigma.Tests.Internals.Backend
 {

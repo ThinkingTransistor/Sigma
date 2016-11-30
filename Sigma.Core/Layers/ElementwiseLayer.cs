@@ -18,8 +18,8 @@ namespace Sigma.Core.Layers
 		{
 			int size = parameters.Get<int>("size");
 
-			parameters["weights"] = handler.Create(size);
-			parameters["biases"] = handler.Create(size);
+			parameters["weights"] = handler.NDArray(size);
+			parameters["biases"] = handler.NDArray(size);
 
 			TrainableParameters = new[] { "weights", "biases" };
 		}
