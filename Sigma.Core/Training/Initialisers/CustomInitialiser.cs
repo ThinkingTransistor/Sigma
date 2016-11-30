@@ -21,6 +21,10 @@ namespace Sigma.Core.Training.Initialisers
 	{
 		private readonly Func<long[], long[], Random, object> _valueFunc;
 
+		/// <summary>
+		/// Create a custom initialiser with a given per value function.
+		/// </summary>
+		/// <param name="valueFunc">The value function with the inputs indices, shape and a randomiser and the output value at the given index.</param>
 		public CustomInitialiser(Func<long[], long[], Random, object> valueFunc)
 		{
 			if (valueFunc == null) throw new ArgumentNullException(nameof(valueFunc));

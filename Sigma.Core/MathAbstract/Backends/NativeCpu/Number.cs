@@ -20,7 +20,7 @@
 
 		public object Value
 		{
-			get { return Value; }
+			get { return _value; }
 			set { _value = (T) value; }
 		}
 	}
