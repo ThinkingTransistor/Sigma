@@ -132,6 +132,11 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			}
 		}
 
+		public void Add(INDArray array, INumber value, INDArray output)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void Subtract<TOther>(INDArray array, TOther value, INDArray output)
 		{
 			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
@@ -143,6 +148,11 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			{
 				outputData.SetValue(arrayData.GetValue(i) - floatValue, i);
 			}
+		}
+
+		public void Subtract(INDArray array, INumber value, INDArray output)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void Multiply<TOther>(INDArray array, TOther value, INDArray output)
@@ -158,6 +168,11 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			}
 		}
 
+		public void Multiply(INDArray array, INumber value, INDArray output)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void Divide<TOther>(INDArray array, TOther value, INDArray output)
 		{
 			IDataBuffer<float> arrayData = ((NDArray<float>) array).Data;
@@ -169,6 +184,11 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			{
 				outputData.SetValue(arrayData.GetValue(i) / floatValue, i);
 			}
+		}
+
+		public void Divide(INDArray array, INumber value, INDArray output)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

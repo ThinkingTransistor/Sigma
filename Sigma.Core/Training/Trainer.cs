@@ -1,4 +1,12 @@
-﻿using Sigma.Core.Architecture;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
@@ -15,7 +23,7 @@ namespace Sigma.Core.Training
 	{
 		public string Name { get; }
 		public INetwork Network { get; set; }
-		public IReadOnlyDictionary<string, IReadOnlyDictionary<string, IInitialiser>> Initialisers { get; set; }
+		public IReadOnlyDictionary<string, IInitialiser> Initialisers { get; set; }
 		public IOptimiser Optimiser { get; set; }
 		public IOperator Operator { get; set; }
 		public IDataIterator TrainingDataIterator { get; set; }
@@ -31,10 +39,7 @@ namespace Sigma.Core.Training
 
 		public Trainer(string name)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException(nameof(name));
-			}
+			if (name == null) throw new ArgumentNullException(nameof(name));
 
 			Name = name;
 

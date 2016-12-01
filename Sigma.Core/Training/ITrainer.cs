@@ -32,10 +32,10 @@ namespace Sigma.Core.Training
 		INetwork Network { get; set; }
 
 		/// <summary>
-		/// The initialisers used in this trainer by layer and then by parameter name. 
+		/// The initialisers used in this trainer by parameter resolve string.
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
-		IReadOnlyDictionary<string, IReadOnlyDictionary<string, IInitialiser>> Initialisers { get; set; }
+		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; set; }
 
 		/// <summary>
 		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum).

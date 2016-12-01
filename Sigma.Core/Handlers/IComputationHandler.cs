@@ -22,13 +22,13 @@ namespace Sigma.Core.Handlers
 		IDataType DataType { get; }
 
 		/// <summary>
-		/// Initialise a deserialised ndarray of this handler's format with this handler and register and initialise components relevant to this handler.
+		/// Initialise a just de-serialised ndarray of this handler's format with this handler and register and initialise components relevant to this handler.
 		/// </summary>
 		/// <param name="array">The ndarray to serialise.</param>
 		void InitAfterDeserialisation(INDArray array);
 
 		/// <summary>
-		/// Get the (estimated) size of a number of ndarrays in bytes. 
+		/// Get the (estimated) size of a number of ndarrays in system memory in bytes. 
 		/// If any of the given ndarrays are not of a format this handler can handle, throw an exception.
 		/// </summary>
 		/// <param name="array">The ndarrays.</param>
@@ -95,7 +95,7 @@ namespace Sigma.Core.Handlers
 		void Fill<TOther>(TOther value, INDArray arrayToFill);
 
 		/// <summary>
-		/// Add a value to all elements in an ndarray and put the result in another ndarray.
+		/// Add a constant value to all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -104,7 +104,15 @@ namespace Sigma.Core.Handlers
 		void Add<TOther>(INDArray array, TOther value, INDArray output);
 
 		/// <summary>
-		/// Subtract a value from all elements in an ndarray and put the result in another ndarray.
+		/// Add a traceable number to all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Add(INDArray array, INumber value, INDArray output);
+
+		/// <summary>
+		/// Subtract a constant value from all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -113,7 +121,15 @@ namespace Sigma.Core.Handlers
 		void Subtract<TOther>(INDArray array, TOther value, INDArray output);
 
 		/// <summary>
-		/// Multiply a value with all elements in an ndarray and put the result in another ndarray.
+		/// Subtract a traceable number from all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Subtract(INDArray array, INumber value, INDArray output);
+
+		/// <summary>
+		/// Multiply a constant value with all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -122,12 +138,28 @@ namespace Sigma.Core.Handlers
 		void Multiply<TOther>(INDArray array, TOther value, INDArray output);
 
 		/// <summary>
-		/// Divide all elements in an ndarray by a value and put the result in another ndarray.
+		/// Multiply a traceable number with all elements in an ndarray and put the result in another ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Multiply(INDArray array, INumber value, INDArray output);
+
+		/// <summary>
+		/// Divide all elements in an ndarray by a constant value and put the result in another ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
 		void Divide<TOther>(INDArray array, TOther value, INDArray output);
+
+		/// <summary>
+		/// Divide all elements in an ndarray by a traceable number and put the result in another ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
+		void Divide(INDArray array, INumber value, INDArray output);
 	}
 }
