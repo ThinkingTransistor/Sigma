@@ -39,7 +39,7 @@ namespace Sigma.Core.Training.Initialisers
 
 			for (long i = 0; i < array.Length; i++)
 			{
-				indices = NDArray<double>.GetIndices(i, array.Shape, array.Strides, indices);
+				indices = NDArrayUtils.GetIndices(i, array.Shape, array.Strides, indices);
 
 				array.SetValue(GetValue(indices, array.Shape, random), indices);
 			}

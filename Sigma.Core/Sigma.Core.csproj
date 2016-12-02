@@ -144,6 +144,7 @@
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
+    <Compile Include="MathAbstract\Backends\NativeCpu\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
     <Compile Include="MathAbstract\Backends\NativeCpu\NDArray.cs" />

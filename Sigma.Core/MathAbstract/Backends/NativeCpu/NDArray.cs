@@ -44,7 +44,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 		/// <param name="buffer">The buffer to back this ndarray.</param>
 		public NDArray(IDataBuffer<T> buffer)
 		{
-			Initialise(new long[] { 1, (int) buffer.Length }, GetStrides(1, (int) buffer.Length));
+			Initialise(new long[] { 1, (int) buffer.Length }, NDArrayUtils.GetStrides(1, (int) buffer.Length));
 
 			Data = buffer;
 		}
@@ -61,7 +61,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 				throw new ArgumentException($"Buffer must contain the entire shape, but buffer length was {buffer.Length} and total shape length {ArrayUtils.Product(shape)} (shape = {ArrayUtils.ToString(shape)}).");
 			}
 
-			Initialise(CheckShape(shape), GetStrides(shape));
+			Initialise(NDArrayUtils.CheckShape(shape), NDArrayUtils.GetStrides(shape));
 
 			Data = buffer;
 		}
@@ -72,7 +72,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 		/// <param name="data">The data to use to fill this ndarray.</param>
 		public NDArray(T[] data)
 		{
-			Initialise(new long[] { 1, data.Length }, GetStrides(1, data.Length));
+			Initialise(new long[] { 1, data.Length }, NDArrayUtils.GetStrides(1, data.Length));
 
 			Data = new DataBuffer<T>(data, 0L, data.Length);
 		}
@@ -90,7 +90,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 				throw new ArgumentException($"Data must contain the entire shape, but data length was {data.Length} and total shape length {ArrayUtils.Product(shape)} (shape = {ArrayUtils.ToString(shape)}).");
 			}
 
-			Initialise(CheckShape(shape), GetStrides(shape));
+			Initialise(NDArrayUtils.CheckShape(shape), NDArrayUtils.GetStrides(shape));
 
 			Data = new DataBuffer<T>(data, 0L, Length);
 		}
@@ -101,7 +101,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 		/// <param name="shape">The shape.</param>
 		public NDArray(params long[] shape)
 		{
-			Initialise(CheckShape(shape), GetStrides(shape));
+			Initialise(NDArrayUtils.CheckShape(shape), NDArrayUtils.GetStrides(shape));
 
 			Data = new DataBuffer<T>(Length);
 		}
@@ -122,7 +122,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 			if (shape.Length == 1 && shape[0] > 1)
 			{
 				shape = new[] { 1, shape[0] };
-				strides = GetStrides(shape);
+				strides = NDArrayUtils.GetStrides(shape);
 			}
 
 			Shape = shape;
@@ -143,12 +143,12 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 
 		public TOther GetValue<TOther>(params long[] indices)
 		{
-			return Data.GetValueAs<TOther>(GetFlatIndex(Shape, Strides, indices));
+			return Data.GetValueAs<TOther>(NDArrayUtils.GetFlatIndex(Shape, Strides, indices));
 		}
 
 		public void SetValue<TOther>(TOther value, params long[] indices)
 		{
-			Data.SetValue((T) Convert.ChangeType(value, Data.Type.UnderlyingType), GetFlatIndex(Shape, Strides, indices));
+			Data.SetValue((T) Convert.ChangeType(value, Data.Type.UnderlyingType), NDArrayUtils.GetFlatIndex(Shape, Strides, indices));
 		}
 
 		public INDArray Slice(long[] beginIndices, long[] endIndices)
@@ -163,7 +163,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 			for (int i = 0; i < slicedShape.Length; i++)
 			{
 				slicedShape[i] = endIndices[i] - beginIndices[i];
-				
+
 				if (slicedShape[i] < 0)
 				{
 					throw new ArgumentException($"Begin indices must be smaller than end indices, but begin indices at [{i}] was {beginIndices[i]} and end indices at [{i}] {endIndices[i]}");
@@ -173,8 +173,8 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 				endIndices[i]--;
 			}
 
-			long absoluteBeginOffset = GetFlatIndex(Shape, Strides, beginIndices);
-			long absoluteEndOffset = GetFlatIndex(Shape, Strides, endIndices);
+			long absoluteBeginOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, beginIndices);
+			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);
 			long length = absoluteEndOffset - absoluteBeginOffset + 1;
 
 			return new NDArray<T>(new DataBuffer<T>(Data, absoluteBeginOffset, length), slicedShape);
@@ -207,7 +207,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			Initialise(CheckShape(newShape), GetStrides(newShape));
+			Initialise(NDArrayUtils.CheckShape(newShape), NDArrayUtils.GetStrides(newShape));
 
 			return this;
 		}
@@ -261,7 +261,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			Initialise(newShape, GetStrides(newShape));
+			Initialise(newShape, NDArrayUtils.GetStrides(newShape));
 
 			return this;
 		}
@@ -331,9 +331,11 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 
 			StringBuilder builder = new StringBuilder();
 
+			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ":\n");
+
 			for (long i = 0; i < length; i++)
 			{
-				indices = GetIndices(i, shape, strides, indices);
+				indices = NDArrayUtils.GetIndices(i, shape, strides, indices);
 
 				for (int y = rank - 1; y >= 0; y--)
 				{
@@ -394,114 +396,6 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 			}
 
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Calculate the stride of a given shape. 
-		/// Note: The shape is not checked for correctness. To do that <see cref="CheckShape(long[])"/>.
-		/// </summary>
-		/// <param name="shape"></param>
-		/// <returns></returns>
-		public static long[] GetStrides(params long[] shape)
-		{
-			long[] strides = new long[shape.Length];
-
-			long currentStride = 1;
-			for (int i = shape.Length - 1; i >= 0; i--)
-			{
-				strides[i] = currentStride;
-				currentStride *= shape[i];
-			}
-
-			return strides;
-		}
-
-		/// <summary>
-		/// Check a shape for logical correctness (i.e. all values must be > 0, total length must be > 0). If incorrect, this method throws an appropriate argument exception.
-		/// </summary>
-		/// <param name="shape">The shape array to check.</param>
-		/// <returns>The same shape array (for convenience).</returns>
-		public static long[] CheckShape(params long[] shape)
-		{
-			if (shape.Length == 0)
-			{
-				throw new ArgumentException("Shape array cannot be of length 0.");
-			}
-
-			for (int i = 0; i < shape.Length; i++)
-			{
-				if (shape[i] <= 0)
-				{
-					throw new ArgumentException($"Invalid shape: all shape dimensions must be > 0, but dimension {i} was {shape[i]}.");
-				}
-			}
-
-			return shape;
-		}
-
-		/// <summary>
-		/// Get the flattened index given all dimensions indices and a certain ndarray shape and strides.
-		/// </summary>
-		/// <param name="shape">The shape of the ndarray.</param>
-		/// <param name="strides">The strides of the ndarray.</param>
-		/// <param name="indices">The indices, where each index represents one dimension of the shape (C style indexing, major/row first).</param>
-		/// <returns>The flattened index given the dimensions indices and the ndarray's shape and strides.</returns>
-		public static long GetFlatIndex(long[] shape, long[] strides, params long[] indices)
-		{
-			if (shape.Length != strides.Length || shape.Length != indices.Length)
-			{
-				throw new ArgumentException($"Shape, stride, and indices array length must be the same, but shape length was {shape.Length}, stride length {strides.Length}, and indices length {indices.Length}.");
-			}
-
-			long flatIndex = 0L;
-			int length = shape.Length;
-
-			for (int i = 0; i < length; i++)
-			{
-				if (indices[i] >= shape[i])
-				{
-					throw new IndexOutOfRangeException($"Indices must be smaller than their dimensions shape, but indices[{i}] was {indices[i]} and shape[{i}] was {shape[i]}.");
-				}
-
-				flatIndex += indices[i] * strides[i];
-			}
-
-			return flatIndex;
-		}
-
-		/// <summary>
-		/// Get the per dimension indices corresponding to a certain flattened index and shape and strides of an ndarray.
-		/// </summary>
-		/// <param name="flatIndex">The flattened index.</param>
-		/// <param name="shape">The shape of the ndarray.</param>
-		/// <param name="strides">The strides of the ndarray.</param>
-		/// <param name="resultIndices">If this argument is non-null and the same length as the shape and strides arrays the result will be stored here and no new indices array will be created.</param>
-		/// <returns>The corresponding per dimension indices given a flat index, a shape and strides.</returns>
-		public static long[] GetIndices(long flatIndex, long[] shape, long[] strides, long[] resultIndices = null)
-		{
-			if (shape.Length != strides.Length)
-			{
-				throw new ArgumentException($"Shape, stride (and [result]) array length must be the same, but shape length was {shape.Length} and stride length {strides.Length}.");
-			}
-
-			int rank = shape.Length;
-
-			if (resultIndices == null)
-			{
-				resultIndices = new long[rank];
-			}
-			else if (resultIndices.Length != rank)
-			{
-				throw new ArgumentException($"Shape, stride (and [result]) array length must be the same, but shape length and stride length were {shape.Length} and result length {resultIndices.Length}.");
-			}
-
-			for (int i = 0; i < rank; i++)
-			{
-				resultIndices[i] = flatIndex / strides[i];
-				flatIndex -= resultIndices[i] * strides[i];
-			}
-
-			return resultIndices;
 		}
 	}
 }

@@ -9,6 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data
 {
@@ -286,6 +288,11 @@ namespace Sigma.Core.Data
 			{
 				yield return Data.GetValue(i);
 			}
+		}
+
+		public override string ToString()
+		{
+			return "$databuffer of type {Type} and size {Length}";
 		}
 	}
 }

@@ -108,14 +108,14 @@ namespace Sigma.Core.Data.Extractors
 					{
 						long[] beginShape = mappings[i];
 						long[] localShape = perMappingShape[i / 2];
-						long[] localStrides = NDArray<byte>.GetStrides(localShape);
+						long[] localStrides = NDArrayUtils.GetStrides(localShape);
 						long[] localBufferIndices = new long[mappings[i].Length];
 						long length = perMappingLength[i / 2];
 						long beginFlatIndex = ArrayUtils.Product(beginShape);
 
 						for (int y = 0; y < length; y++)
 						{
-							localBufferIndices = NDArray<byte>.GetIndices(y, localShape, localStrides, localBufferIndices);
+							localBufferIndices = NDArrayUtils.GetIndices(y, localShape, localStrides, localBufferIndices);
 							localBufferIndices = ArrayUtils.Add(beginShape, localBufferIndices, localBufferIndices);
 
 							Array.Copy(localBufferIndices, 0, globalBufferIndices, 2, localBufferIndices.Length);
