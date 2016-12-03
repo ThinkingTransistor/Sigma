@@ -5,6 +5,17 @@ Rocket powered machine learning. Create, compare, adapt, improve - neural networ
 
 The following libraries / frameworks are used (in alphabetical order):
 
+| Library                             | Purpose                           |
+| :-----------------------------------|:----------------------------------|
+| [log4net](https://logging.apache.org/log4net/) | Logging, log4j for .NET |
+| [NUnit](https://www.nunit.org/) | Unit tests for .NET |
+| [SharpZipLib](http://www.icsharpcode.net/) | Compression and decompression of various formats (zip, tar, gz, bzip, gzip) |
+| [Dragablz](https://github.com/ButchersBoy/Dragablz) | Tearable tab control for WPF, which includes docking, tool windows |
+| [LiveCharts](https://github.com/beto-rodriguez/Live-Charts), [LiveCharts.Wpf](https://github.com/beto-rodriguez/Live-Charts) | Charting, graphing, advanced data, plotting |
+| [MahApps.Metro](https://github.com/MahApps/MahApps.Metro), [MahApps.Metro.Resources](https://github.com/MahApps/MahApps.Metro) | Toolkit for creating metro-style WPF applications |
+| [ManagedCuda](https://github.com/kunzmi/managedCuda), [ManagedCuda-CUBLAS](https://github.com/kunzmi/managedCuda) | Managed CUDA (GPU) and CuBLAS support |
+| [MaterialDesignColors](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit), [MaterialDesignThemes](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit), [MaterialDesignThemes.MahApps](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit) | Material design for WPF/MahApps |
+
 1. [Dragablz](https://github.com/ButchersBoy/Dragablz)
 2. [LiveCharts](https://github.com/beto-rodriguez/Live-Charts)
 3. [LiveCharts.Wpf](https://github.com/beto-rodriguez/Live-Charts)
