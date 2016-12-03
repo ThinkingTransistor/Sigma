@@ -32,9 +32,7 @@ namespace Sigma.Core.Data
 
 		public long RelativeOffset { get; }
 
-		public IDataType Type
-		{
-			get; }
+		public IDataType Type { get; }
 
 		public ILargeChunkedArray<T> Data { get; }
 
@@ -262,6 +260,15 @@ namespace Sigma.Core.Data
 		public void SetValues(T[] values, long sourceStartIndex, long destStartIndex, long length)
 		{
 			Data.FillWith(values, sourceStartIndex, destStartIndex + Offset, length);
+		}
+
+		/// <summary>
+		/// Get the first underlying data chunk of this data buffer. 
+		/// </summary>
+		/// <returns></returns>
+		public T[] GetFirstUnderlyingDataChunk()
+		{
+			return Data.ChunkedData[0];
 		}
 
 		public IDataBuffer<T> GetUnderlyingBuffer()
