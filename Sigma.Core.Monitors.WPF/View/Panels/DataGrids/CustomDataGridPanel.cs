@@ -3,69 +3,33 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace Sigma.Core.Monitors.WPF.View.Panels
+namespace Sigma.Core.Monitors.WPF.View.Panels.DataGrids
 {
-	public class DataGridPanel : SigmaPanel
+	public class CustomDataGridPanel : SigmaDataGridPanel
 	{
-		public new DataGrid Content { get; }
-
-		public DataGridPanel(string title) : base(title)
-		{
-			Content = new DataGrid
-			{
-				IsReadOnly = true
-			};
-
-			base.Content = Content;
-		}
-
-		public DataGridPanel(string title, object header, Type type, string propertyName) : this(title)
+		public CustomDataGridPanel(string title, object header, Type type, string propertyName) : base(title)
 		{
 			AddColumn(header, type, propertyName);
 		}
 
-		public DataGridPanel(string title, object header1, Type type1, string propertyName1, object header2, Type type2, string propertyName2) : this(title, header1, type1, propertyName1)
+		public CustomDataGridPanel(string title, object header1, Type type1, string propertyName1, object header2, Type type2, string propertyName2) : this(title, header1, type1, propertyName1)
 		{
 			AddColumn(header2, type2, propertyName2);
 		}
 
-		public DataGridPanel(string title, object header1, Type type1, string propertyName1, object header2, Type type2, string propertyName2, object header3, Type type3, string propertyName3,
+		public CustomDataGridPanel(string title, object header1, Type type1, string propertyName1, object header2, Type type2,
+			string propertyName2, object header3, Type type3, string propertyName3,
 			params object[] columns) : this(title, header1, type1, propertyName1, header2, type2, propertyName2)
 		{
 			AddColumn(header3, type3, propertyName3);
 
-			if (columns.Length % 3 != 0)
-				throw new ArgumentException(nameof(columns));
+			if (columns.Length % 3 != 0) throw new ArgumentException(nameof(columns));
 
 			for (int i = 0; i < columns.Length; i++)
 			{
 				AddColumn(columns[i], (Type) columns[++i], (string) columns[++i]);
 			}
 		}
-
-		//public List<object> AddDataGridTemplateColumn(object header, string headerIdentifier, Type type)
-		//{
-		//	if (type == typeof(Image))
-		//	{
-		//		return AddImageColumn(header, headerIdentifier);
-		//	}
-		//	else
-		//	{
-		//		return AddTextColumn(header);
-		//	}
-		//}
-
-
-		//public List<object> AddTextColumn(object header)
-		//{
-		//	throw new NotImplementedException();
-		//}
-
-		//public List<object> AddImageColumn(string header, )
-		//{
-		//	return AddImageColumn(header, header);
-		//}
-
 
 		public bool AddColumn(object header, Type type, string propertyName)
 		{
@@ -119,16 +83,23 @@ namespace Sigma.Core.Monitors.WPF.View.Panels
 				Header = header,
 				Binding = GenerateBinding(propertyName, bindingMode)
 			};
+
 			Content.Columns.Add(column);
 		}
 
+		/// <summary>
+		/// Add an image column where the value will be taken from <see cref="propertyName"/>.
+		/// </summary>
+		/// <param name="header">The header of the column - can be an arbitrary <see cref="UIElement"/> or <c>string</c>.</param>
+		/// <param name="propertyName">The name of the property to bind to (property has to be an <see cref="System.Windows.Media.ImageSource"/>). E.g. <c>public ImageSource Img;</c> 
+		/// => <see cref="propertyName"/> = "Img"</param>
+		/// <param name="bindingMode">The binding mode for the object - normally this can be ignored except the <see cref="DataGrid"/> is readable. (<see cref="DataGrid.IsReadOnly"/> <c> = false</c>). </param>
 		public void AddImageColumn(object header, string propertyName, BindingMode bindingMode = BindingMode.TwoWay)
 		{
 			DataGridTemplateColumn column;
 			FrameworkElementFactory factory;
 
 			GenerateColumn(header, typeof(Image), out column, out factory);
-
 
 			factory.SetValue(Image.SourceProperty, GenerateBinding(propertyName, bindingMode));
 

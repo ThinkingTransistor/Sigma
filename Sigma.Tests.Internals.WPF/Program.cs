@@ -1,10 +1,3 @@
-using MaterialDesignColors;
-using MaterialDesignThemes.Wpf;
-using Sigma.Core;
-using Sigma.Core.Monitors.WPF;
-using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.View.Panels;
-using Sigma.Core.Monitors.WPF.View.Tabs;
 using System;
 using System.IO;
 using System.Text;
@@ -12,6 +5,14 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
+using Sigma.Core;
+using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.View.Panels;
+using Sigma.Core.Monitors.WPF.View.Panels.DataGrids;
+using Sigma.Core.Monitors.WPF.View.Tabs;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -57,10 +58,10 @@ namespace Sigma.Tests.Internals.WPF
 				tab.AddCumulativeElement(panel);
 
 
-				DataGridPanel panel2 = new DataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
+				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
 				ComplexTestData data = new ComplexTestData
 				{
-					Picture = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png")),
+					Picture = new BitmapImage(new Uri(@"C:\Users\Plainer\Desktop\sigma2.png")),
 					SomeInt = 12,
 					SomeOtherText = "other",
 					SomeText = "text"

@@ -6,6 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Windows;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
@@ -14,10 +17,8 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Tabs;
 using Sigma.Core.Monitors.WPF.View.TitleBar;
-using System;
-using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
+using CharacterCasing = System.Windows.Controls.CharacterCasing;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -35,7 +36,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		#region Properties
 
 		/// <summary>
-		/// The DefaultGridSize for each newly created <see cref="TabItem"/>.
+		/// The DefaultGridSize for each newly created <see cref="System.Windows.Controls.TabItem"/>.
 		/// The default <see cref="DefaultGridSize"/> is 3, 4.
 		/// </summary>
 		public GridSize DefaultGridSize
@@ -59,7 +60,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		/// <summary>
 		/// The <see cref="TabControl"/> for the tabs. It allows to access each <see cref="TabUI"/>
-		/// and therefore, the <see cref="TabItem"/>.
+		/// and therefore, the <see cref="System.Windows.Controls.TabItem"/>.
 		/// </summary>
 		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
@@ -67,7 +68,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// The constructor for the <see cref="WPFWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
-		/// <param name="app">The <see cref="Application"/> environment.</param>
+		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
 		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, null)
 		{
@@ -78,7 +79,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// The constructor for the <see cref="WPFWindow"/>.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor"/>.</param>
-		/// <param name="app">The <see cref="Application"/> environment.</param>
+		/// <param name="app">The <see cref="System.Windows.Application"/> environment.</param>
 		/// <param name="title">The <see cref="Window.Title"/> of the window.</param>
 		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
 		protected SigmaWindow(WPFMonitor monitor, App app, string title, SigmaWindow other) : base(monitor, app, title)
@@ -105,6 +106,26 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 
 			Content = (Layout) TabControl;
+
+			//Layout tabLayout = (Layout) TabControl;
+
+			//DockPanel dock = new DockPanel();
+
+			//dock.LastChildFill = true;
+
+			//StatusBar myContent = new StatusBar();
+			//myContent.Background = Brushes.Red;
+			//myContent.Height = 50;
+
+			//dock.Children.Add(myContent);
+			//DockPanel.SetDock(myContent, Dock.Bottom);
+
+
+			//dock.Children.Add(tabLayout);
+			//DockPanel.SetDock(tabLayout, Dock.Top);
+
+			//Content = dock;
+			////Content = (Layout) TabControl;
 		}
 
 		protected override void InitialiseComponents()
@@ -193,7 +214,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <summary>
 		/// Adds the tabs to the given <see cref="TabControlUI{T, U}"/>.
 		/// </summary>
-		/// <param name="tabControl">The <see cref="TabControlUI{T, U}"/>, where the <see cref="TabItem"/>s will be added to.</param>
+		/// <param name="tabControl">The <see cref="TabControlUI{T, U}"/>, where the <see cref="System.Windows.Controls.TabItem"/>s will be added to.</param>
 		/// <param name="names">A list that contains the names of each tab that will be created. </param>
 		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
 		{

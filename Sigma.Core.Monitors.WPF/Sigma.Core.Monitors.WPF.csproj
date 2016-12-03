@@ -117,6 +117,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Control\Factories\IUIFactory.cs" />
+    <Compile Include="Control\Factories\StatusBarFactory.cs" />
+    <Compile Include="Control\StatusBar\StatusBarFactory.cs" />
     <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
     <Compile Include="Control\SigmaGrid\GridLayout.cs" />
     <Compile Include="Control\Themes\ColourManager.cs" />
@@ -141,8 +144,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Control\Tabs\TabControlUI.cs" />
-    <Compile Include="View\Panels\DataGridPanel.cs" />
-    <Compile Include="View\Panels\SimpleDataGridPanel.cs" />
+    <Compile Include="View\Panels\DataGrids\CustomDataGridPanel.cs" />
+    <Compile Include="View\Panels\DataGrids\SigmaDataGridPanel.cs" />
+    <Compile Include="View\Panels\DataGrids\SimpleDataGridPanel.cs" />
     <Compile Include="View\Panels\LineChartPanel.cs" />
     <Compile Include="View\Panels\SigmaPanel.cs" />
     <Compile Include="View\Tabs\TabUI.cs" />
@@ -240,7 +244,9 @@
   <ItemGroup>
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="View\StatusBar\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
