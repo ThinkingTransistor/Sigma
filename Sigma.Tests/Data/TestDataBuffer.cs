@@ -41,7 +41,7 @@ namespace Sigma.Tests.Data
 
 			Assert.Throws<ArgumentException>(() => new DataBuffer<double>(childBufferL3, 0L, length));
 
-			DataBuffer<double> arrayBuffer = new DataBuffer<double>(new LargeChunkedArray<double>(10000), 10L, 9000L);
+			DataBuffer<double> arrayBuffer = new DataBuffer<double>(new double[10000], 10L, 9000L);
 
 			Assert.AreSame(arrayBuffer.Type, DataTypes.Float64);
 		}
@@ -97,8 +97,8 @@ namespace Sigma.Tests.Data
 			childBufferL2.SetValues(new[] { 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1 }, 1, 104, 3);
 			childBufferL3.SetValues(new[] { 8.8, 9.9, 10.1, 11.11, 12.12, 13.13 }, 0, 7, 3);
 
-			Assert.AreEqual(new[] { 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1 }, childBufferL3.GetValuesArray(0, 10).TryGetValuesPackedArray());
-			Assert.AreEqual(new[] { 1, 2, 3, 4, 6, 7, 8, 9, 10, 10 }, rootBuffer.GetValuesArrayAs<int>(200, 10).TryGetValuesPackedArray());
+			Assert.AreEqual(new[] { 1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9.9, 10.1 }, childBufferL3.GetValuesArray(0, 10));
+			Assert.AreEqual(new[] { 1, 2, 3, 4, 6, 7, 8, 9, 10, 10 }, rootBuffer.GetValuesArrayAs<int>(200, 10));
 		}
 	}
 }

@@ -34,7 +34,7 @@ namespace Sigma.Tests.Training.Initialisers
 
 			initialiser.Initialise(array, handler, new Random());
 
-			Assert.AreEqual(new float[] { 2, 2, 2, 2, 2, 2, 2, 2 }, array.GetDataAs<float>().GetValuesArrayAs<float>(0, 8).TryGetValuesPackedArray());
+			Assert.AreEqual(new float[] { 2, 2, 2, 2, 2, 2, 2, 2 }, array.GetDataAs<float>().GetValuesArrayAs<float>(0, 8));
 		}
 	}
 }

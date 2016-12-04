@@ -78,7 +78,7 @@ namespace Sigma.Tests.Data.Datasets
 			Dataset dataset = new Dataset("name", 3, extractor);
 			DatasetRecordwiseSlice slice = new DatasetRecordwiseSlice(dataset, 0.1, 0.6);
 
-			Assert.AreEqual(new float[] {5.1f, 4.9f}, slice.FetchBlock(0, new CpuFloat32Handler())["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2).TryGetValuesPackedArray());
+			Assert.AreEqual(new float[] {5.1f, 4.9f}, slice.FetchBlock(0, new CpuFloat32Handler())["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
 
 			extractor.Reader?.Dispose();
 			dataset.Dispose();

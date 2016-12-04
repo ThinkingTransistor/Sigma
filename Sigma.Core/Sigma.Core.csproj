@@ -126,7 +126,6 @@
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\Iterators\UndividedIterator.cs" />
     <Compile Include="Data\Iterators\UnifiedIterator.cs" />
-    <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />

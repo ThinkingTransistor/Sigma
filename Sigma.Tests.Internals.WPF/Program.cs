@@ -61,14 +61,13 @@ namespace Sigma.Tests.Internals.WPF
 				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
 				ComplexTestData data = new ComplexTestData
 				{
-					Picture = new BitmapImage(new Uri(@"C:\Users\Plainer\Desktop\sigma2.png")),
+					Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
 					SomeInt = 12,
 					SomeOtherText = "other",
 					SomeText = "text"
 				};
 
 				panel2.Content.Items.Add(data);
-
 
 				//panel2.AddImageColumn("Images", nameof(ComplexTestData.Picture));
 				//panel2.Content.Items.Add(

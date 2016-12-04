@@ -52,7 +52,7 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			{
 				DataBuffer<float> arrayData = (DataBuffer<float>) array.Data;
 
-				mergedData.Data.FillWith(arrayData.Data, 0, lastIndex, arrayData.Length);
+				mergedData.SetValues(arrayData, 0, lastIndex, arrayData.Length);
 
 				lastIndex += arrayData.Length;
 			}
@@ -104,7 +104,7 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 			IDataBuffer<float> arrayToFillData = ((NDArray<float>) arrayToFill).Data;
 			IDataBuffer<float> fillerData = ((NDArray<float>) filler).Data;
 
-			arrayToFillData.Data.FillWith(fillerData.Data, 0, 0, Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.SetValues(fillerData.Data, 0, 0, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		public void Fill<TOther>(TOther value, INDArray arrayToFill)

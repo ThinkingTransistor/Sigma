@@ -38,9 +38,9 @@ namespace Sigma.Core.Data
 		IDataType Type { get; }
 
 		/// <summary>
-		/// THe underlying data array as a large chunked array (to ensure all data buffers support very large arrays). 
+		/// THe underlying data array as an array. 
 		/// </summary>
-		ILargeChunkedArray<T> Data { get; }
+		T[] Data { get; }
 
 		/// <summary>
 		/// Get the value at a certain index.
@@ -79,7 +79,7 @@ namespace Sigma.Core.Data
 		/// <param name="startIndex">The start index referring to this buffer (not underlying).</param>
 		/// <param name="length">The length.</param>
 		/// <returns>A COPY of the underlying data within the given range.</returns>
-		ILargeChunkedArray<T> GetValuesArray(long startIndex, long length);
+		T[] GetValuesArray(long startIndex, long length);
 
 		/// <summary>
 		/// Get a COPY of the underlying data within the given range as a given type (data may change as it has to be cast). 
@@ -87,7 +87,7 @@ namespace Sigma.Core.Data
 		/// <param name="startIndex">The start index referring to this buffer (not underlying).</param>
 		/// <param name="length">The length.</param>
 		/// <returns>A COPY of the underlying data within the given range as the given type.</returns>
-		ILargeChunkedArray<TOther> GetValuesArrayAs<TOther>(long startIndex, long length);
+		TOther[] GetValuesArrayAs<TOther>(long startIndex, long length);
 
 		/// <summary>
 		/// Set the value at the given index.
