@@ -6,12 +6,14 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using MahApps.Metro.Controls;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.View.TitleBar;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Windows.Media;
+using MahApps.Metro.Controls;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.View.TitleBar;
 
 namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 {
@@ -42,18 +44,25 @@ namespace Sigma.Core.Monitors.WPF.Control.TitleBar
 		/// Do not use <see cref="ItemCollection.Add"/> ore Menu.Items.Add. (Although it will be called internally) 
 		/// </summary>
 		/// <param name="item">The item to add.</param>
-		/// <param name="applyColor">This boolean decides whether the foreground colour should be changed to white.
-		/// (Recommended for headings)</param>
-		public void AddItem(TitleBarItem item, bool applyColor = true)
+		public void AddItem(TitleBarItem item)
 		{
+			AddItem(item, UIResources.IdealForegroundColorBrush);
+		}
+
+		/// <summary>
+		/// Add a <see cref="TitleBarItem"/> to the <see cref="TitleBarControl"/>.
+		/// Do not use <see cref="ItemCollection.Add"/> ore Menu.Items.Add. (Although it will be called internally) 
+		/// </summary>
+		/// <param name="item">The item to add.</param>
+		/// <param name="foregroundBrush">The foreground colour for the newly created item.</param>
+		public void AddItem(TitleBarItem item, Brush foregroundBrush)
+		{
+			if (foregroundBrush == null) throw new ArgumentNullException(nameof(foregroundBrush));
+
 			Menu.Items.Add(item.Content);
 			_children.Add(item.ToString(), item);
 
-			//TODO: pass correct ForegroundBrush?
-			if (applyColor)
-			{
-				item.Content.Foreground = UIResources.IdealForegroundColorBrush;
-			}
+			item.Content.Foreground = foregroundBrush;
 		}
 
 		/// <summary>

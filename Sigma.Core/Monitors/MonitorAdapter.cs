@@ -7,25 +7,19 @@ For full license see LICENSE in the root directory of this project.
 */
 
 
+using Sigma.Core.Utils;
+
 namespace Sigma.Core.Monitors
 {
 	public abstract class MonitorAdapter : IMonitor
 	{
-		public SigmaEnvironment Sigma
-		{
-			get;
-			set;
-		}
+		public SigmaEnvironment Sigma { get; set; }
+		public IRegistry Registry { get; set; }
 
-		public virtual void Initialise()
-		{
-
-		}
+		public virtual void Initialise() { }
 
 		public abstract void Start();
 
-		public virtual void Dispose()
-		{
-		}
+		public virtual void Dispose() { }
 	}
 }

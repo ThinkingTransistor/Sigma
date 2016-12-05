@@ -56,11 +56,13 @@ namespace Sigma.Core.Utils
 
 		public ISet<string> Tags
 		{
-			get; }
+			get;
+		}
 
 		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
 		{
-			get; }
+			get;
+		}
 
 		/// <summary>
 		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
@@ -108,7 +110,7 @@ namespace Sigma.Core.Utils
 						{
 							copiedValue = value;
 
-							ICloneable cloneableValue= value as ICloneable;
+							ICloneable cloneableValue = value as ICloneable;
 							if (cloneableValue != null)
 							{
 								copiedValue = cloneableValue.Clone();
@@ -233,6 +235,24 @@ namespace Sigma.Core.Utils
 		public object Get(string identifier)
 		{
 			return MappedValues[identifier];
+		}
+
+		public bool TryGetValue<T>(string identifier, out T obj)
+		{
+			object val;
+
+			if (TryGetValue(identifier, out val))
+			{
+				if (val is T)
+				{
+					obj = (T) val;
+
+					return true;
+				}
+			}
+
+			obj = default(T);
+			return false;
 		}
 
 		public T[] GetAllValues<T>(string matchIdentifier, Type matchType = null)

@@ -117,9 +117,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Control\Factories\IUIFactory.cs" />
-    <Compile Include="Control\Factories\StatusBarFactory.cs" />
-    <Compile Include="Control\StatusBar\StatusBarFactory.cs" />
+    <Compile Include="Control\Factories\Sigma\RootPanelFactory.cs" />
+    <Compile Include="Control\Factories\Sigma\TabControlFactory.cs" />
+    <Compile Include="Control\Factories\Sigma\TitleBarItemFactory.cs" />
+    <Compile Include="Control\Factories\UIFactory.cs" />
+    <Compile Include="Control\Factories\Sigma\TitleBarFactory.cs" />
+    <Compile Include="Control\Factories\Sigma\StatusBarFactory.cs" />
     <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
     <Compile Include="Control\SigmaGrid\GridLayout.cs" />
     <Compile Include="Control\Themes\ColourManager.cs" />

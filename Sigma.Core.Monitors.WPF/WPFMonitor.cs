@@ -6,12 +6,12 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
+using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -67,6 +67,15 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		///// <summary>
+		///// The registry that is important
+		///// for UI-specific stuff (including
+		///// <see cref="Control.Factories.IUIFactory{T}"/> etc.)
+		///// This value will be automatically assigned, when the 
+		///// <see cref="Monitor"/> is added.
+		///// </summary>
+		//public IRegistry UIRegistry { get; internal set; }
+
 		/// <summary>
 		/// The type of the window that will be created.
 		/// A type is passed in order to prevent generics.
@@ -92,7 +101,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// <summary>
 		/// The <see cref="IColourManager"/> to control the look and feel of the application. 
 		/// </summary>
-		public IColourManager ColorManager
+		public IColourManager ColourManager
 		{
 			get;
 		}
@@ -125,7 +134,7 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			ColorManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
+			ColourManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
 
 			_waitForStart = new ManualResetEvent(false);
 		}
@@ -142,14 +151,14 @@ namespace Sigma.Core.Monitors.WPF
 			Thread wpfThread = new Thread(() =>
 			{
 				_app = new App(this);
-				ColorManager.App = _app;
+				ColourManager.App = _app;
 
 				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
 
 				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
 
 
-				ColorManager.Window = Window;
+				ColourManager.Window = Window;
 
 				if (_onWindowStartup != null)
 				{
@@ -197,7 +206,7 @@ namespace Sigma.Core.Monitors.WPF
 					_onWindowStartup = new List<Action<object>>();
 				}
 
-				_onWindowStartup.Add((obj) => action((T) obj));
+				_onWindowStartup.Add(obj => action((T) obj));
 			}
 			else
 			{

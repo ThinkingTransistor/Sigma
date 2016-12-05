@@ -6,18 +6,18 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
-using Sigma.Core.Monitors;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
+using log4net;
+using Sigma.Core.Monitors;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core
 {
@@ -98,6 +98,7 @@ namespace Sigma.Core
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
 		{
 			monitor.Sigma = this;
+			monitor.Registry = new Registry(Registry);
 
 			monitor.Initialise();
 			_monitors.Add(monitor);
@@ -343,7 +344,7 @@ namespace Sigma.Core
 			get; internal set;
 		}
 
-		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB"); 
+		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB");
 		internal static IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

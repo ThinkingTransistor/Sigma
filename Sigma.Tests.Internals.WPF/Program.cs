@@ -4,15 +4,17 @@ using System.Text;
 using System.Threading;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Control.Factories;
 using Sigma.Core.Monitors.WPF.Control.Themes;
+using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.View.Panels;
 using Sigma.Core.Monitors.WPF.View.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.View.Tabs;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -37,10 +39,19 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
+
+			guiMonitor.Registry[SigmaWindow.TitleBarFactoryIdentifier] = new LambdaUIFactory<TitleBarControl>((app, window) =>
+			{
+				window.Title = "yes, new factory is used";
+
+				return new TitleBarControl();
+			});
+
+
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 
-			guiMonitor.WindowDispatcher((window) => { window.TitleCharacterCasing = CharacterCasing.Normal; });
+			guiMonitor.WindowDispatcher(window => { window.TitleCharacterCasing = CharacterCasing.Normal; });
 
 			sigma.Prepare();
 
@@ -61,7 +72,7 @@ namespace Sigma.Tests.Internals.WPF
 				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
 				ComplexTestData data = new ComplexTestData
 				{
-					Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
+					//Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
 					SomeInt = 12,
 					SomeOtherText = "other",
 					SomeText = "text"
@@ -80,9 +91,9 @@ namespace Sigma.Tests.Internals.WPF
 				CreateDefaultCards(window.TabControl["Tests"]);
 			});
 
-			guiMonitor.ColorManager.Dark = true;
-			guiMonitor.ColorManager.PrimaryColor = MaterialDesignValues.Teal;
-			guiMonitor.ColorManager.SecondaryColor = MaterialDesignValues.Amber;
+			guiMonitor.ColourManager.Dark = true;
+			guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.Teal;
+			guiMonitor.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
 
 			//SwitchColor(guiMonitor);
 
@@ -152,13 +163,13 @@ namespace Sigma.Tests.Internals.WPF
 				{
 					Thread.Sleep(4000);
 
-					guiMonitor.ColorManager.Dark = rand.Next(2) == 1;
-					guiMonitor.ColorManager.Alternate = rand.Next(2) == 1;
-					guiMonitor.ColorManager.PrimaryColor = swatch;
+					guiMonitor.ColourManager.Dark = rand.Next(2) == 1;
+					guiMonitor.ColourManager.Alternate = rand.Next(2) == 1;
+					guiMonitor.ColourManager.PrimaryColor = swatch;
 
-					string dark = guiMonitor.ColorManager.Dark ? "dark" : "light";
+					string dark = guiMonitor.ColourManager.Dark ? "dark" : "light";
 
-					Console.WriteLine($"Changing to: {dark} and {guiMonitor.ColorManager.PrimaryColor.Name}");
+					Console.WriteLine($"Changing to: {dark} and {guiMonitor.ColourManager.PrimaryColor.Name}");
 				}
 			}
 		}
