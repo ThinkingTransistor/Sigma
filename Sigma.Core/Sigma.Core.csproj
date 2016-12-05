@@ -149,6 +149,7 @@
     <Compile Include="MathAbstract\INumber.cs" />
     <Compile Include="MathAbstract\Backends\NativeCpu\NDArray.cs" />
     <Compile Include="MathAbstract\Backends\NativeCpu\Number.cs" />
+    <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />

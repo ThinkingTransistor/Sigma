@@ -1,4 +1,7 @@
-﻿namespace Sigma.Core.MathAbstract.Backends.NativeCpu
+﻿using System;
+using Sigma.Core.Handlers;
+
+namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 {
 	/// <summary>
 	/// A default implementation of the <see cref="INumber"/> interface.
@@ -8,6 +11,15 @@
 	public class Number<T> : INumber
 	{
 		private T _value;
+
+		[NonSerialized]
+		private IComputationHandler _associatedHandler;
+
+		public IComputationHandler AssociatedHandler
+		{
+			get { return _associatedHandler; }
+			set { _associatedHandler = value; }
+		}
 
 		/// <summary>
 		/// Create a single value (i.e. number) with a certain initial value.
@@ -22,6 +34,18 @@
 		{
 			get { return _value; }
 			set { _value = (T) value; }
+		}
+
+		internal Number<T> SetAssociatedHandler(IComputationHandler handler)
+		{
+			AssociatedHandler = handler;
+
+			return this;
+		}
+
+		public object DeepCopy()
+		{
+			return new Number<T>(_value).SetAssociatedHandler(AssociatedHandler);
 		}
 	}
 }

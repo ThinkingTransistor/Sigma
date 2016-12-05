@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Sigma.Core.Data;
+using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract.Backends.NativeCpu
@@ -23,6 +24,15 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 	public class NDArray<T> : INDArray, IDeepCopyable
 	{
 		internal readonly IDataBuffer<T> Data;
+
+		[NonSerialized]
+		private IComputationHandler _associatedHandler;
+
+		public IComputationHandler AssociatedHandler
+		{
+			get { return _associatedHandler;}
+			set { _associatedHandler = value; }
+		}
 
 		public long Length { get; private set; }
 
@@ -108,12 +118,24 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 
 		public NDArray<T> Copy()
 		{
-			return new NDArray<T>(Data, Shape);
+			return new NDArray<T>(Data, Shape).SetAssociatedHandler(AssociatedHandler);
 		}
 
 		public object DeepCopy()
 		{
-			return new NDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone());
+			return new NDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone()).SetAssociatedHandler(AssociatedHandler);
+		}
+
+		/// <summary>
+		/// Set the associated handler of this ndarrray.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <returns>This ndarray (for convenience).</returns>
+		internal NDArray<T> SetAssociatedHandler(IComputationHandler handler)
+		{
+			AssociatedHandler = handler;
+
+			return this;
 		}
 
 		private void Initialise(long[] shape, long[] strides)

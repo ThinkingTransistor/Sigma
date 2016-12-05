@@ -23,12 +23,12 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 
 		public INDArray NDArray(params long[] shape)
 		{
-			return new NDArray<float>(shape: shape);
+			return new NDArray<float>(shape: shape).SetAssociatedHandler(this);
 		}
 
 		public INumber Number(object value)
 		{
-			return new Number<float>((float) System.Convert.ChangeType(value, typeof(float)));
+			return new Number<float>((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
 		}
 
 		public INDArray MergeBatch(params INDArray[] arrays)
