@@ -117,12 +117,19 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Control\Factories\Sigma\RootPanelFactory.cs" />
-    <Compile Include="Control\Factories\Sigma\TabControlFactory.cs" />
-    <Compile Include="Control\Factories\Sigma\TitleBarItemFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\RootPanelFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\StatusBar\SigmaStatusBar.xaml.cs">
+      <DependentUpon>SigmaStatusBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarLegend.xaml.cs">
+      <DependentUpon>StatusBarLegend.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\TabControlFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\TitleBarItemFactory.cs" />
     <Compile Include="Control\Factories\UIFactory.cs" />
-    <Compile Include="Control\Factories\Sigma\TitleBarFactory.cs" />
-    <Compile Include="Control\Factories\Sigma\StatusBarFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\TitleBarFactory.cs" />
+    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarFactory.cs" />
     <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
     <Compile Include="Control\SigmaGrid\GridLayout.cs" />
     <Compile Include="Control\Themes\ColourManager.cs" />
@@ -185,6 +192,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Control\Factories\Defaults\StatusBar\SigmaStatusBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Control\Factories\Defaults\StatusBar\StatusBarLegend.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Model\UI\Resources\FontResource.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -230,6 +245,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Styles\SigmaGrid\CardStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Styles\SigmaStatusBar\StatusBarLegendStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

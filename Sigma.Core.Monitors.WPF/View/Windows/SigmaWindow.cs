@@ -1,7 +1,7 @@
 /* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016 Florian Cï¿½sar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -13,7 +13,8 @@ using System.Windows.Controls;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Control.Factories;
-using Sigma.Core.Monitors.WPF.Control.Factories.Sigma;
+using Sigma.Core.Monitors.WPF.Control.Factories.Defaults;
+using Sigma.Core.Monitors.WPF.Control.Factories.Defaults.StatusBar;
 using Sigma.Core.Monitors.WPF.Control.Tabs;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -31,7 +32,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	{
 		#region DependencyProperties
 
-		// ReSharper disable once InconsistentNaming
 		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize", typeof(GridSize), typeof(WPFWindow), new UIPropertyMetadata(new GridSize(3, 4)));
 
 		#endregion DependencyProperties
@@ -141,10 +141,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		/// <typeparam name="T">The generic type of the factory. </typeparam>
 		/// <param name="identifier">The key for the registry. </param>
+		/// <param name="parameters">The parameters to create the element - in most cases this can be left empty.</param>
 		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreatElement"/></returns>
-		protected T CreateObjectByFactory<T>(string identifier)
+		protected T CreateObjectByFactory<T>(string identifier, params object[] parameters)
 		{
-			return CreateObjectByFactory<T>(Monitor, identifier);
+			return CreateObjectByFactory<T>(Monitor, identifier, parameters);
 		}
 
 		/// <summary>
@@ -154,10 +155,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The given <see cref="IMonitor"/> - the registry from the passed 
 		/// monitor will be used. </param>
 		/// <param name="identifier">The key for the registry. </param>
+		/// <param name="parameters">The parameters to create the element - in most cases this can be left empty.</param>
 		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreatElement"/></returns>
-		protected T CreateObjectByFactory<T>(IMonitor monitor, string identifier)
+		protected T CreateObjectByFactory<T>(IMonitor monitor, string identifier, params object[] parameters)
 		{
-			return ((IUIFactory<T>) monitor.Registry[identifier]).CreatElement(App, this);
+			return ((IUIFactory<T>) monitor.Registry[identifier]).CreatElement(App, this, parameters);
 		}
 
 		protected override void InitialiseComponents()
@@ -200,7 +202,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (!monitor.Registry.ContainsKey(StatusBarFactoryIdentifier))
 			{
-				monitor.Registry[StatusBarFactoryIdentifier] = new StatusBarFactory(32);
+				monitor.Registry[StatusBarFactoryIdentifier] = new StatusBarFactory(32, new GridLength());
 			}
 		}
 

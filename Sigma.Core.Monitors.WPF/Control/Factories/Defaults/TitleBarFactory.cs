@@ -1,7 +1,7 @@
-﻿using System.Windows;
+using System.Windows;
 using Sigma.Core.Monitors.WPF.Control.TitleBar;
 
-namespace Sigma.Core.Monitors.WPF.Control.Factories.Sigma
+namespace Sigma.Core.Monitors.WPF.Control.Factories.Defaults
 {
 	public class TitleBarFactory : IUIFactory<TitleBarControl>
 	{
@@ -16,7 +16,7 @@ namespace Sigma.Core.Monitors.WPF.Control.Factories.Sigma
 			Padding = padding;
 		}
 
-		public TitleBarControl CreatElement(App app, Window window)
+		public TitleBarControl CreatElement(App app, Window window, params object[] parameters)
 		{
 			TitleBarControl titleBarControl = new TitleBarControl
 			{

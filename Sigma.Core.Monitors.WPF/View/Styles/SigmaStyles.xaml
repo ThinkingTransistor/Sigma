@@ -5,6 +5,7 @@
 
 		<ResourceDictionary Source="TitleBar/MenuStyle.xaml"/>
 		<ResourceDictionary Source="SigmaGrid/CardStyle.xaml"/>
+		<ResourceDictionary Source="SigmaStatusBar/StatusBarLegendStyle.xaml"/>
 		
 		<!-- Panels -->
 		<ResourceDictionary Source="Panels/DataGrid.xaml"/>

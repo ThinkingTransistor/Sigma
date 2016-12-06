@@ -40,14 +40,6 @@ namespace Sigma.Tests.Internals.WPF
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
 
-			guiMonitor.Registry[SigmaWindow.TitleBarFactoryIdentifier] = new LambdaUIFactory<TitleBarControl>((app, window) =>
-			{
-				window.Title = "yes, new factory is used";
-
-				return new TitleBarControl();
-			});
-
-
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 

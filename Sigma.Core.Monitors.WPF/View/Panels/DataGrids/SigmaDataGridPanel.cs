@@ -1,4 +1,4 @@
-﻿using System.Windows.Controls;
+using System.Windows.Controls;
 
 namespace Sigma.Core.Monitors.WPF.View.Panels.DataGrids
 {

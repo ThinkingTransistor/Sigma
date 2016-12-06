@@ -1,7 +1,7 @@
 /* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016 Florian Cï¿½sar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */

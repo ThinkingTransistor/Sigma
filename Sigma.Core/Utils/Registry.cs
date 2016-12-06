@@ -1,4 +1,4 @@
-﻿/* 
+/* 
 MIT License
 
 Copyright (c) 2016 Florian Cäsar, Michael Plainer
@@ -252,6 +252,7 @@ namespace Sigma.Core.Utils
 			}
 
 			obj = default(T);
+
 			return false;
 		}
 
