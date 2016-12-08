@@ -81,11 +81,10 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			foreach (string name in block.Keys)
 			{
-				//string[] palette = new string[] {" ", "·", "-", "▴", "▪", "●", "♦", "■", "█"};
-				string[] palette = new string[] {" ", ".", ":", "x", "T", "Y", "V", "X", "H", "N", "M"};
+				char[] palette = PrintUtils.AsciiGreyscalePalette;
  
 				string blockString = name == "inputs"
-					? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))], maxDimensionNewLine: 0, printSeperator: false)
+					? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
 					: block[name].ToString();
 
 				Console.WriteLine($"[{name}]=\n" + blockString);

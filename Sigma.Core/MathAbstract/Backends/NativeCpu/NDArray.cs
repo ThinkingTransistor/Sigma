@@ -21,7 +21,7 @@ namespace Sigma.Core.MathAbstract.Backends.NativeCpu
 	/// <typeparam name="T">The data type of this ndarray.</typeparam>
 	[Serializable]
 	[SuppressMessage("ReSharper", "InconsistentNaming")] //INdArray looks stupid
-	public class NDArray<T> : INDArray, IDeepCopyable
+	public class NDArray<T> : INDArray
 	{
 		internal readonly IDataBuffer<T> Data;
 

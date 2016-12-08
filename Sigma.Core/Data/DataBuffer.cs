@@ -167,7 +167,8 @@ namespace Sigma.Core.Data
 
 		public object DeepCopy()
 		{
-			return new DataBuffer<T>((T[]) Data.Clone(), Type);
+			// not sure if entire data or just subsection should be copied
+			return new DataBuffer<T>((T[]) Data.Clone(), Offset, Length, Type);
 		}
 
 		public T GetValue(long index)
