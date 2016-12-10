@@ -1,4 +1,7 @@
-﻿using Sigma.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
@@ -6,13 +9,9 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends;
+using Sigma.Core.Handlers.Backends.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using Sigma.Core.Handlers.Backends.NativeCpu;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -47,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			MinibatchIterator trainingIterator = new MinibatchIterator(1, trainingData);
 			MinibatchIterator validationIterator = new MinibatchIterator(1, validationData);
- 
+
 			while (true)
 			{
 				foreach (var block in trainingIterator.Yield(handler, sigma))
@@ -82,7 +81,7 @@ namespace Sigma.Tests.Internals.Backend
 			foreach (string name in block.Keys)
 			{
 				char[] palette = PrintUtils.AsciiGreyscalePalette;
- 
+
 				string blockString = name == "inputs"
 					? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
 					: block[name].ToString();

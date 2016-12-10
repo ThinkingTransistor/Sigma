@@ -6,14 +6,14 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -79,7 +79,7 @@ namespace Sigma.Core.Data.Iterators
 			{
 				if (_requireNewBlock)
 				{
-					_logger.Info($"Requiring new block for next yield, fetching block from dataset...");
+					_logger.Info("Requiring new block for next yield, fetching block from dataset...");
 
 					int yieldedIndex = YieldBlock(handler, environment);
 

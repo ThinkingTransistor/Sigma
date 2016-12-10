@@ -35,7 +35,7 @@ namespace Sigma.Core.Layers
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true)
 		{
-			
+
 		}
 	}
 }

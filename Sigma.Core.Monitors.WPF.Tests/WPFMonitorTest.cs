@@ -1,11 +1,12 @@
-﻿using NUnit.Framework;
-using System.Threading;
+﻿using System.Threading;
+using NUnit.Framework;
+// ReSharper disable InconsistentNaming
 
 namespace Sigma.Core.Monitors.WPF.Tests
 {
 	public class WPFMonitorTest
 	{
-		private SigmaEnvironment ClearAndCreate(string identifier)
+		private static SigmaEnvironment ClearAndCreate(string identifier)
 		{
 			SigmaEnvironment.Clear();
 

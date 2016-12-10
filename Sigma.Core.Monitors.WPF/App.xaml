@@ -62,10 +62,10 @@
 				<ResourceDictionary Source="pack://application:,,,/LiveCharts.Wpf;component/Themes/base.xaml" />
 
 				<!-- Custom colours -->
-				<ResourceDictionary Source="View/Colours/MaterialDesignColours.xaml"/>
+				<ResourceDictionary Source="Model/UI/Resources/MaterialDesignColours.xaml"/>
 
 				<!-- Custom styles -->
-				<ResourceDictionary Source="View/Styles/SigmaStyles.xaml"/>
+				<ResourceDictionary Source="Themes/Styles/SigmaStyles.xaml"/>
 			</ResourceDictionary.MergedDictionaries>
 
 			<!-- MahApps Brushes -->

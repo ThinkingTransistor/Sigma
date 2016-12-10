@@ -1,7 +1,7 @@
-/* 
+﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian C�sar, Michael Plainer
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -14,82 +14,12 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 	// ReSharper disable once InconsistentNaming
 	public static class UIResources
 	{
-		#region Font
-		public static FontFamily @FontFamily { get; private set; }
-
-		#region FontSize
-		public static readonly double H1;
-		public static readonly double H2;
-		public static readonly double H3;
-		public static readonly double H4;
-		public static readonly double H5;
-		public static readonly double H6;
-
-		public static readonly double P1;
-		public static readonly double P2;
-		public static readonly double P3;
-
-		#endregion FontSize
-
-		public static Style MaterialDesignDisplay4TextBlock { get; private set; }
-		public static Style MaterialDesignDisplay3TextBlock { get; private set; }
-		public static Style MaterialDesignDisplay2TextBlock { get; private set; }
-		public static Style MaterialDesignDisplay1TextBlock { get; private set; }
-
-		public static Style MaterialDesignHeadlineTextBlock { get; private set; }
-		public static Style MaterialDesignTitleTextBlock { get; private set; }
-		public static Style MaterialDesignSubheadingTextBlock { get; private set; }
-		public static Style MaterialDesignBody2TextBlock { get; private set; }
-		public static Style MaterialDesignBody1TextBlock { get; private set; }
-		public static Style MaterialDesignCaptionTextBlock { get; private set; }
-		public static Style MaterialDesignButtonTextBlock { get; private set; }
-
-		#region Hyperlinks
-		public static Style MaterialDesignDisplay4Hyperlink { get; private set; }
-		public static Style MaterialDesignDisplay3Hyperlink { get; private set; }
-		public static Style MaterialDesignDisplay2Hyperlink { get; private set; }
-		public static Style MaterialDesignDisplay1Hyperlink { get; private set; }
-
-		public static Style MaterialDesignHeadlineHyperlink { get; private set; }
-		public static Style MaterialDesignTitleHyperlink { get; private set; }
-		public static Style MaterialDesignSubheadingHyperlink { get; private set; }
-		public static Style MaterialDesignBody2Hyperlink { get; private set; }
-		public static Style MaterialDesignBody1Hyperlink { get; private set; }
-		public static Style MaterialDesignCaptionHyperlink { get; private set; }
-		#endregion
-		#endregion
-
-		#region Colour
-		public static Brush HighlightColorBrush { get; private set; }
-
-		/// <summary>
-		/// This is per default a bluish colour. This is equal to Primary500. 
-		/// It should be used for most UI content. 
-		/// </summary>
-		public static Brush AccentColorBrush { get; private set; }
-		public static Brush AccentColorBrush2 { get; private set; }
-		public static Brush AccentColorBrush3 { get; private set; }
-		public static Brush AccentColorBrush4 { get; private set; }
-
-		public static Brush AccentSelectedColorBrush { get; private set; }
-
-		public static Brush MaterialDesignBody { get; private set; }
-		public static Brush MaterialDesignBodyLight { get; private set; }
-
-		#region Alias
-
-		public static Brush IdealForegroundColorBrush { get; private set; }
-		public static Brush WindowTitleColorBrush { get; private set; }
-		public static Brush IdealForegroundDisabledBrush { get; private set; }
-
-		#endregion
-		#endregion
-
 		static UIResources()
 		{
 			Application app = Application.Current;
 
 			#region Font
+
 			FontFamily = (FontFamily) app.Resources["MaterialDesignFont"];
 
 			H1 = (double) app.Resources["H1"];
@@ -118,6 +48,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 			MaterialDesignButtonTextBlock = (Style) app.Resources["MaterialDesignButtonTextBlock"];
 
 			#region Hyperlinks
+
 			MaterialDesignDisplay4Hyperlink = (Style) app.Resources["MaterialDesignDisplay4Hyperlink"];
 			MaterialDesignDisplay3Hyperlink = (Style) app.Resources["MaterialDesignDisplay3Hyperlink"];
 			MaterialDesignDisplay2Hyperlink = (Style) app.Resources["MaterialDesignDisplay2Hyperlink"];
@@ -129,10 +60,13 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 			MaterialDesignBody2Hyperlink = (Style) app.Resources["MaterialDesignBody2Hyperlink"];
 			MaterialDesignBody1Hyperlink = (Style) app.Resources["MaterialDesignBody1Hyperlink"];
 			MaterialDesignCaptionHyperlink = (Style) app.Resources["MaterialDesignCaptionHyperlink"];
+
 			#endregion Hyperlinks
+
 			#endregion Font
 
 			#region Colour
+
 			HighlightColorBrush = (Brush) app.Resources["HighlightBrush"];
 
 			AccentColorBrush = (Brush) app.Resources["AccentColorBrush"];
@@ -152,5 +86,84 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 
 			#endregion Colour
 		}
+
+		#region Font
+
+		public static FontFamily FontFamily { get; private set; }
+
+		#region FontSize
+
+		public static readonly double H1;
+		public static readonly double H2;
+		public static readonly double H3;
+		public static readonly double H4;
+		public static readonly double H5;
+		public static readonly double H6;
+
+		public static readonly double P1;
+		public static readonly double P2;
+		public static readonly double P3;
+
+		#endregion FontSize
+
+		public static Style MaterialDesignDisplay4TextBlock { get; private set; }
+		public static Style MaterialDesignDisplay3TextBlock { get; private set; }
+		public static Style MaterialDesignDisplay2TextBlock { get; private set; }
+		public static Style MaterialDesignDisplay1TextBlock { get; private set; }
+
+		public static Style MaterialDesignHeadlineTextBlock { get; private set; }
+		public static Style MaterialDesignTitleTextBlock { get; private set; }
+		public static Style MaterialDesignSubheadingTextBlock { get; private set; }
+		public static Style MaterialDesignBody2TextBlock { get; private set; }
+		public static Style MaterialDesignBody1TextBlock { get; private set; }
+		public static Style MaterialDesignCaptionTextBlock { get; private set; }
+		public static Style MaterialDesignButtonTextBlock { get; private set; }
+
+		#region Hyperlinks
+
+		public static Style MaterialDesignDisplay4Hyperlink { get; private set; }
+		public static Style MaterialDesignDisplay3Hyperlink { get; private set; }
+		public static Style MaterialDesignDisplay2Hyperlink { get; private set; }
+		public static Style MaterialDesignDisplay1Hyperlink { get; private set; }
+
+		public static Style MaterialDesignHeadlineHyperlink { get; private set; }
+		public static Style MaterialDesignTitleHyperlink { get; private set; }
+		public static Style MaterialDesignSubheadingHyperlink { get; private set; }
+		public static Style MaterialDesignBody2Hyperlink { get; private set; }
+		public static Style MaterialDesignBody1Hyperlink { get; private set; }
+		public static Style MaterialDesignCaptionHyperlink { get; private set; }
+
+		#endregion
+
+		#endregion
+
+		#region Colour
+
+		public static Brush HighlightColorBrush { get; }
+
+		/// <summary>
+		///     This is per default a bluish colour. This is equal to Primary500.
+		///     It should be used for most UI content.
+		/// </summary>
+		public static Brush AccentColorBrush { get; }
+
+		public static Brush AccentColorBrush2 { get; private set; }
+		public static Brush AccentColorBrush3 { get; private set; }
+		public static Brush AccentColorBrush4 { get; private set; }
+
+		public static Brush AccentSelectedColorBrush { get; }
+
+		public static Brush MaterialDesignBody { get; private set; }
+		public static Brush MaterialDesignBodyLight { get; private set; }
+
+		#region Alias
+
+		public static Brush IdealForegroundColorBrush { get; private set; }
+		public static Brush WindowTitleColorBrush { get; private set; }
+		public static Brush IdealForegroundDisabledBrush { get; private set; }
+
+		#endregion
+
+		#endregion
 	}
 }

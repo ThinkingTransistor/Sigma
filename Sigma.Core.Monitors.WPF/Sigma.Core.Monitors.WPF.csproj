@@ -94,8 +94,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -117,29 +115,23 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Control\Factories\Defaults\RootPanelFactory.cs" />
-    <Compile Include="Control\Factories\Defaults\StatusBar\SigmaStatusBar.xaml.cs">
-      <DependentUpon>SigmaStatusBar.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarLegend.xaml.cs">
-      <DependentUpon>StatusBarLegend.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
-    <Compile Include="Control\Factories\Defaults\TabControlFactory.cs" />
-    <Compile Include="Control\Factories\Defaults\TitleBarItemFactory.cs" />
-    <Compile Include="Control\Factories\UIFactory.cs" />
-    <Compile Include="Control\Factories\Defaults\TitleBarFactory.cs" />
-    <Compile Include="Control\Factories\Defaults\StatusBar\StatusBarFactory.cs" />
-    <Compile Include="Control\SigmaGrid\GridExtensions.cs" />
-    <Compile Include="Control\SigmaGrid\GridLayout.cs" />
-    <Compile Include="Control\Themes\ColourManager.cs" />
-    <Compile Include="Control\Themes\IColourManager.cs" />
-    <Compile Include="Control\Themes\MaterialDesignValues.cs" />
-    <Compile Include="Control\TitleBar\TitleBarControl.cs" />
-    <Compile Include="Control\TitleBar\TitleBarSelector.cs" />
+    <Compile Include="ViewModel\CustomControls\StatusBarLegend.cs" />
+    <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
+    <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
+    <Compile Include="View\Factories\Defaults\TabControlFactory.cs" />
+    <Compile Include="View\Factories\Defaults\TitleBarItemFactory.cs" />
+    <Compile Include="View\Factories\UIFactory.cs" />
+    <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
+    <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />
+    <Compile Include="Model\SigmaGrid\GridExtensions.cs" />
+    <Compile Include="ViewModel\CustomControls\GridLayout.cs" />
+    <Compile Include="View\Themes\ColourManager.cs" />
+    <Compile Include="View\Themes\IColourManager.cs" />
+    <Compile Include="Model\UI\Resources\MaterialDesignValues.cs" />
+    <Compile Include="ViewModel\TitleBar\TitleBarControl.cs" />
     <Compile Include="Model\UI\Resources\UIResources.cs" />
+    <Compile Include="Model\UI\StatusBar\StatusBarLegendInfo.cs" />
     <Compile Include="Model\UI\Windows\GridSize.cs" />
-    <Compile Include="Panels\WindowPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -153,14 +145,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Control\Tabs\TabControlUI.cs" />
-    <Compile Include="View\Panels\DataGrids\CustomDataGridPanel.cs" />
-    <Compile Include="View\Panels\DataGrids\SigmaDataGridPanel.cs" />
-    <Compile Include="View\Panels\DataGrids\SimpleDataGridPanel.cs" />
-    <Compile Include="View\Panels\LineChartPanel.cs" />
-    <Compile Include="View\Panels\SigmaPanel.cs" />
-    <Compile Include="View\Tabs\TabUI.cs" />
-    <Compile Include="View\TitleBar\TitleBarItem.cs" />
+    <Compile Include="ViewModel\Tabs\TabControlUI.cs" />
+    <Compile Include="Panels\DataGrids\CustomDataGridPanel.cs" />
+    <Compile Include="Panels\DataGrids\SigmaDataGridPanel.cs" />
+    <Compile Include="Panels\DataGrids\SimpleDataGridPanel.cs" />
+    <Compile Include="Panels\LineChartPanel.cs" />
+    <Compile Include="Panels\SigmaPanel.cs" />
+    <Compile Include="ViewModel\Tabs\TabUI.cs" />
+    <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
     <Compile Include="View\UIWrapper.cs" />
     <Compile Include="View\Windows\SigmaWindow.cs" />
     <Compile Include="View\Windows\WPFWindow.cs" />
@@ -192,14 +184,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Control\Factories\Defaults\StatusBar\SigmaStatusBar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Control\Factories\Defaults\StatusBar\StatusBarLegend.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Model\UI\Resources\FontResource.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -212,47 +196,51 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="View\Colours\MaterialDesignColours.xaml">
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Model\UI\Resources\MaterialDesignColours.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\DarkStyle.xaml">
+    <Page Include="Themes\Styles\DarkStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\LiveCharts\AxisDark.xaml">
+    <Page Include="Themes\Styles\LiveCharts\AxisDark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\Panels\DataGrid.xaml">
+    <Page Include="Themes\Styles\Panels\DataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\SigmaStyles.xaml">
+    <Page Include="Themes\Styles\SigmaStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\LightStyle.xaml">
+    <Page Include="Themes\Styles\LightStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\SigmaGrid\CardColoursDark.xaml">
+    <Page Include="Themes\Styles\SigmaGrid\CardColoursDark.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\SigmaGrid\CardColoursLight.xaml">
+    <Page Include="Themes\Styles\SigmaGrid\CardColoursLight.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\SigmaGrid\CardStyle.xaml">
+    <Page Include="Themes\Styles\SigmaGrid\CardStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\SigmaStatusBar\StatusBarLegendStyle.xaml">
+    <Page Include="Themes\Styles\SigmaStatusBar\StatusBarLegendStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Styles\TitleBar\MenuStyle.xaml">
+    <Page Include="Themes\Styles\TitleBar\MenuStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -266,9 +254,7 @@
   <ItemGroup>
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\StatusBar\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

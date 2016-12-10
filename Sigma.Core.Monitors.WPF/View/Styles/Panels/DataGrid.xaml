@@ -1,8 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	
-	<Style TargetType="DataGrid" BasedOn="{StaticResource MaterialDesignDataGrid}">
-		<Setter Property="Background" Value="Transparent"/>
-	</Style>
-	
-</ResourceDictionary>

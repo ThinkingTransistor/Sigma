@@ -6,11 +6,11 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using NUnit.Framework;
-using Sigma.Core.Data.Sources;
 using System;
 using System.IO;
 using System.Net;
+using NUnit.Framework;
+using Sigma.Core.Data.Sources;
 
 namespace Sigma.Tests.Data.Sources
 {

@@ -6,9 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.NativeCpu;
 
 namespace Sigma.Core.Utils
@@ -226,6 +226,7 @@ namespace Sigma.Core.Utils
 		/// <param name="array"></param>
 		/// <param name="toStringElement"></param>
 		/// <param name="maxDimensionNewLine"></param>
+		/// <param name="printSeperator"></param>
 		/// <returns></returns>
 		public static string ToString<T>(INDArray array, NDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1, bool printSeperator = true)
 		{

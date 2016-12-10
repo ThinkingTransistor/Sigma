@@ -8,13 +8,11 @@ using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
-using Sigma.Core.Monitors.WPF.Control.Factories;
-using Sigma.Core.Monitors.WPF.Control.Themes;
-using Sigma.Core.Monitors.WPF.Control.TitleBar;
-using Sigma.Core.Monitors.WPF.View.Panels;
-using Sigma.Core.Monitors.WPF.View.Panels.DataGrids;
-using Sigma.Core.Monitors.WPF.View.Tabs;
-using Sigma.Core.Monitors.WPF.View.Windows;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
+using Sigma.Core.Monitors.WPF.Panels;
+using Sigma.Core.Monitors.WPF.Panels.DataGrids;
+using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -40,6 +38,11 @@ namespace Sigma.Tests.Internals.WPF
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
 
+			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 0, B = 255, G = 0 }, Text = "Net Test 1" });
+			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 255, B = 0, G = 0 }, Text = "Net Test 2" });
+			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 0, B = 0, G = 255 }, Text = "Net Test 3" });
+
+
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
 
@@ -47,7 +50,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			sigma.Prepare();
 
-			guiMonitor.WindowDispatcher((window) =>
+			guiMonitor.WindowDispatcher(window =>
 			{
 				TabUI tab = window.TabControl["Overview"];
 
