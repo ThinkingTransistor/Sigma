@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Dragablz.Dockablz;
@@ -169,7 +170,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			Layout tabLayout = (Layout) TabControl;
 			// ReSharper disable once CoVariantArrayConversion
-			UIElement statusBar = CreateObjectByFactory<UIElement>(StatusBarFactoryIdentifier, monitor.Legends.ToArray());
+			UIElement statusBar = CreateObjectByFactory<UIElement>(StatusBarFactoryIdentifier, monitor.Legends.Values.ToArray());
 			DockPanel rootLayout = CreateObjectByFactory<DockPanel>(RootPanelFactoryIdentifier);
 
 			rootLayout.Children.Add(statusBar);

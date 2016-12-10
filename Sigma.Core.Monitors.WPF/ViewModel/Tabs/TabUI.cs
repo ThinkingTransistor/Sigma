@@ -10,7 +10,9 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Sigma.Core.Monitors.WPF.Model.SigmaGrid;
+using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Monitors.WPF.View;
@@ -138,6 +140,33 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		}
 
 		/// <summary>
+		/// Apply the legend colour-coding to a passed panel. 
+		/// </summary>
+		/// <param name="panel">The given panel. </param>
+		/// <param name="legend">The given panel. </param>
+		protected virtual void ApplyLegend(SigmaPanel panel, StatusBarLegendInfo legend)
+		{
+			if (legend != null)
+			{
+				panel.Header.Background = new SolidColorBrush(legend.LegendColor);
+
+				if (legend.ForegroundColor.HasValue)
+				{
+					SolidColorBrush brush = new SolidColorBrush(legend.ForegroundColor.Value);
+
+					foreach (object headerChild in panel.Header.Children)
+					{
+						Control control = headerChild as Control;
+						if (control != null)
+						{
+							control.Foreground = brush;
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		///     Add a <see cref="SigmaPanel" /> cumulatively to the tab. (At
 		///     the next free position; may skips empty panels if <see cref="columnSpan" />
 		///     or <see cref="rowSpan" /> is too big.
@@ -145,14 +174,16 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="panel">The <see cref="SigmaPanel" /> that will be added.</param>
 		/// <param name="rowSpan">How many rows the panel requires. </param>
 		/// <param name="columnSpan">How many columns the panel requires. </param>
+		/// <param name="legend">Mark a panel to a special colour / legend. </param>
 		/// <exception cref="ArgumentOutOfRangeException">
 		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
-		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1)
+		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1, StatusBarLegendInfo legend = null)
 		{
 			AddCumulativeElement(panel, rowSpan, columnSpan);
+			ApplyLegend(panel, legend);
 		}
 
 		/// <summary>
@@ -178,9 +209,13 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			int row, column;
 
 			if (FindEmptyArea(Grid, rowSpan, columnSpan, out row, out column))
+			{
 				AddElement(element, row, column, rowSpan, columnSpan);
+			}
 			else
+			{
 				throw new IndexOutOfRangeException("Grid is full or element too big!");
+			}
 		}
 
 		/// <summary>
@@ -192,14 +227,16 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="column">The column in which the <see cref="SigmaPanel" /> should be added.</param>
 		/// <param name="rowSpan">How many rows the <see cref="SigmaPanel" /> uses.</param>
 		/// <param name="columnSpan">How many columns the <see cref="SigmaPanel" /> uses.</param>
+		/// <param name="legend">Mark a panel to a special colour / legend. </param>
 		/// <exception cref="ArgumentOutOfRangeException">
 		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
-		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1)
+		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1, StatusBarLegendInfo legend = null)
 		{
 			AddElement(panel, row, column, rowSpan, columnSpan);
+			ApplyLegend(panel, legend);
 		}
 
 		/// <summary>
@@ -270,11 +307,11 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			//add rows and columns
 			int rows = gridSize[0];
 			for (int i = 0; i < rows; i++)
-				grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Star)});
+				grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
 			int columns = gridSize[1];
 			for (int i = 0; i < columns; i++)
-				grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)});
+				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			//TODO: change in style?
 			grid.ChildMargin = new Thickness(10);

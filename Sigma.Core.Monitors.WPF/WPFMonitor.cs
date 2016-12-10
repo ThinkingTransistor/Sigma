@@ -53,7 +53,10 @@ namespace Sigma.Core.Monitors.WPF
 		///     as soon as all <see cref="_onWindowStartup" />
 		///     actions have been added.
 		/// </summary>
+		/// TODO: HACK: 
+#pragma warning disable 414
 		private bool _onWindowStartupAdded;
+#pragma warning restore 414
 
 		/// <summary>
 		///     This <see cref="bool" /> will be set to true,
@@ -132,7 +135,7 @@ namespace Sigma.Core.Monitors.WPF
 		//HACK: 
 		//TODO: documentation
 
-		internal List<StatusBarLegendInfo> Legends { get; private set; }
+		internal Dictionary<string, StatusBarLegendInfo> Legends { get; private set; }
 
 		/// <summary>
 		///     The <see cref="IColourManager" /> to control the look and feel of the application.
@@ -145,13 +148,39 @@ namespace Sigma.Core.Monitors.WPF
 			Tabs.AddRange(tabs);
 		}
 
+		public StatusBarLegendInfo AddLegend(StatusBarLegendInfo legend)
+		{
+			AddLegends(legend);
+
+			return GetLegendInfo(legend.Name);
+		}
+
 		public void AddLegends(params StatusBarLegendInfo[] legends)
 		{
 			lock (_onWindowStartup)
 			{
 				if (_onWindowStartupExecuted)
-					throw new NotImplementedException("Window has already been started - StatusBar update not yet supported.");
-				Legends.AddRange(legends);
+					throw new NotImplementedException("Window has already been started - StatusBar update not supported (yet).");
+
+				AddLegends(Legends, legends);
+			}
+		}
+
+		public StatusBarLegendInfo GetLegendInfo(string name)
+		{
+			return Legends[name];
+		}
+
+		public IEnumerable<StatusBarLegendInfo> GetLegends()
+		{
+			return Legends.Values;
+		}
+
+		private static void AddLegends(IDictionary<string, StatusBarLegendInfo> legends, StatusBarLegendInfo[] legendInfo)
+		{
+			foreach (StatusBarLegendInfo statusBarLegendInfo in legendInfo)
+			{
+				legends.Add(statusBarLegendInfo.Name, statusBarLegendInfo);
 			}
 		}
 
@@ -160,7 +189,7 @@ namespace Sigma.Core.Monitors.WPF
 			base.Initialise();
 
 			Tabs = new List<string>();
-			Legends = new List<StatusBarLegendInfo>();
+			Legends = new Dictionary<string, StatusBarLegendInfo>();
 		}
 
 		public override void Start()

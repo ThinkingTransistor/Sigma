@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
@@ -151,7 +152,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 55, G = 71, B = 79}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 38, G = 50, B = 56}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		public static readonly Swatch Brown = new Swatch("brown",
 			new[]
@@ -167,7 +168,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 78, G = 52, B = 46}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 62, G = 39, B = 35}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		public static readonly Swatch Cyan = new Swatch("cyan",
 			new[]
@@ -271,7 +272,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 66, G = 66, B = 66}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 33, G = 33, B = 33}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		public static readonly Swatch Indigo = new Swatch("indigo",
 			new[]
@@ -493,42 +494,79 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(ACCENT700, new Color {A = 255, R = 255, G = 214, B = 0}, new Color {A = 255, R = 0, G = 0, B = 0})
 			});
 
-
-		private static Color ColourFromString(string str)
+		private static Color GetColour(string str, MaterialColour colour, PrimaryColour? primary, bool isForeground = false)
 		{
-			Color? col = Application.Current.Resources[str] as Color?;
+			// ReSharper disable once IntroduceOptionalParameters.Local
+			return GetColour(str, colour, primary, null, isForeground);
+		}
 
-			if (!col.HasValue)
-				throw new ArgumentException("Value not found for " + str);
+		private static Color GetColour(string str, MaterialColour colour, AccentColour? accent, bool isForeground = false)
+		{
+			return GetColour(str, colour, null, accent, isForeground);
 
-			return col.Value;
+		}
+
+		private static Swatch MaterialColourToSwatch(MaterialColour colour)
+		{
+			FieldInfo field = typeof(MaterialDesignValues).GetField(colour.ToString(), BindingFlags.Public | BindingFlags.Static);
+
+			return field?.GetValue(null) as Swatch;
+		}
+
+		private static Color GetColour(string str, MaterialColour colour, PrimaryColour? primary, AccentColour? accent, bool isForeground)
+		{
+			Color? col = Application.Current?.Resources[str] as Color?;
+
+			if (col.HasValue) return col.Value;
+
+			Swatch swatch = MaterialColourToSwatch(colour);
+			if (swatch != null && !isForeground)
+			{
+				if (primary.HasValue)
+				{
+					col = ColourFromSwatch(swatch, primary.Value);
+				}
+				else if (accent.HasValue)
+				{
+					col = ColourFromSwatch(swatch, accent.Value);
+				}
+
+				if (col.HasValue)
+				{
+					return col.Value;
+				}
+			}
+
+			throw new ArgumentException($"Value not found for {str}. Foreground colours can only be fetched if the app is already running. ");
 		}
 
 		public static Color GetColour(MaterialColour colour, PrimaryColour primary)
 		{
-			return ColourFromString(colour.ToFormattedString() + primary);
+			return GetColour(colour.ToFormattedString() + primary, colour, primary);
 		}
 
 		public static Color GetForegroundColour(MaterialColour colour, PrimaryColour primary)
 		{
-			return ColourFromString(colour.ToFormattedString() + primary + "Foreground");
+			return GetColour(colour.ToFormattedString() + primary + "Foreground", colour, primary, true);
 		}
 
 		public static Color GetColour(MaterialColour colour, AccentColour accent)
 		{
-			return ColourFromString(colour.ToFormattedString() + accent);
+			return GetColour(colour.ToFormattedString() + accent, colour, accent);
 		}
 
 		public static Color GetForegroundColour(MaterialColour colour, AccentColour accent)
 		{
-			return ColourFromString(colour.ToFormattedString() + accent + "Foreground");
+			return GetColour(colour.ToFormattedString() + accent + "Foreground", colour, accent, true);
 		}
 
 		public static Color ColourFromSwatch(Swatch swatch, PrimaryColour primaryColour)
 		{
 			foreach (Hue hue in swatch.PrimaryHues)
+			{
 				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 					return hue.Color;
+			}
 
 			throw new KeyNotFoundException();
 		}
@@ -536,8 +574,10 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		public static Color ForegorundColourFromSwatch(Swatch swatch, PrimaryColour primaryColour)
 		{
 			foreach (Hue hue in swatch.PrimaryHues)
+			{
 				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 					return hue.Foreground;
+			}
 
 			throw new KeyNotFoundException();
 		}
@@ -545,8 +585,10 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		public static Color ColourFromSwatch(Swatch swatch, AccentColour accentColour)
 		{
 			foreach (Hue hue in swatch.AccentHues)
+			{
 				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 					return hue.Foreground;
+			}
 
 			throw new KeyNotFoundException();
 		}
@@ -554,8 +596,10 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		public static Color ForegorundColourFromSwatch(Swatch swatch, AccentColour accentColour)
 		{
 			foreach (Hue hue in swatch.PrimaryHues)
+			{
 				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 					return hue.Foreground;
+			}
 
 			throw new KeyNotFoundException();
 		}
@@ -564,6 +608,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 			out Color foreground)
 		{
 			foreach (Hue hue in swatch.PrimaryHues)
+			{
 				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 				{
 					colour = hue.Color;
@@ -571,6 +616,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 
 					return;
 				}
+			}
 
 			throw new KeyNotFoundException();
 		}
@@ -578,6 +624,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 		public static void ColoursFromSwatch(Swatch swatch, AccentColour accentColour, out Color colour, out Color foreground)
 		{
 			foreach (Hue hue in swatch.PrimaryHues)
+			{
 				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
 				{
 					colour = hue.Color;
@@ -585,6 +632,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 
 					return;
 				}
+			}
 
 			throw new KeyNotFoundException();
 		}

@@ -48,7 +48,9 @@ namespace Sigma.Core.Monitors.WPF.Panels
 			//Don't do this in static constructor, otherwise
 			//we cannot guarantee that the application is already running
 			if (_cardStyle == null)
+			{
 				_cardStyle = Application.Current.Resources[typeof(Card)] as Style;
+			}
 
 			Style = _cardStyle;
 
@@ -93,7 +95,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 				}
 				else
 				{
-					_content = value as UIElement ?? new Label {Content = value.ToString()};
+					_content = value as UIElement ?? new Label { Content = value.ToString() };
 					ContentGrid.Children.Add(_content);
 				}
 			}
@@ -136,10 +138,10 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid header = new Grid();
 
-			header.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Auto)});
-			header.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Auto)});
+			header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+			header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 
-			Label headerContent = new Label {Content = Title};
+			Label headerContent = new Label { Content = Title };
 			header.Children.Add(headerContent);
 
 			header.SetResourceReference(BackgroundProperty, "SigmaPanelHeaderBackground");
@@ -167,8 +169,8 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid grid = new Grid();
 
-			grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Star)});
-			grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)});
+			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			return grid;
 		}
@@ -179,7 +181,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <returns>The newly create <see cref="DockPanel" />.</returns>
 		protected virtual DockPanel CreateDockPanel()
 		{
-			return new DockPanel {LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0)};
+			return new DockPanel { LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0) };
 		}
 	}
 }

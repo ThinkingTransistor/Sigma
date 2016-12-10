@@ -38,10 +38,9 @@ namespace Sigma.Tests.Internals.WPF
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
 
-			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 0, B = 255, G = 0 }, Text = "Net Test 1" });
-			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 255, B = 0, G = 0 }, Text = "Net Test 2" });
-			guiMonitor.AddLegends(new StatusBarLegendInfo { LegendColor = new Color { A = 255, R = 0, B = 0, G = 255 }, Text = "Net Test 3" });
-
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1") { LegendColor = MaterialDesignValues.GetColour(MaterialColour.Red, PrimaryColour.Primary700) });
+			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net") { LegendColor = MaterialDesignValues.GetColour(MaterialColour.Green, PrimaryColour.Primary700) });
 
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
@@ -61,7 +60,7 @@ namespace Sigma.Tests.Internals.WPF
 				panel.Items.Add(new TestData { Name = "SomeOptimizer", Epoch = 14 });
 				panel.Items.Add(new TestData { Name = "OtherOptimizer", Epoch = 1337 });
 
-				tab.AddCumulativeElement(panel);
+				tab.AddCumulativePanel(panel, legend: blueLegend);
 
 
 				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
