@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-					xmlns:core="clr-namespace:System;assembly=mscorlib">
-	
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:core="clr-namespace:System;assembly=mscorlib">
+
 	<core:Double x:Key="H1">112</core:Double>
 	<core:Double x:Key="H2">56</core:Double>
 	<core:Double x:Key="H3">45</core:Double>
@@ -12,5 +12,5 @@
 	<core:Double x:Key="P1">15</core:Double>
 	<core:Double x:Key="P2">13</core:Double>
 	<core:Double x:Key="P3">12</core:Double>
-	
+
 </ResourceDictionary>
