@@ -13,7 +13,7 @@ using NUnit.Framework;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends.NativeCpu;
+using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Data.Extractors
 {

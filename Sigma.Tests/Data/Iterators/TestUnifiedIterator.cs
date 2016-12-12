@@ -19,7 +19,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Sigma.Core.Handlers.Backends.NativeCpu;
+using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Data.Iterators
 {

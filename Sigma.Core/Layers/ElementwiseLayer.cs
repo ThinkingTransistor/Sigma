@@ -33,7 +33,7 @@ namespace Sigma.Core.Layers
 			return layer;
 		}
 
-		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true)
+		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
 
 		}

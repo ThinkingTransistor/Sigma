@@ -9,10 +9,10 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Handlers.Backends.NativeCpu
+namespace Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu
 {
 	/// <summary>
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
@@ -62,7 +62,8 @@ namespace Sigma.Core.Handlers.Backends.NativeCpu
 
 		public void InitAfterDeserialisation(INDArray array)
 		{
-			// nothing to do here for this handler, all relevant components are serialised automatically
+			// nothing to do here for this handler, all relevant components are serialised automatically, 
+			// diffsharp does not need to be de-serialised, components only need to be removed from trace
 		}
 
 		public long GetSizeBytes(params INDArray[] arrays)

@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 
-namespace Sigma.Core.MathAbstract.Backends.NativeCpu
+namespace Sigma.Core.MathAbstract
 {
 	/// <summary>
 	/// A collection of utility methods for ndarrays.

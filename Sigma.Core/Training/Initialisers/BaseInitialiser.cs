@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
-using Sigma.Core.MathAbstract.Backends.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Core.Training.Initialisers
 {

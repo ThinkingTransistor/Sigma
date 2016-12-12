@@ -39,7 +39,7 @@ namespace Sigma.Core.Layers
 		string[] TrainableParameters { get; }
 
 		/// <summary>
-		/// The parameters of this layer, e.g. "weights", "size", "dropout_probability".
+		/// The constant, variable and trainable parameters of this layer, e.g. "size", "dropout_probability", or "weights".
 		/// </summary>
 		IRegistry Parameters { get; }
 
@@ -49,6 +49,6 @@ namespace Sigma.Core.Layers
 		/// <param name="buffer">The buffer containing the inputs, parameters and outputs respective to this layer.</param>
 		/// <param name="handler">The computation handler to use for computations (duh).</param>
 		/// <param name="trainingPass">Indicate whether this is run is part of a training pass.</param>
-		void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true);
+		void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass);
 	}
 }

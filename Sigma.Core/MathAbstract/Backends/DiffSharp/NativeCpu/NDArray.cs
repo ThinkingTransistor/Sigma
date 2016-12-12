@@ -13,7 +13,7 @@ using Sigma.Core.Data;
 using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.MathAbstract.Backends.NativeCpu
+namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 {
 	/// <summary>
 	/// A default, in-system-memory implementation of the INDArray interface.

@@ -8,8 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using NUnit.Framework;
-using Sigma.Core.Handlers.Backends.NativeCpu;
-using Sigma.Core.MathAbstract.Backends.NativeCpu;
+using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Training.Initialisers;
 
 namespace Sigma.Tests.Training.Initialisers

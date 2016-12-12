@@ -12,8 +12,8 @@ using Sigma.Core.Handlers.Backends;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Initialisers;
 using System;
-using Sigma.Core.Handlers.Backends.NativeCpu;
-using Sigma.Core.MathAbstract.Backends.NativeCpu;
+using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Training.Initialisers
 {
