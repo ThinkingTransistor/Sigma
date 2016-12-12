@@ -38,7 +38,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 		public IRegistry Registry { get; set; }
 
-		public UIElement CreatElement(App app, Window window, params object[] parameters)
+		public UIElement CreatElement(Application app, Window window, params object[] parameters)
 		{
 			IUIFactory<UIElement> legendFactory;
 			if (!Registry.TryGetValue(StatusBarLegendFactoryIdentifier, out legendFactory))
@@ -69,10 +69,10 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			return grid;
 		}
 
-		protected void AddLegends(App app, Window window, Grid grid, IUIFactory<UIElement> factory,
+		protected void AddLegends(Application app, Window window, Grid grid, IUIFactory<UIElement> factory,
 			IEnumerable<object> parameters)
 		{
-			StackPanel stackPanel = new StackPanel {Orientation = Orientation.Horizontal};
+			StackPanel stackPanel = new StackPanel { Orientation = Orientation.Horizontal };
 
 			foreach (object legendInfo in parameters)
 			{

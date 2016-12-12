@@ -119,7 +119,6 @@
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
     <Compile Include="View\Factories\Defaults\TabControlFactory.cs" />
-    <Compile Include="View\Factories\Defaults\TitleBarItemFactory.cs" />
     <Compile Include="View\Factories\UIFactory.cs" />
     <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />

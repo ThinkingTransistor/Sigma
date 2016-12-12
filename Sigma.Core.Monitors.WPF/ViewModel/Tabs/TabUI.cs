@@ -40,7 +40,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="header">The header of the tab (name in the <see cref="TabControl" />)</param>
 		/// <param name="gridsize">
 		///     The <see cref="GridSize" />. Use
-		///     <see cref="Sigma.Core.Monitors.WPF.View.Windows.SigmaWindow.DefaultGridSize" />.
+		///     <see cref="View.Windows.SigmaWindow.DefaultGridSize" />.
 		/// </param>
 		public TabUI(string header, GridSize gridsize)
 		{
@@ -204,7 +204,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
 			if (columnSpan <= 0) throw new ArgumentOutOfRangeException(nameof(columnSpan));
 
-			EnsureGrid();
+			EnsureGridCreated();
 
 			int row, column;
 
@@ -258,7 +258,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
 			if (columnSpan <= 0) throw new ArgumentOutOfRangeException(nameof(columnSpan));
 
-			EnsureGrid();
+			EnsureGridCreated();
 
 			if (row + rowSpan > GridSize.Rows)
 				throw new IndexOutOfRangeException("Element would be out of range! (Too few rows)");
@@ -282,7 +282,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <summary>
 		///     This method ensures that the grid has been created and initialised.
 		/// </summary>
-		private void EnsureGrid()
+		private void EnsureGridCreated()
 		{
 			if (Grid == null)
 			{

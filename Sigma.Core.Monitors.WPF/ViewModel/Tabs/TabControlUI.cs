@@ -43,7 +43,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="monitor">The correct monitor.</param>
 		/// <param name="app">The root <see cref="Application" />.</param>
 		/// <param name="title">The title of the old (and new) window. </param>
-		public TabControlUI(WPFMonitor monitor, App app, string title)
+		public TabControlUI(WPFMonitor monitor, Application app, string title)
 		{
 			Tabs = new Dictionary<string, TTabWrapper>();
 
@@ -115,7 +115,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			/// <summary>
 			///     The referenced <see cref="App" />.
 			/// </summary>
-			private readonly App _app;
+			private readonly Application _app;
 
 			/// <summary>
 			///     The referenced <see cref="WPFMonitor" />.
@@ -134,7 +134,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			/// <param name="monitor"></param>
 			/// <param name="app"></param>
 			/// <param name="title"></param>
-			public CustomInterTabClient(WPFMonitor monitor, App app, string title)
+			public CustomInterTabClient(WPFMonitor monitor, Application app, string title)
 			{
 				_monitor = monitor;
 				_app = app;
@@ -152,8 +152,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			/// <returns></returns>
 			public INewTabHost<Window> GetNewHost(IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
-				TWindow window = Construct(new[] {typeof(WPFMonitor), typeof(App), typeof(string), typeof(TWindow)},
-					new object[] {_monitor, _app, _title, _monitor.Window});
+				TWindow window = Construct(new[] { typeof(WPFMonitor), typeof(Application), typeof(string), typeof(TWindow) },
+					new object[] { _monitor, _app, _title, _monitor.Window });
 				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 

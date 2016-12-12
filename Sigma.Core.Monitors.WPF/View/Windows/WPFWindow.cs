@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Windows;
 using MahApps.Metro.Controls;
 
 // ReSharper disable VirtualMemberCallInConstructor
@@ -19,15 +20,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <summary>
 		///     The corresponding WPFMonitor
 		/// </summary>
-		protected WPFMonitor Monitor;
+		public WPFMonitor Monitor { get; protected set; }
 
 		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
-		/// <param name="app">The <see cref="System.Windows.Application" /> environment.</param>
-		/// <param name="title">The <see cref="System.Windows.Window.Title" /> of the window.</param>
-		protected WPFWindow(WPFMonitor monitor, App app, string title)
+		/// <param name="app">The <see cref="Application" /> environment.</param>
+		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
+		protected WPFWindow(WPFMonitor monitor, Application app, string title)
 		{
 			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
 			if (app == null) throw new ArgumentNullException(nameof(app));
@@ -42,7 +43,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <summary>
 		///     The root application environment for all WPF interactions.
 		/// </summary>
-		public App App { get; }
+		public Application App { get; }
 
 
 		/// <summary>

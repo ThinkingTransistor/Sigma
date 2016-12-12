@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MahApps.Metro.Controls;
@@ -57,25 +58,31 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 
 		/// <summary>
 		///     Add a <see cref="TitleBarItem" /> to the <see cref="TitleBarControl" />.
-		///     Do not use <see cref="ItemCollection.Add" /> ore Menu.Items.Add. (Although it will be called internally)
+		///     Do not use <see cref="ItemCollection.Add" /> or Menu.Items.Add. (Although it will be called internally)
 		/// </summary>
+		/// <param name="window"></param>
 		/// <param name="item">The item to add.</param>
-		public void AddItem(TitleBarItem item)
+		/// <param name="app"></param>
+		public void AddItem(Application app, Window window, TitleBarItem item)
 		{
-			AddItem(item, UIResources.IdealForegroundColorBrush);
+			AddItem(app, window, item, UIResources.IdealForegroundColorBrush);
 		}
 
 		/// <summary>
 		///     Add a <see cref="TitleBarItem" /> to the <see cref="TitleBarControl" />.
 		///     Do not use <see cref="ItemCollection.Add" /> ore Menu.Items.Add. (Although it will be called internally)
 		/// </summary>
+		/// <param name="window"></param>
 		/// <param name="item">The item to add.</param>
 		/// <param name="foregroundBrush">The foreground colour for the newly created item.</param>
-		public void AddItem(TitleBarItem item, Brush foregroundBrush)
+		/// <param name="app"></param>
+		public void AddItem(Application app, Window window, TitleBarItem item, Brush foregroundBrush)
 		{
 			if (foregroundBrush == null) throw new ArgumentNullException(nameof(foregroundBrush));
 
 			Menu.Items.Add(item.Content);
+			item.App = app;
+			item.Window = window;
 			_children.Add(item.ToString(), item);
 
 			item.Content.Foreground = foregroundBrush;

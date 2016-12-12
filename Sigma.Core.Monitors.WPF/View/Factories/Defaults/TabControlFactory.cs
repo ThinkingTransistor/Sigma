@@ -13,7 +13,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 		public WPFMonitor WpfMonitor { get; }
 
-		TabControlUI<SigmaWindow, TabUI> IUIFactory<TabControlUI<SigmaWindow, TabUI>>.CreatElement(App app, Window window,
+		TabControlUI<SigmaWindow, TabUI> IUIFactory<TabControlUI<SigmaWindow, TabUI>>.CreatElement(Application app, Window window,
 			params object[] parameters)
 		{
 			return new TabControlUI<SigmaWindow, TabUI>(WpfMonitor, app, window.Title);

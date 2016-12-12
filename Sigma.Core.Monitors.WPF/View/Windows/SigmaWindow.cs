@@ -31,7 +31,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public const string RootPanelFactoryIdentifier = "rootpanel_factory";
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
-		public const string TitleBarItemFactoryIdentifier = "titlebar_item_factory";
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
 
 		#region DependencyProperties
@@ -46,11 +45,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     With this property you can access every object of the dropdown.
 		/// </summary>
 		private readonly TitleBarControl _titleBar;
-
-		/// <summary>
-		///     Determines whether the window has been closed.
-		/// </summary>
-		private bool _isAlive = true;
 
 		/// <summary>
 		///     The children of the current window. Those
@@ -77,7 +71,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
-		public SigmaWindow(WPFMonitor monitor, App app, string title) : this(monitor, app, title, null)
+		public SigmaWindow(WPFMonitor monitor, Application app, string title) : this(monitor, app, title, null)
 		{
 		}
 
@@ -93,7 +87,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
 		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
-		protected SigmaWindow(WPFMonitor monitor, App app, string title, SigmaWindow other) : base(monitor, app, title)
+		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other) : base(monitor, app, title)
 		{
 			ParentWindow = other;
 			RootWindow = FindRoot(this);
@@ -104,7 +98,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			else
 				other.Children.Add(this);
 
-			Closed += (sender, args) => _isAlive = false;
+			Closed += (sender, args) => IsAlive = false;
 
 			InitialiseDefaultValues();
 
@@ -153,20 +147,19 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <summary>
 		///     Determines whether this window is closed or about to close.
 		/// </summary>
-		public bool IsAlive => _isAlive;
+		public bool IsAlive { get; private set; } = true;
 
 		protected virtual Panel CreateContent(WPFMonitor monitor, SigmaWindow other, out TitleBarControl titleBarControl)
 		{
 			titleBarControl = CreateObjectByFactory<TitleBarControl>(TitleBarFactoryIdentifier);
 			LeftWindowCommands = TitleBar;
 
-			//TODO: add TitleBarItems via factory
-			AddTitleBarItems(TitleBar /*, other*/);
-
 			TabControl = CreateObjectByFactory<TabControlUI<SigmaWindow, TabUI>>(TabControlFactoryIdentifier);
 
 			if (other == null)
+			{
 				AddTabs(TabControl, monitor.Tabs);
+			}
 
 			Layout tabLayout = (Layout) TabControl;
 			// ReSharper disable once CoVariantArrayConversion
@@ -202,7 +195,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			if (start == null) throw new ArgumentNullException(nameof(start));
 
 			while (start.ParentWindow != null)
+			{
 				start = start.ParentWindow;
+			}
 
 			return start;
 		}
@@ -250,7 +245,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     This methods assigns the factories (if not already present)
 		///     to the registry passed.
 		/// </summary>
-		protected virtual void AssignFactories(IRegistry registry, App app, WPFMonitor monitor)
+		protected virtual void AssignFactories(IRegistry registry, Application app, WPFMonitor monitor)
 		{
 			if (!registry.ContainsKey(RootPanelFactoryIdentifier))
 				registry[RootPanelFactoryIdentifier] = new RootPanelFactory();
@@ -261,9 +256,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			if (!registry.ContainsKey(TabControlFactoryIdentifier))
 				registry[TabControlFactoryIdentifier] = new TabControlFactory(monitor);
 
-			if (!registry.ContainsKey(TitleBarItemFactoryIdentifier))
-				registry[TitleBarItemFactoryIdentifier] = new TitleBarItemFactory();
-
 			if (!registry.ContainsKey(StatusBarFactoryIdentifier))
 				registry[StatusBarFactoryIdentifier] = new StatusBarFactory(new Registry(registry), 32, 0, new GridLength());
 		}
@@ -272,7 +264,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     Define how the border of the application behaves.
 		/// </summary>
 		/// <param name="app">The app environment. </param>
-		protected virtual void SetBorderBehaviour(App app)
+		protected virtual void SetBorderBehaviour(Application app)
 		{
 			//This can only be set in the constructor or on start
 			BorderThickness = new Thickness(1);
@@ -294,31 +286,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		/// <summary>
-		///     Add specified <see cref="TitleBarItem" />s to a given <see cref="TitleBarControl" />.
-		/// </summary>
-		/// <param name="titleBarControl">The specified <see cref="TitleBarControl" />.</param>
-		private void AddTitleBarItems(TitleBarControl titleBarControl /*, SigmaWindow other*/)
-		{
-			//if (other == null)
-			{
-				titleBarControl.AddItem(new TitleBarItem("Environment", "Load", "Store",
-					new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
-				titleBarControl.AddItem(new TitleBarItem("Settings", "Toggle Dark",
-					(Action) (() => Monitor.ColourManager.Dark = !Monitor.ColourManager.Dark), "Toggle Alternate",
-					(Action) (() => Monitor.ColourManager.Alternate = !Monitor.ColourManager.Alternate)));
-				titleBarControl.AddItem(new TitleBarItem("About", "Sigma"));
-			}
-			//else
-			{
-				//TODO: copy from other?
-				//load from file?
-				//set this function? probably the best
-				// --SetHowToAddTitleBar(...)
-				//GenerateTitleBarAsUserSpecified.Invoke();
-			}
-		}
-
-		/// <summary>
 		///     Adds the tabs to the given <see cref="TabControlUI{T, U}" />.
 		/// </summary>
 		/// <param name="tabControl">
@@ -329,7 +296,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
 		{
 			foreach (string name in names)
+			{
 				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
+			}
 		}
 
 		/// <summary>
@@ -353,10 +322,16 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			action(start);
 
 			for (int i = 0; i < start.Children.Count; i++)
+			{
 				if (start.Children[i].IsAlive)
+				{
 					PropagateActionDownwards(action, start.Children[i]);
+				}
 				else
+				{
 					start.Children.RemoveAt(i--);
+				}
+			}
 		}
 
 		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
