@@ -77,9 +77,6 @@
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\CudaSparse.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DiffSharp">
-      <HintPath>Dependencies\DiffSharp.dll</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -144,6 +141,9 @@
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
+    <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\OpenBlasBlasBackend.cs" />
+    <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\DiffSharp\PlatformDependentDllUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
     <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\CPUFloat32Handler.cs" />
@@ -196,8 +196,22 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Dependencies\Linux64\libopenblas.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dependencies\Linux64\DiffSharp.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Dependencies\Windows64\DiffSharp.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Dependencies\Windows64\libopenblas.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
