@@ -15,14 +15,12 @@ namespace Sigma.Core.Handlers.Backends
 	public unsafe interface ILapackBackend
 	{
 		void Sgesv(int* n, int* nrhs, float* a, int* lda, int* ipiv, float* b, int* ldb, int* info);
-		void Ssysv_(char* uplo, int* n, int* nrhs, float* a, int* lda, int* ipiv, float* b, int* ldb, float* work, int* lwork,
-			int* info);
+		void Ssysv_(char* uplo, int* n, int* nrhs, float* a, int* lda, int* ipiv, float* b, int* ldb, float* work, int* lwork, int* info);
 		void Sgetrf_(int* m, int* n, float* a, int* lda, int* ipiv, int* info);
 		void Sgetri_(int* n, float* a, int* lda, int* ipiv, float* work, int* lwork, int* info);
 
 		void Dgesv(int* n, int* nrhs, double* a, int* lda, int* ipiv, double* b, int* ldb, int* info);
-		void Dsysv_(char* uplo, int* n, int* nrhs, double* a, int* lda, int* ipiv, double* b, int* ldb, double* work, int* lwork,
-			int* info);
+		void Dsysv_(char* uplo, int* n, int* nrhs, double* a, int* lda, int* ipiv, double* b, int* ldb, double* work, int* lwork, int* info);
 		void Dgetrf_(int* m, int* n, double* a, int* lda, int* ipiv, int* info);
 		void Dgetri_(int* n, double* a, int* lda, int* ipiv, double* work, int* lwork, int* info);
 	}
