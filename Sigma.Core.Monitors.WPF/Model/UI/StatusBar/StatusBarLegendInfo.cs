@@ -2,6 +2,7 @@
 using System.Windows.Media;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.ViewModel.CustomControls;
+using Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.StatusBar
 {

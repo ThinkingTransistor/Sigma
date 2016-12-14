@@ -363,14 +363,14 @@ namespace Sigma.Core.Utils
 		{
 			StringBuilder str = new StringBuilder();
 
-			str.Append("\n[Registry]");
-			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : (string.Join("", Tags))));
+			str.Append("[Registry]");
+			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : string.Join("", Tags)));
 
-			foreach (var mappedValue in MappedValues)
+			foreach (KeyValuePair<string, object> mappedValue in MappedValues)
 			{
 				if (mappedValue.Value is IRegistry)
 				{
-					str.Append(mappedValue.Value.ToString().Replace("\n", "\n\t"));
+					str.Append($"\n{mappedValue.Key} is a: ").Append(mappedValue.Value.ToString().Replace("\n", "\n\t"));
 				}
 				else
 				{

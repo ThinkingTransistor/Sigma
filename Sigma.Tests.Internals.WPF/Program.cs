@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MaterialDesignColors;
@@ -12,7 +14,10 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
+using Sigma.Core.Monitors.WPF.View.Factories;
+using Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -37,6 +42,12 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
+
+			IRegistry reg = new Registry(guiMonitor.Registry);
+			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
+			reg.Add(StatusBarFactory.CustomFactoryIdentifier, new LambdaUIFactory((app, window, param) => new Label { Content = "Sigma is life, Sigma is love", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, FontSize = UIResources.P1 }));
+
+			Debug.WriteLine(guiMonitor.Registry);
 
 			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1") { LegendColor = MaterialDesignValues.GetColour(MaterialColour.Red, PrimaryColour.Primary700) });
 			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
@@ -163,7 +174,7 @@ namespace Sigma.Tests.Internals.WPF
 
 					string dark = guiMonitor.ColourManager.Dark ? "dark" : "light";
 
-					Console.WriteLine($"Changing to: {dark} and {guiMonitor.ColourManager.PrimaryColor.Name}");
+					Console.WriteLine($@"Changing to: {dark} and {guiMonitor.ColourManager.PrimaryColor.Name}");
 				}
 			}
 		}

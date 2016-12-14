@@ -28,10 +28,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 {
 	public class SigmaWindow : WPFWindow
 	{
+
 		public const string RootPanelFactoryIdentifier = "rootpanel_factory";
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
+
 
 		#region DependencyProperties
 
@@ -94,9 +96,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Children = new List<SigmaWindow>();
 
 			if (other == null)
+			{
 				AssignFactories(monitor.Registry, app, monitor);
+			}
 			else
+			{
 				other.Children.Add(this);
+			}
 
 			Closed += (sender, args) => IsAlive = false;
 
@@ -184,7 +190,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			TitleAlignment = HorizontalAlignment.Center;
 		}
 
-
 		/// <summary>
 		///     Finds the root of a given <see cref="SigmaWindow" />
 		/// </summary>
@@ -248,16 +253,25 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		protected virtual void AssignFactories(IRegistry registry, Application app, WPFMonitor monitor)
 		{
 			if (!registry.ContainsKey(RootPanelFactoryIdentifier))
+			{
 				registry[RootPanelFactoryIdentifier] = new RootPanelFactory();
+			}
 
 			if (!registry.ContainsKey(TitleBarFactoryIdentifier))
+			{
 				registry[TitleBarFactoryIdentifier] = new TitleBarFactory();
+			}
 
 			if (!registry.ContainsKey(TabControlFactoryIdentifier))
+			{
 				registry[TabControlFactoryIdentifier] = new TabControlFactory(monitor);
+			}
 
 			if (!registry.ContainsKey(StatusBarFactoryIdentifier))
-				registry[StatusBarFactoryIdentifier] = new StatusBarFactory(new Registry(registry), 32, 0, new GridLength());
+			{
+				registry[StatusBarFactoryIdentifier] = new StatusBarFactory(registry, 32,
+					new GridLength(1, GridUnitType.Star), new GridLength(2, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
+			}
 		}
 
 		/// <summary>

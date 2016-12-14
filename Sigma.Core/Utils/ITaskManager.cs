@@ -42,7 +42,7 @@ namespace Sigma.Core.Utils
 				_runningObservers.Add(observer);
 			}
 
-			return observer;	
+			return observer;
 		}
 
 		public void CancelTask(ITaskObserver task)
