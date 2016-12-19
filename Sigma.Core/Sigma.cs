@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 using Sigma.Core.Monitors;
@@ -45,7 +46,7 @@ namespace Sigma.Core
 		/// </summary>
 		public string Name
 		{
-			get; private set;
+			get;
 		}
 
 		/// <summary>
@@ -351,6 +352,8 @@ namespace Sigma.Core
 		static SigmaEnvironment()
 		{
 			CultureInfo.DefaultThreadCurrentCulture = DefaultCultureInfo;
+			Thread.CurrentThread.CurrentCulture = DefaultCultureInfo;
+
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
 

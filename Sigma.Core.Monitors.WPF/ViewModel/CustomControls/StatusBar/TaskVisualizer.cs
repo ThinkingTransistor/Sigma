@@ -1,5 +1,6 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,8 +11,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 {
 	public interface ITaskVisualizer
 	{
-		//ObservableCollection<ITaskObserver> Tasks { get; }
-
 		void SetActive(ITaskObserver task);
 	}
 
@@ -25,9 +24,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 		public static readonly DependencyProperty TextColorBrushProperty = DependencyProperty.Register(nameof(TextColorBrush),
 			typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.Black));
 
-		public static readonly DependencyProperty TaskSourceProperty = DependencyProperty.Register(nameof(TaskSource),
-			typeof(IEnumerable), typeof(TaskVisualizer), new PropertyMetadata(null));
-
 		public static readonly DependencyProperty IsIndeterminateProperty = DependencyProperty.Register(nameof(IsIndeterminate),
 			typeof(bool), typeof(TaskVisualizer), new PropertyMetadata(true));
 
@@ -37,12 +33,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 		#endregion DependencyProperties
 
 		#region Properties
-
-		public IEnumerable TaskSource
-		{
-			get { return (IEnumerable) GetValue(TaskSourceProperty); }
-			set { SetValue(TaskSourceProperty, value); }
-		}
 
 		public Brush ProgressColorBrush
 		{
@@ -64,28 +54,35 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 
 		public string Progress
 		{
-			get
-			{
-				if (ActiveTask == null || ActiveTask.Progress >= 0)
-				{
-					Progress = "?";
-				}
-				else
-				{
-					Progress = (ActiveTask.Progress * 100).ToString(CultureInfo.CurrentCulture);
-				}
-				return (string) GetValue(ProgressProperty);
-			}
+			get { return (string) GetValue(ProgressProperty); }
 			set { SetValue(ProgressProperty, value); }
 		}
 
 		#endregion Properties
 
+		private ITaskObserver _task;
+
+		public ITaskObserver Task
+		{
+			get { return _task; }
+			set
+			{
+				if (value == null || value.Progress >= 0)
+				{
+					Progress = "?";
+				}
+				else
+				{
+					Progress = (value.Progress * 100).ToString(CultureInfo.CurrentCulture);
+				}
+
+				_task = value;
+			}
+		}
+
 		public ObservableCollection<ITaskObserver> Tasks { get; } = new ObservableCollection<ITaskObserver>();
 
-		public ITaskObserver ActiveTask { get; set; }
-
-		//private readonly BackgroundWorker _visualisationWorker;
+		private readonly BackgroundWorker _visualisationWorker;
 
 		static TaskVisualizer()
 		{
@@ -97,17 +94,29 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 
 		public TaskVisualizer()
 		{
-			//_visualisationWorker = new BackgroundWorker();
+			_visualisationWorker = new BackgroundWorker();
 		}
 
 		public void SetActive(ITaskObserver task)
 		{
-			throw new System.NotImplementedException();
+			if (task == null)
+			{
+				throw new ArgumentNullException(nameof(task));
+			}
+
+			_task = task;
+
+			task.ProgressChanged += UpdatedTask;
 		}
 
-		private void SetContent(ITaskObserver task)
+		private void UpdatedTask(object sender, TaskEventArgs args)
 		{
+			Progress = (args.NewValue * 100).ToString(CultureInfo.CurrentCulture);
 
+			if (Task.Status != TaskObserveStatus.Running)
+			{
+				Task.ProgressChanged -= UpdatedTask;
+			}
 		}
 	}
 }

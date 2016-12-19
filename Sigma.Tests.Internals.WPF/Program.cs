@@ -1,13 +1,10 @@
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MaterialDesignColors;
-using MaterialDesignThemes.Wpf;
 using Sigma.Core;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -85,12 +82,6 @@ namespace Sigma.Tests.Internals.WPF
 
 				panel2.Content.Items.Add(data);
 
-				//panel2.AddImageColumn("Images", nameof(ComplexTestData.Picture));
-				//panel2.Content.Items.Add(
-				//	new ComplexTestData { SomeText = "tesstkd", Picture = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png")) });
-
-				//items.Add(new Image {Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png"))}.Source);
-				//items.Add(new Image { Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma.png")) });
 				tab.AddCumulativePanel(panel2, 1, 3, guiMonitor.GetLegendInfo("Net test 1"));
 
 				CreateDefaultCards(window.TabControl["Tests"]);
@@ -104,61 +95,23 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
 
 			//SwitchColor(guiMonitor);
-
-			//ExtractSwatches();
 		}
 
 		private static void CreateDefaultCards(TabUI tab)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				tab.AddCumulativeElement(new Card { Content = "Card No. " + i });
+				tab.AddCumulativePanel(new EmptyPanel($"Card No. {i}"));
 			}
 
-			tab.AddCumulativeElement(new Card { Content = "Big card" }, 3);
-			tab.AddCumulativeElement(new Card { Content = "Tall card" }, 2);
+			tab.AddCumulativePanel(new EmptyPanel("Big card"), 3);
+			tab.AddCumulativePanel(new EmptyPanel("Tall card"), 2);
 			for (int i = 0; i < 2; i++)
 			{
-				tab.AddCumulativeElement(new Card { Content = "Small card" });
+				tab.AddCumulativePanel(new EmptyPanel("Small card"));
 			}
 
-			tab.AddCumulativeElement(new Card { Content = "Wide card" }, 1, 2);
-		}
-
-		private static void ExtractSwatches()
-		{
-			StringBuilder builder = new StringBuilder();
-			var swatches = new SwatchesProvider().Swatches;
-
-			foreach (Swatch swatch in swatches)
-			{
-				builder.Append("public static readonly Swatch " + swatch.Name.ToUpper() + $"=new Swatch (\"{swatch.Name}\", new [] " +
-							   "{ ");
-
-				foreach (Hue hue in swatch.PrimaryHues)
-				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " +
-								   $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " +
-								   "new Color() { " +
-								   $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " +
-								   "}), ");
-				}
-
-				builder.Append("}, new [] { ");
-
-				foreach (Hue hue in swatch.AccentHues)
-				{
-					builder.Append($"new Hue ({hue.Name}, " + "new Color() { " +
-								   $"A = {hue.Color.A}, R = {hue.Color.R}, G = {hue.Color.G}, B = {hue.Color.B} " + "}, " +
-								   "new Color() { " +
-								   $"A = {hue.Color.A}, R = {hue.Foreground.R}, G = {hue.Foreground.G}, B = {hue.Foreground.B} " +
-								   "}), ");
-				}
-
-				builder.Append("});\n");
-			}
-
-			File.WriteAllText(@"C:\Users\Plainer\Desktop\colors.txt", builder.ToString());
+			tab.AddCumulativePanel(new EmptyPanel("Wide card"), 1, 2);
 		}
 
 		private static void SwitchColor(WPFMonitor guiMonitor)
