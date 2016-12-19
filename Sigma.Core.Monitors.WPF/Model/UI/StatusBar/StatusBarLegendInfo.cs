@@ -1,8 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using MaterialDesignColors;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.ViewModel.CustomControls;
 using Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar;
+using static Sigma.Core.Monitors.WPF.Model.UI.Resources.MaterialDesignValues;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.StatusBar
 {
@@ -25,11 +26,18 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.StatusBar
 			Name = name;
 		}
 
-		public StatusBarLegendInfo(string name, MaterialColour colour, PrimaryColour primary = PrimaryColour.Primary700, AccentColour accent = AccentColour.Accent400) : this(name)
+		public StatusBarLegendInfo(string name, MaterialColour colour, PrimaryColour primaryColour = PrimaryColour.Primary700) : this(name, GetColour(colour, primaryColour), GetForegroundColor(colour, primaryColour)) { }
+
+		public StatusBarLegendInfo(string name, Swatch swatch, PrimaryColour primaryColour = PrimaryColour.Primary700) : this(name, GetColour(swatch, primaryColour), GetForegroundColor(swatch, primaryColour)) { }
+
+		public StatusBarLegendInfo(string name, MaterialColour colour, AccentColour accentColour) : this(name, GetColour(colour, accentColour), GetForegroundColor(colour, accentColour)) { }
+
+		public StatusBarLegendInfo(string name, Swatch swatch, AccentColour accentColour) : this(name, GetColour(swatch, accentColour), GetForegroundColor(swatch, accentColour)) { }
+
+		public StatusBarLegendInfo(string name, Color legendColor, Color? foregroundColor = null) : this(name)
 		{
-			LegendColor = MaterialDesignValues.GetColour(colour, primary);
-			//TODO: fix me
-			ForegroundColor = MaterialDesignValues.GetColour(colour, accent);
+			LegendColor = legendColor;
+			ForegroundColor = foregroundColor;
 		}
 
 		public StatusBarLegend Apply(StatusBarLegend statusBarLegend)

@@ -36,21 +36,75 @@
 		</Setter>
 	</Style>
 
-
-
 	<Style TargetType="{x:Type statusBar:TaskVisualizer}">
+
+		<Style.Resources>
+			<ResourceDictionary>
+				<ResourceDictionary.MergedDictionaries>
+					<!-- Style for progress bar -->
+					<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml"/>
+				</ResourceDictionary.MergedDictionaries>
+			</ResourceDictionary>
+		</Style.Resources>
+
 		<Setter Property="Template">
 			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type statusBar:TaskVisualizer}">
+				<ControlTemplate
+					TargetType="{x:Type statusBar:TaskVisualizer}">
 					<Border Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}">
-						<ProgressBar Value="0.99" Margin="{TemplateBinding Margin}"/>
+
+						<StackPanel Orientation="Horizontal">
+
+							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+										 Value="70"
+										 IsIndeterminate="{TemplateBinding IsIndeterminate}"
+										 Margin="{TemplateBinding Margin}"
+										 Foreground="{TemplateBinding ProgressColorBrush}">
+								
+								<ProgressBar.ToolTip>
+									<ToolTip Content="{TemplateBinding Progress}"
+											 ContentStringFormat="{}{0}%"/>
+								</ProgressBar.ToolTip>
+							</ProgressBar>
+
+							<Label Foreground="{TemplateBinding TextColorBrush}"
+								   VerticalAlignment="Center"
+								   FontSize="{TemplateBinding FontSize}"
+								   FontFamily="{TemplateBinding FontFamily}"
+								   Content="Downloading files" />
+
+							<StackPanel Orientation="Horizontal">
+
+								<TextBlock Foreground="{TemplateBinding TextColorBrush}"
+										   FontSize="{TemplateBinding FontSize}"
+										   FontFamily="{TemplateBinding FontFamily}"
+										   Text = "."
+										   Margin="0,7,0,0"/>
+
+								<TextBlock Foreground="{TemplateBinding TextColorBrush}"
+										   FontSize="{TemplateBinding FontSize}" 
+										   FontFamily="{TemplateBinding FontFamily}" 
+										   Text = "."
+										   Margin="0,7,0,0">
+								</TextBlock>
+
+								<TextBlock Foreground="{TemplateBinding TextColorBrush}"
+										   FontSize="{TemplateBinding FontSize}"
+										   FontFamily="{TemplateBinding FontFamily}"
+										   Text = "."
+										   Margin="0,7,0,0">
+								</TextBlock>
+
+							</StackPanel>
+
+						</StackPanel>
 					</Border>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
 	</Style>
-	
-	
+
+
 </ResourceDictionary>

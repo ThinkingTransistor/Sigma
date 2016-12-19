@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
@@ -14,59 +15,68 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 		void SetActive(ITaskObserver task);
 	}
 
-	/// <summary>
-	/// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
-	///
-	/// Step 1a) Using this custom control in a XAML file that exists in the current project.
-	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
-	/// to be used:
-	///
-	///     xmlns:MyNamespace="clr-namespace:Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar"
-	///
-	///
-	/// Step 1b) Using this custom control in a XAML file that exists in a different project.
-	/// Add this XmlNamespace attribute to the root element of the markup file where it is 
-	/// to be used:
-	///
-	///     xmlns:MyNamespace="clr-namespace:Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar;assembly=Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar"
-	///
-	/// You will also need to add a project reference from the project where the XAML file lives
-	/// to this project and Rebuild to avoid compilation errors:
-	///
-	///     Right click on the target project in the Solution Explorer and
-	///     "Add Reference"->"Projects"->[Browse to and select this project]
-	///
-	///
-	/// Step 2)
-	/// Go ahead and use your control in the XAML file.
-	///
-	///     <MyNamespace:TaskVisualizer/>
-	///
-	/// </summary>
 	public class TaskVisualizer : Control, ITaskVisualizer
 	{
 		#region DependencyProperties
 
-		public static readonly DependencyProperty CycleProperty = DependencyProperty.Register(nameof(Cycle),
-			typeof(bool), typeof(TaskVisualizer), new UIPropertyMetadata(true));
+		public static readonly DependencyProperty ProgressColorBrushProperty = DependencyProperty.Register(nameof(ProgressColorBrush),
+			typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.White));
+
+		public static readonly DependencyProperty TextColorBrushProperty = DependencyProperty.Register(nameof(TextColorBrush),
+			typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.Black));
 
 		public static readonly DependencyProperty TaskSourceProperty = DependencyProperty.Register(nameof(TaskSource),
 			typeof(IEnumerable), typeof(TaskVisualizer), new PropertyMetadata(null));
+
+		public static readonly DependencyProperty IsIndeterminateProperty = DependencyProperty.Register(nameof(IsIndeterminate),
+			typeof(bool), typeof(TaskVisualizer), new PropertyMetadata(true));
+
+		public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(nameof(Progress),
+			typeof(string), typeof(TaskVisualizer), new PropertyMetadata("?"));
 
 		#endregion DependencyProperties
 
 		#region Properties
 
-		public bool Cycle
-		{
-			get { return (bool) GetValue(CycleProperty); }
-			set { SetValue(CycleProperty, value); }
-		}
-
 		public IEnumerable TaskSource
 		{
 			get { return (IEnumerable) GetValue(TaskSourceProperty); }
 			set { SetValue(TaskSourceProperty, value); }
+		}
+
+		public Brush ProgressColorBrush
+		{
+			get { return (Brush) GetValue(ProgressColorBrushProperty); }
+			set { SetValue(ProgressColorBrushProperty, value); }
+		}
+
+		public Brush TextColorBrush
+		{
+			get { return (Brush) GetValue(TextColorBrushProperty); }
+			set { SetValue(TextColorBrushProperty, value); }
+		}
+
+		public bool IsIndeterminate
+		{
+			get { return (bool) GetValue(IsIndeterminateProperty); }
+			set { SetValue(IsIndeterminateProperty, value); }
+		}
+
+		public string Progress
+		{
+			get
+			{
+				if (ActiveTask == null || ActiveTask.Progress >= 0)
+				{
+					Progress = "?";
+				}
+				else
+				{
+					Progress = (ActiveTask.Progress * 100).ToString(CultureInfo.CurrentCulture);
+				}
+				return (string) GetValue(ProgressProperty);
+			}
+			set { SetValue(ProgressProperty, value); }
 		}
 
 		#endregion Properties
@@ -75,7 +85,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 
 		public ITaskObserver ActiveTask { get; set; }
 
-		private readonly BackgroundWorker _visualisationWorker;
+		//private readonly BackgroundWorker _visualisationWorker;
 
 		static TaskVisualizer()
 		{
@@ -87,7 +97,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 
 		public TaskVisualizer()
 		{
-			_visualisationWorker = new BackgroundWorker();
+			//_visualisationWorker = new BackgroundWorker();
 		}
 
 		public void SetActive(ITaskObserver task)

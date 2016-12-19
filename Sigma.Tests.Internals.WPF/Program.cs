@@ -45,13 +45,13 @@ namespace Sigma.Tests.Internals.WPF
 
 			IRegistry reg = new Registry(guiMonitor.Registry);
 			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
-			reg.Add(StatusBarFactory.CustomFactoryIdentifier, new LambdaUIFactory((app, window, param) => new Label { Content = "Sigma is life, Sigma is love", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, FontSize = UIResources.P1 }));
+			reg.Add(StatusBarFactory.CustomFactoryIdentifier, new LambdaUIFactory((app, window, param) => new Label { Content = "Sigma is life, Sigma is love", Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, FontSize = UIResources.P1 }));
 
 			Debug.WriteLine(guiMonitor.Registry);
 
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1") { LegendColor = MaterialDesignValues.GetColour(MaterialColour.Red, PrimaryColour.Primary700) });
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Red));
 			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net") { LegendColor = MaterialDesignValues.GetColour(MaterialColour.Green, PrimaryColour.Primary700) });
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net", MaterialColour.Green));
 
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests");
@@ -64,7 +64,7 @@ namespace Sigma.Tests.Internals.WPF
 			{
 				TabUI tab = window.TabControl["Overview"];
 
-				tab.AddCumulativeElement(new LineChartPanel("Control"), 2, 3);
+				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
 
 				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
 
@@ -91,13 +91,16 @@ namespace Sigma.Tests.Internals.WPF
 
 				//items.Add(new Image {Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma2.png"))}.Source);
 				//items.Add(new Image { Source = new BitmapImage(new Uri(@"C:\Users\Plain\Desktop\sigma.png")) });
-				tab.AddCumulativeElement(panel2, 1, 3);
+				tab.AddCumulativePanel(panel2, 1, 3, guiMonitor.GetLegendInfo("Net test 1"));
 
 				CreateDefaultCards(window.TabControl["Tests"]);
+
+				tab.AddCumulativePanel(new EmptyPanel("Empty panel"), 2);
 			});
 
 			guiMonitor.ColourManager.Dark = true;
-			guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.Teal;
+			guiMonitor.ColourManager.Alternate = true;
+			guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.BlueGrey;
 			guiMonitor.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
 
 			//SwitchColor(guiMonitor);

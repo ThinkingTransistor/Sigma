@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 
@@ -494,147 +493,65 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(ACCENT700, new Color {A = 255, R = 255, G = 214, B = 0}, new Color {A = 255, R = 0, G = 0, B = 0})
 			});
 
-		private static Color GetColour(string str, MaterialColour colour, PrimaryColour? primary, bool isForeground = false)
+
+		private static Hue GetHue(IEnumerable<Hue> hues, string name)
 		{
-			// ReSharper disable once IntroduceOptionalParameters.Local
-			return GetColour(str, colour, primary, null, isForeground);
+			foreach (Hue hue in hues)
+			{
+				if (string.Equals(hue.Name, name, StringComparison.CurrentCultureIgnoreCase))
+				{
+					return hue;
+				}
+			}
+
+			throw new KeyNotFoundException(name);
 		}
 
-		private static Color GetColour(string str, MaterialColour colour, AccentColour? accent, bool isForeground = false)
-		{
-			return GetColour(str, colour, null, accent, isForeground);
-
-		}
-
-		private static Swatch MaterialColourToSwatch(MaterialColour colour)
+		public static Swatch GetSwatch(MaterialColour colour)
 		{
 			FieldInfo field = typeof(MaterialDesignValues).GetField(colour.ToString(), BindingFlags.Public | BindingFlags.Static);
 
 			return field?.GetValue(null) as Swatch;
 		}
 
-		private static Color GetColour(string str, MaterialColour colour, PrimaryColour? primary, AccentColour? accent, bool isForeground)
+		public static Color GetColour(MaterialColour colour, PrimaryColour primaryColour)
 		{
-			Color? col = Application.Current?.Resources[str] as Color?;
-
-			if (col.HasValue) return col.Value;
-
-			Swatch swatch = MaterialColourToSwatch(colour);
-			if (swatch != null && !isForeground)
-			{
-				if (primary.HasValue)
-				{
-					col = ColourFromSwatch(swatch, primary.Value);
-				}
-				else if (accent.HasValue)
-				{
-					col = ColourFromSwatch(swatch, accent.Value);
-				}
-
-				if (col.HasValue)
-				{
-					return col.Value;
-				}
-			}
-
-			throw new ArgumentException($"Value not found for {str}. Foreground colours can only be fetched if the app is already running. ");
+			return GetColour(GetSwatch(colour), primaryColour);
 		}
 
-		public static Color GetColour(MaterialColour colour, PrimaryColour primary)
+		public static Color GetColour(Swatch swatch, PrimaryColour primaryColour)
 		{
-			return GetColour(colour.ToFormattedString() + primary, colour, primary);
+			return GetHue(swatch.PrimaryHues, primaryColour.ToString()).Color;
 		}
 
-		public static Color GetForegroundColour(MaterialColour colour, PrimaryColour primary)
+		public static Color GetForegroundColor(MaterialColour colour, PrimaryColour primaryColour)
 		{
-			return GetColour(colour.ToFormattedString() + primary + "Foreground", colour, primary, true);
+			return GetForegroundColor(GetSwatch(colour), primaryColour);
 		}
 
-		public static Color GetColour(MaterialColour colour, AccentColour accent)
+		public static Color GetForegroundColor(Swatch swatch, PrimaryColour primaryColour)
 		{
-			return GetColour(colour.ToFormattedString() + accent, colour, accent);
+			return GetHue(swatch.PrimaryHues, primaryColour.ToString()).Foreground;
 		}
 
-		public static Color GetForegroundColour(MaterialColour colour, AccentColour accent)
+		public static Color GetColour(MaterialColour colour, AccentColour accentColour)
 		{
-			return GetColour(colour.ToFormattedString() + accent + "Foreground", colour, accent, true);
+			return GetColour(GetSwatch(colour), accentColour);
 		}
 
-		public static Color ColourFromSwatch(Swatch swatch, PrimaryColour primaryColour)
+		public static Color GetColour(Swatch swatch, AccentColour accentColour)
 		{
-			foreach (Hue hue in swatch.PrimaryHues)
-			{
-				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-					return hue.Color;
-			}
-
-			throw new KeyNotFoundException();
+			return GetHue(swatch.AccentHues, accentColour.ToString()).Color;
 		}
 
-		public static Color ForegorundColourFromSwatch(Swatch swatch, PrimaryColour primaryColour)
+		public static Color GetForegroundColor(MaterialColour colour, AccentColour accentColour)
 		{
-			foreach (Hue hue in swatch.PrimaryHues)
-			{
-				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-					return hue.Foreground;
-			}
-
-			throw new KeyNotFoundException();
+			return GetForegroundColor(GetSwatch(colour), accentColour);
 		}
 
-		public static Color ColourFromSwatch(Swatch swatch, AccentColour accentColour)
+		public static Color GetForegroundColor(Swatch swatch, AccentColour accentColour)
 		{
-			foreach (Hue hue in swatch.AccentHues)
-			{
-				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-					return hue.Foreground;
-			}
-
-			throw new KeyNotFoundException();
-		}
-
-		public static Color ForegorundColourFromSwatch(Swatch swatch, AccentColour accentColour)
-		{
-			foreach (Hue hue in swatch.PrimaryHues)
-			{
-				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-					return hue.Foreground;
-			}
-
-			throw new KeyNotFoundException();
-		}
-
-		public static void ColoursFromSwatch(Swatch swatch, PrimaryColour primaryColour, out Color colour,
-			out Color foreground)
-		{
-			foreach (Hue hue in swatch.PrimaryHues)
-			{
-				if (String.Equals(hue.Name, primaryColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-				{
-					colour = hue.Color;
-					foreground = hue.Foreground;
-
-					return;
-				}
-			}
-
-			throw new KeyNotFoundException();
-		}
-
-		public static void ColoursFromSwatch(Swatch swatch, AccentColour accentColour, out Color colour, out Color foreground)
-		{
-			foreach (Hue hue in swatch.PrimaryHues)
-			{
-				if (String.Equals(hue.Name, accentColour.ToString(), StringComparison.CurrentCultureIgnoreCase))
-				{
-					colour = hue.Color;
-					foreground = hue.Foreground;
-
-					return;
-				}
-			}
-
-			throw new KeyNotFoundException();
+			return GetHue(swatch.AccentHues, accentColour.ToString()).Foreground;
 		}
 	}
 }

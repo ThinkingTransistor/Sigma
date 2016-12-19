@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:statusBar="clr-namespace:Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar">
+
+	<Style TargetType="statusBar:TaskVisualizer">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="ProgressColorBrush" Value="{DynamicResource AccentSelectedColorBrush}"/>
+		<Setter Property="TextColorBrush" Value="{DynamicResource AccentSelectedColorBrush}"/>
+		<Setter Property="FontSize" Value="{DynamicResource P1}"/>
+	</Style>
+
+</ResourceDictionary>
