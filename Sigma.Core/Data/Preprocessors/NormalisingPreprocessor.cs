@@ -68,9 +68,9 @@ namespace Sigma.Core.Data.Preprocessors
 
 		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
-			handler.Subtract(array, MinInputValue, array);
-			handler.Multiply(array, _outputScale, array);
-			handler.Add(array, MinOutputValue, array);
+			array = handler.Subtract(array, MinInputValue);
+			array = handler.Multiply(array, _outputScale);
+			array = handler.Add(array, MinOutputValue);
 
 			return array;
 		}

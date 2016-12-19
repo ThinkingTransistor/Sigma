@@ -9,11 +9,12 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using static DiffSharp.Util;
 
 namespace Sigma.Core.Data
 {
 	/// <summary>
-	/// A default implementation of the databuffer interface.
+	/// A default implementation of the databuffer interface, compatible with the default Sigma.DiffSharp implementation.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
@@ -160,7 +161,7 @@ namespace Sigma.Core.Data
 			}
 		}
 
-		public IDataBuffer<T> Copy()
+		public IDataBuffer<T> ShallowCopy()
 		{
 			return new DataBuffer<T>(this);
 		}
@@ -195,7 +196,7 @@ namespace Sigma.Core.Data
 		{
 			T[] valuesArray = new T[length];
 
-			Array.Copy(Data, Offset + startIndex, valuesArray, 0, length);
+			System.Array.Copy(Data, Offset + startIndex, valuesArray, 0, length);
 
 			return valuesArray;
 		}
@@ -222,12 +223,12 @@ namespace Sigma.Core.Data
 
 		public void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length)
 		{
-			Array.Copy(buffer.Data, sourceStartIndex, Data, Offset + destStartIndex, length);
+			System.Array.Copy(buffer.Data, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
 		public void SetValues(T[] values, long sourceStartIndex, long destStartIndex, long length)
 		{
-			Array.Copy(values, sourceStartIndex, Data, Offset + destStartIndex, length);
+			System.Array.Copy(values, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
 		public IDataBuffer<T> GetUnderlyingBuffer()

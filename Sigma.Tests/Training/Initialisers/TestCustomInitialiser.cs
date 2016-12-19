@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using NUnit.Framework;
-using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Training.Initialisers;
 
@@ -27,7 +27,7 @@ namespace Sigma.Tests.Training.Initialisers
 		{
 			CustomInitialiser initialiser = new CustomInitialiser((i, s, r) => 5);
 
-			NDArray<float> array = new NDArray<float>(2, 3);
+			ADNDArray<float> array = new ADNDArray<float>(2, 3);
 
 			initialiser.Initialise(array, new CpuFloat32Handler(), new Random());
 

@@ -20,8 +20,8 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	/// </summary>
 	/// <typeparam name="T">The data type of this ndarray.</typeparam>
 	[Serializable]
-	[SuppressMessage("ReSharper", "InconsistentNaming")] //INdArray looks stupid
-	public class NDArray<T> : INDArray
+	[SuppressMessage("ReSharper", "InconsistentNaming")] //ADNDArray looks stupid
+	public class ADNDArray<T> : INDArray
 	{
 		internal readonly IDataBuffer<T> Data;
 
@@ -52,7 +52,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// Create a vectorised ndarray of a certain buffer.
 		/// </summary>
 		/// <param name="buffer">The buffer to back this ndarray.</param>
-		public NDArray(IDataBuffer<T> buffer)
+		public ADNDArray(IDataBuffer<T> buffer)
 		{
 			Initialise(new long[] { 1, (int) buffer.Length }, NDArrayUtils.GetStrides(1, (int) buffer.Length));
 
@@ -64,7 +64,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// </summary>
 		/// <param name="buffer">The buffer to back this ndarray.</param>
 		/// <param name="shape">The shape.</param>
-		public NDArray(IDataBuffer<T> buffer, long[] shape)
+		public ADNDArray(IDataBuffer<T> buffer, long[] shape)
 		{
 			if (buffer.Length < ArrayUtils.Product(shape))
 			{
@@ -80,7 +80,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// Create a vectorised ndarray of a certain array (array will be COPIED into a data buffer).
 		/// </summary>
 		/// <param name="data">The data to use to fill this ndarray.</param>
-		public NDArray(T[] data)
+		public ADNDArray(T[] data)
 		{
 			Initialise(new long[] { 1, data.Length }, NDArrayUtils.GetStrides(1, data.Length));
 
@@ -93,7 +93,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// </summary>
 		/// <param name="data">The data to use to fill this ndarray.</param>
 		/// <param name="shape">The shape.</param>
-		public NDArray(T[] data, params long[] shape)
+		public ADNDArray(T[] data, params long[] shape)
 		{
 			if (data.Length < ArrayUtils.Product(shape))
 			{
@@ -109,21 +109,21 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// Create an ndarray of a certain shape (initialised with zeros).
 		/// </summary>
 		/// <param name="shape">The shape.</param>
-		public NDArray(params long[] shape)
+		public ADNDArray(params long[] shape)
 		{
 			Initialise(NDArrayUtils.CheckShape(shape), NDArrayUtils.GetStrides(shape));
 
 			Data = new DataBuffer<T>(Length);
 		}
 
-		public NDArray<T> Copy()
+		public ADNDArray<T> Copy()
 		{
-			return new NDArray<T>(Data, Shape).SetAssociatedHandler(AssociatedHandler);
+			return new ADNDArray<T>(Data, Shape).SetAssociatedHandler(AssociatedHandler);
 		}
 
 		public object DeepCopy()
 		{
-			return new NDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone()).SetAssociatedHandler(AssociatedHandler);
+			return new ADNDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone()).SetAssociatedHandler(AssociatedHandler);
 		}
 
 		/// <summary>
@@ -131,7 +131,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <returns>This ndarray (for convenience).</returns>
-		internal NDArray<T> SetAssociatedHandler(IComputationHandler handler)
+		internal ADNDArray<T> SetAssociatedHandler(IComputationHandler handler)
 		{
 			AssociatedHandler = handler;
 
@@ -199,7 +199,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);
 			long length = absoluteEndOffset - absoluteBeginOffset + 1;
 
-			return new NDArray<T>(new DataBuffer<T>(Data, absoluteBeginOffset, length), slicedShape);
+			return new ADNDArray<T>(new DataBuffer<T>(Data, absoluteBeginOffset, length), slicedShape);
 		}
 
 		public INDArray Flatten()
@@ -219,7 +219,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			return new NDArray<T>(Data, newShape);
+			return new ADNDArray<T>(Data, newShape);
 		}
 
 		public INDArray ReshapeSelf(params long[] newShape)
@@ -257,7 +257,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			return new NDArray<T>(Data, newShape);
+			return new ADNDArray<T>(Data, newShape);
 		}
 
 		public INDArray PermuteSelf(params int[] rearrangedDimensions)

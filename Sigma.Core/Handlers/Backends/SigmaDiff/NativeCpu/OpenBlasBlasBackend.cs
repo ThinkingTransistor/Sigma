@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System.Runtime.InteropServices;
 
-namespace Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu
+namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
 	/// <summary>
 	/// An OpenBLAS partial BLAS backend using external libopenblas native functions.

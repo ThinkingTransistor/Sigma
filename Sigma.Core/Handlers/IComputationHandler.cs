@@ -13,6 +13,7 @@ namespace Sigma.Core.Handlers
 {
 	/// <summary>
 	/// A computation backend handler. Creates and manages ndarrays, processes mathematical operations at scale. 
+	/// Runtime checks argument checks are not performed by default for maximum performance. For debugging information, attach a DebugHandler. 
 	/// </summary>
 	public interface IComputationHandler
 	{
@@ -57,6 +58,14 @@ namespace Sigma.Core.Handlers
 		INumber Number(object value);
 
 		/// <summary>
+		/// Create a data buffer compatible with this handler from the given array.
+		/// </summary>
+		/// <typeparam name="T">The type of the data buffer / values array.</typeparam>
+		/// <param name="values">The values array.</param>
+		/// <returns>A data buffer compatible with this handler containing the given values.</returns>
+		IDataBuffer<T> DataBuffer<T>(T[] values);
+
+			/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
 		/// </summary>
 		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>
@@ -100,16 +109,24 @@ namespace Sigma.Core.Handlers
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Add<TOther>(INDArray array, TOther value, INDArray output);
+		/// <returns>The result of adding value to each array element.</returns>
+		INDArray Add<TOther>(INDArray array, TOther value);
 
 		/// <summary>
 		/// Add a traceable number to all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Add(INDArray array, INumber value, INDArray output);
+		/// <returns>The result of adding value to each array element.</returns>
+		INDArray Add(INDArray array, INumber value);
+
+		/// <summary>
+		/// Add an ndarray a to an ndarray b element-wise.
+		/// </summary>
+		/// <param name="a">The first ndarray.</param>
+		/// <param name="b">The second ndarray.</param>
+		/// <returns>The result of adding the ndarray a to the ndarray b element-wise.</returns>
+		INDArray Add(INDArray a, INDArray b);
 
 		/// <summary>
 		/// Subtract a constant value from all elements in an ndarray and put the result in another ndarray.
@@ -117,16 +134,24 @@ namespace Sigma.Core.Handlers
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Subtract<TOther>(INDArray array, TOther value, INDArray output);
+		/// <returns>The result of subtracting value from each array element.</returns>
+		INDArray Subtract<TOther>(INDArray array, TOther value);
 
 		/// <summary>
 		/// Subtract a traceable number from all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Subtract(INDArray array, INumber value, INDArray output);
+		/// <returns>The result of subtracting value from each array element.</returns>
+		INDArray Subtract(INDArray array, INumber value);
+
+		/// <summary>
+		/// Subtract an ndarray b from an ndarray a element-wise.
+		/// </summary>
+		/// <param name="a">The first ndarray.</param>
+		/// <param name="b">The second ndarray.</param>
+		/// <returns>The result of subtracting the ndarray b from the ndarray b element-wise.</returns>
+		INDArray Subtract(INDArray a, INDArray b);
 
 		/// <summary>
 		/// Multiply a constant value with all elements in an ndarray and put the result in another ndarray.
@@ -134,16 +159,32 @@ namespace Sigma.Core.Handlers
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Multiply<TOther>(INDArray array, TOther value, INDArray output);
+		/// <returns>The result of multiplying value with each array element.</returns>
+		INDArray Multiply<TOther>(INDArray array, TOther value);
 
 		/// <summary>
 		/// Multiply a traceable number with all elements in an ndarray and put the result in another ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Multiply(INDArray array, INumber value, INDArray output);
+		/// <returns>The result of multiplying value with each array element.</returns>
+		INDArray Multiply(INDArray array, INumber value);
+
+		/// <summary>
+		/// Multiply an ndarray a with an ndarray b element-wise (similar to the Hadamard product).
+		/// </summary>
+		/// <param name="a">The first ndarray.</param>
+		/// <param name="b">The second ndarray.</param>
+		/// <returns>The result of multiplying the ndarray a with the ndarray b element-wise.</returns>
+		INDArray Multiply(INDArray a, INDArray b);
+
+		/// <summary>
+		/// Get the dot product of two ndarrays a x b (a and b are assumed to be compatible matrices for dot products). 
+		/// </summary>
+		/// <param name="a">The first ndarray.</param>
+		/// <param name="b">The second ndarray.</param>
+		/// <returns>The dot product of the ndarray a x ndarray b.</returns>
+		INDArray Dot(INDArray a, INDArray b);
 
 		/// <summary>
 		/// Divide all elements in an ndarray by a constant value and put the result in another ndarray.
@@ -151,15 +192,23 @@ namespace Sigma.Core.Handlers
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Divide<TOther>(INDArray array, TOther value, INDArray output);
+		/// <returns>The result of dividing array element by the value.</returns>
+		INDArray Divide<TOther>(INDArray array, TOther value);
 
 		/// <summary>
 		/// Divide all elements in an ndarray by a traceable number and put the result in another ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
-		/// <param name="output">The output ndarray where the results will be after this method returns.</param>
-		void Divide(INDArray array, INumber value, INDArray output);
+		/// <returns>The result of dividing array element by the value</returns>
+		INDArray Divide(INDArray array, INumber value);
+
+		/// <summary>
+		/// Divide an ndarray b by an ndarray a element-wise (similar to the Hadamard product).
+		/// </summary>
+		/// <param name="a">The first ndarray.</param>
+		/// <param name="b">The second ndarray.</param>
+		/// <returns>The result of dividing the ndarray b by the ndarray a element-wise.</returns>
+		INDArray Divide(INDArray a, INDArray b);
 	}
 }

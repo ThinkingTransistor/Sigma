@@ -18,13 +18,13 @@ namespace Sigma.Tests.Math
 		[TestCase]
 		public void TestNdArrayCreate()
 		{
-			NDArray<int> intArray = new NDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
+			ADNDArray<int> intArray = new ADNDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
 
 			Assert.AreEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, intArray.GetDataAs<int>().GetValuesArrayAs<int>(0, 8));
 			Assert.AreEqual(new long[] { 2, 4 }, intArray.Shape);
 			Assert.AreEqual(new long[] { 4, 1 }, intArray.Strides);
 
-			NDArray<float> floatArray = new NDArray<float>(new DataBuffer<float>(new[] { 1.1f, 2.2f, 3.3f, 4.4f }));
+			ADNDArray<float> floatArray = new ADNDArray<float>(new DataBuffer<float>(new[] { 1.1f, 2.2f, 3.3f, 4.4f }));
 
 			Assert.AreEqual(new[] { 1.1f, 2.2f, 3.3f, 4.4f }, floatArray.GetDataAs<float>().GetValuesArray(0, 4));
 			Assert.AreEqual(new long[] { 1, 4 }, floatArray.Shape);
@@ -34,9 +34,9 @@ namespace Sigma.Tests.Math
 		[TestCase]
 		public void TestNdArrayReshape()
 		{
-			NDArray<int> array = new NDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
+			ADNDArray<int> array = new ADNDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
 
-			NDArray<int> reshaped = (NDArray<int>) array.Reshape(4, 2);
+			ADNDArray<int> reshaped = (ADNDArray<int>) array.Reshape(4, 2);
 
 			array.ReshapeSelf(4, 2);
 
@@ -50,9 +50,9 @@ namespace Sigma.Tests.Math
 		[TestCase]
 		public void TestNdArrayPermute()
 		{
-			NDArray<int> array = new NDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, shape: new long[] { 2, 2, 3 });
+			ADNDArray<int> array = new ADNDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, shape: new long[] { 2, 2, 3 });
 
-			NDArray<int> permuted = (NDArray<int>) array.Permute(2, 1, 0);
+			ADNDArray<int> permuted = (ADNDArray<int>) array.Permute(2, 1, 0);
 
 			array.PermuteSelf(2, 1, 0);
 
@@ -66,9 +66,9 @@ namespace Sigma.Tests.Math
 		[TestCase]
 		public void TestNdArrayTranspose()
 		{
-			NDArray<int> array = new NDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
+			ADNDArray<int> array = new ADNDArray<int>(data: new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, shape: new long[] { 2, 4 });
 
-			NDArray<int> transposed = (NDArray<int>) array.Transpose();
+			ADNDArray<int> transposed = (ADNDArray<int>) array.Transpose();
 
 			array.TransposeSelf();
 

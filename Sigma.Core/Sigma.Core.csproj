@@ -77,6 +77,11 @@
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\CudaSparse.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="DiffSharp, Version=0.7.8.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dependencies\DiffSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -141,22 +146,27 @@
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
-    <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\OpenBlasBlasBackend.cs" />
-    <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\OpenBlasLapackBackend.cs" />
-    <Compile Include="Handlers\Backends\DiffSharp\PlatformDependentDllUtils.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpBackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentDllUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
-    <Compile Include="Handlers\Backends\DiffSharp\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffDataBuffer.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
-    <Compile Include="Handlers\Backends\DiffSharp\DiffSharpHandler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\NDArray.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\Number.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDArray.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
@@ -203,12 +213,6 @@
     <None Include="Sigma.Core.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Dependencies\Linux64\DiffSharp.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Dependencies\Windows64\DiffSharp.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Dependencies\Windows64\libopenblas.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

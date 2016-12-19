@@ -6,10 +6,9 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using System.Runtime.InteropServices;
 
-namespace Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu
+namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
 	/// <summary>
 	/// An OpenBLAS partial LAPACK backend using external libopenblas native functions.

@@ -118,7 +118,7 @@ namespace Sigma.Core.Data
 		/// Copies this the data buffer, keeping the same underlying data (underlying buffers are not copied).
 		/// </summary>
 		/// <returns>A new data buffer view of the same data.</returns>
-		IDataBuffer<T> Copy();
+		IDataBuffer<T> ShallowCopy();
 
 		/// <summary>
 		/// Get the underlying data buffer.

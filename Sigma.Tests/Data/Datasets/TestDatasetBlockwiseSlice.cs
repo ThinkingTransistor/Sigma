@@ -15,7 +15,7 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends;
 using System;
 using System.IO;
-using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Datasets
 {

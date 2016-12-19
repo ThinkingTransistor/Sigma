@@ -11,7 +11,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using log4net;
 
-namespace Sigma.Core.Handlers.Backends.DiffSharp
+namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	/// <summary>
 	/// Utilities to handle platform dependent DLLs.
@@ -46,7 +46,7 @@ namespace Sigma.Core.Handlers.Backends.DiffSharp
 			}
 			else if (pid == PlatformID.MacOSX)
 			{
-				throw new NotSupportedException("MacOSX system detected, MacOSX DLL ");
+				throw new NotSupportedException("MacOSX system detected, MacOSX DLL not supported as of now.");
 			}
 			else if (pid == PlatformID.Xbox)
 			{

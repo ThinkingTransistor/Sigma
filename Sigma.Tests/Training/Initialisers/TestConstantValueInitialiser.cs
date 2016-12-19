@@ -12,7 +12,7 @@ using Sigma.Core.Handlers.Backends;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Initialisers;
 using System;
-using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Training.Initialisers
@@ -24,7 +24,7 @@ namespace Sigma.Tests.Training.Initialisers
 		{
 			ConstantValueInitialiser initialiser = new ConstantValueInitialiser(2.0);
 
-			INDArray array = new NDArray<float>(2, 1, 2, 2);
+			INDArray array = new ADNDArray<float>(2, 1, 2, 2);
 			IComputationHandler handler = new CpuFloat32Handler();
 			Random random = new Random();
 

@@ -9,7 +9,7 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 

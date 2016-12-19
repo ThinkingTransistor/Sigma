@@ -9,15 +9,15 @@ namespace Sigma.Tests.Math
 		[TestCase]
 		public void TestNumberGetSet()
 		{
-			Number<float> number = new Number<float>(0.3f);
+			ADNumber<float> adNumber = new ADNumber<float>(0.3f);
 
-			Assert.AreEqual(0.3f, number.Value);
+			Assert.AreEqual(0.3f, adNumber.Value);
 
-			number.Value = 0.2f;
+			adNumber.Value = 0.2f;
 
-			Assert.AreEqual(0.2f, number.Value);
+			Assert.AreEqual(0.2f, adNumber.Value);
 
-			Assert.That(() => number.Value = null, Throws.Exception);
+			Assert.That(() => adNumber.Value = null, Throws.Exception);
 		}
 	}
 }

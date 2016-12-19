@@ -53,7 +53,7 @@ namespace Sigma.Tests.Data
 			DataBuffer<double> rootBuffer = new DataBuffer<double>(length);
 			DataBuffer<double> childBufferL2 = new DataBuffer<double>(rootBuffer, 100L, length - 200L);
 
-			IDataBuffer<double> childBufferL2Copy = childBufferL2.Copy();
+			IDataBuffer<double> childBufferL2Copy = childBufferL2.ShallowCopy();
 
 			Assert.AreSame(childBufferL2.Data, childBufferL2Copy.Data);
 			Assert.AreSame(childBufferL2.GetUnderlyingBuffer(), childBufferL2Copy.GetUnderlyingBuffer());

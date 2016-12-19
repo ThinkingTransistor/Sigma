@@ -6,7 +6,7 @@ using Sigma.Core.Handlers.Backends;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Sigma.Core.Handlers.Backends.DiffSharp.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Extractors
 {
