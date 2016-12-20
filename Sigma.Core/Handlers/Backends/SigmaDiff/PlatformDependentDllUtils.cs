@@ -57,12 +57,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				throw new NotSupportedException($"Unsupported system with platform id {pid} (potato system?).");
 			}
 
-			string basePath = System.AppDomain.CurrentDomain.BaseDirectory + "Dependencies";
-			string fullPath = Path.Combine(basePath, dllSubDirectory);
+			//string basePath = System.AppDomain.CurrentDomain.BaseDirectory + "Dependencies";
+			//string fullPath = Path.Combine(basePath, dllSubDirectory);
 
-			SetDllDirectory(fullPath);
+			//SetDllDirectory(fullPath);
 
-			clazzLogger.Info($"Set platform dependent DLL directory to \"{fullPath}\"");
+			//clazzLogger.Info($"Set platform dependent DLL directory to \"{fullPath}\"");
 
 			_setPlatformDependentDllDirectory = true;
 		}

@@ -206,16 +206,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Dependencies\Linux64\libopenblas.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Dependencies\libopenblas.so" />
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Dependencies\Windows64\libopenblas.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Dependencies\DiffSharp.dll" />
+    <Content Include="Dependencies\libopenblas.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

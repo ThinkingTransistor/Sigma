@@ -58,7 +58,7 @@
 						<StackPanel Orientation="Horizontal">
 
 							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-										 Value="70"
+										 Value="0"
 										 IsIndeterminate="{TemplateBinding IsIndeterminate}"
 										 Margin="{TemplateBinding Margin}"
 										 Foreground="{TemplateBinding ProgressColorBrush}">
