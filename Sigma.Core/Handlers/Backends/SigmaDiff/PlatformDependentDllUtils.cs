@@ -67,7 +67,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			_setPlatformDependentDllDirectory = true;
 		}
 
-		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[DllImport("kernel32", CharSet = CharSet.Auto, SetLastError = true)]
 		private static extern bool SetDllDirectory(string path);
 	}
 }
