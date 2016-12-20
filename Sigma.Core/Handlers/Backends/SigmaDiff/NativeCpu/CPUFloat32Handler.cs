@@ -26,17 +26,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 		public override IDataBuffer<T> DataBuffer<T>(T[] values)
 		{
-			return new SigmaDiffDataBuffer<T>(values);
+			return new SigmaDiffDataBuffer<T>(values, backendTag: DiffsharpBackendHandle.BackendTag);
 		}
 
 		public override INDArray NDArray(params long[] shape)
 		{
-			return AssignTag(new ADNDFloat32Array(shape: shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
 		}
 
 		public override INumber Number(object value)
 		{
-			return AssignTag(new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float)))).SetAssociatedHandler(this);
+			return new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
 		}
 
 		public override void InitAfterDeserialisation(INDArray array)

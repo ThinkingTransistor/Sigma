@@ -8,7 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using DiffSharp;
 using DiffSharp.Config;
+using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
@@ -23,6 +26,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		private readonly Dictionary<long, object> _registeredBackendConfigs;
+		private readonly Dictionary<object, long> _backendMappedValues;
+
+		public SigmaDiffSharpBackendProvider()
+		{
+			_registeredBackendConfigs = new Dictionary<long, object>();
+			_backendMappedValues = new Dictionary<object, long>();
+		}
+
+		public T MapToBackend<T>(T value, long backendTag)
+		{
+			_backendMappedValues.Add(value, backendTag);
+
+			return value;
+		}
 
 		public long Register<T>(BackendConfig<T> backendConfig)
 		{
@@ -45,42 +62,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return tag;
 		}
 
-		public SigmaDiffSharpBackendProvider()
-		{
-			_registeredBackendConfigs = new Dictionary<long, object>();
-		}
-
 		public BackendConfig<T> GetBackend<T>(object obj)
 		{
-			long tag;
-
-			if (obj is DiffSharp.Interop.Float32.DNDArray)
+			if (obj is ADNDFloat32Array)
 			{
-				tag = ((DiffSharp.Interop.Float32.DNDArray) obj).BackendTag;
+				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<float>) ((ADNDFloat32Array) obj).Data).BackendTag];
 			}
-			else if (obj is DiffSharp.Interop.Float32.DNumber)
+			else if (obj is Util.ShapedDataBufferView<T>)
 			{
-				tag = ((DiffSharp.Interop.Float32.DNumber) obj).BackendTag;
+				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<T>) ((Util.ShapedDataBufferView<T>) obj).DataBuffer).BackendTag];
 			}
-			else if (obj is DiffSharp.Interop.Float64.DNDArray)
+			else if (_backendMappedValues.ContainsKey(obj))
 			{
-				tag = ((DiffSharp.Interop.Float64.DNDArray) obj).BackendTag;
-			}
-			else if (obj is DiffSharp.Interop.Float64.DNumber)
-			{
-				tag = ((DiffSharp.Interop.Float64.DNumber) obj).BackendTag;
-			}
-			else
-			{
-				throw new NotSupportedException($"Cannot fetch backend for unknown object {obj}.");
+				return (BackendConfig<T>) _registeredBackendConfigs[_backendMappedValues[obj]];
 			}
 
-			if (!_registeredBackendConfigs.ContainsKey(tag))
-			{
-				throw new InvalidOperationException($"Cannot fetch backend for tag {tag}, tag is not registered with any backend in this provider.");
-			}
-
-			return (BackendConfig<T>) _registeredBackendConfigs[tag];
+			throw new InvalidOperationException($"Cannot get backend for unknown object {obj}, object is neither a known array nor a backend mapped type.");
 		}
 	}
 }

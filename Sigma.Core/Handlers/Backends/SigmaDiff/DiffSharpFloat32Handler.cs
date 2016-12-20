@@ -40,10 +40,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			BlasBackend = blasBackend;
 			LapackBackend = lapackBackend;
 
-			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend);
+			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
 
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
 			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
+
+			DiffsharpBackendHandle.BackendTag = _backendTag;
 		}
 
 		protected BackendConfig<float> CreateBackendConfig()
@@ -56,16 +58,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		protected ADNDFloat32Array AssignTag(ADNDFloat32Array array)
 		{
-			array._adArrayHandle.BackendTag = _backendTag;
+			((SigmaDiffDataBuffer<float>) array.Data).BackendTag = _backendTag;
 
 			return array;
-		}
-
-		protected ADFloat32Number AssignTag(ADFloat32Number number)
-		{
-			number._adNumberHandle.BackendTag = _backendTag;
-
-			return number;
 		}
 
 		// IComputationHandler stuff that is probably different for each diffsharp handler implementation

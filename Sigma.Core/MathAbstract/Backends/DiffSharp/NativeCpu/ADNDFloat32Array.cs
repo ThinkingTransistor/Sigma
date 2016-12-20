@@ -21,11 +21,11 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	{
 		public readonly DNDArray _adArrayHandle;
 
-		public ADNDFloat32Array(params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape)), shape))
+		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), shape))
 		{
 		}
 
-		public ADNDFloat32Array(float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data), shape))
+		public ADNDFloat32Array(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), shape))
 		{
 		}
 

@@ -15,6 +15,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	[Serializable]
 	internal class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
 	{
+		public long BackendTag { get; set; }
+
 		#region DiffSharp SigmaDiffDataBuffer interop properties
 
 		int ISigmaDiffDataBuffer<T>.Length => (int) Length;
@@ -27,24 +29,29 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		#endregion
 
-		public SigmaDiffDataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length) : base(underlyingBuffer, offset, length)
+		public SigmaDiffDataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length, long backendTag) : base(underlyingBuffer, offset, length)
 		{
+			BackendTag = backendTag;
 		}
 
-		public SigmaDiffDataBuffer(T[] data, IDataType underlyingType = null) : base(data, underlyingType)
+		public SigmaDiffDataBuffer(T[] data, long backendTag, IDataType underlyingType = null) : base(data, underlyingType)
 		{
+			BackendTag = backendTag;
 		}
 
-		public SigmaDiffDataBuffer(T[] data, long offset, long length, IDataType underlyingType = null) : base(data, offset, length, underlyingType)
+		public SigmaDiffDataBuffer(T[] data, long offset, long length, long backendTag, IDataType underlyingType = null) : base(data, offset, length, underlyingType)
 		{
+			BackendTag = backendTag;
 		}
 
-		public SigmaDiffDataBuffer(long length, IDataType underlyingType = null) : base(length, underlyingType)
+		public SigmaDiffDataBuffer(long length, long backendTag, IDataType underlyingType = null) : base(length, underlyingType)
 		{
+			BackendTag = backendTag;
 		}
 
-		public SigmaDiffDataBuffer(DataBuffer<T> other) : base(other)
+		public SigmaDiffDataBuffer(DataBuffer<T> other, long backendTag) : base(other)
 		{
+			BackendTag = backendTag;
 		}
 
 		#region DiffSharp SigmaDiffDataBuffer interop methods

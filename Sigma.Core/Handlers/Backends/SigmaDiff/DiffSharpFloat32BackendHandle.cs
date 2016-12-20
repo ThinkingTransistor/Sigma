@@ -17,13 +17,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	public unsafe class DiffSharpFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
-		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend) : base(blasBackend, lapackBackend)
+		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(blasBackend, lapackBackend, backendTag)
 		{
 		}
 
 		public override ISigmaDiffDataBuffer<float> CreateDataBuffer(float[] values)
 		{
-			return new SigmaDiffDataBuffer<float>(values);
+			return new SigmaDiffDataBuffer<float>(values, backendTag: BackendTag);
 		}
 
 		public override float L1Norm_V(ISigmaDiffDataBuffer<float> value)

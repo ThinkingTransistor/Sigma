@@ -15,16 +15,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	public abstract class DiffSharpBackendHandle<T> : Backend<T>
 	{
+		public long BackendTag { get; set; }
 		public IBlasBackend BlasBackend { get; set; }
 		public ILapackBackend LapackBackend { get; set; }
 
-		internal DiffSharpBackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend)
+		internal DiffSharpBackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag)
 		{
 			if (blasBackend == null) throw new ArgumentNullException(nameof(blasBackend));
 			if (lapackBackend == null) throw new ArgumentNullException(nameof(lapackBackend));
 
 			BlasBackend = blasBackend;
 			LapackBackend = lapackBackend;
+			BackendTag = backendTag;
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);
