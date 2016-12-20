@@ -120,7 +120,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			static NativeOpenBlasBlasMethods()
 			{
-				PlatformDependentDllUtils.EnsureSetPlatformDependentDllDirectory();
+				PlatformDependentUtils.CheckPlatformDependentLibraries();
 			}
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "isamax_")]

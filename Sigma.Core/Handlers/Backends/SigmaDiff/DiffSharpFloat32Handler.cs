@@ -154,7 +154,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		static DiffSharpFloat32Handler()
 		{
-			PlatformDependentDllUtils.EnsureSetPlatformDependentDllDirectory();
+			PlatformDependentUtils.CheckPlatformDependentLibraries();
 		}
 	}
 }

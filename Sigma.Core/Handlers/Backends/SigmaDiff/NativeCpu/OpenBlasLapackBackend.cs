@@ -64,7 +64,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			static NativeOpenBlasLapackMethods()
 			{
-				PlatformDependentDllUtils.EnsureSetPlatformDependentDllDirectory();
+				PlatformDependentUtils.CheckPlatformDependentLibraries();
 			}
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "sgesv_")]
