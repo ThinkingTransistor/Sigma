@@ -1,26 +1,58 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DiffSharp.Config;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	public class SigmaDiffSharpBackendProvider : IBackendProvider
 	{
-		private Dictionary<long, object> _registeredBackends;
+		private static SigmaDiffSharpBackendProvider _instance;
+		public static SigmaDiffSharpBackendProvider Instance => _instance ?? (_instance = new SigmaDiffSharpBackendProvider());
 
-		public SigmaDiffSharpBackendProvider(Dictionary<long, object> registeredBackends)
+		public static void AssignToDiffSharpGlobal()
 		{
-			if (registeredBackends == null) throw new ArgumentNullException(nameof(registeredBackends));
+			DiffSharp.Config.GlobalConfig.BackendProvider = Instance;
+		}
 
-			_registeredBackends = registeredBackends;
+		private readonly Dictionary<long, object> _registeredBackendConfigs;
+
+		public long Register<T>(BackendConfig<T> backendConfig)
+		{
+			if (backendConfig == null) throw new ArgumentNullException(nameof(backendConfig));
+
+			long maxTag = -1;
+
+			foreach (long existingTag in _registeredBackendConfigs.Keys)
+			{
+				if (existingTag > maxTag)
+				{
+					maxTag = existingTag;
+				}
+			}
+
+			long tag = maxTag + 1;
+
+			_registeredBackendConfigs.Add(tag, backendConfig);
+
+			return tag;
+		}
+
+		public SigmaDiffSharpBackendProvider()
+		{
+			_registeredBackendConfigs = new Dictionary<long, object>();
 		}
 
 		public BackendConfig<T> GetBackend<T>(object obj)
 		{
-			long tag = -1;
+			long tag;
 
 			if (obj is DiffSharp.Interop.Float32.DNDArray)
 			{
@@ -43,12 +75,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				throw new NotSupportedException($"Cannot fetch backend for unknown object {obj}.");
 			}
 
-			if (!_registeredBackends.ContainsKey(tag))
+			if (!_registeredBackendConfigs.ContainsKey(tag))
 			{
 				throw new InvalidOperationException($"Cannot fetch backend for tag {tag}, tag is not registered with any backend in this provider.");
 			}
 
-			return (BackendConfig<T>) _registeredBackends[tag];
+			return (BackendConfig<T>) _registeredBackendConfigs[tag];
 		}
 	}
 }

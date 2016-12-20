@@ -31,12 +31,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 		public override INDArray NDArray(params long[] shape)
 		{
-			return new ADNDFloat32Array(shape: shape).SetAssociatedHandler(this);
+			return AssignTag(new ADNDFloat32Array(shape: shape)).SetAssociatedHandler(this);
 		}
 
 		public override INumber Number(object value)
 		{
-			return new ADNumber<float>((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float)))).SetAssociatedHandler(this);
 		}
 
 		public override void InitAfterDeserialisation(INDArray array)

@@ -30,7 +30,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			_value = value;
 		}
 
-		public object Value
+		public virtual object Value
 		{
 			get { return _value; }
 			set { _value = (T) value; }

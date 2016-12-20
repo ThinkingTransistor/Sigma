@@ -12,6 +12,9 @@ using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
+	/// <summary>
+	/// A DiffSharp backend handle for 32-bit floats as passed to the underlying DiffSharp implementation.
+	/// </summary>
 	public unsafe class DiffSharpFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
 		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend) : base(blasBackend, lapackBackend)

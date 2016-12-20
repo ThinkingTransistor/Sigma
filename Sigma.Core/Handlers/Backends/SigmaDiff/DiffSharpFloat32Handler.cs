@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using DiffSharp.Config;
 using log4net;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
@@ -15,16 +16,21 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
+	/// <summary>
+	/// An abstract DiffSharp computation handle for 32-bit floats with dynamic Blas and Lapack backends.
+	/// </summary>
 	public abstract class DiffSharpFloat32Handler : IComputationHandler
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
 
 		public IBlasBackend BlasBackend { get; }
 		public ILapackBackend LapackBackend { get; }
 
 		public abstract IDataType DataType { get; }
+
+		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
+
+		private readonly long _backendTag;
 
 		protected DiffSharpFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend)
 		{
@@ -35,9 +41,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			LapackBackend = lapackBackend;
 
 			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend);
+
+			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
+			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
 		}
 
-		// IComputationHandler interface functions that are probably different for each diffsharp handler implementation
+		protected BackendConfig<float> CreateBackendConfig()
+		{
+			float epsilon = 0.00001f;
+			float fpeps = 0.01f;
+
+			return new BackendConfig<float>(this.DiffsharpBackendHandle, epsilon, 1.0f / epsilon, 0.5f / epsilon, fpeps, 100, 1.2f);
+		}
+
+		protected ADNDFloat32Array AssignTag(ADNDFloat32Array array)
+		{
+			array._adArrayHandle.BackendTag = _backendTag;
+
+			return array;
+		}
+
+		protected ADFloat32Number AssignTag(ADFloat32Number number)
+		{
+			number._adNumberHandle.BackendTag = _backendTag;
+
+			return number;
+		}
+
+		// IComputationHandler stuff that is probably different for each diffsharp handler implementation
 		public abstract void InitAfterDeserialisation(INDArray array);
 		public abstract long GetSizeBytes(params INDArray[] array);
 		public abstract bool IsInterchangeable(IComputationHandler otherHandler);

@@ -161,12 +161,13 @@
     <Compile Include="Layers\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDArray.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNumber.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\ADNDArray.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
