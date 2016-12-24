@@ -145,7 +145,7 @@
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
-    <Compile Include="Data\Sources\IDataSetSource.cs" />
+    <Compile Include="Data\Sources\IDataSource.cs" />
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />

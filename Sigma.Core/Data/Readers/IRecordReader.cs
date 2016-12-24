@@ -20,7 +20,7 @@ namespace Sigma.Core.Data.Readers
 		/// <summary>
 		/// The underlying data set source.
 		/// </summary>
-		IDataSetSource Source { get; }
+		IDataSource Source { get; }
 
 		/// <summary>
 		/// Attach a certain record extractor to this record reader.

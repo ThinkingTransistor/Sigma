@@ -15,7 +15,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A file resource on the local file system used for datasets.
 	/// </summary>
-	public class FileSource : IDataSetSource
+	public class FileSource : IDataSource
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

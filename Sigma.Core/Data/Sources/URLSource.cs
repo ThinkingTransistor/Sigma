@@ -17,7 +17,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A URL resource used for datasets. Entire resource is downloaded and stored locally for processing.
 	/// </summary>
-	public class UrlSource : IDataSetSource
+	public class UrlSource : IDataSource
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
