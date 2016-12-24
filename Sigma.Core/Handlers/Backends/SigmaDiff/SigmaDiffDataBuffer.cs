@@ -54,6 +54,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			BackendTag = backendTag;
 		}
 
+		public override IDataBuffer<T> GetValues(long startIndex, long length)
+		{
+			return new SigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag);
+		}
+
+		public override IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		{
+			return new SigmaDiffDataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length, BackendTag);
+		}
+
+		public override object DeepCopy()
+		{
+			return new SigmaDiffDataBuffer<T>((T[]) Data.Clone(), Offset, Length, BackendTag, Type);
+		}
+
 		#region DiffSharp SigmaDiffDataBuffer interop methods
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.GetValues(int startIndex, int length)
@@ -63,12 +78,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
-			return (ISigmaDiffDataBuffer<T>) DeepCopy();
+			T[] copyData = new T[Length];
+			System.Array.Copy(Data, Offset, copyData, 0, Length);
+
+			// deep copy only core data for diffsharp
+			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.ShallowCopy()
 		{
-			return (ISigmaDiffDataBuffer<T>) ShallowCopy();
+			return new SigmaDiffDataBuffer<T>(this, BackendTag);
 		}
 
 		#endregion

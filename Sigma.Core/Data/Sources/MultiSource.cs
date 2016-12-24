@@ -16,7 +16,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A collection of data set sources which automatically chooses the first existing source and then acts like that data source.
 	/// </summary>
-	public class MultiSource : IDataSetSource
+	public class MultiSource : IDataSource
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -24,7 +24,7 @@ namespace Sigma.Core.Data.Sources
 		/// The data source active in this multi source which this data source will imitate.
 		/// Can be null if not yet set or none of the given source exists.
 		/// </summary>
-		public IDataSetSource ActiveSource { get; private set; }
+		public IDataSource ActiveSource { get; private set; }
 
 		public string ResourceName => ActiveSource?.ResourceName;
 
@@ -32,13 +32,13 @@ namespace Sigma.Core.Data.Sources
 
 		private bool _fetchedActiveSource;
 
-		private readonly IDataSetSource[] _sources;
+		private readonly IDataSource[] _sources;
 
 		/// <summary>
 		/// Create a multi data set source with a certain array of underlying source, of which the first existing source will be exposed.
 		/// </summary>
 		/// <param name="sources">The array of underlying sources to consider.</param>
-		public MultiSource(params IDataSetSource[] sources)
+		public MultiSource(params IDataSource[] sources)
 		{
 			if (sources == null)
 			{
@@ -70,7 +70,7 @@ namespace Sigma.Core.Data.Sources
 				return;
 			}
 
-			foreach (IDataSetSource source in _sources)
+			foreach (IDataSource source in _sources)
 			{
 				if (source.Exists())
 				{

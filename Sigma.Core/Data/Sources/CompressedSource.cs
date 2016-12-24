@@ -16,7 +16,7 @@ namespace Sigma.Core.Data.Sources
 	/// A compressed data set source. Decompresses a given underlying source using a given or inferred unpacker.
 	/// During preparation the entire stream is decompressed and stored as a local file.
 	/// </summary>
-	public class CompressedSource : IDataSetSource
+	public class CompressedSource : IDataSource
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -27,7 +27,7 @@ namespace Sigma.Core.Data.Sources
 		/// <summary>
 		/// The underlying data source which is decompressed.
 		/// </summary>
-		public IDataSetSource UnderlyingSource { get; }
+		public IDataSource UnderlyingSource { get; }
 
 
 		/// <summary>
@@ -44,7 +44,7 @@ namespace Sigma.Core.Data.Sources
 		/// The decompression algorithm to use and the local unpacked path are inferred.
 		/// </summary>
 		/// <param name="source">The underlying data set source to decompress.</param>
-		public CompressedSource(IDataSetSource source) : this(source, InferLocalUnpackPath(source))
+		public CompressedSource(IDataSource source) : this(source, InferLocalUnpackPath(source))
 		{
 		}
 
@@ -54,7 +54,7 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		/// <param name="source">The underlying data set source to decompress.</param>
 		/// <param name="localUnpackPath">The local unpack path (where the unpacked underlying source stream is stored locally).</param>
-		public CompressedSource(IDataSetSource source, string localUnpackPath) : this(source, localUnpackPath, InferUnpacker(source))
+		public CompressedSource(IDataSource source, string localUnpackPath) : this(source, localUnpackPath, InferUnpacker(source))
 		{
 		}
 
@@ -65,7 +65,7 @@ namespace Sigma.Core.Data.Sources
 		/// <param name="source">The underlying data set source to decompress.</param>
 		/// <param name="localUnpackPath">The local unpack path (where the unpacked underlying source stream is stored locally).</param>
 		/// <param name="unpacker">The unpacker to use to decompress the given source.</param>
-		public CompressedSource(IDataSetSource source, string localUnpackPath, IUnpacker unpacker)
+		public CompressedSource(IDataSource source, string localUnpackPath, IUnpacker unpacker)
 		{
 			if (source == null)
 			{
@@ -144,12 +144,12 @@ namespace Sigma.Core.Data.Sources
 			UnderlyingSource.Dispose();
 		}
 
-		private static string InferLocalUnpackPath(IDataSetSource source)
+		private static string InferLocalUnpackPath(IDataSource source)
 		{
 			return SigmaEnvironment.Globals["datasets"] + Path.GetFileNameWithoutExtension(source.ResourceName);
 		}
 
-		private static IUnpacker InferUnpacker(IDataSetSource source)
+		private static IUnpacker InferUnpacker(IDataSource source)
 		{
 			string resourceName = source.ResourceName;
 			string extension = Path.HasExtension(resourceName) ? Path.GetExtension(resourceName) : null;

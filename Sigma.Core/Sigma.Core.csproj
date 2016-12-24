@@ -56,6 +56,9 @@
     <OutputPath>bin\x64\TravisBuild\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.13\lib\net45\CudaBlas.dll</HintPath>
@@ -142,7 +145,7 @@
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
-    <Compile Include="Data\Sources\IDataSetSource.cs" />
+    <Compile Include="Data\Sources\IDataSource.cs" />
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
@@ -207,13 +210,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Dependencies\libopenblas.so" />
+    <None Include="libopenblas.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dependencies\DiffSharp.dll" />
-    <Content Include="Dependencies\libopenblas.dll" />
+    <Content Include="libgcc_s_seh-1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libgfortran-3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libopenblas.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libquadmath-0.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

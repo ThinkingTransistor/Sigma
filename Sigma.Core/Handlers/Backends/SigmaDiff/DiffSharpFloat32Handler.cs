@@ -56,6 +56,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new BackendConfig<float>(this.DiffsharpBackendHandle, epsilon, 1.0f / epsilon, 0.5f / epsilon, fpeps, 100, 1.2f);
 		}
 
+		protected ADNDFloat32Array InternaliseArray(object array)
+		{
+			return AssignTag((ADNDFloat32Array) array);
+		}
+
 		protected ADNDFloat32Array AssignTag(ADNDFloat32Array array)
 		{
 			((SigmaDiffDataBuffer<float>) array.Data).BackendTag = _backendTag;
@@ -77,7 +82,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = (ADNDFloat32Array) array;
+			ADNDFloat32Array internalArray = InternaliseArray(array);
 			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
 
 			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue);
@@ -90,15 +95,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Add(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = (ADNDFloat32Array) a;
-			ADNDFloat32Array internalB = (ADNDFloat32Array) b;
+			ADNDFloat32Array internalA = InternaliseArray(a);
+			ADNDFloat32Array internalB = InternaliseArray(b);
 
 			return new ADNDFloat32Array(internalA._adArrayHandle + internalB._adArrayHandle);
 		}
 
 		public INDArray Subtract<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = (ADNDFloat32Array) array;
+			ADNDFloat32Array internalArray = InternaliseArray(array);
 			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
 
 			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue);
@@ -116,7 +121,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Multiply<TOther>(INDArray array, TOther value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle * internalValue);
 		}
 
 		public INDArray Multiply(INDArray array, INumber value)
