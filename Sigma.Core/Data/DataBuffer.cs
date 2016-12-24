@@ -161,12 +161,12 @@ namespace Sigma.Core.Data
 			}
 		}
 
-		public IDataBuffer<T> ShallowCopy()
+		public virtual IDataBuffer<T> ShallowCopy()
 		{
 			return new DataBuffer<T>(this);
 		}
 
-		public object DeepCopy()
+		public virtual object DeepCopy()
 		{
 			// not sure if entire data or just subsection should be copied
 			return new DataBuffer<T>((T[]) Data.Clone(), Offset, Length, Type);
@@ -182,12 +182,12 @@ namespace Sigma.Core.Data
 			return (TOther) Convert.ChangeType(Data.GetValue(Offset + index), typeof(TOther));
 		}
 
-		public IDataBuffer<T> GetValues(long startIndex, long length)
+		public virtual IDataBuffer<T> GetValues(long startIndex, long length)
 		{
 			return new DataBuffer<T>(this, startIndex, length);
 		}
 
-		public IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
 		{
 			return new DataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length);
 		}

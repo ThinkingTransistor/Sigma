@@ -43,9 +43,6 @@ namespace Sigma.Tests.Data.Preprocessors
 		[TestCase]
 		public void TestNormalisingPreprocessorExtractDirect()
 		{
-			//TODO update this test when backend config is updated, until then it's meaningless
-			Assert.Ignore("TODO update this test when backend config is updated, until then it's meaningless");
-
 			NormalisingPreprocessor normaliser = new NormalisingPreprocessor(1, 9, 0, 1, "test");
 			IComputationHandler handler = new CpuFloat32Handler();
 
