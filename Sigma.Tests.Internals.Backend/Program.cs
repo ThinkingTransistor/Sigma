@@ -59,9 +59,8 @@ namespace Sigma.Tests.Internals.Backend
 				}
 			}
 
-			//IComputationHandler handler = new CPUFloat32Handler();
 			//Random random = new Random();
-			//INDArray array = new NDArray<float>(3, 1, 2, 2);
+			//INDArray array = new ADNDArray<float>(3, 1, 2, 2);
 
 			//new GaussianInitialiser(0.05, 0.05).Initialise(array, handler, random);
 
@@ -73,7 +72,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			//dataset.InvalidateAndClearCaches();
 
-			Console.ReadKey();
+			//Console.ReadKey();
 		}
 
 		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)

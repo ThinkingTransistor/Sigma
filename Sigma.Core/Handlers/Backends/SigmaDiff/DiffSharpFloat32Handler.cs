@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using DiffSharp.Config;
+using DiffSharp.Interop.Float32;
 using log4net;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
@@ -53,12 +54,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			float epsilon = 0.00001f;
 			float fpeps = 0.01f;
 
-			return new BackendConfig<float>(this.DiffsharpBackendHandle, epsilon, 1.0f / epsilon, 0.5f / epsilon, fpeps, 100, 1.2f);
+			return new BackendConfig<float>(DiffsharpBackendHandle, epsilon, 1.0f / epsilon, 0.5f / epsilon, fpeps, 100, 1.2f);
 		}
 
 		protected ADNDFloat32Array InternaliseArray(object array)
 		{
 			return AssignTag((ADNDFloat32Array) array);
+		}
+
+		protected ADFloat32Number InternaliseNumber(object number)
+		{
+			SigmaDiffSharpBackendProvider.Instance.MapToBackend(number, _backendTag);
+
+			return (ADFloat32Number) number;
 		}
 
 		protected ADNDFloat32Array AssignTag(ADNDFloat32Array array)
@@ -90,7 +98,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Add(INDArray array, INumber value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue._adNumberHandle);
 		}
 
 		public INDArray Add(INDArray a, INDArray b)
@@ -111,12 +122,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Subtract(INDArray array, INumber value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue._adNumberHandle);
 		}
 
 		public INDArray Subtract(INDArray a, INDArray b)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalA = InternaliseArray(a);
+			ADNDFloat32Array internalB = InternaliseArray(b);
+
+			return new ADNDFloat32Array(internalA._adArrayHandle - internalB._adArrayHandle);
+		}
+
+		public INDArray Subtract<TOther>(TOther value, INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(internalValue - internalArray._adArrayHandle);
+		}
+
+		public INDArray Subtract(INumber value, INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(internalValue._adNumberHandle - internalArray._adArrayHandle);
 		}
 
 		public INDArray Multiply<TOther>(INDArray array, TOther value)
@@ -129,30 +162,228 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Multiply(INDArray array, INumber value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(internalValue._adNumberHandle * internalArray._adArrayHandle);
 		}
 
 		public INDArray Multiply(INDArray a, INDArray b)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalA = InternaliseArray(a);
+			ADNDFloat32Array internalB = InternaliseArray(b);
+
+			return new ADNDFloat32Array(DNDArray.op_DotMultiply(internalA._adArrayHandle, internalB._adArrayHandle));
 		}
 
 		public INDArray Dot(INDArray a, INDArray b)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalA = InternaliseArray(a);
+			ADNDFloat32Array internalB = InternaliseArray(b);
+
+			return new ADNDFloat32Array(internalA._adArrayHandle * internalB._adArrayHandle);
 		}
 
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue);
 		}
 
 		public INDArray Divide(INDArray array, INumber value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue._adNumberHandle);
 		}
 
 		public INDArray Divide(INDArray a, INDArray b)
+		{
+			ADNDFloat32Array internalA = InternaliseArray(a);
+			ADNDFloat32Array internalB = InternaliseArray(b);
+
+			return new ADNDFloat32Array(DNDArray.op_DotDivide(internalA._adArrayHandle, internalB._adArrayHandle));
+		}
+
+		public INDArray Pow(INDArray array, INumber value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Pow<TOther>(INDArray array, TOther value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Abs(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Abs(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Sum(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Max(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Min(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber L1Norm(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber L2Norm(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Sqrt(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Sqrt(INumber array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Log(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Log(INumber array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Determinate(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Sin(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Sin(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Asin(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Asin(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Cos(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Cos(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Acos(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Acos(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Tan(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Tan(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Atan(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Atan(INumber number)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray ReL(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber ReL(INumber array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Sigmoid(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Sigmoid(INumber array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray SoftPlus(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber SoftPlus(INumber array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber StandardDeviation(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Variance(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray Trace(INDArray array)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INumber Trace(INumber number)
 		{
 			throw new NotImplementedException();
 		}
@@ -163,7 +394,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			long[] totalShape = new long[castArrays[0].Rank];
 
-			System.Array.Copy(arrays[0].Shape, 1, totalShape, 1, totalShape.Length - 1);
+			Array.Copy(arrays[0].Shape, 1, totalShape, 1, totalShape.Length - 1);
 
 			foreach (ADNDArray<float> array in castArrays)
 			{
@@ -190,5 +421,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			PlatformDependentUtils.CheckPlatformDependentLibraries();
 		}
+
 	}
 }

@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.CodeDom;
 using Microsoft.FSharp.Core;
 using static DiffSharp.Util;
 
@@ -375,8 +374,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			fixed (float* zref = &z.Data[z.Offset])
 			{
 				char transa = 'N', transb = 'N';
-				int len = Math.Min(a.Length, b.Length);
-				int inca = 1, incb = 1;
 				float alpha = 1.0f, beta = 0.0f;
 				int m = a.Rows, n = b.Cols, k = b.Rows;
 

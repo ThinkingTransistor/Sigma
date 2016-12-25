@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using ICSharpCode.SharpZipLib.Tar;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 
@@ -21,6 +22,8 @@ namespace Sigma.Core.Handlers
 		/// The underlying data type processed and used in this computation handler. 
 		/// </summary>
 		IDataType DataType { get; }
+
+		#region  Data (number, buffer, ndarray) creation and management
 
 		/// <summary>
 		/// Initialise a just de-serialised ndarray of this handler's format with this handler and register and initialise components relevant to this handler.
@@ -65,7 +68,7 @@ namespace Sigma.Core.Handlers
 		/// <returns>A data buffer compatible with this handler containing the given values.</returns>
 		IDataBuffer<T> DataBuffer<T>(T[] values);
 
-			/// <summary>
+		/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
 		/// </summary>
 		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>
@@ -103,8 +106,12 @@ namespace Sigma.Core.Handlers
 		/// <param name="arrayToFill">The ndarray to fill.</param>
 		void Fill<TOther>(TOther value, INDArray arrayToFill);
 
+		#endregion
+
+		#region Primitive binary mathematical operations
+
 		/// <summary>
-		/// Add a constant value to all elements in an ndarray and put the result in another ndarray.
+		/// Add a constant value to all elements in an ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -113,7 +120,7 @@ namespace Sigma.Core.Handlers
 		INDArray Add<TOther>(INDArray array, TOther value);
 
 		/// <summary>
-		/// Add a traceable number to all elements in an ndarray and put the result in another ndarray.
+		/// Add a traceable number to all elements in an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
@@ -129,21 +136,38 @@ namespace Sigma.Core.Handlers
 		INDArray Add(INDArray a, INDArray b);
 
 		/// <summary>
-		/// Subtract a constant value from all elements in an ndarray and put the result in another ndarray.
+		/// Subtract  all elements in an ndarray from a constant value.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value to subtract.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of subtracting value from each array element.</returns>
+		INDArray Subtract<TOther>(TOther value, INDArray array);
+
+		/// <summary>
+		/// Subtract a constant value from all elements in an ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value to subtract.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of subtracting value from each array element.</returns>
 		INDArray Subtract<TOther>(INDArray array, TOther value);
 
 		/// <summary>
-		/// Subtract a traceable number from all elements in an ndarray and put the result in another ndarray.
+		/// Subtract a traceable number from all elements in an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of subtracting value from each array element.</returns>
 		INDArray Subtract(INDArray array, INumber value);
+
+		/// <summary>
+		/// Subtract all elements in an ndarray from a traceable number.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of subtracting value from each array element.</returns>
+		INDArray Subtract(INumber value, INDArray array);
 
 		/// <summary>
 		/// Subtract an ndarray b from an ndarray a element-wise.
@@ -154,7 +178,7 @@ namespace Sigma.Core.Handlers
 		INDArray Subtract(INDArray a, INDArray b);
 
 		/// <summary>
-		/// Multiply a constant value with all elements in an ndarray and put the result in another ndarray.
+		/// Multiply a constant value with all elements in an ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -163,7 +187,7 @@ namespace Sigma.Core.Handlers
 		INDArray Multiply<TOther>(INDArray array, TOther value);
 
 		/// <summary>
-		/// Multiply a traceable number with all elements in an ndarray and put the result in another ndarray.
+		/// Multiply a traceable number with all elements in an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
@@ -187,7 +211,7 @@ namespace Sigma.Core.Handlers
 		INDArray Dot(INDArray a, INDArray b);
 
 		/// <summary>
-		/// Divide all elements in an ndarray by a constant value and put the result in another ndarray.
+		/// Divide all elements in an ndarray by a constant value.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
 		/// <param name="array">The ndarray.</param>
@@ -196,7 +220,7 @@ namespace Sigma.Core.Handlers
 		INDArray Divide<TOther>(INDArray array, TOther value);
 
 		/// <summary>
-		/// Divide all elements in an ndarray by a traceable number and put the result in another ndarray.
+		/// Divide all elements in an ndarray by a traceable number.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
@@ -210,5 +234,281 @@ namespace Sigma.Core.Handlers
 		/// <param name="b">The second ndarray.</param>
 		/// <returns>The result of dividing the ndarray b by the ndarray a element-wise.</returns>
 		INDArray Divide(INDArray a, INDArray b);
+
+		/// <summary>
+		/// The power of an ndarray by a traceable number. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of the power of the ndarray to the given value.</returns>
+		INDArray Pow(INDArray array, INumber value);
+
+		/// <summary>
+		/// The power of an ndarray by a constant. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of the power of the ndarray to the given value.</returns>
+		INDArray Pow<TOther>(INDArray array, TOther value);
+
+		#endregion
+
+		#region Primitive unary mathematical operations
+
+		/// <summary>
+		/// The absolute of a traceable number.
+		/// </summary>
+		/// <param name="number">The number.</param>
+		/// <returns>The absolute number corresponding to the given number.</returns>
+		INumber Abs(INumber number);
+
+		/// <summary>
+		/// The absolute of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The result of applying the absolute function element-wise to the given ndarray.</returns>
+		INDArray Abs(INDArray array);
+
+		/// <summary>
+		/// The sum of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The sum of the given ndarray.</returns>
+		INumber Sum(INDArray array);
+
+		/// <summary>
+		/// The maximum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The maximum value of the given ndarray.</returns>
+		INumber Max(INDArray array);
+
+		/// <summary>
+		/// The minimum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The minimum value of the given ndarray.</returns>
+		INumber Min(INDArray array);
+
+		/// <summary>
+		/// The L1 norm of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The L1 norm of the given ndarray.</returns>
+		INumber L1Norm(INDArray array);
+
+		/// <summary>
+		/// The L2 norm of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The L2 norm of the given ndarray.</returns>
+		INumber L2Norm(INDArray array);
+
+		/// <summary>
+		/// The square root of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The square root of the given array element-wise.</returns>
+		INDArray Sqrt(INDArray array);
+
+		/// <summary>
+		/// The square root of a traceable number.
+		/// </summary>
+		/// <param name="array">The traceable number.</param>
+		/// <returns>The square root of the given traceable number.</returns>
+		INumber Sqrt(INumber array);
+
+		/// <summary>
+		/// The logarithm base 10 of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The logarithm base 10 of the given array element-wise.</returns>
+		INDArray Log(INDArray array);
+
+		/// <summary>
+		/// The logarithm base 10 of a traceable number.
+		/// </summary>
+		/// <param name="array">The traceable number.</param>
+		/// <returns>The logarithm base 10 of the given traceable number.</returns>
+		INumber Log(INumber array);
+
+		/// <summary>
+		/// The determinate of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The determinate of the given ndarray.</returns>
+		INumber Determinate(INDArray array);
+
+		#region Primitive trigonometric unary mathematical operations
+
+		/// <summary>
+		/// Apply the sine function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Sin(INDArray array);
+
+		/// <summary>
+		/// Apply the sine function to a traceable number.
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Sin(INumber number);
+
+		/// <summary>
+		/// Apply the inverse sine function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Asin(INDArray array);
+
+		/// <summary>
+		/// Apply the inverse sine function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Asin(INumber number);
+
+		/// <summary>
+		/// Apply the cosine function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Cos(INDArray array);
+
+		/// <summary>
+		/// Apply the cosine function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Cos(INumber number);
+
+		/// <summary>
+		/// Apply the inverse cosine function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Acos(INDArray array);
+
+		/// <summary>
+		/// Apply the inverse cosine function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Acos(INumber number);
+
+		/// <summary>
+		/// Apply the tangent function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Tan(INDArray array);
+
+		/// <summary>
+		/// Apply the tangent function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Tan(INumber number);
+
+		/// <summary>
+		/// Apply the inverse tangent function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Atan(INDArray array);
+
+		/// <summary>
+		/// Apply the inverse tangent function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Atan(INumber number);
+
+		#endregion
+
+		#endregion
+
+		#region Complex unary mathematical operations
+
+		#region Activation functions
+
+		/// <summary>
+		/// Apply the rectified linear function to an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The ndarray with the rectified linear function applied element-wise.</returns>
+		INDArray ReL(INDArray array);
+
+		/// <summary>
+		/// Apply the rectified linear function to a traceable number.
+		/// </summary>
+		/// <param name="array">The traceable number.</param>
+		/// <returns>The traceable number with the rectified linear function applied.</returns>
+		INumber ReL(INumber array);
+
+		/// <summary>
+		/// Apply the sigmoid function to an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The ndarray with the sigmoid function applied element-wise.</returns>
+		INDArray Sigmoid(INDArray array);
+
+		/// <summary>
+		/// Apply the sigmoid to a traceable number.
+		/// </summary>
+		/// <param name="array">The traceable number.</param>
+		/// <returns>The traceable number with the sigmoid applied.</returns>
+		INumber Sigmoid(INumber array);
+
+		/// <summary>
+		/// Apply the sigmoid function to an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The ndarray with the sigmoid function applied element-wise.</returns>
+		INDArray SoftPlus(INDArray array);
+
+		/// <summary>
+		/// Apply the soft plus function to a traceable number.
+		/// </summary>
+		/// <param name="array">The traceable number.</param>
+		/// <returns>The traceable number with the soft plus function applied.</returns>
+		INumber SoftPlus(INumber array);
+
+		#endregion
+
+		/// <summary>
+		/// The standard deviation of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The standard deviation of the given ndarray.</returns>
+		INumber StandardDeviation(INDArray array);
+
+		/// <summary>
+		/// The variance of an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The variance of the given ndarray.</returns>
+		INumber Variance(INDArray array);
+
+		#endregion
+
+		#region Automatic differentiation and tracing operations
+
+		/// <summary>
+		/// Trace a certain ndarray's mathematical operations for automatic differentiation.
+		/// </summary>
+		/// <param name="array">The ndarray to trace.</param>
+		/// <returns>The ndarray with the trace put on it.</returns>
+		INDArray Trace(INDArray array);
+
+		/// <summary>
+		/// Trace a certain traceable number's mathematical operations for automatic differentiation.
+		/// </summary>
+		/// <param name="number">The number to trace.</param>
+		/// <returns>The number with the trace put on it.</returns>
+		INumber Trace(INumber number);
+
+		#endregion
 	}
 }
