@@ -15,9 +15,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	/// </summary>
 	public class OpenBlasBlasBackend : IBlasBackend
 	{
-		public unsafe void Isamax(int* n, float* x, int* incx)
+		public unsafe int Isamax(int* n, float* x, int* incx)
 		{
-			NativeOpenBlasBlasMethods.isamax_(n, x, incx);
+			return NativeOpenBlasBlasMethods.isamax_(n, x, incx);
 		}
 
 		public unsafe void Saxpy(int* n, float* a, float* x, int* incx, float* y, int* incy)
@@ -45,9 +45,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			return NativeOpenBlasBlasMethods.snrm2_(n, x, incx);
 		}
 
-		public unsafe void Idamax(int* n, double* x, int* incx)
+		public unsafe int Idamax(int* n, double* x, int* incx)
 		{
-			NativeOpenBlasBlasMethods.idamax_(n, x, incx);
+			return NativeOpenBlasBlasMethods.idamax_(n, x, incx);
 		}
 
 		public unsafe void Daxpy(int* n, double* a, double* x, int* incx, double* y, int* incy)
@@ -124,7 +124,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			}
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "isamax_")]
-			internal static extern unsafe void isamax_(int* n, float* x, int* incx);
+			internal static extern unsafe int isamax_(int* n, float* x, int* incx);
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "saxpy_")]
 			internal static extern unsafe void saxpy_(int* n, float* a, float* x, int* incx, float* y, int* incy);
@@ -142,7 +142,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			internal static extern unsafe float snrm2_(int* n, float* x, int* incx);
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "idamax_")]
-			internal static extern unsafe void idamax_(int* n, double* x, int* incx);
+			internal static extern unsafe int idamax_(int* n, double* x, int* incx);
 
 			[DllImport(dllName: "libopenblas", EntryPoint = "daxpy_")]
 			internal static extern unsafe void daxpy_(int* n, double* a, double* x, int* incx, double* y, int* incy);

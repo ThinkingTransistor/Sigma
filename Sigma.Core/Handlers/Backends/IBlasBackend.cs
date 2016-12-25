@@ -16,14 +16,14 @@ namespace Sigma.Core.Handlers.Backends
 	{
 		#region Scalar-vector valued BLAS functions
 
-		void Isamax(int* n, float* x, int* incx);
+		int Isamax(int* n, float* x, int* incx);
 		void Saxpy(int* n, float* a, float* x, int* incx, float* y, int* incy);
 		void Sscal(int* n, float* alpha, float* x, int* incx);
 		void Sdot(int* n, float* x, int* incx, float* y, int* incy);
 		float Sasum(int* n, float* x, int* incx);
 		float Snrm2(int* n, float* x, int* incx);
 
-		void Idamax(int* n, double* x, int* incx);
+		int Idamax(int* n, double* x, int* incx);
 		void Daxpy(int* n, double* a, double* x, int* incx, double* y, int* incy);
 		void Dscal(int* n, double* alpha, double* x, int* incx);
 		void Ddot(int* n, double* x, int* incx, double* y, int* incy);

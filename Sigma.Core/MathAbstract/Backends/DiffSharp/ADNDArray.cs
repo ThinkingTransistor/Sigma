@@ -311,7 +311,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			{
 				if (rearrangedDimensions[i] < 0 || rearrangedDimensions[i] >= rank)
 				{
-					throw new ArgumentException($"All rearrange dimensions must be >= 0 and < rank, but rearrangedDimensions[{i}] was {rearrangedDimensions[i]}.");
+					throw new ArgumentException($"All rearrange dimensions must be >= 0 and < rank {Rank}, but rearrangedDimensions[{i}] was {rearrangedDimensions[i]}.");
 				}
 
 				for (int y = 0; y < rank; y++)
