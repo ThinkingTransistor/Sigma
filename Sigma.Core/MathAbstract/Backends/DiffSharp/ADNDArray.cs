@@ -13,14 +13,14 @@ using Sigma.Core.Data;
 using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
+namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 {
 	/// <summary>
 	/// A default, in-system-memory implementation of the INDArray interface.
 	/// </summary>
 	/// <typeparam name="T">The data type of this ndarray.</typeparam>
 	[Serializable]
-	[SuppressMessage("ReSharper", "InconsistentNaming")] //ADNDArray looks stupid
+	[SuppressMessage("ReSharper", "InconsistentNaming")] //AdndArray looks stupid
 	public class ADNDArray<T> : INDArray
 	{
 		internal readonly IDataBuffer<T> Data;

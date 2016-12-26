@@ -77,7 +77,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return (BackendConfig<T>) _registeredBackendConfigs[_backendMappedValues[obj]];
 			}
 
-			throw new InvalidOperationException($"Cannot get backend for unknown object {obj}, object is neither a known array nor a backend mapped type.");
+			throw new InvalidOperationException($"Cannot get backend for unknown object {obj} of type {obj.GetType()}, object is neither a known type nor a backend mapped type.");
 		}
 	}
 }

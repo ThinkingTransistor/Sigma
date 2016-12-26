@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Data.Preprocessors

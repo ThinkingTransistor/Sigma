@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
@@ -32,6 +33,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		public override INDArray NDArray(params long[] shape)
 		{
 			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
+		}
+
+		public override INDArray NDArray<TOther>(TOther[] values, params long[] shape)
+		{
+			float[] convertedValues = new float[values.Length];
+			Type floatType = typeof(float);
+
+			for (int i = 0; i < values.Length; i++)
+			{
+				convertedValues[i] = (float) System.Convert.ChangeType(values[i], floatType);
+			}
+
+			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
 		}
 
 		public override INumber Number(object value)

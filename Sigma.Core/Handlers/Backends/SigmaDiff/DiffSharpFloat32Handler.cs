@@ -11,6 +11,7 @@ using DiffSharp;
 using DiffSharp.Config;
 using DiffSharp.Interop.Float32;
 using log4net;
+using ManagedCuda.CudaSolve;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
@@ -82,6 +83,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract long GetSizeBytes(params INDArray[] array);
 		public abstract bool IsInterchangeable(IComputationHandler otherHandler);
 		public abstract INDArray NDArray(params long[] shape);
+		public abstract INDArray NDArray<TOther>(TOther[] values, params long[] shape);
 		public abstract INumber Number(object value);
 		public abstract IDataBuffer<T> DataBuffer<T>(T[] values);
 		public abstract bool CanConvert(INDArray array, IComputationHandler otherHandler);
@@ -92,9 +94,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = (ADFloat32Number) Number((float) System.Convert.ChangeType(value, typeof(float)));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue);
+			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue._adNumberHandle);
 		}
 
 		public INDArray Add(INDArray array, INumber value)
@@ -113,12 +115,28 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(internalA._adArrayHandle + internalB._adArrayHandle);
 		}
 
+		public INumber Add(INumber a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(b);
+
+			return new ADFloat32Number(internalA._adNumberHandle + internalB._adNumberHandle);
+		}
+
+		public INumber Add<TOther>(INumber a, TOther b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(internalA._adNumberHandle + internalB._adNumberHandle);
+		}
+
 		public INDArray Subtract<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = InternaliseNumber(Number((float) System.Convert.ChangeType(value, typeof(float))));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue);
+			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue._adNumberHandle);
 		}
 
 		public INDArray Subtract(INDArray array, INumber value)
@@ -140,9 +158,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public INDArray Subtract<TOther>(TOther value, INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = InternaliseNumber(Number((float) System.Convert.ChangeType(value, typeof(float))));
 
-			return new ADNDFloat32Array(internalValue - internalArray._adArrayHandle);
+			return new ADNDFloat32Array(internalValue._adNumberHandle - internalArray._adArrayHandle);
 		}
 
 		public INDArray Subtract(INumber value, INDArray array)
@@ -153,12 +171,36 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(internalValue._adNumberHandle - internalArray._adArrayHandle);
 		}
 
+		public INumber Subtract(INumber a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(b);
+
+			return new ADFloat32Number(internalA._adNumberHandle - internalB._adNumberHandle);
+		}
+
+		public INumber Subtract<TOther>(INumber a, TOther b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(internalA._adNumberHandle - internalB._adNumberHandle);
+		}
+
+		public INumber Subtract<TOther>(TOther a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(internalB._adNumberHandle - internalA._adNumberHandle);
+		}
+
 		public INDArray Multiply<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = InternaliseNumber(Number((float) System.Convert.ChangeType(value, typeof(float))));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle * internalValue);
+			return new ADNDFloat32Array(internalArray._adArrayHandle * internalValue._adNumberHandle);
 		}
 
 		public INDArray Multiply(INDArray array, INumber value)
@@ -177,6 +219,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(DNDArray.op_DotMultiply(internalA._adArrayHandle, internalB._adArrayHandle));
 		}
 
+		public INumber Multiply(INumber a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(b);
+
+			return new ADFloat32Number(internalA._adNumberHandle * internalB._adNumberHandle);
+		}
+
+		public INumber Multiply<TOther>(INumber a, TOther b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(internalA._adNumberHandle * internalB._adNumberHandle);
+		}
+
 		public INDArray Dot(INDArray a, INDArray b)
 		{
 			ADNDFloat32Array internalA = InternaliseArray(a);
@@ -188,9 +246,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = InternaliseNumber(Number((float) System.Convert.ChangeType(value, typeof(float))));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue);
+			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue._adNumberHandle);
 		}
 
 		public INDArray Divide(INDArray array, INumber value)
@@ -209,6 +267,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(DNDArray.op_DotDivide(internalA._adArrayHandle, internalB._adArrayHandle));
 		}
 
+		public INumber Divide(INumber a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(b);
+
+			return new ADFloat32Number(internalA._adNumberHandle / internalB._adNumberHandle);
+		}
+
+		public INumber Divide<TOther>(INumber a, TOther b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(internalA._adNumberHandle / internalB._adNumberHandle);
+		}
+
 		public INDArray Pow(INDArray array, INumber value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -220,9 +294,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public INDArray Pow<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+			ADFloat32Number internalValue = InternaliseNumber(Number((float) System.Convert.ChangeType(value, typeof(float))));
 
-			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue));
+			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue._adNumberHandle));
+		}
+
+		public INumber Pow(INumber a, INumber b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(b);
+
+			return new ADFloat32Number(DNumber.Pow(internalA._adNumberHandle, internalB._adNumberHandle));
+		}
+
+		public INumber Pow<TOther>(INumber a, TOther b)
+		{
+			ADFloat32Number internalA = InternaliseNumber(a);
+			ADFloat32Number internalB = InternaliseNumber(Number((float) System.Convert.ChangeType(b, typeof(float))));
+
+			return new ADFloat32Number(DNumber.Pow(internalA._adNumberHandle, internalB._adNumberHandle));
 		}
 
 		public INumber Abs(INumber number)
@@ -440,18 +530,84 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return Util.GlobalTagger.Next;
 		}
 
-		public INDArray Trace(INDArray array, uint traceTag)
+		public TTraceable Trace<TTraceable>(TTraceable traceable, uint traceTag) where TTraceable : ITraceable
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			if (traceable is ADFloat32Number)
+			{
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle.GetReverse(traceTag));
+				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.GetReverse(traceTag)));
+			}
+			else if (traceable is ADNDFloat32Array)
+			{
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+
+				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.GetReverse(traceTag)));
+			}
+			else
+			{
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
+			}
 		}
 
-		public INumber Trace(INumber number, uint traceTag)
+		public TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
-			ADFloat32Number internalNumber = InternaliseNumber(number);
+			if (traceable is ADFloat32Number)
+			{
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
 
-			return new ADFloat32Number(internalNumber._adNumberHandle.GetReverse(traceTag));
+				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.P));
+			}
+			else if (traceable is ADNDFloat32Array)
+			{
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+
+				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.P));
+			}
+			else
+			{
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
+			}
+		}
+
+		public void ComputeDerivatives(ITraceable traceable)
+		{
+			if (traceable is ADFloat32Number)
+			{
+				ADFloat32Number number = (ADFloat32Number) traceable;
+
+				AD.ReverseProp(new DNumber(1.0f), number);
+			}
+			else if (traceable is ADNDFloat32Array)
+			{
+				ADNDFloat32Array array = (ADNDFloat32Array) traceable;
+
+				AD.ReverseProp(new DNumber(1.0f), array);
+			}
+			else
+			{
+				throw new InvalidOperationException($"Cannot compute derivatives for traceable of unknown type (type of object {traceable} not compatible with this handler).");
+			}
+		}
+
+		public TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
+		{
+			if (traceable is ADFloat32Number)
+			{
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
+
+				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.A));
+			}
+			else if (traceable is ADNDFloat32Array)
+			{
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+
+				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.A));
+			}
+			else
+			{
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
+			}
 		}
 
 		public INDArray MergeBatch(params INDArray[] arrays)
@@ -487,6 +643,5 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			PlatformDependentUtils.CheckPlatformDependentLibraries();
 		}
-
 	}
 }

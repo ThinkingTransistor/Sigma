@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Tests.Math

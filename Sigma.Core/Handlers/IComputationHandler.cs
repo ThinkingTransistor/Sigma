@@ -53,6 +53,14 @@ namespace Sigma.Core.Handlers
 		INDArray NDArray(params long[] shape);
 
 		/// <summary>
+		/// Create an ndarray of a certain shape with an initial set of values.
+		/// </summary>
+		/// <param name="shape">The ndarray shape.</param>
+		/// <param name="values">The values to fill the ndarray with.</param>
+		/// <returns>An ndarray with the given shape.</returns>
+		INDArray NDArray<TOther>(TOther[] values, params long[] shape);
+
+		/// <summary>
 		/// Create a single value (i.e. number) with a certain initial value.
 		/// </summary>
 		/// <param name="value">The value to wrap in a single value wrapper.</param>
@@ -135,6 +143,22 @@ namespace Sigma.Core.Handlers
 		INDArray Add(INDArray a, INDArray b);
 
 		/// <summary>
+		/// Add a traceable number a to another traceable number b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of adding the number a to the number b.</returns>
+		INumber Add(INumber a, INumber b);
+
+		/// <summary>
+		/// Add a traceable number to a constant value b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of adding the constant b to the number a.</returns>
+		INumber Add<TOther>(INumber a, TOther b);
+
+		/// <summary>
 		/// Subtract  all elements in an ndarray from a constant value.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to subtract.</typeparam>
@@ -177,6 +201,30 @@ namespace Sigma.Core.Handlers
 		INDArray Subtract(INDArray a, INDArray b);
 
 		/// <summary>
+		/// Subtract a traceable number b from another traceable number a.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of subtracting the number b from the number a.</returns>
+		INumber Subtract(INumber a, INumber b);
+
+		/// <summary>
+		/// Subtract a traceable number from a constant value b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of subtracting the constant b from the number a.</returns>
+		INumber Subtract<TOther>(INumber a, TOther b);
+
+		/// <summary>
+		/// Subtract a constant value from a traceable number b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of subtracting the number a from the constant b.</returns>
+		INumber Subtract<TOther>(TOther a, INumber b);
+
+		/// <summary>
 		/// Multiply a constant value with all elements in an ndarray.
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value to add.</typeparam>
@@ -200,6 +248,22 @@ namespace Sigma.Core.Handlers
 		/// <param name="b">The second ndarray.</param>
 		/// <returns>The result of multiplying the ndarray a with the ndarray b element-wise.</returns>
 		INDArray Multiply(INDArray a, INDArray b);
+
+		/// <summary>
+		/// Multiply a traceable number a by another traceable number b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of multiplying the number a by the number b.</returns>
+		INumber Multiply(INumber a, INumber b);
+
+		/// <summary>
+		/// Multiply a traceable number a by a constant value b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of multiplying the number a by the constant b.</returns>
+		INumber Multiply<TOther>(INumber a, TOther b);
 
 		/// <summary>
 		/// Get the dot product of two ndarrays a x b (a and b are assumed to be compatible matrices for dot products). 
@@ -235,6 +299,22 @@ namespace Sigma.Core.Handlers
 		INDArray Divide(INDArray a, INDArray b);
 
 		/// <summary>
+		/// Divide a traceable number a by another traceable number b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of dividing the number a by the number b.</returns>
+		INumber Divide(INumber a, INumber b);
+
+		/// <summary>
+		/// Divide a traceable number a by a constant value b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of dividing the number a by the constant b.</returns>
+		INumber Divide<TOther>(INumber a, TOther b);
+
+		/// <summary>
 		/// The power of an ndarray by a traceable number. 
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
@@ -249,6 +329,22 @@ namespace Sigma.Core.Handlers
 		/// <param name="value">The value.</param>
 		/// <returns>The result of the power of the ndarray to the given value.</returns>
 		INDArray Pow<TOther>(INDArray array, TOther value);
+
+		/// <summary>
+		/// The power a traceable number a to another traceable number b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of the power of the number a to the number b.</returns>
+		INumber Pow(INumber a, INumber b);
+
+		/// <summary>
+		/// The power a traceable number a to a constant value b.
+		/// </summary>
+		/// <param name="a">The first number.</param>
+		/// <param name="b">The second number.</param>
+		/// <returns>The result of the power of the number a to the constant b.</returns>
+		INumber Pow<TOther>(INumber a, TOther b);
 
 		#endregion
 
@@ -483,23 +579,38 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Begin an AD tracing session with a certain tag.
 		/// </summary>
+		/// <returns>A new tag for tracing certain ndarrays and numbers.</returns>
 		uint BeginTrace();
 
 		/// <summary>
-		/// Trace a certain ndarray's mathematical operations for automatic differentiation.
+		/// Trace a certain traceables (ndarray, number) mathematical operations for automatic differentiation.
 		/// </summary>
-		/// <param name="array">The ndarray to trace.</param>
+		/// <typeparam name="TTraceable">The type of the traceable to trace.</typeparam>
+		/// <param name="traceable">The traceable to trace (ndarray, number).</param>
 		/// <param name="traceTag">The tracing tag (for automatic differentiation with certain traced members).</param>
-		/// <returns>The ndarray with the trace put on it.</returns>
-		INDArray Trace(INDArray array, uint traceTag);
+		/// <returns>The traceable with the trace put on it.</returns>
+		TTraceable Trace<TTraceable>(TTraceable traceable, uint traceTag) where TTraceable : ITraceable;
 
 		/// <summary>
-		/// Trace a certain traceable number's mathematical operations for automatic differentiation.
+		/// Clear a traceables trace.
 		/// </summary>
-		/// <param name="number">The number to trace.</param>
-		/// <param name="traceTag">The tracing tag (for automatic differentiation with certain traced members).</param>
-		/// <returns>The number with the trace put on it.</returns>
-		INumber Trace(INumber number, uint traceTag);
+		/// <typeparam name="TTraceable">The type of the traceable to trace.</typeparam>
+		/// <param name="traceable">The traceable to clear.</param>
+		/// <returns>The cleared traceable without a trace.</returns>
+		TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
+
+		/// <summary>
+		/// Compute the derivatives (adjoints) with respect to a certain traceable member (ndarray, number), starting the evaluation tree at the given traceable. 
+		/// </summary>
+		void ComputeDerivatives(ITraceable traceable);
+
+		/// <summary>
+		/// Get the derivative of a certain traceable after its derivative adjoints have been computed in a <see cref="ComputeDerivatives"/> operation.
+		/// </summary>
+		/// <typeparam name="TTraceable">The type of the traceable (ndarray or number).</typeparam>
+		/// <param name="traceable">The traceable.</param>
+		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivatives"/> operation, or null if no derivatives were computed.</returns>
+		TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
 
 		#endregion
 	}

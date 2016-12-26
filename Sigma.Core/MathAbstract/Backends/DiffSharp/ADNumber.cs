@@ -1,7 +1,7 @@
 ﻿using System;
 using Sigma.Core.Handlers;
 
-namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
+namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 {
 	/// <summary>
 	/// A default implementation of the <see cref="INumber"/> interface.

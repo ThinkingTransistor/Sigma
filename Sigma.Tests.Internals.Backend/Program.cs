@@ -23,6 +23,30 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
+			SampleAutomaticDifferentiation();
+
+			Console.ReadKey();
+		}
+
+		private static void SampleAutomaticDifferentiation()
+		{
+			IComputationHandler handler = new CpuFloat32Handler();
+
+			INDArray array = handler.NDArray(ArrayUtils.Range(0, 6), 2, 3);
+			INumber a = handler.Number(3.0f), b = handler.Number(5.0f);
+
+			INumber c = handler.Multiply(a, b);
+			INumber d = handler.Multiply(c, 2);
+			INumber e = handler.Add(d, 6);
+			INumber f = handler.Sqrt(e);
+
+			array = handler.Multiply(array, f);
+
+			Console.WriteLine(array);
+		}
+
+		private static void SampleLoadExtractIterate()
+		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			sigma.Prepare();
@@ -71,8 +95,6 @@ namespace Sigma.Tests.Internals.Backend
 			//Console.WriteLine(array);
 
 			//dataset.InvalidateAndClearCaches();
-
-			//Console.ReadKey();
 		}
 
 		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)
