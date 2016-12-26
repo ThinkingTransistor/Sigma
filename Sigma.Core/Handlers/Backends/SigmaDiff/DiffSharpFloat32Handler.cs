@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using DiffSharp;
 using DiffSharp.Config;
 using DiffSharp.Interop.Float32;
 using log4net;
@@ -210,202 +211,267 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Pow(INDArray array, INumber value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalValue = InternaliseNumber(value);
+
+			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue._adNumberHandle));
 		}
 
 		public INDArray Pow<TOther>(INDArray array, TOther value)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float) System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue));
 		}
 
 		public INumber Abs(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Abs(internalValue._adNumberHandle));
 		}
 
 		public INDArray Abs(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Abs(internalArray._adArrayHandle));
 		}
 
 		public INumber Sum(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADFloat32Number(DNDArray.Sum(internalArray._adArrayHandle));
 		}
 
 		public INumber Max(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MaxIndex(internalArray._adArrayHandle))));
 		}
 
 		public INumber Min(INDArray array)
 		{
-			throw new NotImplementedException();
-		}
+			ADNDFloat32Array internalArray = InternaliseArray(array);
 
-		public INumber L1Norm(INDArray array)
-		{
-			throw new NotImplementedException();
-		}
-
-		public INumber L2Norm(INDArray array)
-		{
-			throw new NotImplementedException();
+			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MinIndex(internalArray._adArrayHandle))));
 		}
 
 		public INDArray Sqrt(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Sqrt(internalArray._adArrayHandle));
 		}
 
-		public INumber Sqrt(INumber array)
+		public INumber Sqrt(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Sqrt(internalValue._adNumberHandle));
 		}
 
 		public INDArray Log(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Log(internalArray._adArrayHandle));
 		}
 
-		public INumber Log(INumber array)
+		public INumber Log(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Log(internalValue._adNumberHandle));
 		}
 
 		public INumber Determinate(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADFloat32Number(DNDArray.Det(internalArray._adArrayHandle));
 		}
 
 		public INDArray Sin(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Sin(internalArray._adArrayHandle));
 		}
 
-		public INDArray Sin(INumber number)
+		public INumber Sin(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Sin(internalValue._adNumberHandle));
 		}
 
 		public INDArray Asin(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Asin(internalArray._adArrayHandle));
 		}
 
-		public INDArray Asin(INumber number)
+		public INumber Asin(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Asin(internalValue._adNumberHandle));
 		}
 
 		public INDArray Cos(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Cos(internalArray._adArrayHandle));
 		}
 
-		public INDArray Cos(INumber number)
+		public INumber Cos(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Cos(internalValue._adNumberHandle));
 		}
 
 		public INDArray Acos(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Acos(internalArray._adArrayHandle));
 		}
 
-		public INDArray Acos(INumber number)
+		public INumber Acos(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Acos(internalValue._adNumberHandle));
 		}
 
 		public INDArray Tan(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Tan(internalArray._adArrayHandle));
 		}
 
-		public INDArray Tan(INumber number)
+		public INumber Tan(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Tan(internalValue._adNumberHandle));
 		}
 
 		public INDArray Atan(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Atan(internalArray._adArrayHandle));
 		}
 
-		public INDArray Atan(INumber number)
+		public INumber Atan(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Atan(internalValue._adNumberHandle));
 		}
 
 		public INDArray ReL(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.ReLU(internalArray._adArrayHandle));
 		}
 
-		public INumber ReL(INumber array)
+		public INumber ReL(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.ReLU(internalValue._adNumberHandle));
 		}
 
 		public INDArray Sigmoid(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Sigmoid(internalArray._adArrayHandle));
 		}
 
-		public INumber Sigmoid(INumber array)
+		public INumber Sigmoid(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Sigmoid(internalValue._adNumberHandle));
 		}
 
 		public INDArray SoftPlus(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.SoftPlus(internalArray._adArrayHandle));
 		}
 
-		public INumber SoftPlus(INumber array)
+		public INumber SoftPlus(INumber number)
 		{
-			throw new NotImplementedException();
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.SoftPlus(internalValue._adNumberHandle));
 		}
 
 		public INumber StandardDeviation(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADFloat32Number(DNDArray.StandardDev(internalArray._adArrayHandle));
 		}
 
 		public INumber Variance(INDArray array)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADFloat32Number(DNDArray.Variance(internalArray._adArrayHandle));
 		}
 
-		public INDArray Trace(INDArray array)
+		public uint BeginTrace()
 		{
-			throw new NotImplementedException();
+			return Util.GlobalTagger.Next;
 		}
 
-		public INumber Trace(INumber number)
+		public INDArray Trace(INDArray array, uint traceTag)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle.GetReverse(traceTag));
+		}
+
+		public INumber Trace(INumber number, uint traceTag)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return new ADFloat32Number(internalNumber._adNumberHandle.GetReverse(traceTag));
 		}
 
 		public INDArray MergeBatch(params INDArray[] arrays)
 		{
-			ADNDArray<float>[] castArrays = arrays.As<INDArray, ADNDArray<float>>();
+			ADNDFloat32Array[] castArrays = arrays.As<INDArray, ADNDFloat32Array>();
 
 			long[] totalShape = new long[castArrays[0].Rank];
 
 			Array.Copy(arrays[0].Shape, 1, totalShape, 1, totalShape.Length - 1);
 
-			foreach (ADNDArray<float> array in castArrays)
+			foreach (ADNDFloat32Array array in castArrays)
 			{
 				totalShape[0] += array.Shape[0];
 			}
 
-			ADNDArray<float> merged = new ADNDArray<float>(totalShape);
+			ADNDFloat32Array merged = new ADNDFloat32Array(_backendTag, totalShape);
 			DataBuffer<float> mergedData = (DataBuffer<float>) merged.Data;
 
 			long lastIndex = 0L;
-			foreach (ADNDArray<float> array in castArrays)
+			foreach (ADNDFloat32Array array in castArrays)
 			{
 				DataBuffer<float> arrayData = (DataBuffer<float>) array.Data;
 

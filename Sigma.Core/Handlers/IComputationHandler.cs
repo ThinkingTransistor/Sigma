@@ -6,7 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using ICSharpCode.SharpZipLib.Tar;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 
@@ -18,12 +17,12 @@ namespace Sigma.Core.Handlers
 	/// </summary>
 	public interface IComputationHandler
 	{
+		#region  Data (number, buffer, ndarray) creation and management
+
 		/// <summary>
 		/// The underlying data type processed and used in this computation handler. 
 		/// </summary>
 		IDataType DataType { get; }
-
-		#region  Data (number, buffer, ndarray) creation and management
 
 		/// <summary>
 		/// Initialise a just de-serialised ndarray of this handler's format with this handler and register and initialise components relevant to this handler.
@@ -291,20 +290,6 @@ namespace Sigma.Core.Handlers
 		INumber Min(INDArray array);
 
 		/// <summary>
-		/// The L1 norm of an ndarray. 
-		/// </summary>
-		/// <param name="array">The ndarray.</param>
-		/// <returns>The L1 norm of the given ndarray.</returns>
-		INumber L1Norm(INDArray array);
-
-		/// <summary>
-		/// The L2 norm of an ndarray. 
-		/// </summary>
-		/// <param name="array">The ndarray.</param>
-		/// <returns>The L2 norm of the given ndarray.</returns>
-		INumber L2Norm(INDArray array);
-
-		/// <summary>
 		/// The square root of an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
@@ -314,23 +299,23 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// The square root of a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The square root of the given traceable number.</returns>
-		INumber Sqrt(INumber array);
+		INumber Sqrt(INumber number);
 
 		/// <summary>
-		/// The logarithm base 10 of an ndarray.
+		/// The logarithm base e of an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
-		/// <returns>The logarithm base 10 of the given array element-wise.</returns>
+		/// <returns>The logarithm base e of the given array element-wise.</returns>
 		INDArray Log(INDArray array);
 
 		/// <summary>
-		/// The logarithm base 10 of a traceable number.
+		/// The logarithm base e of a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
-		/// <returns>The logarithm base 10 of the given traceable number.</returns>
-		INumber Log(INumber array);
+		/// <param name="number">The traceable number.</param>
+		/// <returns>The logarithm base e of the given traceable number.</returns>
+		INumber Log(INumber number);
 
 		/// <summary>
 		/// The determinate of an ndarray.
@@ -353,7 +338,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Sin(INumber number);
+		INumber Sin(INumber number);
 
 		/// <summary>
 		/// Apply the inverse sine function to an ndarray element-wise. 
@@ -367,7 +352,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Asin(INumber number);
+		INumber Asin(INumber number);
 
 		/// <summary>
 		/// Apply the cosine function to an ndarray element-wise. 
@@ -381,7 +366,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Cos(INumber number);
+		INumber Cos(INumber number);
 
 		/// <summary>
 		/// Apply the inverse cosine function to an ndarray element-wise. 
@@ -395,7 +380,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Acos(INumber number);
+		INumber Acos(INumber number);
 
 		/// <summary>
 		/// Apply the tangent function to an ndarray element-wise. 
@@ -409,7 +394,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Tan(INumber number);
+		INumber Tan(INumber number);
 
 		/// <summary>
 		/// Apply the inverse tangent function to an ndarray element-wise. 
@@ -423,13 +408,13 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="number">The traceable number to apply the function to.</param>
 		/// <returns></returns>
-		INDArray Atan(INumber number);
+		INumber Atan(INumber number);
 
 		#endregion
 
 		#endregion
 
-		#region Complex unary mathematical operations
+		#region Complex unary mathematical operations (e.g. activation functions)
 
 		#region Activation functions
 
@@ -445,7 +430,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="array">The traceable number.</param>
 		/// <returns>The traceable number with the rectified linear function applied.</returns>
-		INumber ReL(INumber array);
+		INumber ReL(INumber number);
 
 		/// <summary>
 		/// Apply the sigmoid function to an ndarray.
@@ -459,7 +444,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="array">The traceable number.</param>
 		/// <returns>The traceable number with the sigmoid applied.</returns>
-		INumber Sigmoid(INumber array);
+		INumber Sigmoid(INumber number);
 
 		/// <summary>
 		/// Apply the sigmoid function to an ndarray.
@@ -473,7 +458,7 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="array">The traceable number.</param>
 		/// <returns>The traceable number with the soft plus function applied.</returns>
-		INumber SoftPlus(INumber array);
+		INumber SoftPlus(INumber number);
 
 		#endregion
 
@@ -496,18 +481,25 @@ namespace Sigma.Core.Handlers
 		#region Automatic differentiation and tracing operations
 
 		/// <summary>
+		/// Begin an AD tracing session with a certain tag.
+		/// </summary>
+		uint BeginTrace();
+
+		/// <summary>
 		/// Trace a certain ndarray's mathematical operations for automatic differentiation.
 		/// </summary>
 		/// <param name="array">The ndarray to trace.</param>
+		/// <param name="traceTag">The tracing tag (for automatic differentiation with certain traced members).</param>
 		/// <returns>The ndarray with the trace put on it.</returns>
-		INDArray Trace(INDArray array);
+		INDArray Trace(INDArray array, uint traceTag);
 
 		/// <summary>
 		/// Trace a certain traceable number's mathematical operations for automatic differentiation.
 		/// </summary>
 		/// <param name="number">The number to trace.</param>
+		/// <param name="traceTag">The tracing tag (for automatic differentiation with certain traced members).</param>
 		/// <returns>The number with the trace put on it.</returns>
-		INumber Trace(INumber number);
+		INumber Trace(INumber number, uint traceTag);
 
 		#endregion
 	}

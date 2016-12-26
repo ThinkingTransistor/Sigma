@@ -15,6 +15,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 {
+	/// <summary>
+	/// An ndarray with a float32 backend Sigma.DiffSharp handle for tracing and AD operations.
+	/// </summary>
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	[Serializable]
 	public class ADNDFloat32Array : ADNDArray<float>
