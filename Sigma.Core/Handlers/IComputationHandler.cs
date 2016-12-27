@@ -602,15 +602,15 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Compute the derivatives (adjoints) with respect to a certain traceable member (ndarray, number), starting the evaluation tree at the given traceable. 
 		/// </summary>
-		void ComputeDerivatives(ITraceable traceable);
+		void ComputeDerivativesTo(ITraceable traceable);
 
 		/// <summary>
-		/// Get the derivative of a certain traceable after its derivative adjoints have been computed in a <see cref="ComputeDerivatives"/> operation.
+		/// Get the derivative of a certain traceable after its derivative adjoints have been computed in a <see cref="ComputeDerivativesTo"/> operation.
 		/// </summary>
 		/// <typeparam name="TTraceable">The type of the traceable (ndarray or number).</typeparam>
-		/// <param name="traceable">The traceable.</param>
-		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivatives"/> operation, or null if no derivatives were computed.</returns>
-		TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
+		/// <param name="traceableRoot">The traceable.</param>
+		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivativesTo"/> operation, or null if no derivatives were computed.</returns>
+		TTraceable GetDerivative<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable;
 
 		#endregion
 	}

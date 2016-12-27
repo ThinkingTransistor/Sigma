@@ -34,13 +34,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			_backendMappedValues = new Dictionary<object, long>();
 		}
 
-		public T MapToBackend<T>(T value, long backendTag)
-		{
-			_backendMappedValues.Add(value, backendTag);
-
-			return value;
-		}
-
 		public long Register<T>(BackendConfig<T> backendConfig)
 		{
 			if (backendConfig == null) throw new ArgumentNullException(nameof(backendConfig));
@@ -64,9 +57,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public BackendConfig<T> GetBackend<T>(object obj)
 		{
-			if (obj is ADNDFloat32Array)
+			if (obj is DiffSharp.AD.Float32.DNDArray)
 			{
-				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<float>) ((ADNDFloat32Array) obj).Data).BackendTag];
+				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<float>) ((DiffSharp.AD.Float32.DNDArray) obj).Buffer.DataBuffer).BackendTag];
 			}
 			else if (obj is Util.ShapedDataBufferView<T>)
 			{

@@ -47,5 +47,10 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 		{
 			return new ADNumber<T>(_value).SetAssociatedHandler(AssociatedHandler);
 		}
+
+		public override string ToString()
+		{
+			return "adnumber " + _value;
+		}
 	}
 }

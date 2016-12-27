@@ -33,23 +33,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			if (pid == PlatformID.Win32NT || pid == PlatformID.Win32S || pid == PlatformID.Win32Windows || pid == PlatformID.WinCE)
 			{
-				clazzLogger.Info("Detected Windows system, using default windows DLLs (.dll).");
+				clazzLogger.Info("Detected Windows system, using default windows libraries (.dll).");
 			}
 			else if (pid == PlatformID.Unix)
 			{
-				clazzLogger.Info("Detected Unix systemdetected, using linux shared object files (.so).");
+				clazzLogger.Info("Detected Unix systemdetected, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.MacOSX)
 			{
-				clazzLogger.Info("Detected MacOSX system, using linux shared object files (.so).");
+				clazzLogger.Info("Detected MacOSX system, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.Xbox)
 			{
-				clazzLogger.Warn("Detected XBOX system. An XBOX. Really? I'm not even mad. Letting CLR decide if libraries work.");
+				clazzLogger.Warn("Detected XBOX system. An XBOX. Really? I'm not even mad. Letting CLR decide what libraries to load.");
 			}
 			else
 			{
-				clazzLogger.Warn($"Detected not natively supported system with platform id {pid} (potato system?). Letting CLR decide if libraries work.");
+				clazzLogger.Warn($"Detected not natively supported system with platform id {pid} (potato system?). Letting CLR decide what libraries to load.");
 			}
 
 			_checkedPlatformDependentLibraries = true;

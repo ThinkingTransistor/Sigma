@@ -32,17 +32,24 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			IComputationHandler handler = new CpuFloat32Handler();
 
-			INDArray array = handler.NDArray(ArrayUtils.Range(0, 6), 2, 3);
+			uint traceTag = handler.BeginTrace();
+
+			INDArray array = handler.NDArray(ArrayUtils.Range(0, 5), 2, 3);
 			INumber a = handler.Number(3.0f), b = handler.Number(5.0f);
 
-			INumber c = handler.Multiply(a, b);
+			INumber c = handler.Trace(handler.Multiply(a, b), traceTag);
 			INumber d = handler.Multiply(c, 2);
-			INumber e = handler.Add(d, 6);
+			INumber e = handler.Add(d, handler.Multiply(a, 2));
 			INumber f = handler.Sqrt(e);
 
 			array = handler.Multiply(array, f);
 
+			INumber cost = handler.Sum(array);
+
+			handler.ComputeDerivativesTo(cost);
+
 			Console.WriteLine(array);
+			Console.WriteLine(handler.GetDerivative(f));
 		}
 
 		private static void SampleLoadExtractIterate()
