@@ -182,6 +182,7 @@
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
@@ -207,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Persistence\" />
+    <Folder Include="Training\Operators\Backends\NativeCpu\Workers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

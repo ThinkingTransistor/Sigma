@@ -39,7 +39,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// An active hook that actively influences the calling operator by modifying the given parameters.
 	/// Note: The distinction between "active" and "passive" depends on the kind of hook. 
-	///		  For example a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
+	///		  For example, a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
 	///		  A hook that stops the training process after a certain epoch or decreases the learning rate every update is active, as it actively influences the operator. 	
 	/// </summary>
 	public interface IActiveHook : IHook

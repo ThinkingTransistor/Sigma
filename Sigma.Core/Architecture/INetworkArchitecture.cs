@@ -26,7 +26,7 @@ namespace Sigma.Core.Architecture
 		void Validate();
 
 		/// <summary>
-		/// Resolve all layer names. 
+		/// Resolve all layer names to be fully qualified. 
 		/// </summary>
 		/// <returns>The underlying layer constructs (for convenience).</returns>
 		LayerConstruct[] ResolveAllNames();

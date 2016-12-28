@@ -33,7 +33,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			if (pid == PlatformID.Win32NT || pid == PlatformID.Win32S || pid == PlatformID.Win32Windows || pid == PlatformID.WinCE)
 			{
-				clazzLogger.Info("Detected Windows system, using default windows libraries (.dll).");
+				clazzLogger.Info("Detected Windows system, using windows libraries (.dll).");
 			}
 			else if (pid == PlatformID.Unix)
 			{

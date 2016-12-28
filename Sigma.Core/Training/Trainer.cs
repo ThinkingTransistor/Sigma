@@ -88,7 +88,7 @@ namespace Sigma.Core.Training
 
 		public void InitialiseNetwork()
 		{
-			
+			LayerConstruct[] layerConstructs = Network.Architecture.ResolveAllNames();
 		}
 	}
 }

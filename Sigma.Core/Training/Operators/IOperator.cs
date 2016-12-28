@@ -50,6 +50,12 @@ namespace Sigma.Core.Training.Operators
 		void AttachHook(IHook hook);
 
 		/// <summary>
+		/// Detach a hook from this operator.
+		/// </summary>
+		/// <param name="hook">The hook to detach.</param>
+		void DetachHook(IHook hook);
+
+		/// <summary>
 		/// Start this operator in a separate thread (return immediately). 
 		/// </summary>
 		void Start();

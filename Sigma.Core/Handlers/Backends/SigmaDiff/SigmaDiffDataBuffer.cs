@@ -12,6 +12,10 @@ using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
+	/// <summary>
+	/// A DataBuffer wrapper for use with the Sigma.DiffSharp library. 
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	[Serializable]
 	internal class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
 	{

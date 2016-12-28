@@ -23,7 +23,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleAutomaticDifferentiation();
+			SampleLoadExtractIterate();
 
 			Console.ReadKey();
 		}
@@ -34,10 +34,10 @@ namespace Sigma.Tests.Internals.Backend
 
 			uint traceTag = handler.BeginTrace();
 
-			INDArray array = handler.NDArray(ArrayUtils.Range(1, 1), 1, 1);
-			//INumber a = handler.Number(3.0f), b = handler.Number(5.0f);
+			INDArray array = handler.NDArray(ArrayUtils.Range(1, 6), 2, 3);
+			INumber a = handler.Number(-1.0f), b = handler.Number(3.0f);
 
-			INumber c = handler.Trace(handler.Number(2), traceTag);
+			INumber c = handler.Trace(handler.Add(a, b), traceTag);
 			INumber d = handler.Multiply(c, 2);
 			INumber e = handler.Add(d, handler.Add(c, 3));
 			INumber f = handler.Sqrt(e);
@@ -46,8 +46,10 @@ namespace Sigma.Tests.Internals.Backend
 
 			INumber cost = handler.Sum(array);
 
-			handler.ComputeDerivativesTo(cost);
+			Console.WriteLine("cost: " + cost);
 
+			handler.ComputeDerivativesTo(cost);
+			 
 			Console.WriteLine(array);
 			Console.WriteLine("f: " + handler.GetDerivative(f));
 			Console.WriteLine("e: " + handler.GetDerivative(e));
