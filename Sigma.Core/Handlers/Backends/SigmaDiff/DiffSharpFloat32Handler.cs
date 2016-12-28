@@ -547,23 +547,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		public TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
+		public TTraceable ClearTrace<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable
 		{
-			if (traceable is ADFloat32Number)
+			if (traceableRoot is ADFloat32Number)
 			{
-				ADFloat32Number internalNumber = traceable as ADFloat32Number;
+				ADFloat32Number internalNumber = traceableRoot as ADFloat32Number;
 
 				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.P));
 			}
-			else if (traceable is ADNDFloat32Array)
+			else if (traceableRoot is ADNDFloat32Array)
 			{
-				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+				ADNDFloat32Array internalArray = traceableRoot as ADNDFloat32Array;
 
 				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.P));
 			}
 			else
 			{
-				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceableRoot} not compatible with this handler).");
 			}
 		}
 
@@ -587,23 +587,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		public TTraceable GetDerivative<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable
+		public TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
-			if (traceableRoot is ADFloat32Number)
+			if (traceable is ADFloat32Number)
 			{
-				ADFloat32Number internalNumber = traceableRoot as ADFloat32Number;
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
 
 				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.A));
 			}
-			else if (traceableRoot is ADNDFloat32Array)
+			else if (traceable is ADNDFloat32Array)
 			{
-				ADNDFloat32Array internalArray = traceableRoot as ADNDFloat32Array;
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
 
 				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.A));
 			}
 			else
 			{
-				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceableRoot} not compatible with this handler).");
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
 			}
 		}
 

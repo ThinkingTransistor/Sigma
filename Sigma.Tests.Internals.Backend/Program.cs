@@ -34,12 +34,12 @@ namespace Sigma.Tests.Internals.Backend
 
 			uint traceTag = handler.BeginTrace();
 
-			INDArray array = handler.NDArray(ArrayUtils.Range(0, 5), 2, 3);
-			INumber a = handler.Number(3.0f), b = handler.Number(5.0f);
+			INDArray array = handler.NDArray(ArrayUtils.Range(1, 1), 1, 1);
+			//INumber a = handler.Number(3.0f), b = handler.Number(5.0f);
 
-			INumber c = handler.Trace(handler.Multiply(a, b), traceTag);
+			INumber c = handler.Trace(handler.Number(2), traceTag);
 			INumber d = handler.Multiply(c, 2);
-			INumber e = handler.Add(d, handler.Multiply(a, 2));
+			INumber e = handler.Add(d, handler.Add(c, 3));
 			INumber f = handler.Sqrt(e);
 
 			array = handler.Multiply(array, f);
@@ -49,7 +49,19 @@ namespace Sigma.Tests.Internals.Backend
 			handler.ComputeDerivativesTo(cost);
 
 			Console.WriteLine(array);
-			Console.WriteLine(handler.GetDerivative(f));
+			Console.WriteLine("f: " + handler.GetDerivative(f));
+			Console.WriteLine("e: " + handler.GetDerivative(e));
+			Console.WriteLine("d: " + handler.GetDerivative(d));
+			Console.WriteLine("c: " + handler.GetDerivative(c));
+			Console.WriteLine("a: " + handler.GetDerivative(array));
+
+			handler.ComputeDerivativesTo(f);
+
+			Console.WriteLine("f: " + handler.GetDerivative(f));
+			Console.WriteLine("e: " + handler.GetDerivative(e));
+			Console.WriteLine("d: " + handler.GetDerivative(d));
+			Console.WriteLine("c: " + handler.GetDerivative(c));
+			Console.WriteLine("a: " + handler.GetDerivative(array));
 		}
 
 		private static void SampleLoadExtractIterate()

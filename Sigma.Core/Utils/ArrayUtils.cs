@@ -98,6 +98,10 @@ namespace Sigma.Core.Utils
 					result[i++] = value;
 				}
 			}
+			else
+			{
+				result[0] = start;
+			}
 
 			return result;
 		}

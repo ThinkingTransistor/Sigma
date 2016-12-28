@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Data
@@ -259,7 +260,7 @@ namespace Sigma.Core.Data
 
 		public override string ToString()
 		{
-			return "$databuffer of type {Type} and size {Length}";
+			return $"databuffer {Type}x{Length}: " + "[" + string.Join(",", Data.SubArray((int) Offset, (int) Length)) + "]";
 		}
 	}
 }

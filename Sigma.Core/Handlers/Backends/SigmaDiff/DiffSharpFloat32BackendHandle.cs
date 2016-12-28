@@ -404,7 +404,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
-			throw new NotImplementedException();
+			//TODO update with BLAS hadamard implementation
+			b = b.DeepCopy();
+			int len = Math.Min(a.Length, b.Length);
+			int offsetA = a.DataBuffer.Offset, offsetB = b.DataBuffer.Offset;
+			float[] dataA = a.DataBuffer.Data;
+			float[] dataB = b.DataBuffer.Data;
+			for (int i = 0; i < len; i++)
+			{
+				dataB[i + offsetB] = dataA[i + offsetA] * dataB[i + offsetB];
+			}
+
+			return b;
 		}
 
 		public override FSharpOption<ShapedDataBufferView<float>> Inverse_M(ShapedDataBufferView<float> a)
