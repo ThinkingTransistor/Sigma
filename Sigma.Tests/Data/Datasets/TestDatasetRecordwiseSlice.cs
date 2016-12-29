@@ -12,7 +12,6 @@ using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends;
 using System;
 using System.IO;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;

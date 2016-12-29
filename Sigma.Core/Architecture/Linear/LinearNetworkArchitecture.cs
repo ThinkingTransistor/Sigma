@@ -79,9 +79,9 @@ namespace Sigma.Core.Architecture.Linear
 		{
 			for (int i = 0; i < _layerConstructs.Count; i++)
 			{
-				if (_layerConstructs[i].Name.Contains('#'))
+				if (_layerConstructs[i].UnresolvedName.Contains('#'))
 				{
-					_layerConstructs[i].Name = _layerConstructs[i].Name.Replace("#", i.ToString());
+					_layerConstructs[i].Name = _layerConstructs[i].UnresolvedName.Replace("#", i.ToString());
 				}
 			}
 		}

@@ -20,6 +20,8 @@ namespace Sigma.Core.Layers
 	{
 		public InputLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
+			// external to indicate that these parameters are not only external (which should already be indicate with the InputsExternal flag in the layer construct and buffer)
+			//	but also that they mark the boundaries of the entire network (thereby external to the network, not only external as in external source)
 			ExpectedInputs = new[] {"external"};
 		}
 

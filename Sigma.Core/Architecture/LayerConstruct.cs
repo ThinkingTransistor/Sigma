@@ -30,6 +30,11 @@ namespace Sigma.Core.Architecture
 		public string Name { get; set; }
 
 		/// <summary>
+		/// The unresolved name of the layer created in this construct (the unresolved name does not have to be unique).
+		/// </summary>
+		internal string UnresolvedName { get; }
+
+		/// <summary>
 		/// The parameters of the layer created in this layer construct.
 		/// </summary>
 		public IRegistry Parameters { get; protected set; }
@@ -67,6 +72,7 @@ namespace Sigma.Core.Architecture
 			ValidateLayerClassType(layerClassType);
 
 			Name = name;
+			UnresolvedName = name;
 			_layerClassType = layerClassType;
 
 			Inputs = new Dictionary<string, LayerConstruct>();

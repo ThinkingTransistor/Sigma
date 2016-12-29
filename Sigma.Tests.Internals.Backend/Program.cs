@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Sigma.Core;
 using Sigma.Core.Architecture;
-using Sigma.Core.Architecture.Linear;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;

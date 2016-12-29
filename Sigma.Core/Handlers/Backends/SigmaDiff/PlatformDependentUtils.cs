@@ -7,8 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using log4net;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff

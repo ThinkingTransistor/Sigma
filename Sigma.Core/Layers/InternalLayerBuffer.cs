@@ -17,8 +17,10 @@ namespace Sigma.Core.Layers
 	/// </summary>
 	public class InternalLayerBuffer : ILayerBuffer
 	{
-		public ILayer Layer { get; set; }
+		public ILayer Layer { get; }
 		public IRegistry Parameters { get; }
+		public bool InputsExternal { get; }
+		public bool OutputsExternal { get; }
 		public IDictionary<string, IRegistry> Inputs { get; }
 		public IDictionary<string, IRegistry> Outputs { get; }
 
@@ -29,7 +31,10 @@ namespace Sigma.Core.Layers
 		/// <param name="parameters">The parameters.</param>
 		/// <param name="inputs">The inputs.</param>
 		/// <param name="outputs">The outputs.</param>
-		public InternalLayerBuffer(ILayer layer, IRegistry parameters, IDictionary<string, IRegistry> inputs, IDictionary<string, IRegistry> outputs)
+		/// <param name="inputsExternal">Indicate if inputs are external.</param>
+		/// <param name="outputsExternal">Indicate if outputs are external.</param>
+		public InternalLayerBuffer(ILayer layer, IRegistry parameters, IDictionary<string, IRegistry> inputs, IDictionary<string, IRegistry> outputs,
+									bool inputsExternal, bool outputsExternal)
 		{
 			if (layer == null) throw new ArgumentNullException(nameof(layer));
 			if (parameters == null) throw new ArgumentNullException(nameof(parameters));
@@ -40,6 +45,8 @@ namespace Sigma.Core.Layers
 			Inputs = inputs;
 			Outputs = outputs;
 			Layer = layer;
-		}		
+			InputsExternal = inputsExternal;
+			OutputsExternal = outputsExternal;
+		}
 	}
 }

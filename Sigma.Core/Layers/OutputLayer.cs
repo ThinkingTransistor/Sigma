@@ -6,7 +6,6 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -21,6 +20,8 @@ namespace Sigma.Core.Layers
 	{
 		public OutputLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
+			// external to indicate that these parameters are not only external (which should already be indicate with the InputsExternal flag in the layer construct and buffer)
+			//	but also that they mark the boundaries of the entire network (thereby external to the network, not only external as in external source)
 			ExpectedOutputs = new[] { "external" }; 
 		}
 

@@ -13,7 +13,6 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Core.Data.Extractors
 {

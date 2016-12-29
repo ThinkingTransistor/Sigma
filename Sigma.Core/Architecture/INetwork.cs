@@ -56,5 +56,17 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered();
+
+		/// <summary>
+		/// Get the layer buffers of this network that are marked as having external inputs.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers();
+
+		/// <summary>
+		/// Get the layer buffers of this network that are marked as having external outputs.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers();
 	}
 }
