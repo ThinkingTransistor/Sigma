@@ -20,7 +20,7 @@ namespace Sigma.Core.Utils
 	{
 		private readonly IList<ITaskObserver> _runningObservers = new List<ITaskObserver>();
 
-		public ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = false)
+		public ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = true)
 		{
 			if (taskType == null)
 			{
@@ -104,7 +104,7 @@ namespace Sigma.Core.Utils
 		/// <param name="exposed">Indicate whether the task should be exposed to external search requests.</param>
 		/// <param name="indeterminate">Indicate whether the task is indeterminate (unknown total workload).</param>
 		/// <returns></returns>
-		ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = false);
+		ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = true);
 
 		/// <summary>
 		/// Cancel a certain task.

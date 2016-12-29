@@ -14,6 +14,7 @@ using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
 {
@@ -28,15 +29,20 @@ namespace Sigma.Core.Training
 		string Name { get; }
 
 		/// <summary>
+		/// The sigma environment this trainer is associated with.
+		/// </summary>
+		SigmaEnvironment Sigma { get; set; }
+
+		/// <summary>
 		/// The network to be trained with this trainer. 
 		/// </summary>
 		INetwork Network { get; set; }
 
 		/// <summary>
-		/// The initialisers used in this trainer by parameter resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
+		/// The initialisers used in this trainer by registry resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
-		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; set; }
+		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 
 		/// <summary>
 		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum).
@@ -72,6 +78,19 @@ namespace Sigma.Core.Training
 		/// The passive hooks attached to this trainer.
 		/// </summary>
 		IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
+
+		/// <summary>
+		/// A registry containing all relevant sub-registries (e.g. network, layers, operator).
+		/// </summary>
+		IRegistry Registry { get; }
+
+		/// <summary>
+		/// Add an initialiser by registry resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
+		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
+		/// </summary>
+		/// <param name="identifier">The identifier (registry resolve string).</param>
+		/// <param name="initialiser">The initialiser.</param>
+		void AddInitialiser(string identifier, IInitialiser initialiser);
 
 		/// <summary>
 		/// Add a secondary named data iterator to this trainer.

@@ -6,6 +6,7 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Sigma.Core.Architecture.Linear
 	/// </summary>
 	public class LinearNetworkArchitecture : INetworkArchitecture
 	{
+		public IRegistry Registry { get; }
 		public int LayerCount => _layerConstructs.Count;
 
 		private readonly List<LayerConstruct> _layerConstructs;
@@ -28,6 +30,9 @@ namespace Sigma.Core.Architecture.Linear
 		public LinearNetworkArchitecture(params LayerConstruct[] layerConstructs)
 		{
 			_layerConstructs = new List<LayerConstruct>(layerConstructs);
+			Registry = new Registry(tags: "architecture");
+
+			UpdateRegistry();
 		}
 
 		/// <summary>
@@ -37,11 +42,15 @@ namespace Sigma.Core.Architecture.Linear
 		public LinearNetworkArchitecture(IEnumerable<LayerConstruct> layerConstructs)
 		{
 			_layerConstructs = new List<LayerConstruct>(layerConstructs);
+			Registry = new Registry(tags: "architecture");
+
+			UpdateRegistry();
 		}
 
-		public IEnumerable<LayerConstruct> YieldLayerConstructsOrdered()
+		protected virtual void UpdateRegistry()
 		{
-			return _layerConstructs;
+			Registry["type"] = "linear";
+			Registry["layercount"] = LayerCount;
 		}
 
 		public void Validate()
@@ -109,6 +118,8 @@ namespace Sigma.Core.Architecture.Linear
 
 			_layerConstructs.AddRange(other._layerConstructs);
 
+			UpdateRegistry();
+
 			return this;
 		}
 
@@ -138,6 +149,8 @@ namespace Sigma.Core.Architecture.Linear
 				_layerConstructs.Insert(0, other._layerConstructs[i]);
 			}
 
+			UpdateRegistry();
+
 			return this;
 		}
 
@@ -147,6 +160,11 @@ namespace Sigma.Core.Architecture.Linear
 		}
 
 		public static LinearNetworkArchitecture operator +(LinearNetworkArchitecture self, LayerConstruct other)
+		{
+			return self.AppendEnd(new LinearNetworkArchitecture(other));
+		}
+
+		public static LinearNetworkArchitecture operator +(LayerConstruct other, LinearNetworkArchitecture self)
 		{
 			return self.AppendEnd(new LinearNetworkArchitecture(other));
 		}
@@ -183,6 +201,11 @@ namespace Sigma.Core.Architecture.Linear
 			}
 
 			return self;
+		}
+
+		public IEnumerable<LayerConstruct> YieldLayerConstructsOrdered()
+		{
+			return _layerConstructs;
 		}
 	}
 }

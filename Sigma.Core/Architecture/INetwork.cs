@@ -29,7 +29,7 @@ namespace Sigma.Core.Architecture
 		string Name { get; }
 
 		/// <summary>
-		/// The registry containing all layers and relevant parameters.
+		/// The registry containing all relevant parameters and meaningful sub-registries (e.g. layers, architecture).
 		/// </summary>
 		IRegistry Registry { get; }
 

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.Utils;
@@ -20,6 +21,7 @@ namespace Sigma.Core.Architecture
 		public string Name { get; }
 		public IRegistry Registry { get; }
 
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
@@ -30,7 +32,7 @@ namespace Sigma.Core.Architecture
 			if (name == null) throw new ArgumentNullException(nameof(name));
 
 			Name = name;
-			Registry = new Registry();
+			Registry = new Registry(tags: "network");
 			_orderedLayerBuffers = new List<InternalLayerBuffer>();
 			_externalInputsLayerBuffers = new List<InternalLayerBuffer>();
 			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
@@ -53,6 +55,10 @@ namespace Sigma.Core.Architecture
 				throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
 			}
 
+			_logger.Info($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
+
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare);
+
 			Architecture.ResolveAllNames();
 
 			_orderedLayerBuffers.Clear();
@@ -60,7 +66,6 @@ namespace Sigma.Core.Architecture
 			_externalOutputsLayerBuffers.Clear();
 
 			Registry.Clear();
-
 
 			Registry layersRegistry = new Registry(Registry);
 			Registry["layers"] = layersRegistry;
@@ -126,6 +131,10 @@ namespace Sigma.Core.Architecture
 			}
 
 			_orderedLayers = _orderedLayerBuffers.ConvertAll(buffer => buffer.Layer);
+
+			SigmaEnvironment.TaskManager.EndTask(prepareTask);
+
+			_logger.Info($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
 		public IEnumerable<ILayer> YieldLayersOrdered()
