@@ -42,6 +42,11 @@ namespace Sigma.Core.MathAbstract
 		/// <returns>The same shape array (for convenience).</returns>
 		public static long[] CheckShape(params long[] shape)
 		{
+			if (shape == null)
+			{
+				throw new ArgumentNullException(nameof(shape));
+			}
+
 			if (shape.Length == 0)
 			{
 				throw new ArgumentException("Shape array cannot be of length 0.");

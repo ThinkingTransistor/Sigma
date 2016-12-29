@@ -12,6 +12,8 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using log4net;
+using Sigma.Core.Architecture.Linear;
 
 namespace Sigma.Core.Architecture
 {
@@ -42,13 +44,38 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		public IDictionary<string, LayerConstruct> Outputs { get; }
 
+		/// <summary>
+		/// Indicate if the inputs of this layer are supplied externally.
+		/// If set, this layer cannot have any internal inputs.
+		/// </summary>
+		public bool InputsExternal { get; internal set; }
+
+		/// <summary>
+		/// Indicate if the outputs of this layer are supplied externally.
+		/// If set, this layer cannot have any internal outputs.
+		/// </summary>
+		public bool OutputsExternal { get; internal set; }
+
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private readonly Type _layerInterfaceType = typeof(ILayer);
 		private readonly Type _layerClassType;
 
 		public LayerConstruct(string name, Type layerClassType)
 		{
 			ValidateLayerName(name);
+			ValidateLayerClassType(layerClassType);
 
+			Name = name;
+			_layerClassType = layerClassType;
+
+			Inputs = new Dictionary<string, LayerConstruct>();
+			Outputs = new Dictionary<string, LayerConstruct>();
+			Parameters = new Registry(tags: "layer");
+		}
+
+		private void ValidateLayerClassType(Type layerClassType)
+		{
 			if (layerClassType == null)
 			{
 				throw new ArgumentNullException(nameof(layerClassType));
@@ -56,14 +83,8 @@ namespace Sigma.Core.Architecture
 
 			if (layerClassType.IsSubclassOf(_layerInterfaceType))
 			{
-				throw new ArgumentException($"Layer class type must be subclass of layer interface type IInterface, but was {layerClassType}.");
+				throw new ArgumentException($"Layer class type must be subclass of layer interface type ILayer, but was {layerClassType}.");
 			}
-
-			_layerClassType = layerClassType;
-
-			Inputs = new Dictionary<string, LayerConstruct>();
-			Outputs = new Dictionary<string, LayerConstruct>();
-			Parameters = new Registry(tags: "layer");
 		}
 
 		private static void ValidateLayerName(string name)
@@ -75,7 +96,7 @@ namespace Sigma.Core.Architecture
 
 			int autoNameCharacterCount = name.Count(c => c == '#');
 
-			if (autoNameCharacterCount >= 2)
+			if (autoNameCharacterCount > 1)
 			{
 				throw new ArgumentException($"There can be at most one auto name character '#' in a layer name, but given name {name} had more.");
 			}
@@ -83,12 +104,28 @@ namespace Sigma.Core.Architecture
 
 		public virtual LayerConstruct Copy()
 		{
-			return new LayerConstruct(Name, _layerClassType);
+			LayerConstruct copy = new LayerConstruct(Name, _layerClassType)
+			{
+				Parameters = Parameters,
+				InputsExternal = InputsExternal,
+				OutputsExternal = OutputsExternal
+			};
+
+			return copy;
 		}
 
 		public virtual ILayer InstantiateLayer(IComputationHandler handler)
 		{
-			return (ILayer) Activator.CreateInstance(_layerClassType, Parameters, handler);
+			try
+			{
+				return (ILayer) Activator.CreateInstance(_layerClassType, Name, Parameters, handler);
+			}
+			catch (MissingMethodException)
+			{
+				_logger.Error($"Unable to instantiate layer from construct. Referenced class type is missing required constructor with signature LayerClassName(string name, IRegistry parameters, IComputationHandler handler).");
+
+				throw;
+			}
 		}
 
 		public void AddOutput(LayerConstruct output, string alias = "default")

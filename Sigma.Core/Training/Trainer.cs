@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Sigma.Core.Handlers;
 
 namespace Sigma.Core.Training
 {
@@ -86,9 +87,11 @@ namespace Sigma.Core.Training
 			_passiveHooks.Add(hook);
 		}
 
-		public void InitialiseNetwork()
+		public void Initialise(IComputationHandler handler)
 		{
-			LayerConstruct[] layerConstructs = Network.Architecture.ResolveAllNames();
+			Network.Initialise(handler);
+
+			
 		}
 	}
 }

@@ -21,20 +21,19 @@ namespace Sigma.Core.Architecture
 		int LayerCount { get; }
 
 		/// <summary>
-		/// Validate this network architecture.
-		/// </summary>
+		/// Validate this network architecture. 
+		/// </summary
 		void Validate();
 
 		/// <summary>
-		/// Resolve all layer names to be fully qualified. 
+		/// Resolve all layer names to be fully qualified (irreversible). 
 		/// </summary>
-		/// <returns>The underlying layer constructs (for convenience).</returns>
-		LayerConstruct[] ResolveAllNames();
+		void ResolveAllNames();
 
 		/// <summary>
 		/// Yield all layers in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<LayerConstruct> YieldLayerConstructs();
+		IEnumerable<LayerConstruct> YieldLayerConstructsOrdered();
 	}
 }

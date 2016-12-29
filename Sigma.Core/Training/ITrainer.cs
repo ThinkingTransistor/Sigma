@@ -13,6 +13,7 @@ using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
+using Sigma.Core.Handlers;
 
 namespace Sigma.Core.Training
 {
@@ -93,8 +94,9 @@ namespace Sigma.Core.Training
 		void AddPassiveHook(IPassiveHook hook);
 
 		/// <summary>
-		/// Initialise this trainer and the network to be trained using the set initialisers.
+		/// Initialise this trainer and the network to be trained using the set initialisers. Set up all handlers and constructs used to run the trainer. 
 		/// </summary>
-		void InitialiseNetwork();
+		/// <param name="handler">The computation handler to initialise for (must be the interchangeable with the one used for running the network).</param>
+		void Initialise(IComputationHandler handler);
 	}
 }

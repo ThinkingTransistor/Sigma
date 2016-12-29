@@ -8,9 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Layers
+namespace Sigma.Core.Layers.Feedforward
 {
 	public class ElementwiseLayer : BaseLayer
 	{
@@ -24,18 +25,18 @@ namespace Sigma.Core.Layers
 			TrainableParameters = new[] { "weights", "biases" };
 		}
 
-		public static LayerConstruct New(string name, int size)
-		{
-			LayerConstruct layer = new LayerConstruct(name, typeof(ElementwiseLayer));
-
-			layer.Parameters["size"] = size;
-
-			return layer;
-		}
-
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
+			INDArray inputActivations = buffer.Inputs["default"].Get<INDArray>("activations");
+		}
 
+		public static LayerConstruct Construct(int size, string name = "elementwise#")
+		{
+			LayerConstruct construct = new LayerConstruct(name, typeof(ElementwiseLayer));
+
+			construct.Parameters["size"] = size;
+
+			return construct;
 		}
 	}
 }

@@ -117,9 +117,11 @@
   <ItemGroup>
     <Compile Include="Architecture\INetwork.cs" />
     <Compile Include="Architecture\INetworkArchitecture.cs" />
+    <Compile Include="Architecture\InvalidNetworkArchitectureException.cs" />
     <Compile Include="Architecture\LayerConstruct.cs" />
-    <Compile Include="Architecture\LinearNetwork.cs" />
-    <Compile Include="Architecture\LinearNetworkArchitecture.cs" />
+    <Compile Include="Architecture\Linear\LinearNetworkArchitecture.cs" />
+    <Compile Include="Architecture\Linear\Parallel.cs" />
+    <Compile Include="Architecture\Network.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
     <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
@@ -161,9 +163,12 @@
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
-    <Compile Include="Layers\ElementwiseLayer.cs" />
+    <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
+    <Compile Include="Layers\OutputLayer.cs" />
+    <Compile Include="Layers\InputLayer.cs" />
+    <Compile Include="Layers\InternalLayerBuffer.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
@@ -196,7 +201,7 @@
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
-    <Compile Include="Utils\ILayerBuffer.cs" />
+    <Compile Include="Layers\ILayerBuffer.cs" />
     <Compile Include="Utils\PrintUtils.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
@@ -207,6 +212,8 @@
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Layers\Convolutional\" />
+    <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
     <Folder Include="Training\Operators\Backends\NativeCpu\Workers\" />
   </ItemGroup>

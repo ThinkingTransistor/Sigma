@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers
@@ -35,6 +36,7 @@ namespace Sigma.Core.Layers
 
 		/// <summary>
 		/// The trainable parameters of this layer, e.g. "weights".
+		/// Note that only <see cref="ITraceable"/> parameters can be marked as trainable.
 		/// </summary>
 		string[] TrainableParameters { get; }
 

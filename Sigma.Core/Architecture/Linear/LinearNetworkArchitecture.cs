@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sigma.Core.Architecture
+namespace Sigma.Core.Architecture.Linear
 {
 	/// <summary>
 	/// A linear network architecture which only allows linear single connections between layer constructs.
@@ -39,17 +39,43 @@ namespace Sigma.Core.Architecture
 			_layerConstructs = new List<LayerConstruct>(layerConstructs);
 		}
 
-		public IEnumerable<LayerConstruct> YieldLayerConstructs()
+		public IEnumerable<LayerConstruct> YieldLayerConstructsOrdered()
 		{
 			return _layerConstructs;
 		}
 
 		public void Validate()
 		{
-			throw new NotImplementedException();
+			if (_layerConstructs.Count != _layerConstructs.Distinct().Count())
+			{
+				throw new InvalidNetworkArchitectureException($"All layer constructs in the network architecture must be unique.");
+			}
+
+			HashSet<LayerConstruct> previousConstructs = new HashSet<LayerConstruct>();
+
+			foreach (LayerConstruct construct in YieldLayerConstructsOrdered())
+			{
+				if (construct.InputsExternal && construct.Inputs.Count > 0)
+				{
+					throw new InvalidNetworkArchitectureException($"Layer constructs marked with external inputs cannot have any internal inputs, but construct {construct} has {construct.Inputs.Count}.");
+				}
+
+				if (construct.OutputsExternal && construct.Outputs.Count > 0)
+				{
+					throw new InvalidNetworkArchitectureException($"Layer constructs marked with external outputs cannot have any internal outputs, but construct {construct} has {construct.Outputs.Count}.");
+				}
+
+				foreach (LayerConstruct previousConstruct in previousConstructs)
+				{
+					if (construct.Outputs.Values.Contains(previousConstruct))
+					{
+						throw new InvalidNetworkArchitectureException($"Linear networks can only have acyclic linear connections, but connection from layer construct {previousConstruct} connects back to itself through {construct}.");
+					}
+				}
+			}
 		}
 
-		public LayerConstruct[] ResolveAllNames()
+		public void ResolveAllNames()
 		{
 			for (int i = 0; i < _layerConstructs.Count; i++)
 			{
@@ -58,8 +84,6 @@ namespace Sigma.Core.Architecture
 					_layerConstructs[i].Name = _layerConstructs[i].Name.Replace("#", i.ToString());
 				}
 			}
-
-			return _layerConstructs.ToArray();
 		}
 
 		public LinearNetworkArchitecture AppendEnd(LinearNetworkArchitecture other)
@@ -139,7 +163,7 @@ namespace Sigma.Core.Architecture
 				return self;
 			}
 
-			for (int i = 0; i < multiplier; i++)
+			for (int i = 0; i <= multiplier; i++)
 			{
 				LinearNetworkArchitecture copy = new LinearNetworkArchitecture(self._layerConstructs.ConvertAll(x =>
 				{

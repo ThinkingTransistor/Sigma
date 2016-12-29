@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using Sigma.Core;
+using Sigma.Core.Architecture;
+using Sigma.Core.Architecture.Linear;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
@@ -10,6 +12,7 @@ using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
@@ -23,9 +26,39 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleLoadExtractIterate();
+			SampleNetworkArchitecture();
 
 			Console.ReadKey();
+		}
+
+		private static void SampleNetworkArchitecture()
+		{
+			IComputationHandler handler = new CpuFloat32Handler();
+			Network network = new Network();
+
+			network.Architecture = InputLayer.Construct(28, 28) + OutputLayer.Construct(10);
+
+			network.Validate();
+			network.Initialise(handler);
+
+			Console.WriteLine(network.Registry);
+
+			foreach (ILayerBuffer buffer in network.YieldLayerBuffersOrdered())
+			{
+				Console.WriteLine(buffer.Layer.Name + ": ");
+
+				Console.WriteLine("inputs:");
+				foreach (string input in buffer.Inputs.Keys)
+				{
+					Console.WriteLine($"\t{input}: {buffer.Inputs[input].GetHashCode()}");
+				}
+
+				Console.WriteLine("outputs:");
+				foreach (string output in buffer.Outputs.Keys)
+				{
+					Console.WriteLine($"\t{output}: {buffer.Outputs[output].GetHashCode()}");
+				}
+			}
 		}
 
 		private static void SampleAutomaticDifferentiation()
@@ -49,7 +82,7 @@ namespace Sigma.Tests.Internals.Backend
 			Console.WriteLine("cost: " + cost);
 
 			handler.ComputeDerivativesTo(cost);
-			 
+
 			Console.WriteLine(array);
 			Console.WriteLine("f: " + handler.GetDerivative(f));
 			Console.WriteLine("e: " + handler.GetDerivative(e));
