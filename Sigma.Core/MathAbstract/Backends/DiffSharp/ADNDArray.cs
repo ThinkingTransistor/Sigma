@@ -116,12 +116,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			Data = new DataBuffer<T>(Length);
 		}
 
-		public ADNDArray<T> Copy()
-		{
-			return new ADNDArray<T>(Data, Shape).SetAssociatedHandler(AssociatedHandler);
-		}
-
-		public object DeepCopy()
+		public virtual object DeepCopy()
 		{
 			return new ADNDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone()).SetAssociatedHandler(AssociatedHandler);
 		}
@@ -156,6 +151,11 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			IsScalar = Rank == 1 && shape[0] == 1;
 			IsVector = Rank == 2 && shape[0] == 1 ^ shape[1] == 1;
 			IsMatrix = Rank == 2 && shape[0] > 1 && shape[1] > 1;
+		}
+
+		protected virtual void Reinitialise(long[] shape, long[] strides)
+		{
+			Initialise(shape, strides);
 		}
 
 		public IDataBuffer<TOther> GetDataAs<TOther>()
@@ -212,7 +212,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			return ReshapeSelf(0, Length);
 		}
 
-		public INDArray Reshape(params long[] newShape)
+		public virtual INDArray Reshape(params long[] newShape)
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
@@ -222,19 +222,19 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			return new ADNDArray<T>(Data, newShape);
 		}
 
-		public INDArray ReshapeSelf(params long[] newShape)
+		public virtual INDArray ReshapeSelf(params long[] newShape)
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			Initialise(NDArrayUtils.CheckShape(newShape), NDArrayUtils.GetStrides(newShape));
+			Reinitialise(NDArrayUtils.CheckShape(newShape), NDArrayUtils.GetStrides(newShape));
 
 			return this;
 		}
 
-		public INDArray Permute(params int[] rearrangedDimensions)
+		public virtual INDArray Permute(params int[] rearrangedDimensions)
 		{
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
@@ -257,10 +257,10 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			return new ADNDArray<T>(Data, newShape);
+			return Reshape(newShape);
 		}
 
-		public INDArray PermuteSelf(params int[] rearrangedDimensions)
+		public virtual INDArray PermuteSelf(params int[] rearrangedDimensions)
 		{
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
@@ -283,7 +283,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			Initialise(newShape, NDArrayUtils.GetStrides(newShape));
+			ReshapeSelf(newShape);
 
 			return this;
 		}

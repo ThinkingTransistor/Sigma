@@ -22,7 +22,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	[Serializable]
 	public class ADNDFloat32Array : ADNDArray<float>
 	{
-		public readonly DNDArray _adArrayHandle;
+		public DNDArray _adArrayHandle;
 
 		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), shape))
 		{
@@ -37,6 +37,33 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
 			_adArrayHandle = adArrayHandle;
+		}
+
+		protected override void Reinitialise(long[] shape, long[] strides)
+		{
+			_adArrayHandle = _adArrayHandle.ShallowCopy();
+
+			base.Reinitialise(shape, strides);
+
+			Array.Copy(shape, _adArrayHandle.Buffer.Shape, shape.Length);
+		}
+
+		public override INDArray Reshape(params long[] newShape)
+		{
+			if (Length != ArrayUtils.Product(newShape))
+			{
+				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
+			}
+
+			DNDArray adArrayHandleCopy = _adArrayHandle.ShallowCopy();
+			Array.Copy(newShape, adArrayHandleCopy.Buffer.Shape, newShape.Length);
+
+			return new ADNDFloat32Array(adArrayHandleCopy);
+		}
+
+		public override object DeepCopy()
+		{
+			return new ADNDFloat32Array(_adArrayHandle.DeepCopy());
 		}
 	}
 }

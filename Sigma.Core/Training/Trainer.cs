@@ -132,7 +132,7 @@ namespace Sigma.Core.Training
 			Network.Initialise(handler);
 
 			RegistryResolver networkResolver = new RegistryResolver(Network.Registry.Get<IRegistry>("layers"));
-			int initialisedCount = 0;
+			int initialisedNDArrayCount = 0, initialisedNumberCount = 0;
 
 			// TODO maybe sort by most specific ascending?
 			foreach (string identifier in _initialisers.Keys)
@@ -147,7 +147,7 @@ namespace Sigma.Core.Training
 					if (array != null)
 					{
 						initialiser.Initialise(array, handler, Sigma.Random);
-						initialisedCount++;
+						initialisedNDArrayCount++;
 					}
 					else
 					{
@@ -156,16 +156,15 @@ namespace Sigma.Core.Training
 						if (number != null)
 						{
 							initialiser.Initialise(number, handler, Sigma.Random);
-							initialisedCount++;
+							initialisedNumberCount++;
 						}
 					}
-					
 				}
 			}
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedCount} objects.");
+			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedNDArrayCount} ndarrays and {initialisedNumberCount} numbers.");
 		}
 	}
 }
