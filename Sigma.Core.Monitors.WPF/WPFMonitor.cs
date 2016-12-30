@@ -253,6 +253,8 @@ namespace Sigma.Core.Monitors.WPF
 			_waitForStart.WaitOne();
 			_waitForStart.Reset();
 
+			ColourManager.ForceUpdate();
+
 			_log.Info($"{nameof(WPFMonitor)} has been started. The window {_windowType.Name} should now be visible. ");
 		}
 

@@ -84,6 +84,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 			}
 
 			Menu.Items.Add(item.Content);
+
 			item.App = app;
 			item.Window = window;
 			_children.Add(item.ToString(), item);

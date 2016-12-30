@@ -27,7 +27,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     or an <see cref="UIElement" />
 		///     - otherwise a <see cref="ArgumentException" /> is thrown.
 		/// </param>
-		public TitleBarItem(object header, params object[] children) : this(new MenuItem {Header = header}, children)
+		public TitleBarItem(object header, params object[] children) : this(new MenuItem { Header = header }, children)
 		{
 		}
 
@@ -59,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				{
 					//The key and header are simply the string
 					newElementKey = (string) children[i];
-					newElement = new MenuItem {Header = (string) children[i]};
+					newElement = new MenuItem { Header = (string) children[i] };
 				}
 				else if (children[i] is TitleBarItem)
 				{
@@ -221,8 +221,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
-
-			//BUG: If window is dragged outside - the onClick does not work
 
 			item.MouseLeftButtonUp += (sender, args) => action(App, Window);
 			item.TouchDown += (sender, args) => action(App, Window);

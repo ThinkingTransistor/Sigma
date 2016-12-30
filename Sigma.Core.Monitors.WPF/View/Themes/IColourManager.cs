@@ -39,5 +39,10 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     Switch between default and alternate style.
 		/// </summary>
 		bool Alternate { get; set; }
+
+		/// <summary>
+		///     Force an update of all values.
+		/// </summary>
+		void ForceUpdate();
 	}
 }

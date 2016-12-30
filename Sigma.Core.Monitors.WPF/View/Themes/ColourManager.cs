@@ -8,13 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using Dragablz;
 using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 // ReSharper disable AccessToStaticMemberViaDerivedType
@@ -26,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// <summary>
 		///		The logger.
 		/// </summary>
-		private ILog _log = LogManager.GetLogger(typeof(ColourManager));
+		private readonly ILog _log = LogManager.GetLogger(typeof(ColourManager));
 
 		/// <summary>
 		///     The path for the Sigma light style theme.
@@ -270,8 +267,25 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			ReplacePrimaryColor(_primaryColor);
 			ReplaceSecondaryColor(_secondaryColor);
 			SetLightDark(_dark);
-
 			ApplyStyle(_alternate);
+		}
+
+		/// <summary>
+		///     Force an update of all values.
+		/// </summary>
+		public void ForceUpdate()
+		{
+			PrimaryColor = PrimaryColor;
+			SecondaryColor = SecondaryColor;
+
+			// HACK: I really don't know why this is required
+			if (Dark)
+			{
+				Dark = false;
+				Dark = true;
+			}
+
+			Alternate = Alternate;
 		}
 
 		/// <summary>
@@ -287,15 +301,6 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 
 			LoadNewSigmaStyle(dark);
 
-			//Fix the MenuBar
-			Brush correctBrush = (dark
-				? UIResources.IdealForegroundColorBrush
-				: Application.Current.Resources["SigmaMenuItemForegroundLight"]) as Brush;
-
-			Style newStyle = new Style(typeof(MenuItem), Application.Current.Resources["SigmaMaterialDesignMenuItem"] as Style);
-			newStyle.Setters.Add(new Setter(MenuItem.ForegroundProperty, correctBrush));
-			Application.Current.Resources[typeof(MenuItem)] = newStyle;
-
 			_log.Debug($"The window is now {(dark ? "dark" : "light")}.");
 		}
 
@@ -310,6 +315,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		{
 			ResourceDictionary oldSigmaResourceDictionary = dark ? _sigmaStyleLightDictionary : _sigmaStyleDarkDictionary;
 			ResourceDictionary newSigmaResourceDictionary = dark ? _sigmaStyleDarkDictionary : _sigmaStyleLightDictionary;
+
 			ResourceDictionary oldCustomResourceDictionary = dark ? _customStyleLightDictionary : _customStyleDarkDictionary;
 			ResourceDictionary newCustomResourceDictionary = dark ? _customStyleDarkDictionary : _customStyleLightDictionary;
 
@@ -350,7 +356,6 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			}
 			catch (ArgumentOutOfRangeException e)
 			{
-
 				throw new InvalidOperationException($"{secondaryColor.Name} cannot be used as secondary colour.", e);
 			}
 		}

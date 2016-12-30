@@ -3,5 +3,6 @@
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="SigmaGrid/CardColoursLight.xaml" />
+		<ResourceDictionary Source="TitleBar/MenuStyleLight.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
