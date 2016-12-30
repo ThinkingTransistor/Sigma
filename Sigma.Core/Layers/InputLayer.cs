@@ -22,12 +22,12 @@ namespace Sigma.Core.Layers
 		{
 			// external to indicate that these parameters are not only external (which should already be indicate with the InputsExternal flag in the layer construct and buffer)
 			//	but also that they mark the boundaries of the entire network (thereby external to the network, not only external as in external source)
-			ExpectedInputs = new[] { "externalDefault" };
+			ExpectedInputs = new[] { parameters.Get<string>("external_input_alias") };
 		}
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			buffer.Outputs["default"]["activations"] = buffer.Inputs["externalDefault"]["activations"];
+			buffer.Outputs["default"]["activations"] = buffer.Inputs[buffer.Parameters.Get<string>("external_input_alias")]["activations"];
 		}
 
 		public static LayerConstruct Construct(params long[] shape)
@@ -37,10 +37,16 @@ namespace Sigma.Core.Layers
 
 		public static LayerConstruct Construct(string name, params long[] shape)
 		{
+			return Construct(name, "external_default", shape);
+		}
+
+		public static LayerConstruct Construct(string name, string inputAlias, params long[] shape)
+		{
 			NDArrayUtils.CheckShape(shape);
 			LayerConstruct construct = new LayerConstruct(name, typeof(InputLayer));
 
-			construct.ExternalInputs = new[] { "externalDefault" };
+			construct.ExternalInputs = new[] { inputAlias };
+			construct.Parameters["external_input_alias"] = inputAlias;
 			construct.Parameters["shape"] = shape;
 
 			return construct;

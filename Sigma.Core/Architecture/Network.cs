@@ -67,6 +67,8 @@ namespace Sigma.Core.Architecture
 
 			Registry.Clear();
 
+			Registry["architecture"] = Architecture.Registry;
+
 			Registry layersRegistry = new Registry(Registry);
 			Registry["layers"] = layersRegistry;
 

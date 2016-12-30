@@ -10,7 +10,6 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using log4net;
 
 namespace Sigma.Core.Architecture.Linear
 {
@@ -22,7 +21,6 @@ namespace Sigma.Core.Architecture.Linear
 		public IRegistry Registry { get; }
 		public int LayerCount => _layerConstructs.Count;
 
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<LayerConstruct> _layerConstructs;
 
 		/// <summary>
@@ -53,6 +51,39 @@ namespace Sigma.Core.Architecture.Linear
 		{
 			Registry["type"] = "linear";
 			Registry["layercount"] = LayerCount;
+
+			Registry layersRegistry = new Registry(Registry);
+			Registry["layers"] = layersRegistry;
+
+			ResolveAllNames();
+
+			foreach (LayerConstruct construct in YieldLayerConstructsOrdered())
+			{
+				Registry layerRegistry = new Registry(layersRegistry, "layerarchitecture");
+				layersRegistry[construct.Name] = layerRegistry;
+
+				foreach (string input in construct.ExternalInputs)
+				{
+					layerRegistry["input_" + input] = "<external>";
+				}
+
+				foreach (string input in construct.Inputs.Keys)
+				{
+					layerRegistry["input_" + input] = construct.Inputs[input].Name;
+				}
+
+				foreach (string output in construct.ExternalOutputs)
+				{
+					layerRegistry["output_" + output] = "<external>";
+				}
+
+				foreach (string output in construct.Outputs.Keys)
+				{
+					layerRegistry["output_" + output] = construct.Outputs[output].Name;
+				}
+			}
+
+			DesolveAllNames();
 		}
 
 		protected virtual LinearNetworkArchitecture Copy()
@@ -112,6 +143,22 @@ namespace Sigma.Core.Architecture.Linear
 			{
 				// TODO internal / external alias check
 
+				foreach (string externalInput in construct.ExternalInputs)
+				{
+					if (construct.Inputs.ContainsKey(externalInput))
+					{
+						throw new InvalidNetworkArchitectureException($"Input {externalInput} is marked as external but also registered as an internal input from construct {construct.Inputs[externalInput]}");
+					}
+				}
+
+				foreach (string externalOutput in construct.ExternalOutputs)
+				{
+					if (construct.Outputs.ContainsKey(externalOutput))
+					{
+						throw new InvalidNetworkArchitectureException($"Output {externalOutput} is marked as external but also registered as an internal output to construct {construct.Outputs[externalOutput]}");
+					}
+				}
+
 				foreach (LayerConstruct previousConstruct in previousConstructs)
 				{
 					if (construct.Outputs.Values.Contains(previousConstruct))
@@ -122,8 +169,6 @@ namespace Sigma.Core.Architecture.Linear
 
 				previousConstructs.Add(construct);
 			}
-
-			
 		}
 
 		public void ResolveAllNames()
@@ -137,6 +182,11 @@ namespace Sigma.Core.Architecture.Linear
 					_layerConstructs[i].Name = _layerConstructs[i].UnresolvedName.Replace("#", i.ToString(formatString));
 				}
 			}
+		}
+
+		internal void DesolveAllNames()
+		{
+			_layerConstructs.ForEach(construct => construct.Name = construct.UnresolvedName);
 		}
 
 		public LinearNetworkArchitecture AppendEnd(LinearNetworkArchitecture other)
@@ -227,7 +277,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			if (multiplier >= 2)
 			{
-				if (self._layerConstructs.Any(construct => !construct.Name.Contains('#')))
+				if (self._layerConstructs.Any(construct => !construct.UnresolvedName.Contains('#')))
 				{
 					throw new ArgumentException("Attempted to multiply linear network architecture containing layer construct with static name, which cannot be multiplied. Include '#' in layer name for dynamic auto naming.");
 				}

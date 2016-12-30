@@ -24,9 +24,7 @@ namespace Sigma.Core.Layers
 		protected BaseLayer(string name, IRegistry parameters, IComputationHandler handler)
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
-
 			if (parameters == null) throw new ArgumentNullException(nameof(parameters));
-
 			if (handler == null) throw new ArgumentNullException(nameof(parameters));
 
 			Name = name;
