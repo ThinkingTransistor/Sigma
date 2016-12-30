@@ -135,6 +135,11 @@ namespace Sigma.Core.Architecture
 			_logger.Info($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
+		public void Run(IComputationHandler handler)
+		{
+			throw new NotImplementedException();
+		}
+
 		public IEnumerable<ILayer> YieldLayersOrdered()
 		{
 			return _orderedLayers;

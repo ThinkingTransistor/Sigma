@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Architecture;
+using Sigma.Core.Handlers;
 
 namespace Sigma.Core.Training.Optimisers
 {
@@ -16,14 +17,11 @@ namespace Sigma.Core.Training.Optimisers
 	public interface IOptimiser
 	{
 		/// <summary>
-		/// The network to optimise.
-		/// </summary>
-		INetwork Network { get; }
-
-		/// <summary>
 		/// Run a single iteration of the network (model) optimisation process (forward and backward pass). 
 		/// Note: The gradients are typically used to update the parameters in a certain way to optimise the network.
 		/// </summary>
-		void RunIteration();
+		/// <param name="network">The network to optimise.</param>
+		/// <param name="handler">The computation handler to use.</param>
+		void Run(INetwork network, IComputationHandler handler);
 	}
 }

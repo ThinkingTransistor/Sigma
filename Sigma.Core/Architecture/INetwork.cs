@@ -46,6 +46,12 @@ namespace Sigma.Core.Architecture
 		void Initialise(IComputationHandler handler);
 
 		/// <summary>
+		/// Run this network (forward pass). All external inputs and outputs must already be supplied and linked. 
+		/// </summary>
+		/// <param name="handler"></param>
+		void Run(IComputationHandler handler);
+
+		/// <summary>
 		/// Get the layers of this network in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>
