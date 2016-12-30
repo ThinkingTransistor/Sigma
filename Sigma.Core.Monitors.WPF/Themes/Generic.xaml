@@ -53,16 +53,17 @@
 					TargetType="{x:Type statusBar:TaskVisualizer}">
 					<Border Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
-							BorderThickness="{TemplateBinding BorderThickness}">
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Margin="{TemplateBinding Margin}">
 
-						<StackPanel Orientation="Horizontal">
+						<StackPanel Orientation="Horizontal" 
+									Visibility="{TemplateBinding Visibility}">
 
 							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-										 Value="0"
+										 Value="{TemplateBinding Progress}"
 										 IsIndeterminate="{TemplateBinding IsIndeterminate}"
-										 Margin="{TemplateBinding Margin}"
 										 Foreground="{TemplateBinding ProgressColorBrush}">
-								
+
 								<ProgressBar.ToolTip>
 									<ToolTip Content="{TemplateBinding Progress}"
 											 ContentStringFormat="{}{0}%"/>
@@ -73,7 +74,8 @@
 								   VerticalAlignment="Center"
 								   FontSize="{TemplateBinding FontSize}"
 								   FontFamily="{TemplateBinding FontFamily}"
-								   Content="Downloading files" />
+								   Content="{TemplateBinding ActiveExpressedType}"
+								   ToolTip="{TemplateBinding ActiveTaskDescription}"/>
 
 							<StackPanel Orientation="Horizontal">
 

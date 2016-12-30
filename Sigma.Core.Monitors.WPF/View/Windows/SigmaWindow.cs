@@ -104,7 +104,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				other.Children.Add(this);
 			}
 
-			Closed += (sender, args) => IsAlive = false;
+			Closed += (sender, args) =>
+			{
+				IsAlive = false;
+				PropagateAction(window =>
+				{
+					window.Children.Remove(this);
+					if (ReferenceEquals(window.ParentWindow, this))
+					{
+						window.Close();
+					}
+				});
+			};
 
 			InitialiseDefaultValues();
 

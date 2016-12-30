@@ -11,9 +11,9 @@ using System;
 namespace Sigma.Core.Utils
 {
 	/// <summary>
-	/// The <see cref="TaskEventArgs"/> that will be passed, when a change occurs. 
+	/// The <see cref="TaskProgressEventArgs"/> that will be passed, when a change occurs. 
 	/// </summary>
-	public class TaskEventArgs : EventArgs
+	public class TaskProgressEventArgs : EventArgs
 	{
 		/// <summary>
 		/// The previous value of the progress.
@@ -25,7 +25,7 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		public float NewValue { get; set; }
 
-		public TaskEventArgs(float previousVale, float newValue)
+		public TaskProgressEventArgs(float previousVale, float newValue)
 		{
 			PreviousValue = previousVale;
 			NewValue = newValue;
@@ -77,7 +77,7 @@ namespace Sigma.Core.Utils
 		/// This event will be raised when the progress is changed, or the <see cref="Status"/>
 		/// of the <see cref="ITaskObserver"/> changes. 
 		/// </summary>
-		event EventHandler<TaskEventArgs> ProgressChanged;
+		event EventHandler<TaskProgressEventArgs> ProgressChanged;
 	}
 
 	/// <summary>
@@ -99,7 +99,7 @@ namespace Sigma.Core.Utils
 			{
 				if (_progress != value)
 				{
-					OnProgressChanged(new TaskEventArgs(_progress, value));
+					OnProgressChanged(new TaskProgressEventArgs(_progress, value));
 					_progress = value;
 				}
 			}
@@ -109,7 +109,7 @@ namespace Sigma.Core.Utils
 		public ITaskType Type { get; set; }
 		public DateTime StartTime { get; set; }
 		public TimeSpan TimeSinceStarted => DateTime.Now - StartTime;
-		public event EventHandler<TaskEventArgs> ProgressChanged;
+		public event EventHandler<TaskProgressEventArgs> ProgressChanged;
 
 		public TaskObserver(ITaskType type, string description = null, bool exposed = true)
 		{
@@ -137,7 +137,7 @@ namespace Sigma.Core.Utils
 			//Console.WriteLine($"{Type.ExpressedType} {Description} ({Progress * 100:00.0}%)");
 		}
 
-		private void OnProgressChanged(TaskEventArgs args)
+		private void OnProgressChanged(TaskProgressEventArgs args)
 		{
 			ProgressChanged?.Invoke(this, args);
 		}

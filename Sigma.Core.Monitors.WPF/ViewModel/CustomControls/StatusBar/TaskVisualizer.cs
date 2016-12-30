@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Globalization;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
@@ -18,17 +16,27 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 	{
 		#region DependencyProperties
 
-		public static readonly DependencyProperty ProgressColorBrushProperty = DependencyProperty.Register(nameof(ProgressColorBrush),
-			typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.White));
+		public static readonly DependencyProperty ProgressColorBrushProperty =
+			DependencyProperty.Register(nameof(ProgressColorBrush),
+				typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.White));
 
 		public static readonly DependencyProperty TextColorBrushProperty = DependencyProperty.Register(nameof(TextColorBrush),
 			typeof(Brush), typeof(TaskVisualizer), new PropertyMetadata(Brushes.Black));
 
-		public static readonly DependencyProperty IsIndeterminateProperty = DependencyProperty.Register(nameof(IsIndeterminate),
-			typeof(bool), typeof(TaskVisualizer), new PropertyMetadata(true));
+		public static readonly DependencyProperty IsIndeterminateProperty =
+			DependencyProperty.Register(nameof(IsIndeterminate),
+				typeof(bool), typeof(TaskVisualizer), new PropertyMetadata(true));
 
 		public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(nameof(Progress),
-			typeof(string), typeof(TaskVisualizer), new PropertyMetadata("?"));
+			typeof(double), typeof(TaskVisualizer), new PropertyMetadata(0d));
+
+		public static readonly DependencyProperty ActiveTaskDescriptionProperty =
+			DependencyProperty.Register(nameof(ActiveTaskDescription),
+				typeof(string), typeof(TaskVisualizer), new PropertyMetadata(null));
+
+
+		public static readonly DependencyProperty ActiveExpressedTypeProperty = DependencyProperty.Register(nameof(ActiveExpressedType),
+			typeof(string), typeof(TaskVisualizer), new PropertyMetadata(null));
 
 		#endregion DependencyProperties
 
@@ -52,41 +60,32 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 			set { SetValue(IsIndeterminateProperty, value); }
 		}
 
-		public string Progress
+		public double Progress
 		{
-			get { return (string) GetValue(ProgressProperty); }
+			get { return (double) GetValue(ProgressProperty); }
 			set { SetValue(ProgressProperty, value); }
+		}
+
+		public string ActiveTaskDescription
+		{
+			get { return (string) GetValue(ActiveTaskDescriptionProperty); }
+			set { SetValue(ActiveTaskDescriptionProperty, value); }
+		}
+
+		public string ActiveExpressedType
+		{
+			get { return (string) GetValue(ActiveExpressedTypeProperty); }
+			set { SetValue(ActiveExpressedTypeProperty, value); }
 		}
 
 		#endregion Properties
 
-		private ITaskObserver _task;
-
-		public ITaskObserver Task
-		{
-			get { return _task; }
-			set
-			{
-				if (value == null || value.Progress >= 0)
-				{
-					Progress = "?";
-				}
-				else
-				{
-					Progress = (value.Progress * 100).ToString(CultureInfo.CurrentCulture);
-				}
-
-				_task = value;
-			}
-		}
-
-		public ObservableCollection<ITaskObserver> Tasks { get; } = new ObservableCollection<ITaskObserver>();
-
-		private readonly BackgroundWorker _visualisationWorker;
+		public ITaskObserver ActiveTask { get; private set; }
 
 		static TaskVisualizer()
 		{
-			DefaultStyleKeyProperty.OverrideMetadata(typeof(TaskVisualizer), new FrameworkPropertyMetadata(typeof(TaskVisualizer)));
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(TaskVisualizer),
+				new FrameworkPropertyMetadata(typeof(TaskVisualizer)));
 
 			//TODO: fix margin
 			//MarginProperty.OverrideMetadata();
@@ -94,29 +93,44 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
 
 		public TaskVisualizer()
 		{
-			_visualisationWorker = new BackgroundWorker();
+			SetActive(null);
 		}
 
 		public void SetActive(ITaskObserver task)
 		{
-			if (task == null)
+			if (task != null)
 			{
-				throw new ArgumentNullException(nameof(task));
+				Visibility = Visibility.Visible;
+
+				task.ProgressChanged += UpdatedTask;
+
+				ActiveExpressedType = task.Type.ExpressedType;
+				ActiveTaskDescription = task.Description;
+			}
+			else
+			{
+				Visibility = Visibility.Hidden;
 			}
 
-			_task = task;
+			if (ActiveTask != null)
+			{
+				ActiveTask.ProgressChanged -= UpdatedTask;
+			}
 
-			task.ProgressChanged += UpdatedTask;
+			ActiveTask = task;
 		}
 
-		private void UpdatedTask(object sender, TaskEventArgs args)
+		private void UpdatedTask(object sender, TaskProgressEventArgs args)
 		{
-			Progress = (args.NewValue * 100).ToString(CultureInfo.CurrentCulture);
-
-			if (Task.Status != TaskObserveStatus.Running)
+			Dispatcher.Invoke(() =>
 			{
-				Task.ProgressChanged -= UpdatedTask;
-			}
+				Progress = Math.Round(args.NewValue * 100);
+
+				if (Progress < 0)
+				{
+					Progress = 0;
+				}
+			});
 		}
 	}
 }

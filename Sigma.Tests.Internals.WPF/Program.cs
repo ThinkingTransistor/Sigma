@@ -6,6 +6,13 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using MaterialDesignColors;
 using Sigma.Core;
+using Sigma.Core.Data.Datasets;
+using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Iterators;
+using Sigma.Core.Data.Preprocessors;
+using Sigma.Core.Data.Readers;
+using Sigma.Core.Data.Sources;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
@@ -34,11 +41,17 @@ namespace Sigma.Tests.Internals.WPF
 			public int SomeInt { get; set; }
 		}
 
+		public static MinibatchIterator TrainingIterator;
+
 		private static void Main(string[] args)
 		{
+			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			WPFMonitor guiMonitor = sigma.AddMonitor(new WPFMonitor("Sigma GUI Demo"));
+
+			InitializeDownload(guiMonitor, sigma);
 
 			IRegistry reg = new Registry(guiMonitor.Registry);
 			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
@@ -56,6 +69,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.WindowDispatcher(window => { window.TitleCharacterCasing = CharacterCasing.Normal; });
 
 			sigma.Prepare();
+
 
 			guiMonitor.WindowDispatcher(window =>
 			{
@@ -89,6 +103,7 @@ namespace Sigma.Tests.Internals.WPF
 				tab.AddCumulativePanel(new EmptyPanel("Empty panel"), 2);
 			});
 
+
 			guiMonitor.ColourManager.Dark = true;
 			guiMonitor.ColourManager.Alternate = true;
 			guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.BlueGrey;
@@ -96,6 +111,35 @@ namespace Sigma.Tests.Internals.WPF
 
 			//SwitchColor(guiMonitor);
 		}
+
+		private static void InitializeDownload(WPFMonitor guiMonitor, SigmaEnvironment sigma)
+		{
+			guiMonitor.Registry["environment"] = sigma;
+
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28,
+				source:
+				new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"),
+					new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
+
+			ByteRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L });
+
+			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1,
+				source:
+				new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"),
+					new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			IRecordExtractor mnistTargetExtractor =
+				mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L })
+					.Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+
+			guiMonitor.Registry["handler"] = new CpuFloat32Handler();
+
+			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
+			IDataset trainingData = slices[0];
+
+			guiMonitor.Registry["iterator"] = new MinibatchIterator(1, trainingData);
+		}
+
 
 		private static void CreateDefaultCards(TabUI tab)
 		{

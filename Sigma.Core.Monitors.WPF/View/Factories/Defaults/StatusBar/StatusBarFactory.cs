@@ -106,7 +106,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		public UIElement CreatElement(Application app, Window window, params object[] parameters)
 		{
 			IUIFactory<UIElement> customFactory = EnsureRegistry(CustomFactoryIdentifier, null);
-			IUIFactory<UIElement> taskVisualizerFactory = EnsureRegistry(TaskVisualizerFactoryIdentifier, () => new TaskVisualizerFactory(3));
+			IUIFactory<UIElement> taskVisualizerFactory = EnsureRegistry(TaskVisualizerFactoryIdentifier, () => new TaskVisualisationManager(3));
 			IUIFactory<UIElement> legendFactory = EnsureRegistry(LegendFactoryIdentifier, () => new StatusBarLegendFactory());
 
 			Grid statusBarGrid = new Grid
