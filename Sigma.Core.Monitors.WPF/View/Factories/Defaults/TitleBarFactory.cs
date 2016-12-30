@@ -62,43 +62,63 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 #if DEBUG
 			AddSigmaFunction((app, window) => new TitleBarItem("Debug", "Download testset", (Action) (() =>
-			{
-				BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
-				IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
-				SigmaEnvironment environment = window.Monitor.Registry["environment"] as SigmaEnvironment;
-
-				new Thread(() => iterator?.Yield(handler, environment).First()).Start();
-
-				Debug.WriteLine($"Clicked - iterator: {iterator}, handler: {handler}, environment: {environment} ");
-			}), "10 second long task", (Action) (() =>
-			{
-				new Thread(() =>
 				{
-					try
-					{
-						ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, "http://facebook.com");
+					BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
+					IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
+					SigmaEnvironment environment = window.Monitor.Registry["environment"] as SigmaEnvironment;
 
-						for (int i = 0; i <= 100; i++)
+					new Thread(() => iterator?.Yield(handler, environment).First()).Start();
+
+					Debug.WriteLine($"Clicked - iterator: {iterator}, handler: {handler}, environment: {environment} ");
+				}), "10 second long task", (Action) (() =>
+				{
+					new Thread(() =>
+					{
+						try
 						{
-							task.Progress = i / 100.0f;
+							ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, "http://somedataset.com");
 
-							Thread.Sleep(100);
+							for (int i = 0; i <= 100; i++)
+							{
+								task.Progress = i / 100.0f;
+
+								Thread.Sleep(100);
+							}
+
+							SigmaEnvironment.TaskManager.EndTask(task);
+
+							ITaskObserver task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
+							Thread.Sleep(1000);
+
+							SigmaEnvironment.TaskManager.EndTask(task2);
 						}
+						catch (Exception)
+						{
 
-						SigmaEnvironment.TaskManager.EndTask(task);
-
-						ITaskObserver task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
-						task2.Progress = -1;
-						Thread.Sleep(1000);
-
-						SigmaEnvironment.TaskManager.EndTask(task2);
-					}
-					catch (Exception)
+						}
+					}).Start();
+				}),
+				"5 second long task",
+				(Action) (() =>
+				{
+					new Thread(() =>
 					{
+						try
+						{
+							ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Preprocess, "Indeterminate task");
 
-					}
-				}).Start();
-			})));
+							Thread.Sleep(5000);
+
+							SigmaEnvironment.TaskManager.EndTask(task);
+						}
+						catch (Exception)
+						{
+
+						}
+					}).Start();
+				})
+
+			));
 #endif
 
 			AddSigmaFunction((app, window) => new TitleBarItem("Settings", "Toggle Dark",

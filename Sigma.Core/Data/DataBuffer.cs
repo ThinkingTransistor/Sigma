@@ -10,7 +10,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Sigma.Core.Utils;
-using static DiffSharp.Util;
 
 namespace Sigma.Core.Data
 {

@@ -29,7 +29,7 @@ namespace Sigma.Core.Architecture
 		string Name { get; }
 
 		/// <summary>
-		/// The registry containing all layers and relevant parameters.
+		/// The registry containing all relevant parameters and meaningful sub-registries (e.g. layers, architecture).
 		/// </summary>
 		IRegistry Registry { get; }
 
@@ -56,5 +56,17 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered();
+
+		/// <summary>
+		/// Get the layer buffers of this network that are marked as having external inputs.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers();
+
+		/// <summary>
+		/// Get the layer buffers of this network that are marked as having external outputs.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers();
 	}
 }

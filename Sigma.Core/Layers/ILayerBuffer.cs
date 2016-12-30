@@ -27,6 +27,18 @@ namespace Sigma.Core.Layers
 		IRegistry Parameters { get; }
 
 		/// <summary>
+		/// Indicate if the inputs of this layer are supplied externally.
+		/// If set, this layer cannot have any internal inputs.
+		/// </summary>
+		bool InputsExternal { get; }
+
+		/// <summary>
+		/// Indicate if the outputs of this layer are supplied externally.
+		/// If set, this layer cannot have any internal outputs.
+		/// </summary>
+		bool OutputsExternal { get; }
+
+		/// <summary>
 		/// The alias-named inputs for a layer.
 		/// </summary>
 		IDictionary<string, IRegistry> Inputs { get; }

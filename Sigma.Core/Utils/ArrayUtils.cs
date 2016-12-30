@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 
 namespace Sigma.Core.Utils
 {

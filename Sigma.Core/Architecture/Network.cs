@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.Utils;
@@ -20,7 +21,10 @@ namespace Sigma.Core.Architecture
 		public string Name { get; }
 		public IRegistry Registry { get; }
 
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
+		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
+		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
 		private List<ILayer> _orderedLayers;
 
 		public Network(string name = "unnamed")
@@ -28,8 +32,10 @@ namespace Sigma.Core.Architecture
 			if (name == null) throw new ArgumentNullException(nameof(name));
 
 			Name = name;
-			Registry = new Registry();
+			Registry = new Registry(tags: "network");
 			_orderedLayerBuffers = new List<InternalLayerBuffer>();
+			_externalInputsLayerBuffers = new List<InternalLayerBuffer>();
+			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
 		}
 
 		public void Validate()
@@ -49,10 +55,18 @@ namespace Sigma.Core.Architecture
 				throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
 			}
 
+			_logger.Info($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
+
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare);
+
 			Architecture.ResolveAllNames();
 
 			_orderedLayerBuffers.Clear();
+			_externalInputsLayerBuffers.Clear();
+			_externalOutputsLayerBuffers.Clear();
+
 			Registry.Clear();
+
 			Registry layersRegistry = new Registry(Registry);
 			Registry["layers"] = layersRegistry;
 
@@ -100,10 +114,27 @@ namespace Sigma.Core.Architecture
 					}
 				}
 
-				_orderedLayerBuffers.Add(new InternalLayerBuffer(layer, layerConstruct.Parameters, inputs, outputs));
+				InternalLayerBuffer layerBuffer = new InternalLayerBuffer(layer, layerConstruct.Parameters, inputs, outputs,
+					layerConstruct.InputsExternal, layerConstruct.OutputsExternal);
+
+				_orderedLayerBuffers.Add(layerBuffer);
+
+				if (layerConstruct.InputsExternal)
+				{
+					_externalInputsLayerBuffers.Add(layerBuffer);
+				}
+
+				if (layerConstruct.OutputsExternal)
+				{
+					_externalOutputsLayerBuffers.Add(layerBuffer);
+				}
 			}
 
 			_orderedLayers = _orderedLayerBuffers.ConvertAll(buffer => buffer.Layer);
+
+			SigmaEnvironment.TaskManager.EndTask(prepareTask);
+
+			_logger.Info($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
 		public IEnumerable<ILayer> YieldLayersOrdered()
@@ -114,6 +145,16 @@ namespace Sigma.Core.Architecture
 		public IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered()
 		{
 			return _orderedLayerBuffers;
+		}
+
+		public IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers()
+		{
+			return _externalInputsLayerBuffers;
+		}
+
+		public IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers()
+		{
+			return _externalOutputsLayerBuffers;
 		}
 	}
 }

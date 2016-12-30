@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
 {
@@ -21,12 +22,18 @@ namespace Sigma.Core.Architecture
 		int LayerCount { get; }
 
 		/// <summary>
+		/// A registry containing all relevant parameters and sub-registries (e.g. layer constructs).
+		/// </summary>
+		IRegistry Registry { get; }
+
+		/// <summary>
 		/// Validate this network architecture. 
 		/// </summary
 		void Validate();
 
 		/// <summary>
-		/// Resolve all layer names to be fully qualified (irreversible). 
+		/// Resolve all layer names to be fully qualified.
+		/// Note: Unresolved names are stored to enable consistency when changing the architecture and re-resolving the layer names.
 		/// </summary>
 		void ResolveAllNames();
 

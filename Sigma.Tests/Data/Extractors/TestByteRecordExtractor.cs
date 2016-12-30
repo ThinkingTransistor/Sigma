@@ -2,7 +2,6 @@
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends;
 using System;
 using System.Collections.Generic;
 using System.IO;
