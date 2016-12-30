@@ -44,6 +44,7 @@ namespace Sigma.Core.Utils
 			}
 
 			ITaskObserver observer = new TaskObserver(taskType, taskDescription, exposed);
+			OnTaskCreated(observer);
 
 			observer.Status = TaskObserveStatus.Running;
 			observer.StartTime = DateTime.Now;
@@ -57,8 +58,6 @@ namespace Sigma.Core.Utils
 			{
 				_runningObservers.Add(observer);
 			}
-
-			OnTaskCreated(observer);
 
 			return observer;
 		}

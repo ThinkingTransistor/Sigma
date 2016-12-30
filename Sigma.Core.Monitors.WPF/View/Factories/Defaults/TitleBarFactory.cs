@@ -61,7 +61,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 
 #if DEBUG
-			AddSigmaFunction((app, window) => new TitleBarItem("Debug", "Download testset", (Action) (() =>
+			AddSigmaFunction((app, window) => new TitleBarItem("Debug", "Download mnist", (Action) (() =>
 				{
 					BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
 					IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
@@ -74,46 +74,63 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				{
 					new Thread(() =>
 					{
+						ITaskObserver task = null;
 						try
 						{
-							ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, "http://somedataset.com");
+							task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, "http://somedataset.com");
 
-							for (int i = 0; i <= 100; i++)
+							for (float i = 0; i <= 1; i += 0.0010f)
 							{
-								task.Progress = i / 100.0f;
+								task.Progress = i;
 
-								Thread.Sleep(100);
+								Thread.Sleep(10);
 							}
-
-							SigmaEnvironment.TaskManager.EndTask(task);
-
-							ITaskObserver task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
-							Thread.Sleep(1000);
-
-							SigmaEnvironment.TaskManager.EndTask(task2);
 						}
 						catch (Exception)
 						{
 
 						}
+						finally
+						{
+							SigmaEnvironment.TaskManager.EndTask(task);
+						}
+
+						ITaskObserver task2 = null;
+						try
+						{
+							task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
+							Thread.Sleep(1000);
+
+						}
+						catch (Exception)
+						{
+
+						}
+						finally
+						{
+							SigmaEnvironment.TaskManager.EndTask(task2);
+						}
+
 					}).Start();
 				}),
-				"5 second long task",
+				"5 second indeterminate task",
 				(Action) (() =>
 				{
 					new Thread(() =>
 					{
+						ITaskObserver task = null;
 						try
 						{
-							ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Preprocess, "Indeterminate task");
-
+							task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Preprocess, "Indeterminate task");
 							Thread.Sleep(5000);
-
-							SigmaEnvironment.TaskManager.EndTask(task);
 						}
 						catch (Exception)
 						{
 
+						}
+						finally
+						{
+							SigmaEnvironment.TaskManager.EndTask(task);
 						}
 					}).Start();
 				})

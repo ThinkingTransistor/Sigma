@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
-using Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar;
+using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
 
 namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 {

@@ -208,8 +208,12 @@ namespace Sigma.Core.Monitors.WPF
 				lock (_onWindowStartup)
 				{
 					if (_onWindowStartup != null)
+					{
 						foreach (Action<object> action in _onWindowStartup)
+						{
 							_app.Startup += (sender, args) => action?.Invoke(Window);
+						}
+					}
 
 					_app.Startup += (sender, args) => _onWindowStartupExecuted = true;
 

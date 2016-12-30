@@ -93,7 +93,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				}
 
 				if (newElementKey == null)
+				{
 					newElementKey = newElement.ToString();
+				}
 
 				//Add the content to the dictionary and the
 				//UIElement itself

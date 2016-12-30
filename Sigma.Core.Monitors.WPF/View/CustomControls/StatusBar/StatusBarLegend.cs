@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar
+namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 {
 	public class StatusBarLegend : Control
 	{

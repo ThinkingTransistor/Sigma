@@ -35,6 +35,16 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			"pack://application:,,,/Sigma.Core.Monitors.WPF;component/Themes/Styles/DarkStyle.xaml";
 
 		/// <summary>
+		/// Custom absolute path for a light theme
+		/// </summary>
+		public string CustomLightPath { get; set; }
+
+		/// <summary>
+		/// Custom absolute path for a dark theme
+		/// </summary>
+		public string CustomDarkPath { get; set; }
+
+		/// <summary>
 		///     Option for an alternate style for tabs.
 		/// </summary>
 		private bool _alternate;
@@ -77,6 +87,20 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     has been called.
 		/// </summary>
 		private ResourceDictionary _sigmaStyleLightDictionary;
+
+		/// <summary>
+		///     The resource dictionary for a custom light theme.
+		///     This parameter is null until the application started event
+		///     has been called.
+		/// </summary>
+		private ResourceDictionary _customStyleLightDictionary;
+
+		/// <summary>
+		///     The resource dictionary for a custom dark theme.
+		///     This parameter is null until the application started event
+		///     has been called.
+		/// </summary>
+		private ResourceDictionary _customStyleDarkDictionary;
 
 		/// <summary>
 		///     The corresponding <see cref="SigmaWindow" />.
@@ -203,8 +227,18 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// <param name="e">The <see cref="StartupEventArgs" />.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
-			_sigmaStyleLightDictionary = new ResourceDictionary {Source = new Uri(SIGMA_STYLE_LIGHT_PATH, UriKind.Absolute)};
-			_sigmaStyleDarkDictionary = new ResourceDictionary {Source = new Uri(SIGMA_STYLE_DARK_PATH, UriKind.Absolute)};
+			_sigmaStyleLightDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_LIGHT_PATH, UriKind.Absolute) };
+			_sigmaStyleDarkDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_DARK_PATH, UriKind.Absolute) };
+
+			if (CustomLightPath != null)
+			{
+				_customStyleLightDictionary = new ResourceDictionary { Source = new Uri(CustomLightPath, UriKind.Absolute) };
+			}
+
+			if (CustomDarkPath != null)
+			{
+				_customStyleDarkDictionary = new ResourceDictionary { Source = new Uri(CustomDarkPath, UriKind.Absolute) };
+			}
 
 			_appStarted = true;
 
@@ -247,14 +281,30 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// </param>
 		private void LoadNewSigmaStyle(bool dark)
 		{
-			ResourceDictionary oldResourceDictionary = dark ? _sigmaStyleLightDictionary : _sigmaStyleDarkDictionary;
-			ResourceDictionary newResourceDictionary = dark ? _sigmaStyleDarkDictionary : _sigmaStyleLightDictionary;
+			ResourceDictionary oldSigmaResourceDictionary = dark ? _sigmaStyleLightDictionary : _sigmaStyleDarkDictionary;
+			ResourceDictionary newSigmaResourceDictionary = dark ? _sigmaStyleDarkDictionary : _sigmaStyleLightDictionary;
+			ResourceDictionary oldCustomResourceDictionary = dark ? _customStyleLightDictionary : _customStyleDarkDictionary;
+			ResourceDictionary newCustomResourceDictionary = dark ? _customStyleDarkDictionary : _customStyleLightDictionary;
 
-			if (!App.Resources.MergedDictionaries.Contains(newResourceDictionary))
-				App.Resources.MergedDictionaries.Add(newResourceDictionary);
+			if (!App.Resources.MergedDictionaries.Contains(newSigmaResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Add(newSigmaResourceDictionary);
+			}
 
-			if (App.Resources.MergedDictionaries.Contains(oldResourceDictionary))
-				App.Resources.MergedDictionaries.Remove(oldResourceDictionary);
+			if (App.Resources.MergedDictionaries.Contains(oldSigmaResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Remove(oldSigmaResourceDictionary);
+			}
+
+			if (newCustomResourceDictionary != null && !App.Resources.MergedDictionaries.Contains(newCustomResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Add(newCustomResourceDictionary);
+			}
+
+			if (oldCustomResourceDictionary != null && App.Resources.MergedDictionaries.Contains(oldCustomResourceDictionary))
+			{
+				App.Resources.MergedDictionaries.Remove(oldCustomResourceDictionary);
+			}
 		}
 
 		/// <summary>

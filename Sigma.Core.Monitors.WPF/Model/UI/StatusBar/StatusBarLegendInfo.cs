@@ -2,7 +2,7 @@
 using System.Windows.Media;
 using MaterialDesignColors;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.ViewModel.CustomControls.StatusBar;
+using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
 using static Sigma.Core.Monitors.WPF.Model.UI.Resources.MaterialDesignValues;
 
 namespace Sigma.Core.Monitors.WPF.Model.UI.StatusBar

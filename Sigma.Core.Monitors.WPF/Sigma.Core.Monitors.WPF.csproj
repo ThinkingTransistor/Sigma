@@ -115,8 +115,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModel\CustomControls\StatusBar\StatusBarLegend.cs" />
-    <Compile Include="ViewModel\CustomControls\StatusBar\TaskVisualizer.cs" />
+    <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
+    <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
     <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />
     <Compile Include="ViewModel\StatusBar\TaskVisualizationManager.cs" />
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
@@ -127,7 +127,7 @@
     <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />
     <Compile Include="Model\SigmaGrid\GridExtensions.cs" />
-    <Compile Include="ViewModel\CustomControls\GridLayout.cs" />
+    <Compile Include="View\CustomControls\GridLayout.cs" />
     <Compile Include="View\Themes\ColourManager.cs" />
     <Compile Include="View\Themes\IColourManager.cs" />
     <Compile Include="Model\UI\Resources\MaterialDesignValues.cs" />
