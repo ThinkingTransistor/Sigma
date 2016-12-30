@@ -7,9 +7,9 @@ The following libraries / frameworks are used in the core project:
 
 | Library                             | Purpose                           |
 | :-----------------------------------|:----------------------------------|
-| [log4net](https://logging.apache.org/log4net/) | Logging, log4j for .NET |
-| [NUnit](https://www.nunit.org/) | Unit tests for .NET |
-| [DiffSharp](https://github.com/DiffSharp/DiffSharp), [Sigma.DiffSharp](https://github.com/GreekDictionary/Sigma.DiffSharp) | Functional automatic differentiation with various backends |
+| [log4net](https://logging.apache.org/log4net/) | Logging (log4j for .NET) |
+| [NUnit](https://www.nunit.org/) | Unit testing |
+| [DiffSharp](https://github.com/DiffSharp/DiffSharp), [Sigma.DiffSharp](https://github.com/GreekDictionary/Sigma.DiffSharp) | Functional automatic differentiation with ndarrays and various backends |
 | [SharpZipLib](http://www.icsharpcode.net/) | Compression and decompression of various formats (zip, tar, gz, bzip, gzip) |
 | [ManagedCuda](https://github.com/kunzmi/managedCuda), [ManagedCuda-CUBLAS](https://github.com/kunzmi/managedCuda) | Managed CUDA (GPU) and CuBLAS support |
 
