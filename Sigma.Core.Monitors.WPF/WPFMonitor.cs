@@ -94,7 +94,7 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			ColourManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
+			ColourManager = new ColourManager(MaterialDesignValues.Indigo, MaterialDesignValues.LightBlue);
 
 			_waitForStart = new ManualResetEvent(false);
 		}
@@ -160,7 +160,9 @@ namespace Sigma.Core.Monitors.WPF
 			lock (_onWindowStartup)
 			{
 				if (_onWindowStartupExecuted)
+				{
 					throw new NotImplementedException("Window has already been started - StatusBar update not supported (yet).");
+				}
 
 				AddLegends(Legends, legends);
 			}
@@ -253,11 +255,18 @@ namespace Sigma.Core.Monitors.WPF
 			if (typeof(T) != _windowType) throw new ArgumentException($"Type mismatch between {typeof(T)} and {_windowType}");
 
 			if (Window == null)
+			{
 				_onWindowStartup.Add(obj => action((T) obj));
+			}
 			else
+			{
 				Window.Dispatcher.Invoke(() => action((T) Window), priority);
+			}
 
-			if (onFinished != null) throw new NotImplementedException($"{nameof(onFinished)} not yet implemented... Sorry");
+			if (onFinished != null)
+			{
+				throw new NotImplementedException($"{nameof(onFinished)} not yet implemented... Sorry");
+			}
 		}
 
 		/// <summary>

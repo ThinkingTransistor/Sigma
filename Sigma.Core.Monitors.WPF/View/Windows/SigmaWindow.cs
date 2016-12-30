@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -26,14 +27,16 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
-	public class SigmaWindow : WPFWindow
+	public class SigmaWindow : WPFWindow, IDisposable
 	{
-
 		public const string RootPanelFactoryIdentifier = "rootpanel_factory";
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
 
+		public const string SigmaIconPath = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/Resources/sigma.ico";
+
+		public static bool UseSigmaIcon = true;
 
 		#region DependencyProperties
 
@@ -91,6 +94,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
 		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other) : base(monitor, app, title)
 		{
+			if (UseSigmaIcon)
+			{
+				Icon = new BitmapImage(new Uri(SigmaIconPath));
+			}
+
 			ParentWindow = other;
 			RootWindow = FindRoot(this);
 			Children = new List<SigmaWindow>();
@@ -111,6 +119,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				{
 					window.Children.Remove(this);
 				});
+				Dispose();
 			};
 
 			InitialiseDefaultValues();
@@ -191,8 +200,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		private void InitialiseDefaultValues()
 		{
-			MinHeight = 500;
-			MinWidth = 750;
+			MinHeight = 750;
+			MinWidth = 1000;
 			FontFamily = UIResources.FontFamily;
 			TitleAlignment = HorizontalAlignment.Center;
 		}
@@ -277,7 +286,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			if (!registry.ContainsKey(StatusBarFactoryIdentifier))
 			{
 				registry[StatusBarFactoryIdentifier] = new StatusBarFactory(registry, 32,
-					new GridLength(1, GridUnitType.Star), new GridLength(2, GridUnitType.Star), new GridLength(1, GridUnitType.Star));
+					new GridLength(3, GridUnitType.Star), new GridLength(1, GridUnitType.Star), new GridLength(3, GridUnitType.Star));
 			}
 		}
 
@@ -359,6 +368,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			Exception exception = (Exception) e.ExceptionObject;
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
+		}
+
+		public void Dispose()
+		{
 		}
 	}
 }

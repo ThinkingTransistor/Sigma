@@ -54,10 +54,10 @@
 					<Border Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
+							Visibility="{TemplateBinding Visibility}"
 							Margin="{TemplateBinding Margin}">
 
-						<StackPanel Orientation="Horizontal" 
-									Visibility="{TemplateBinding Visibility}">
+						<StackPanel Orientation="Horizontal">
 
 							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
 										 Value="{TemplateBinding Progress}"

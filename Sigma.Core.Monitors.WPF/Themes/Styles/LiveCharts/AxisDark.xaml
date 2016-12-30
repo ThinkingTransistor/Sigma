@@ -1,8 +1,12 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf">
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf">
 
 	<Style TargetType="lvc:Axis">
-		<Setter Property="Foreground" Value="White" />
+		<Setter Property="Foreground" Value="{StaticResource PrimaryHueDarkForegroundBrush}" />
 	</Style>
+	
+	<!--<Style TargetType="lvc:Separator">
+		<Setter Property="Stroke" Value="Red"></Setter>
+	</Style>-->
 </ResourceDictionary>

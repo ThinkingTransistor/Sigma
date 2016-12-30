@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,11 +12,13 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
-using Sigma.Core.Monitors.WPF.Panels;
+using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
+using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.View.Factories;
 using Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
@@ -45,7 +46,9 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+			log4net.Config.XmlConfigurator.Configure();
+
+			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
@@ -56,8 +59,6 @@ namespace Sigma.Tests.Internals.WPF
 			IRegistry reg = new Registry(guiMonitor.Registry);
 			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
 			reg.Add(StatusBarFactory.CustomFactoryIdentifier, new LambdaUIFactory((app, window, param) => new Label { Content = "Sigma is life, Sigma is love", Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, FontSize = UIResources.P1 }));
-
-			Debug.WriteLine(guiMonitor.Registry);
 
 			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Red));
 			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
@@ -73,6 +74,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			guiMonitor.WindowDispatcher(window =>
 			{
+				window.TabControl["Data"].AddCumulativePanel(new LogPanel("Log"), 3, 4);
 				TabUI tab = window.TabControl["Overview"];
 
 				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
@@ -104,17 +106,17 @@ namespace Sigma.Tests.Internals.WPF
 			});
 
 
-			guiMonitor.ColourManager.Dark = true;
-			guiMonitor.ColourManager.Alternate = true;
-			guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.BlueGrey;
-			guiMonitor.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
+			//guiMonitor.ColourManager.Dark = true;
+			//guiMonitor.ColourManager.Alternate = true;
+			//guiMonitor.ColourManager.PrimaryColor = MaterialDesignValues.Blue;
+			//guiMonitor.ColourManager.SecondaryColor = MaterialDesignValues.DeepPurple;
 
-			//SwitchColor(guiMonitor);
+			//SwitchColor(monitor);
 		}
 
-		private static void InitializeDownload(WPFMonitor guiMonitor, SigmaEnvironment sigma)
+		private static void InitializeDownload(IMonitor monitor, SigmaEnvironment sigma)
 		{
-			guiMonitor.Registry["environment"] = sigma;
+			monitor.Registry["environment"] = sigma;
 
 			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28,
 				source:
@@ -131,13 +133,13 @@ namespace Sigma.Tests.Internals.WPF
 				mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L })
 					.Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-			guiMonitor.Registry["handler"] = new CpuFloat32Handler();
+			monitor.Registry["handler"] = new CpuFloat32Handler();
 
 			Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
 			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
 			IDataset trainingData = slices[0];
 
-			guiMonitor.Registry["iterator"] = new MinibatchIterator(1, trainingData);
+			monitor.Registry["iterator"] = new MinibatchIterator(1, trainingData);
 		}
 
 

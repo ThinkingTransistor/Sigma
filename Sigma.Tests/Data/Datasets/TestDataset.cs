@@ -25,7 +25,7 @@ namespace Sigma.Tests.Data.Datasets
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
-			SigmaEnvironment.Globals["workspacePath"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
 			SigmaEnvironment.Globals["cache"] = Path.GetTempPath() + "sigmacache";
 			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath() + "sigmadatasets";
 		}

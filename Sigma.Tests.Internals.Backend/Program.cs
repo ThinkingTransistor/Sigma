@@ -26,7 +26,7 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			log4net.Config.XmlConfigurator.Configure();
 
-			SigmaEnvironment.Globals["webProxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SampleNetworkArchitecture();
 

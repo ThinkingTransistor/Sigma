@@ -69,7 +69,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 					new Thread(() => iterator?.Yield(handler, environment).First()).Start();
 
-					Debug.WriteLine($"Clicked - iterator: {iterator}, handler: {handler}, environment: {environment} ");
 				}), "10 second long task", (Action) (() =>
 				{
 					new Thread(() =>

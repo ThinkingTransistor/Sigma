@@ -7,6 +7,7 @@
 		<Setter Property="ProgressColorBrush" Value="{DynamicResource AccentSelectedColorBrush}"/>
 		<Setter Property="TextColorBrush" Value="{DynamicResource AccentSelectedColorBrush}"/>
 		<Setter Property="FontSize" Value="{DynamicResource P1}"/>
+		<Setter Property="Margin" Value="5,0,0,0"/>
 	</Style>
 
 	<Style x:Key="ShowMoreIndicator"  TargetType="{x:Type Label}">

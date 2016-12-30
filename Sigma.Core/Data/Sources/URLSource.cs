@@ -70,7 +70,7 @@ namespace Sigma.Core.Data.Sources
 			ResourceName = url;
 			_localDownloadPath = localDownloadPath;
 
-			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
+			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
 			NumberRetriesOnError = numberRetriesOnError;
 		}
 

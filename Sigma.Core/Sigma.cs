@@ -372,10 +372,10 @@ namespace Sigma.Core
 		/// </summary>
 		private static void RegisterGlobals()
 		{
-			Globals.Set("workspacePath", "workspace/", typeof(string));
-			Globals.Set("cache", Globals.Get<string>("workspacePath") + "cache/", typeof(string));
-			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
-			Globals.Set("webProxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
+			Globals.Set("workspace_path", "workspace/", typeof(string));
+			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
+			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
 		}
 
 		/// <summary>

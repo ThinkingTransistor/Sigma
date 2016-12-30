@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -31,7 +30,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// <param name="parentRegistry"></param>
 		/// <param name="height"></param>
 		/// <param name="gridLengths"></param>
-		public StatusBarFactory(IRegistry parentRegistry, double height, params GridLength[] gridLengths) : this(parentRegistry, height, 0, 1, 2, gridLengths)
+		public StatusBarFactory(IRegistry parentRegistry, double height, params GridLength[] gridLengths) : this(parentRegistry, height, 1, 0, 2, gridLengths)
 		{
 
 		}
@@ -49,13 +48,11 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		{
 			if (parentRegistry == null || !parentRegistry.ContainsKey(RegistryIdentifier))
 			{
-				Debug.WriteLine("new one");
 				Registry = new Registry(parentRegistry);
 				parentRegistry?.Add(RegistryIdentifier, Registry);
 			}
 			else
 			{
-				Debug.WriteLine("Existing one");
 				Registry = (IRegistry) parentRegistry[RegistryIdentifier];
 			}
 

@@ -8,10 +8,6 @@
 
 			<ResourceDictionary.MergedDictionaries>
 
-				<!-- TODO: don't use as first import -->
-				<!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml" />-->
-
-
 				<!-- MahApps -->
 				<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
 				<ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />

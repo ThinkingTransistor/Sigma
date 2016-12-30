@@ -8,14 +8,14 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 {
 	/// <summary>
-	/// This factory creates multiple <see cref="TaskVisualizer"/>.
+	/// This factory creates multiple <see cref="CustomControls.StatusBar.TaskVisualizer"/>.
 	/// Additionally, it defines the style for the "show more indicator" when too many tasks are concurrently
 	/// running. 
 	/// </summary>
 	public class TaskVisualizerFactory : IUIFactory<UIElement>
 	{
 		/// <summary>
-		/// The amount of maximum <see cref="TaskVisualizer"/>.
+		/// The amount of maximum <see cref="CustomControls.StatusBar.TaskVisualizer"/>.
 		/// </summary>
 		private readonly int _maxElements;
 
@@ -36,7 +36,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// A factory that produces a <see cref="Label"/> with the <see cref="Style"/> "ShowMoreIndicator" and the content "..." will be used 
 		/// for the creation of the "show more indicator". 
 		/// </summary>
-		/// <param name="maxElements">The amount of maximum <see cref="TaskVisualizer"/>.</param>
+		/// <param name="maxElements">The amount of maximum <see cref="CustomControls.StatusBar.TaskVisualizer"/>.</param>
 		public TaskVisualizerFactory(int maxElements) : this(maxElements, "...") { }
 
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// A factory that produces a <see cref="Label"/> with the <see cref="Style"/> "ShowMoreIndicator" and <see cref="content"/> will be used 
 		/// for the creation of the "show more indicator". 
 		/// </summary>
-		/// <param name="maxElements">The amount of maximum <see cref="TaskVisualizer"/>.</param>
+		/// <param name="maxElements">The amount of maximum <see cref="CustomControls.StatusBar.TaskVisualizer"/>.</param>
 		/// <param name="content">The content for the <see cref="Label"/>.</param>
 		public TaskVisualizerFactory(int maxElements, object content) : this(maxElements, Application.Current.Resources["ShowMoreIndicator"] as Style, content) { }
 
@@ -55,7 +55,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// for the creation of the "show more indicator". 
 		/// 
 		/// </summary>
-		/// <param name="maxElements">The amount of maximum <see cref="TaskVisualizer"/>.</param>
+		/// <param name="maxElements">The amount of maximum <see cref="CustomControls.StatusBar.TaskVisualizer"/>.</param>
 		/// <param name="labelStyle">The <see cref="Style"/> that will be applied to the created <see cref="Label"/>.</param>
 		/// <param name="content">The content for the <see cref="Label"/>.</param>
 		public TaskVisualizerFactory(int maxElements, Style labelStyle, object content) : this(maxElements, new ShowMoreFactory(labelStyle, content)) { }
@@ -64,7 +64,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// Create a <see cref="TaskVisualizerFactory"/> with the given amount of <see cref="maxElements"/>
 		/// and a <see cref="showMoreFactory"/>.
 		/// </summary>
-		/// <param name="maxElements">The amount of maximum <see cref="TaskVisualizer"/>.</param>
+		/// <param name="maxElements">The amount of maximum <see cref="CustomControls.StatusBar.TaskVisualizer"/>.</param>
 		/// <param name="showMoreFactory">The factory that will be used to generate the "show more indicator". May not be <c>null</c>.
 		/// 
 		/// i.e. If too many tasks are concurrently running, it has to be indicated that there are more tasks running
@@ -113,7 +113,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			// + 1 for the show more indicator
 			for (int i = 0; i <= _maxElements; i++)
 			{
-				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 			}
 
 			// add the TaskVisualizers
@@ -122,7 +122,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 				grid.Children.Add(manager.TaskVisualizers[i]);
 				Grid.SetColumn(manager.TaskVisualizers[i], i);
 			}
-
 
 			// add the show more indicator
 			grid.Children.Add(showMoreIndicator);
@@ -146,7 +145,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			/// The content for the label. 
 			/// </summary>
 			private readonly object _content;
-
 
 			/// <summary>
 			/// Create a "label factory" to produce labels with given style and content.
