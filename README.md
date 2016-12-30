@@ -3,7 +3,7 @@
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
 
-The following libraries / frameworks are used (in alphabetical order):
+The following libraries / frameworks are used in the core project:
 
 | Library                             | Purpose                           |
 | :-----------------------------------|:----------------------------------|
@@ -12,6 +12,12 @@ The following libraries / frameworks are used (in alphabetical order):
 | [DiffSharp](https://github.com/DiffSharp/DiffSharp), [Sigma.DiffSharp](https://github.com/GreekDictionary/Sigma.DiffSharp) | Functional automatic differentiation with various backends |
 | [SharpZipLib](http://www.icsharpcode.net/) | Compression and decompression of various formats (zip, tar, gz, bzip, gzip) |
 | [ManagedCuda](https://github.com/kunzmi/managedCuda), [ManagedCuda-CUBLAS](https://github.com/kunzmi/managedCuda) | Managed CUDA (GPU) and CuBLAS support |
+
+
+The following libraries / frameworks are used in the WPF visualiser:
+
+| Library                             | Purpose                           |
+| :-----------------------------------|:----------------------------------|
 | [Dragablz](https://github.com/ButchersBoy/Dragablz) | Tearable tab control for WPF, which includes docking, tool windows |
 | [LiveCharts](https://github.com/beto-rodriguez/Live-Charts), [LiveCharts.Wpf](https://github.com/beto-rodriguez/Live-Charts) | Charting, graphing, advanced data, plotting |
 | [MahApps.Metro](https://github.com/MahApps/MahApps.Metro), [MahApps.Metro.Resources](https://github.com/MahApps/MahApps.Metro) | Toolkit for creating metro-style WPF applications |
