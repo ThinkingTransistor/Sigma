@@ -25,10 +25,10 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			}
 		}
 
-		public UIElement CreatElement(Application app, Window window, params object[] parameters)
+		public UIElement CreateElement(Application app, Window window, params object[] parameters)
 		{
 			IWpfTaskVisualizationManager manager;
-			UIElement showMoreIndicator = _showMoreFactory.CreatElement(app, window, parameters);
+			UIElement showMoreIndicator = _showMoreFactory.CreateElement(app, window, parameters);
 
 			lock (_visualizationManagers)
 			{
@@ -73,7 +73,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 		private class ShowMoreFactory : IUIFactory<UIElement>
 		{
-			public UIElement CreatElement(Application app, Window window, params object[] parameters)
+			public UIElement CreateElement(Application app, Window window, params object[] parameters)
 			{
 				return new Label { Content = "more" };
 			}

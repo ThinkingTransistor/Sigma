@@ -13,7 +13,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// <param name="window"></param>
 		/// <param name="parameters">One <see cref="StatusBarLegendInfo" /></param>
 		/// <returns></returns>
-		public UIElement CreatElement(Application app, Window window, params object[] parameters)
+		public UIElement CreateElement(Application app, Window window, params object[] parameters)
 		{
 			if (parameters.Length != 1)
 				throw new ArgumentException(@"Value has to be a single-value array.", nameof(parameters));

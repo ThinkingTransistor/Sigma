@@ -103,7 +103,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		/// <param name="window"></param>
 		/// <param name="parameters"></param>
 		/// <returns></returns>
-		public UIElement CreatElement(Application app, Window window, params object[] parameters)
+		public UIElement CreateElement(Application app, Window window, params object[] parameters)
 		{
 			IUIFactory<UIElement> customFactory = EnsureRegistry(CustomFactoryIdentifier, null);
 			IUIFactory<UIElement> taskVisualizerFactory = EnsureRegistry(TaskVisualizerFactoryIdentifier, () => new TaskVisualizerFactory(3));
@@ -147,7 +147,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 		protected void AddGenericFactory(Application app, Window window, Grid grid, IUIFactory<UIElement> factory, int column, IEnumerable<object> parameters)
 		{
-			UIElement taskVisualizer = factory.CreatElement(app, window, parameters);
+			UIElement taskVisualizer = factory.CreateElement(app, window, parameters);
 
 			grid.Children.Add(taskVisualizer);
 			Grid.SetColumn(taskVisualizer, column);
@@ -184,7 +184,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 			foreach (object legendInfo in parameters)
 			{
-				UIElement element = factory.CreatElement(app, window, legendInfo);
+				UIElement element = factory.CreateElement(app, window, legendInfo);
 				stackPanel.Children.Add(element);
 			}
 

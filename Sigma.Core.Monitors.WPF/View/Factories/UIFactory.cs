@@ -7,7 +7,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories
 {
 	public interface IUIFactory<out T>
 	{
-		T CreatElement(Application app, Window window, params object[] parameters);
+		T CreateElement(Application app, Window window, params object[] parameters);
 	}
 
 	public class LambdaUIFactory : LambdaUIFactory<UIElement>
@@ -31,7 +31,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories
 			_create = create;
 		}
 
-		public T CreatElement(Application app, Window window, params object[] parameters)
+		public T CreateElement(Application app, Window window, params object[] parameters)
 		{
 			return _create(app, window, parameters);
 		}

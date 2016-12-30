@@ -31,7 +31,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			TitleBarFuncs = new List<Func<Application, Window, TitleBarItem>>();
 		}
 
-		public TitleBarControl CreatElement(Application app, Window window, params object[] parameters)
+		public TitleBarControl CreateElement(Application app, Window window, params object[] parameters)
 		{
 			TitleBarControl titleBarControl = new TitleBarControl
 			{

@@ -110,10 +110,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				PropagateAction(window =>
 				{
 					window.Children.Remove(this);
-					if (ReferenceEquals(window.ParentWindow, this))
-					{
-						window.Close();
-					}
 				});
 			};
 
@@ -224,7 +220,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <typeparam name="T">The generic type of the factory. </typeparam>
 		/// <param name="identifier">The key for the registry. </param>
 		/// <param name="parameters">The parameters to create the element - in most cases this can be left empty.</param>
-		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreatElement" /></returns>
+		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreateElement" /></returns>
 		protected T CreateObjectByFactory<T>(string identifier, params object[] parameters)
 		{
 			return CreateObjectByFactory<T>(Monitor, identifier, parameters);
@@ -240,10 +236,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </param>
 		/// <param name="identifier">The key for the registry. </param>
 		/// <param name="parameters">The parameters to create the element - in most cases this can be left empty.</param>
-		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreatElement" /></returns>
+		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreateElement" /></returns>
 		protected T CreateObjectByFactory<T>(IMonitor monitor, string identifier, params object[] parameters)
 		{
-			return ((IUIFactory<T>) monitor.Registry[identifier]).CreatElement(App, this, parameters);
+			return ((IUIFactory<T>) monitor.Registry[identifier]).CreateElement(App, this, parameters);
 		}
 
 		protected override void InitialiseComponents()
