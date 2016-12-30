@@ -120,7 +120,8 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Panels\GenericPanel.cs" />
-    <Compile Include="Panels\Logging\LogPanel.cs" />
+    <Compile Include="Panels\Logging\LogDataGrid.cs" />
+    <Compile Include="Panels\Logging\LogTextPanel.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
     <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />

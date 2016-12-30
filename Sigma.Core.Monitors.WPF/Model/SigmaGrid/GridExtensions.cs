@@ -18,7 +18,10 @@ namespace Sigma.Core.Monitors.WPF.Model.SigmaGrid
 		// ReSharper disable once InconsistentNaming
 		public static IEnumerable<FrameworkElement> GetChildAt(this Grid instance, int row, int column)
 		{
-			if (null == instance) throw new ArgumentNullException(nameof(instance));
+			if (null == instance)
+			{
+				throw new ArgumentNullException(nameof(instance));
+			}
 
 			List<FrameworkElement> list = new List<FrameworkElement>();
 			foreach (FrameworkElement fe in instance.Children)
@@ -29,7 +32,9 @@ namespace Sigma.Core.Monitors.WPF.Model.SigmaGrid
 				int columnEnd = columnStart + Grid.GetColumnSpan(fe) - 1;
 
 				if ((row >= rowStart) && (row <= rowEnd) && (column >= columnStart) && (column <= columnEnd))
+				{
 					list.Add(fe);
+				}
 			}
 
 			return list;

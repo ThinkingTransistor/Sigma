@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using log4net;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
@@ -14,9 +14,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 {
 	public class TitleBarFactory : IUIFactory<TitleBarControl>
 	{
-		public Thickness Margin { get; }
-		public Thickness Padding { get; }
-
 		public readonly List<Func<Application, Window, TitleBarItem>> TitleBarFuncs;
 
 		public TitleBarFactory() : this(new Thickness(0), new Thickness(0))
@@ -30,6 +27,9 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 			TitleBarFuncs = new List<Func<Application, Window, TitleBarItem>>();
 		}
+
+		public Thickness Margin { get; }
+		public Thickness Padding { get; }
 
 		public TitleBarControl CreateElement(Application app, Window window, params object[] parameters)
 		{
@@ -68,7 +68,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 					SigmaEnvironment environment = window.Monitor.Registry["environment"] as SigmaEnvironment;
 
 					new Thread(() => iterator?.Yield(handler, environment).First()).Start();
-
 				}), "10 second long task", (Action) (() =>
 				{
 					new Thread(() =>
@@ -87,7 +86,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
-
 						}
 						finally
 						{
@@ -99,17 +97,14 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						{
 							task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
 							Thread.Sleep(1000);
-
 						}
 						catch (Exception)
 						{
-
 						}
 						finally
 						{
 							SigmaEnvironment.TaskManager.EndTask(task2);
 						}
-
 					}).Start();
 				}),
 				"5 second indeterminate task",
@@ -125,15 +120,23 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
-
 						}
 						finally
 						{
 							SigmaEnvironment.TaskManager.EndTask(task);
 						}
 					}).Start();
-				})
-
+				}), "Flood", (Action) (() =>
+				  {
+					  ILog log = LogManager.GetLogger(typeof(TitleBarFactory));
+					  new Thread(() =>
+					  {
+						  for (int i = 0; i < 1000; i++)
+						  {
+							  log.Info($"Flood {i}");
+						  }
+					  }).Start();
+				  })
 			));
 #endif
 
@@ -144,10 +147,13 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 		}
 
 		/// <summary>
-		/// This method ensures that the passed window is a <see cref="SigmaWindow"/>.
+		///     This method ensures that the passed window is a <see cref="SigmaWindow" />.
 		/// </summary>
-		/// <param name="function">The function that will be executed, when a <see cref="TitleBarItem"/> is clicked. </param>
-		/// <exception cref="ArgumentException">If the passed window is not a <see cref="SigmaWindow"/>, an exception will be thrown. </exception>
+		/// <param name="function">The function that will be executed, when a <see cref="TitleBarItem" /> is clicked. </param>
+		/// <exception cref="ArgumentException">
+		///     If the passed window is not a <see cref="SigmaWindow" />, an exception will be
+		///     thrown.
+		/// </exception>
 		protected void AddSigmaFunction(Func<Application, SigmaWindow, TitleBarItem> function)
 		{
 			TitleBarFuncs.Add((app, window) =>
@@ -155,7 +161,10 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				SigmaWindow sigmaWindow = window as SigmaWindow;
 
 				if (sigmaWindow == null)
-					throw new ArgumentException($@"Unfortunately, the default {nameof(TitleBarFactory)} only works with a {nameof(SigmaWindow)}.", nameof(window));
+				{
+					throw new ArgumentException(
+						$@"Unfortunately, the default {nameof(TitleBarFactory)} only works with a {nameof(SigmaWindow)}.", nameof(window));
+				}
 
 				return function(app, sigmaWindow);
 			});

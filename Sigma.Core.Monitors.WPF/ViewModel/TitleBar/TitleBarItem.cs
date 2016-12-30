@@ -15,9 +15,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 {
 	public class TitleBarItem
 	{
-		public Application App { get; set; }
-		public Window Window { get; set; }
-
 		public List<TitleBarItem> TitleBarItemChildren;
 
 		/// <summary>
@@ -30,7 +27,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     or an <see cref="UIElement" />
 		///     - otherwise a <see cref="ArgumentException" /> is thrown.
 		/// </param>
-		public TitleBarItem(object header, params object[] children) : this(new MenuItem { Header = header }, children)
+		public TitleBarItem(object header, params object[] children) : this(new MenuItem {Header = header}, children)
 		{
 		}
 
@@ -62,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				{
 					//The key and header are simply the string
 					newElementKey = (string) children[i];
-					newElement = new MenuItem { Header = (string) children[i] };
+					newElement = new MenuItem {Header = (string) children[i]};
 				}
 				else if (children[i] is TitleBarItem)
 				{
@@ -70,7 +67,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 					TitleBarItemChildren.Add(childAsTitleBar);
 
 					if (childAsTitleBar.Parent != null)
+					{
 						throw new ArgumentException($"{childAsTitleBar} has already a different parent ({childAsTitleBar.Parent})");
+					}
 
 					childAsTitleBar.Parent = this;
 
@@ -118,6 +117,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				}
 			}
 		}
+
+		public Application App { get; set; }
+		public Window Window { get; set; }
 
 		/// <summary>
 		///     The <see cref="MenuItem" /> behind the <see cref="TitleBarItem" />.
@@ -211,8 +213,14 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
 		public TitleBarItem SetFunction(UIElement item, Action<Application, Window> action)
 		{
-			if (item == null) throw new ArgumentNullException(nameof(item));
-			if (action == null) throw new ArgumentNullException(nameof(action));
+			if (item == null)
+			{
+				throw new ArgumentNullException(nameof(item));
+			}
+			if (action == null)
+			{
+				throw new ArgumentNullException(nameof(action));
+			}
 
 			//BUG: If window is dragged outside - the onClick does not work
 

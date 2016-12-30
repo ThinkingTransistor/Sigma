@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
+using log4net;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Themes;
@@ -24,6 +25,11 @@ namespace Sigma.Core.Monitors.WPF
 	// ReSharper disable once InconsistentNaming
 	public class WPFMonitor : MonitorAdapter
 	{
+		/// <summary>
+		///     The logger.
+		/// </summary>
+		private readonly ILog _log = LogManager.GetLogger(typeof(WPFMonitor));
+
 		/// <summary>
 		///     Actions assigned to this list will listen
 		///     to the onStart-event of the <see cref="_app" />.
@@ -53,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF
 		///     as soon as all <see cref="_onWindowStartup" />
 		///     actions have been added.
 		/// </summary>
-		/// TODO: HACK: 
+		/// TODO: HACK:
 #pragma warning disable 414
 		private bool _onWindowStartupAdded;
 #pragma warning restore 414
@@ -89,7 +95,9 @@ namespace Sigma.Core.Monitors.WPF
 		public WPFMonitor(string title, Type window)
 		{
 			if (!window.IsSubclassOf(typeof(WPFWindow)))
+			{
 				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}!");
+			}
 
 			Title = title;
 			_windowType = window;
@@ -99,6 +107,8 @@ namespace Sigma.Core.Monitors.WPF
 			ColourManager.Dark = true;
 
 			_waitForStart = new ManualResetEvent(false);
+
+			_log.Info($"{nameof(WPFMonitor)} has been created.");
 		}
 
 		/// <summary>
@@ -124,7 +134,9 @@ namespace Sigma.Core.Monitors.WPF
 				_title = value;
 
 				if (Window != null)
+				{
 					Window.Title = _title;
+				}
 			}
 		}
 
@@ -148,6 +160,8 @@ namespace Sigma.Core.Monitors.WPF
 		public void AddTabs(params string[] tabs)
 		{
 			Tabs.AddRange(tabs);
+
+			_log.Debug($"Added {tabs.Length} tabs: {string.Join(", ", tabs)}.");
 		}
 
 		public StatusBarLegendInfo AddLegend(StatusBarLegendInfo legend)
@@ -163,7 +177,7 @@ namespace Sigma.Core.Monitors.WPF
 			{
 				if (_onWindowStartupExecuted)
 				{
-					throw new NotImplementedException("Window has already been started - StatusBar update not supported (yet).");
+					throw new InvalidOperationException("Window has already been started - StatusBar update not supported (yet).");
 				}
 
 				AddLegends(Legends, legends);
@@ -194,6 +208,8 @@ namespace Sigma.Core.Monitors.WPF
 
 			Tabs = new List<string>();
 			Legends = new Dictionary<string, StatusBarLegendInfo>();
+
+			_log.Debug($"{nameof(WPFMonitor)} has been initialised.");
 		}
 
 		public override void Start()
@@ -236,6 +252,8 @@ namespace Sigma.Core.Monitors.WPF
 			//Wait until the thread has finished execution
 			_waitForStart.WaitOne();
 			_waitForStart.Reset();
+
+			_log.Info($"{nameof(WPFMonitor)} has been started. The window {_windowType.Name} should now be visible. ");
 		}
 
 		/// <summary>
@@ -254,7 +272,10 @@ namespace Sigma.Core.Monitors.WPF
 		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal,
 			Action onFinished = null) where T : WPFWindow
 		{
-			if (typeof(T) != _windowType) throw new ArgumentException($"Type mismatch between {typeof(T)} and {_windowType}");
+			if (typeof(T) != _windowType)
+			{
+				throw new ArgumentException($"Type mismatch between {typeof(T)} and {_windowType}");
+			}
 
 			if (Window == null)
 			{
@@ -267,7 +288,7 @@ namespace Sigma.Core.Monitors.WPF
 
 			if (onFinished != null)
 			{
-				throw new NotImplementedException($"{nameof(onFinished)} not yet implemented... Sorry");
+				throw new InvalidOperationException($"{nameof(onFinished)} not yet implemented... Sorry");
 			}
 		}
 

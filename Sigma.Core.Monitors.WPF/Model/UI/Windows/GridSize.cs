@@ -68,10 +68,14 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 			set
 			{
 				if (!_sealed)
+				{
 					_sealed = value;
+				}
 				//If they try to unseal...
 				else if (value == false)
+				{
 					throw new ArgumentException($"Already sealed {nameof(GridSize)} - create a new {nameof(GridSize)}");
+				}
 			}
 		}
 
@@ -84,9 +88,13 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 			set
 			{
 				if (value <= 0)
+				{
 					throw new ArgumentException("Rows may not be smaller or equal to zero.");
+				}
 				if (_sealed)
+				{
 					throw new ArgumentException($"{nameof(Rows)} already sealed");
+				}
 
 				_rows = value;
 			}
@@ -101,9 +109,13 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 			set
 			{
 				if (value <= 0)
+				{
 					throw new ArgumentException("Columns may not be smaller or equal to zero.");
+				}
 				if (_sealed)
+				{
 					throw new ArgumentException($"{nameof(Columns)} already sealed");
+				}
 
 				_columns = value;
 			}
@@ -131,10 +143,15 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 		/// <param name="arr">The passed dimensions for the <see cref="GridSize" />. </param>
 		private static void CheckDimensions(int[] arr)
 		{
-			if (arr == null) throw new ArgumentNullException(nameof(arr));
+			if (arr == null)
+			{
+				throw new ArgumentNullException(nameof(arr));
+			}
 
 			if (arr.Length != 2)
+			{
 				throw new ArgumentException("Only one dimensional arrays with two elements supported {rows, columns}!");
+			}
 		}
 
 		/// <summary>
@@ -164,8 +181,14 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 
 		public static bool operator ==(GridSize a, GridSize b)
 		{
-			if (a == null) throw new ArgumentNullException(nameof(a));
-			if (b == null) throw new ArgumentNullException(nameof(b));
+			if (a == null)
+			{
+				throw new ArgumentNullException(nameof(a));
+			}
+			if (b == null)
+			{
+				throw new ArgumentNullException(nameof(b));
+			}
 
 			return a.Equals(b);
 		}
@@ -182,8 +205,14 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Windows
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
+			if (ReferenceEquals(null, obj))
+			{
+				return false;
+			}
+			if (ReferenceEquals(this, obj))
+			{
+				return true;
+			}
 			return (obj.GetType() == GetType()) && Equals((GridSize) obj);
 		}
 

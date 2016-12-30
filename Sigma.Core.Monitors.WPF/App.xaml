@@ -1,8 +1,8 @@
 ﻿<!-- This file contains the general resources and definitions required for MahApps, MaterialDesignInXAML, Dragablz, and LiveCharts -->
 <Application x:Class="Sigma.Core.Monitors.WPF.App"
-			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz">
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz">
 	<Application.Resources>
 		<ResourceDictionary>
 

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using log4net.Config;
 using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -28,25 +29,11 @@ namespace Sigma.Tests.Internals.WPF
 {
 	public class Program
 	{
-		private class TestData
-		{
-			public string Name { get; set; }
-			public int Epoch { get; set; }
-		}
-
-		private class ComplexTestData
-		{
-			public ImageSource Picture { get; set; }
-			public string SomeText { get; set; }
-			public string SomeOtherText { get; set; }
-			public int SomeInt { get; set; }
-		}
-
 		public static MinibatchIterator TrainingIterator;
 
 		private static void Main(string[] args)
 		{
-			log4net.Config.XmlConfigurator.Configure();
+			XmlConfigurator.Configure();
 
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
@@ -58,14 +45,24 @@ namespace Sigma.Tests.Internals.WPF
 
 			IRegistry reg = new Registry(guiMonitor.Registry);
 			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
-			reg.Add(StatusBarFactory.CustomFactoryIdentifier, new LambdaUIFactory((app, window, param) => new Label { Content = "Sigma is life, Sigma is love", Foreground = Brushes.White, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, FontSize = UIResources.P1 }));
+			reg.Add(StatusBarFactory.CustomFactoryIdentifier,
+				new LambdaUIFactory(
+					(app, window, param) =>
+						new Label
+						{
+							Content = "Sigma is life, Sigma is love",
+							Foreground = Brushes.White,
+							VerticalAlignment = VerticalAlignment.Center,
+							HorizontalAlignment = HorizontalAlignment.Center,
+							FontSize = UIResources.P1
+						}));
 
 			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Red));
 			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
 			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net", MaterialColour.Green));
 
 			guiMonitor.Priority = ThreadPriority.Highest;
-			guiMonitor.AddTabs("Overview", "Data", "Tests");
+			guiMonitor.AddTabs("Overview", "Data", "Tests", "Log2");
 
 			guiMonitor.WindowDispatcher(window => { window.TitleCharacterCasing = CharacterCasing.Normal; });
 
@@ -74,7 +71,9 @@ namespace Sigma.Tests.Internals.WPF
 
 			guiMonitor.WindowDispatcher(window =>
 			{
-				window.TabControl["Data"].AddCumulativePanel(new LogPanel("Log"), 3, 4);
+				window.TabControl["Data"].AddCumulativePanel(new LogTextPanel("Log"), 3, 4);
+				window.TabControl["Log2"].AddCumulativePanel(new LogDataGrid("Log"), 3, 4);
+
 				TabUI tab = window.TabControl["Overview"];
 
 				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
@@ -87,7 +86,9 @@ namespace Sigma.Tests.Internals.WPF
 				tab.AddCumulativePanel(panel, legend: blueLegend);
 
 
-				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
+				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image),
+					nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string),
+					nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
 				ComplexTestData data = new ComplexTestData
 				{
 					//Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
@@ -131,7 +132,7 @@ namespace Sigma.Tests.Internals.WPF
 					new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
 			IRecordExtractor mnistTargetExtractor =
 				mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L })
-					.Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+					.Preprocess(new OneHotPreprocessor(0, 9));
 
 			monitor.Registry["handler"] = new CpuFloat32Handler();
 
@@ -179,6 +180,20 @@ namespace Sigma.Tests.Internals.WPF
 					Console.WriteLine($@"Changing to: {dark} and {guiMonitor.ColourManager.PrimaryColor.Name}");
 				}
 			}
+		}
+
+		private class TestData
+		{
+			public string Name { get; set; }
+			public int Epoch { get; set; }
+		}
+
+		private class ComplexTestData
+		{
+			public ImageSource Picture { get; set; }
+			public string SomeText { get; set; }
+			public string SomeOtherText { get; set; }
+			public int SomeInt { get; set; }
 		}
 	}
 }

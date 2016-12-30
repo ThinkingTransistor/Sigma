@@ -151,7 +151,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 55, G = 71, B = 79}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 38, G = 50, B = 56}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] { });
+			new Hue[] {});
 
 		public static readonly Swatch Brown = new Swatch("brown",
 			new[]
@@ -167,7 +167,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 78, G = 52, B = 46}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 62, G = 39, B = 35}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] { });
+			new Hue[] {});
 
 		public static readonly Swatch Cyan = new Swatch("cyan",
 			new[]
@@ -271,7 +271,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(PRIMARY800, new Color {A = 255, R = 66, G = 66, B = 66}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(PRIMARY900, new Color {A = 255, R = 33, G = 33, B = 33}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] { });
+			new Hue[] {});
 
 		public static readonly Swatch Indigo = new Swatch("indigo",
 			new[]

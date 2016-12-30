@@ -11,6 +11,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using log4net;
 using Sigma.Core.Monitors.WPF.Model.SigmaGrid;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
@@ -28,6 +29,11 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 	/// </summary>
 	public class TabUI : UIWrapper<TabItem>
 	{
+		/// <summary>
+		///     The log for <see cref="TabUI" />.
+		/// </summary>
+		private readonly ILog _log = LogManager.GetLogger(typeof(TabUI));
+
 		/// <summary>
 		///     The <see cref="GridSize" /> of the tab.
 		/// </summary>
@@ -58,7 +64,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			set
 			{
 				if (Grid == null)
+				{
 					_gridSize = value;
+				}
 			}
 		}
 
@@ -95,13 +103,22 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		private bool IsEmpty(WPFGrid grid, int row, int column, int rowSpan, int columnSpan)
 		{
 			//If positions would be out of range
-			if ((row + rowSpan > GridSize.Rows) || (column + columnSpan > GridSize.Columns)) return false;
+			if ((row + rowSpan > GridSize.Rows) || (column + columnSpan > GridSize.Columns))
+			{
+				return false;
+			}
 
 			//Check every element if its empty
 			for (int i = row; i < row + rowSpan; i++)
+			{
 				for (int j = column; j < column + columnSpan; j++)
+				{
 					if (!IsEmptyFast(grid, i, j))
+					{
 						return false;
+					}
+				}
+			}
 
 			return true;
 		}
@@ -119,11 +136,15 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		private bool FindEmptyArea(WPFGrid grid, int rowSpan, int columnSpan, out int rowPosition, out int columnPosition)
 		{
 			for (int row = 0; row < GridSize.Rows; row++)
+			{
 				for (int column = 0; column < GridSize.Columns; column++)
 				{
 					//We know that it won't be out of range
 					//So we check it fast
-					if (!IsEmptyFast(grid, row, column)) continue;
+					if (!IsEmptyFast(grid, row, column))
+					{
+						continue;
+					}
 
 					if (IsEmpty(Grid, row, column, rowSpan, columnSpan))
 					{
@@ -132,6 +153,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 						return true;
 					}
 				}
+			}
 
 			rowPosition = -1;
 			columnPosition = -1;
@@ -140,7 +162,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		}
 
 		/// <summary>
-		/// Apply the legend colour-coding to a passed panel. 
+		///     Apply the legend colour-coding to a passed panel.
 		/// </summary>
 		/// <param name="panel">The given panel. </param>
 		/// <param name="legend">The given panel. </param>
@@ -180,7 +202,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
-		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1, StatusBarLegendInfo legend = null)
+		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1,
+			StatusBarLegendInfo legend = null)
 		{
 			AddCumulativeElement(panel, rowSpan, columnSpan);
 			ApplyLegend(panel, legend);
@@ -201,8 +224,14 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement" />. </exception>
 		public void AddCumulativeElement(UIElement element, int rowSpan = 1, int columnSpan = 1)
 		{
-			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
-			if (columnSpan <= 0) throw new ArgumentOutOfRangeException(nameof(columnSpan));
+			if (rowSpan <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(rowSpan));
+			}
+			if (columnSpan <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(columnSpan));
+			}
 
 			EnsureGridCreated();
 
@@ -216,6 +245,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			{
 				throw new IndexOutOfRangeException("Grid is full or element too big!");
 			}
+
 		}
 
 		/// <summary>
@@ -233,7 +263,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
-		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1, StatusBarLegendInfo legend = null)
+		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1,
+			StatusBarLegendInfo legend = null)
 		{
 			AddElement(panel, row, column, rowSpan, columnSpan);
 			ApplyLegend(panel, legend);
@@ -255,15 +286,25 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement" />. </exception>
 		public void AddElement(UIElement element, int row, int column, int rowSpan = 1, int columnSpan = 1)
 		{
-			if (rowSpan <= 0) throw new ArgumentOutOfRangeException(nameof(rowSpan));
-			if (columnSpan <= 0) throw new ArgumentOutOfRangeException(nameof(columnSpan));
+			if (rowSpan <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(rowSpan));
+			}
+			if (columnSpan <= 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(columnSpan));
+			}
 
 			EnsureGridCreated();
 
 			if (row + rowSpan > GridSize.Rows)
+			{
 				throw new IndexOutOfRangeException("Element would be out of range! (Too few rows)");
+			}
 			if (column + columnSpan > GridSize.Columns)
+			{
 				throw new IndexOutOfRangeException("Element would be out of range! (Too few columns)");
+			}
 
 			Grid.Children.Add(element);
 			WPFGrid.SetRow(element, row);
@@ -277,6 +318,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 				WrappedContent.IsSelected = false;
 				WrappedContent.IsSelected = true;
 			}
+
+			_log.Debug($"Added {element.GetType().Name} at {row}, {column}, with a span of {rowSpan}, {columnSpan}");
 		}
 
 		/// <summary>
@@ -307,14 +350,20 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			//add rows and columns
 			int rows = gridSize[0];
 			for (int i = 0; i < rows; i++)
+			{
 				grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			}
 
 			int columns = gridSize[1];
 			for (int i = 0; i < columns; i++)
+			{
 				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+			}
 
 			//TODO: change in style?
 			grid.ChildMargin = new Thickness(10);
+
+			_log.Debug($"The {nameof(GridLayout)} has been created with the size {gridSize[0]}, {gridSize[1]}. From now on it cannot be modified.");
 
 			return grid;
 		}

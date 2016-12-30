@@ -92,7 +92,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
 		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
-		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other) : base(monitor, app, title)
+		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other)
+			: base(monitor, app, title)
 		{
 			if (UseSigmaIcon)
 			{
@@ -115,10 +116,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Closed += (sender, args) =>
 			{
 				IsAlive = false;
-				PropagateAction(window =>
-				{
-					window.Children.Remove(this);
-				});
+				PropagateAction(window => { window.Children.Remove(this); });
 				Dispose();
 			};
 
@@ -171,6 +169,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public bool IsAlive { get; private set; } = true;
 
+		public void Dispose()
+		{
+		}
+
 		protected virtual Panel CreateContent(WPFMonitor monitor, SigmaWindow other, out TitleBarControl titleBarControl)
 		{
 			titleBarControl = CreateObjectByFactory<TitleBarControl>(TitleBarFactoryIdentifier);
@@ -213,7 +215,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <returns>The root window. </returns>
 		private static SigmaWindow FindRoot(SigmaWindow start)
 		{
-			if (start == null) throw new ArgumentNullException(nameof(start));
+			if (start == null)
+			{
+				throw new ArgumentNullException(nameof(start));
+			}
 
 			while (start.ParentWindow != null)
 			{
@@ -368,10 +373,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			Exception exception = (Exception) e.ExceptionObject;
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
-		}
-
-		public void Dispose()
-		{
 		}
 	}
 }

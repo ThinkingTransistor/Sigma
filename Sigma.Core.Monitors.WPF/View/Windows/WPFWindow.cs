@@ -18,11 +18,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	public abstract class WPFWindow : MetroWindow
 	{
 		/// <summary>
-		///     The corresponding WPFMonitor
-		/// </summary>
-		public WPFMonitor Monitor { get; protected set; }
-
-		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
@@ -30,8 +25,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
 		protected WPFWindow(WPFMonitor monitor, Application app, string title)
 		{
-			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
-			if (app == null) throw new ArgumentNullException(nameof(app));
+			if (monitor == null)
+			{
+				throw new ArgumentNullException(nameof(monitor));
+			}
+			if (app == null)
+			{
+				throw new ArgumentNullException(nameof(app));
+			}
 
 			Monitor = monitor;
 			App = app;
@@ -39,6 +40,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			InitialiseComponents();
 		}
+
+		/// <summary>
+		///     The corresponding WPFMonitor
+		/// </summary>
+		public WPFMonitor Monitor { get; protected set; }
 
 		/// <summary>
 		///     The root application environment for all WPF interactions.

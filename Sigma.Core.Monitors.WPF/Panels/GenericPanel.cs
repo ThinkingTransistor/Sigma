@@ -6,6 +6,15 @@ namespace Sigma.Core.Monitors.WPF.Panels
 	{
 		private T _content;
 
+		public GenericPanel(string title) : base(title)
+		{
+		}
+
+		public GenericPanel(string title, T content) : base(title)
+		{
+			Content = content;
+		}
+
 		public new T Content
 		{
 			get { return _content; }
@@ -14,13 +23,6 @@ namespace Sigma.Core.Monitors.WPF.Panels
 				_content = value;
 				base.Content = _content;
 			}
-		}
-
-		public GenericPanel(string title) : base(title) { }
-
-		public GenericPanel(string title, T content) : base(title)
-		{
-			Content = content;
 		}
 	}
 }

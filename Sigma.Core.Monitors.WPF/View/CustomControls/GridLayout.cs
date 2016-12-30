@@ -71,9 +71,13 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls
 				int columnSpan = GetColumnSpan(element);
 
 				if (row + rowSpan > maxRow)
+				{
 					maxRow = row + rowSpan;
+				}
 				if (column + columnSpan > maxColumn)
+				{
 					maxColumn = column + columnSpan;
+				}
 			}
 			foreach (UIElement element in InternalChildren)
 			{
@@ -90,16 +94,24 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.CustomControls
 					double factorBottom = 0.5;
 					// Top row - no top margin
 					if (row == 0)
+					{
 						factorTop = 1;
+					}
 					// Bottom row - no bottom margin
 					if (row + rowSpan >= maxRow)
+					{
 						factorBottom = 1;
+					}
 					// Leftmost column = no left margin
 					if (column == 0)
+					{
 						factorLeft = 1;
+					}
 					// Rightmost column - no right margin
 					if (column + columnSpan >= maxColumn)
+					{
 						factorRight = 1;
+					}
 					fe.Margin = new Thickness(ChildMargin.Left*factorLeft,
 						ChildMargin.Top*factorTop,
 						ChildMargin.Right*factorRight,

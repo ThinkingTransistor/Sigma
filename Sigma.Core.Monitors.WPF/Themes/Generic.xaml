@@ -10,23 +10,23 @@
 				<ControlTemplate TargetType="{x:Type statusBar:StatusBarLegend}">
 
 					<Border Background="{TemplateBinding Background}"
-							BorderBrush="{TemplateBinding BorderBrush}"
-							BorderThickness="{TemplateBinding BorderThickness}">
+					        BorderBrush="{TemplateBinding BorderBrush}"
+					        BorderThickness="{TemplateBinding BorderThickness}">
 
 						<StackPanel Orientation="Horizontal"
-									VerticalAlignment="{TemplateBinding VerticalAlignment}"
-									HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-									Margin="{TemplateBinding Margin}">
+						            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+						            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+						            Margin="{TemplateBinding Margin}">
 
 							<Rectangle Height="{TemplateBinding Size}"
-									   Width="{TemplateBinding Size}"
-									   Fill="{TemplateBinding LegendColour}" />
+							           Width="{TemplateBinding Size}"
+							           Fill="{TemplateBinding LegendColour}" />
 
 							<Label Foreground="{TemplateBinding LabelColour}"
-								   VerticalAlignment="Center"
-								   FontSize="{TemplateBinding FontSize}"
-								   FontFamily="{TemplateBinding FontFamily}"
-								   Content="{TemplateBinding Text}" />
+							       VerticalAlignment="Center"
+							       FontSize="{TemplateBinding FontSize}"
+							       FontFamily="{TemplateBinding FontFamily}"
+							       Content="{TemplateBinding Text}" />
 
 						</StackPanel>
 
@@ -42,7 +42,8 @@
 			<ResourceDictionary>
 				<ResourceDictionary.MergedDictionaries>
 					<!-- Style for progress bar -->
-					<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml"/>
+					<ResourceDictionary
+						Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml" />
 				</ResourceDictionary.MergedDictionaries>
 			</ResourceDictionary>
 		</Style.Resources>
@@ -52,30 +53,30 @@
 				<ControlTemplate
 					TargetType="{x:Type statusBar:TaskVisualizer}">
 					<Border Background="{TemplateBinding Background}"
-							BorderBrush="{TemplateBinding BorderBrush}"
-							BorderThickness="{TemplateBinding BorderThickness}"
-							Visibility="{TemplateBinding Visibility}"
-							Margin="{TemplateBinding Margin}">
+					        BorderBrush="{TemplateBinding BorderBrush}"
+					        BorderThickness="{TemplateBinding BorderThickness}"
+					        Visibility="{TemplateBinding Visibility}"
+					        Margin="{TemplateBinding Margin}">
 
 						<StackPanel Orientation="Horizontal">
 
 							<ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-										 Value="{TemplateBinding Progress}"
-										 IsIndeterminate="{TemplateBinding IsIndeterminate}"
-										 Foreground="{TemplateBinding ProgressColorBrush}">
+							             Value="{TemplateBinding Progress}"
+							             IsIndeterminate="{TemplateBinding IsIndeterminate}"
+							             Foreground="{TemplateBinding ProgressColorBrush}">
 
 								<ProgressBar.ToolTip>
 									<ToolTip Content="{TemplateBinding Progress}"
-											 ContentStringFormat="{}{0:#}%"/>
+									         ContentStringFormat="{}{0:#}%" />
 								</ProgressBar.ToolTip>
 							</ProgressBar>
 
 							<Label Foreground="{TemplateBinding TextColorBrush}"
-								   VerticalAlignment="Center"
-								   FontSize="{TemplateBinding FontSize}"
-								   FontFamily="{TemplateBinding FontFamily}"
-								   Content="{TemplateBinding ActiveExpressedType}"
-								   ToolTip="{TemplateBinding ActiveTaskDescription}"/>
+							       VerticalAlignment="Center"
+							       FontSize="{TemplateBinding FontSize}"
+							       FontFamily="{TemplateBinding FontFamily}"
+							       Content="{TemplateBinding ActiveExpressedType}"
+							       ToolTip="{TemplateBinding ActiveTaskDescription}" />
 						</StackPanel>
 					</Border>
 				</ControlTemplate>

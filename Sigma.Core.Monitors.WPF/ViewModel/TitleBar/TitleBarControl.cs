@@ -78,7 +78,10 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		/// <param name="app"></param>
 		public void AddItem(Application app, Window window, TitleBarItem item, Brush foregroundBrush)
 		{
-			if (foregroundBrush == null) throw new ArgumentNullException(nameof(foregroundBrush));
+			if (foregroundBrush == null)
+			{
+				throw new ArgumentNullException(nameof(foregroundBrush));
+			}
 
 			Menu.Items.Add(item.Content);
 			item.App = app;

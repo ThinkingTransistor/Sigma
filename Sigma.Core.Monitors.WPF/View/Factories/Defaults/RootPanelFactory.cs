@@ -7,7 +7,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 	{
 		public DockPanel CreateElement(Application app, Window window, params object[] parameters)
 		{
-			return new DockPanel { LastChildFill = true };
+			return new DockPanel {LastChildFill = true};
 		}
 	}
 }

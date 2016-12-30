@@ -52,7 +52,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 				_tabControl = new TabablzControl();
 
 				if (InitialTabablzControl == null)
+				{
 					InitialTabablzControl = _tabControl;
+				}
 			}
 
 			//TODO: Change with style?
@@ -152,8 +154,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			/// <returns></returns>
 			public INewTabHost<Window> GetNewHost(IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
-				TWindow window = Construct(new[] { typeof(WPFMonitor), typeof(Application), typeof(string), typeof(TWindow) },
-					new object[] { _monitor, _app, _title, _monitor.Window });
+				TWindow window = Construct(new[] {typeof(WPFMonitor), typeof(Application), typeof(string), typeof(TWindow)},
+					new object[] {_monitor, _app, _title, _monitor.Window});
 				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 

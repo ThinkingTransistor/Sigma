@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Dragablz;
+using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -23,6 +24,11 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 	public class ColourManager : IColourManager
 	{
 		/// <summary>
+		///		The logger.
+		/// </summary>
+		private ILog _log = LogManager.GetLogger(typeof(ColourManager));
+
+		/// <summary>
 		///     The path for the Sigma light style theme.
 		/// </summary>
 		private const string SIGMA_STYLE_LIGHT_PATH =
@@ -33,16 +39,6 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// </summary>
 		private const string SIGMA_STYLE_DARK_PATH =
 			"pack://application:,,,/Sigma.Core.Monitors.WPF;component/Themes/Styles/DarkStyle.xaml";
-
-		/// <summary>
-		/// Custom absolute path for a light theme
-		/// </summary>
-		public string CustomLightPath { get; set; }
-
-		/// <summary>
-		/// Custom absolute path for a dark theme
-		/// </summary>
-		public string CustomDarkPath { get; set; }
 
 		/// <summary>
 		///     Option for an alternate style for tabs.
@@ -58,6 +54,20 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     Tells whether onStartup has already been called on the app.
 		/// </summary>
 		private bool _appStarted;
+
+		/// <summary>
+		///     The resource dictionary for a custom dark theme.
+		///     This parameter is null until the application started event
+		///     has been called.
+		/// </summary>
+		private ResourceDictionary _customStyleDarkDictionary;
+
+		/// <summary>
+		///     The resource dictionary for a custom light theme.
+		///     This parameter is null until the application started event
+		///     has been called.
+		/// </summary>
+		private ResourceDictionary _customStyleLightDictionary;
 
 		/// <summary>
 		///     Whether a dark or a light theme should be applied.
@@ -89,20 +99,6 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		private ResourceDictionary _sigmaStyleLightDictionary;
 
 		/// <summary>
-		///     The resource dictionary for a custom light theme.
-		///     This parameter is null until the application started event
-		///     has been called.
-		/// </summary>
-		private ResourceDictionary _customStyleLightDictionary;
-
-		/// <summary>
-		///     The resource dictionary for a custom dark theme.
-		///     This parameter is null until the application started event
-		///     has been called.
-		/// </summary>
-		private ResourceDictionary _customStyleDarkDictionary;
-
-		/// <summary>
 		///     The corresponding <see cref="SigmaWindow" />.
 		/// </summary>
 		private SigmaWindow _sigmaWindow;
@@ -117,6 +113,16 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			_primaryColor = defaultPrimary;
 			_secondaryColor = defaultSecondary;
 		}
+
+		/// <summary>
+		///     Custom absolute path for a light theme
+		/// </summary>
+		public string CustomLightPath { get; set; }
+
+		/// <summary>
+		///     Custom absolute path for a dark theme
+		/// </summary>
+		public string CustomDarkPath { get; set; }
 
 		public Window Window
 		{
@@ -134,10 +140,15 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			set
 			{
 				if (value == null)
+				{
 					throw new ArgumentNullException("App cannot be null!");
+				}
 
 				//If the value has not changed
-				if (value == _app) return;
+				if (value == _app)
+				{
+					return;
+				}
 
 				_app = value;
 
@@ -145,7 +156,9 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 				_appStarted = false;
 
 				if (_app != null)
+				{
 					_app.Startup -= AppStartup;
+				}
 
 				_app.Startup += AppStartup;
 			}
@@ -161,12 +174,16 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			set
 			{
 				if (value == null)
+				{
 					throw new ArgumentNullException("SecondaryColor cannot be null!");
+				}
 
 				_primaryColor = value;
 
 				if (_appStarted)
+				{
 					_app.Dispatcher.Invoke(() => new PaletteHelper().ReplacePrimaryColor(_primaryColor));
+				}
 			}
 		}
 
@@ -180,12 +197,16 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			set
 			{
 				if (value == null)
+				{
 					throw new ArgumentNullException("SecondaryColor cannot be null!");
+				}
 
 				_secondaryColor = value;
 
 				if (_appStarted)
+				{
 					_app.Dispatcher.Invoke(() => new PaletteHelper().ReplaceAccentColor(_secondaryColor));
+				}
 			}
 		}
 
@@ -200,7 +221,9 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 				_dark = value;
 
 				if (_appStarted)
+				{
 					_app.Dispatcher.Invoke(() => SetLightDark(_dark));
+				}
 			}
 		}
 
@@ -216,7 +239,9 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 				_alternate = value;
 
 				if (_appStarted)
+				{
 					_app.Dispatcher.Invoke(() => ApplyStyle(_alternate));
+				}
 			}
 		}
 
@@ -270,6 +295,8 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			Style newStyle = new Style(typeof(MenuItem), Application.Current.Resources["SigmaMaterialDesignMenuItem"] as Style);
 			newStyle.Setters.Add(new Setter(MenuItem.ForegroundProperty, correctBrush));
 			Application.Current.Resources[typeof(MenuItem)] = newStyle;
+
+			_log.Debug($"The window is now {(dark ? "dark" : "light")}.");
 		}
 
 		/// <summary>
@@ -296,12 +323,12 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 				App.Resources.MergedDictionaries.Remove(oldSigmaResourceDictionary);
 			}
 
-			if (newCustomResourceDictionary != null && !App.Resources.MergedDictionaries.Contains(newCustomResourceDictionary))
+			if ((newCustomResourceDictionary != null) && !App.Resources.MergedDictionaries.Contains(newCustomResourceDictionary))
 			{
 				App.Resources.MergedDictionaries.Add(newCustomResourceDictionary);
 			}
 
-			if (oldCustomResourceDictionary != null && App.Resources.MergedDictionaries.Contains(oldCustomResourceDictionary))
+			if ((oldCustomResourceDictionary != null) && App.Resources.MergedDictionaries.Contains(oldCustomResourceDictionary))
 			{
 				App.Resources.MergedDictionaries.Remove(oldCustomResourceDictionary);
 			}
@@ -314,9 +341,18 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     The specified <see cref="Swatch" /> that will
 		///     be the new secondary colour.
 		/// </param>
-		private static void ReplaceSecondaryColor(Swatch secondaryColor)
+		private void ReplaceSecondaryColor(Swatch secondaryColor)
 		{
-			new PaletteHelper().ReplaceAccentColor(secondaryColor);
+			try
+			{
+				new PaletteHelper().ReplaceAccentColor(secondaryColor);
+				_log.Debug($"The secondary colour of the window is now {secondaryColor.Name}.");
+			}
+			catch (ArgumentOutOfRangeException e)
+			{
+
+				throw new InvalidOperationException($"{secondaryColor.Name} cannot be used as secondary colour.", e);
+			}
 		}
 
 		/// <summary>
@@ -326,9 +362,10 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     The specified <see cref="Swatch" /> that will
 		///     be the new primary colour.
 		/// </param>
-		private static void ReplacePrimaryColor(Swatch primaryColor)
+		private void ReplacePrimaryColor(Swatch primaryColor)
 		{
 			new PaletteHelper().ReplacePrimaryColor(primaryColor);
+			_log.Debug($"The primary colour of the window is now {primaryColor.Name}.");
 		}
 
 		/// <summary>
@@ -341,6 +378,9 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			Style style = _app.TryFindResource(styleKey) as Style;
 
 			App.Resources[typeof(TabablzControl)] = style;
+
+			_log.Debug($"The window is {(alternate ? "now alternate" : "not alternate anymore")}.");
+
 		}
 	}
 }
