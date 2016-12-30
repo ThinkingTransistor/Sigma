@@ -117,9 +117,11 @@
     </Compile>
     <Compile Include="ViewModel\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="ViewModel\CustomControls\StatusBar\TaskVisualizer.cs" />
+    <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />
+    <Compile Include="ViewModel\StatusBar\TaskVisualizationManager.cs" />
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
-    <Compile Include="View\Factories\Defaults\StatusBar\TaskVisualisationManager.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
+    <Compile Include="View\Factories\Defaults\StatusBar\TaskVisualizerFactory.cs" />
     <Compile Include="View\Factories\Defaults\TabControlFactory.cs" />
     <Compile Include="View\Factories\UIFactory.cs" />
     <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
