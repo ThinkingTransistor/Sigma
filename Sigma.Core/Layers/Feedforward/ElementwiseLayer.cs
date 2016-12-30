@@ -20,9 +20,9 @@ namespace Sigma.Core.Layers.Feedforward
 			int size = parameters.Get<int>("size");
 
 			parameters["weights"] = handler.NDArray(size);
-			parameters["biases"] = handler.NDArray(size);
+			parameters["bias"] = handler.Number(0);
 
-			TrainableParameters = new[] { "weights", "biases" };
+			TrainableParameters = new[] { "weights", "bias" };
 		}
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
@@ -30,7 +30,7 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray inputActivations = buffer.Inputs["default"].Get<INDArray>("activations");
 		}
 
-		public static LayerConstruct Construct(int size, string name = "elementwise#")
+		public static LayerConstruct Construct(int size, string name = "#-elementwise")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(ElementwiseLayer));
 

@@ -353,7 +353,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 			StringBuilder builder = new StringBuilder();
 
-			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ":\n");
+			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ":\n ");
 
 			for (long i = 0; i < length; i++)
 			{
@@ -408,7 +408,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 				if (requestNewLine)
 				{
-					builder.Append('\n');
+					builder.Append("\n ");
 
 					for (int y = 0; y < openBraces; y++)
 					{

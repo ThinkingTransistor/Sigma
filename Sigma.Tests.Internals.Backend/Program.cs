@@ -12,7 +12,10 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers;
+using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
@@ -32,32 +35,37 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SampleNetworkArchitecture()
 		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
+
 			IComputationHandler handler = new CpuFloat32Handler();
-			Network network = new Network();
+			ITrainer trainer = sigma.CreateTrainer("testtrainer");
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(28, 28) +
+										   2 * (ElementwiseLayer.Construct(2) + ElementwiseLayer.Construct(4)) +
+										   OutputLayer.Construct(4);
 
-			network.Architecture = InputLayer.Construct(28, 28) + OutputLayer.Construct(10);
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
+			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+			trainer.Initialise(handler);
 
-			network.Validate();
-			network.Initialise(handler);
+			Console.WriteLine(trainer.Network.Registry);
 
-			Console.WriteLine(network.Registry);
+			//foreach (ILayerBuffer buffer in trainer.Network.YieldLayerBuffersOrdered())
+			//{
+			//	Console.WriteLine(buffer.Layer.Name + ": ");
 
-			foreach (ILayerBuffer buffer in network.YieldLayerBuffersOrdered())
-			{
-				Console.WriteLine(buffer.Layer.Name + ": ");
+			//	Console.WriteLine("inputs:");
+			//	foreach (string input in buffer.Inputs.Keys)
+			//	{
+			//		Console.WriteLine($"\t{input}: {buffer.Inputs[input].GetHashCode()}");
+			//	}
 
-				Console.WriteLine("inputs:");
-				foreach (string input in buffer.Inputs.Keys)
-				{
-					Console.WriteLine($"\t{input}: {buffer.Inputs[input].GetHashCode()}");
-				}
-
-				Console.WriteLine("outputs:");
-				foreach (string output in buffer.Outputs.Keys)
-				{
-					Console.WriteLine($"\t{output}: {buffer.Outputs[output].GetHashCode()}");
-				}
-			}
+			//	Console.WriteLine("outputs:");
+			//	foreach (string output in buffer.Outputs.Keys)
+			//	{
+			//		Console.WriteLine($"\t{output}: {buffer.Outputs[output].GetHashCode()}");
+			//	}
+			//}
 		}
 
 		private static void SampleAutomaticDifferentiation()

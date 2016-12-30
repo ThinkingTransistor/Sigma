@@ -16,5 +16,13 @@ namespace Sigma.Core.Training.Initialisers
 		/// <param name="handler">The computation handler to use.</param>
 		/// <param name="random">The randomiser to use (if required).</param>
 		void Initialise(INDArray array, IComputationHandler handler, Random random);
+
+		/// <summary>
+		/// Initialise a single number.
+		/// </summary>
+		/// <param name="number">The number to initialise.</param>
+		/// <param name="handler">The computation handler to use.</param>
+		/// <param name="random">The randomise to use (if required).</param>
+		void Initialise(INumber number, IComputationHandler handler, Random random);
 	}
 }

@@ -19,11 +19,12 @@ namespace Sigma.Tests.Training.Initialisers
 			IComputationHandler handler = new CpuFloat32Handler();
 			Random random = new Random();
 
-			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise(null, handler, random));
+			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise((INDArray) null, handler, random));
+			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise((INumber) null, handler, random));
 			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise(array, null, random));
 			Assert.Throws<ArgumentNullException>(() => initialiser.Initialise(array, handler, null));
 
-
+			// TODO implement gaussian initialiser test somehow
 		}
 	}
 }

@@ -32,7 +32,7 @@ namespace Sigma.Core.Layers
 
 		public static LayerConstruct Construct(params long[] shape)
 		{
-			return Construct("inputs#", shape);
+			return Construct("#-inputs", shape);
 		}
 
 		public static LayerConstruct Construct(string name, params long[] shape)

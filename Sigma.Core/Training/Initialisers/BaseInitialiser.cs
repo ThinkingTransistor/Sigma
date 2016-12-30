@@ -19,20 +19,9 @@ namespace Sigma.Core.Training.Initialisers
 	{
 		public void Initialise(INDArray array, IComputationHandler handler, Random random)
 		{
-			if (array == null)
-			{
-				throw new ArgumentNullException(nameof(array));
-			}
-
-			if (handler == null)
-			{
-				throw new ArgumentNullException(nameof(handler));
-			}
-
-			if (random == null)
-			{
-				throw new ArgumentNullException(nameof(random));
-			}
+			if (array == null) throw new ArgumentNullException(nameof(array));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+			if (random == null) throw new ArgumentNullException(nameof(random));
 
 			long[] indices = new long[array.Rank];
 
@@ -42,6 +31,15 @@ namespace Sigma.Core.Training.Initialisers
 
 				array.SetValue(GetValue(indices, array.Shape, random), indices);
 			}
+		}
+
+		public void Initialise(INumber number, IComputationHandler handler, Random random)
+		{
+			if (number == null) throw new ArgumentNullException(nameof(number));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+			if (random == null) throw new ArgumentNullException(nameof(random));
+
+			number.Value = GetValue(new[] { 0L }, new[] { 1L, 1L, 1L }, random);
 		}
 
 		/// <summary>

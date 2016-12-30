@@ -30,10 +30,15 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			_value = value;
 		}
 
-		public virtual object Value
+		public object Value
 		{
 			get { return _value; }
-			set { _value = (T) value; }
+			set { SetValue((T) Convert.ChangeType(value, typeof(T))); }
+		}
+
+		internal virtual void SetValue(T value)
+		{
+			_value = value;
 		}
 
 		internal ADNumber<T> SetAssociatedHandler(IComputationHandler handler)
@@ -50,7 +55,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 		public override string ToString()
 		{
-			return "adnumber " + _value;
+			return "number " + _value;
 		}
 	}
 }

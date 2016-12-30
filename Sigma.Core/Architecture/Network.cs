@@ -76,7 +76,7 @@ namespace Sigma.Core.Architecture
 			{
 				ILayer layer = layerConstruct.InstantiateLayer(handler);
 
-				layersRegistry[layer.Name] = layerConstruct.Parameters;
+				layersRegistry[layer.Name] = layerConstruct.Parameters.DeepCopy();
 
 				Dictionary<string, IRegistry> inputs = new Dictionary<string, IRegistry>();
 

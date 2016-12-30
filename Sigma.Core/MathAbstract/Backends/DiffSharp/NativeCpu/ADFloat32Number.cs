@@ -19,7 +19,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	[Serializable]
 	public class ADFloat32Number : ADNumber<float>
 	{
-		public readonly DNumber _adNumberHandle;
+		public DNumber _adNumberHandle;
 
 		public ADFloat32Number(float value) : base(value)
 		{
@@ -29,6 +29,13 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 		public ADFloat32Number(DNumber numberHandle) : base(numberHandle.Value)
 		{
 			_adNumberHandle = numberHandle;
+		}
+
+		internal override void SetValue(float value)
+		{
+			base.SetValue(value);
+
+			_adNumberHandle = new DNumber(value);
 		}
 	}
 }

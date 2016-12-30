@@ -10,6 +10,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using log4net;
 
 namespace Sigma.Core.Architecture.Linear
 {
@@ -21,6 +22,7 @@ namespace Sigma.Core.Architecture.Linear
 		public IRegistry Registry { get; }
 		public int LayerCount => _layerConstructs.Count;
 
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<LayerConstruct> _layerConstructs;
 
 		/// <summary>
@@ -53,6 +55,50 @@ namespace Sigma.Core.Architecture.Linear
 			Registry["layercount"] = LayerCount;
 		}
 
+		protected virtual LinearNetworkArchitecture Copy()
+		{
+			Dictionary<LayerConstruct, LayerConstruct> mappedConstructCopies = new Dictionary<LayerConstruct, LayerConstruct>();
+			List<LayerConstruct> copiedConstructs = _layerConstructs.ConvertAll(construct =>
+			{
+				LayerConstruct copy = construct.Copy();
+
+				mappedConstructCopies.Add(construct, copy);
+
+				return copy;
+			});
+
+			foreach (LayerConstruct original in _layerConstructs)
+			{
+				LayerConstruct copy = mappedConstructCopies[original];
+
+				foreach (string inputAlias in original.Inputs.Keys)
+				{
+					LayerConstruct input = original.Inputs[inputAlias];
+
+					if (mappedConstructCopies.ContainsKey(input))
+					{
+						input = mappedConstructCopies[input];
+					}
+
+					copy.AddInput(input, inputAlias);
+				}
+
+				foreach (string outputAlias in original.Outputs.Keys)
+				{
+					LayerConstruct output = original.Outputs[outputAlias];
+
+					if (mappedConstructCopies.ContainsKey(output))
+					{
+						output = mappedConstructCopies[output];
+					}
+
+					copy.AddOutput(output, outputAlias);
+				}
+			}
+
+			return new LinearNetworkArchitecture(copiedConstructs);
+		}
+
 		public void Validate()
 		{
 			if (_layerConstructs.Count != _layerConstructs.Distinct().Count())
@@ -81,16 +127,22 @@ namespace Sigma.Core.Architecture.Linear
 						throw new InvalidNetworkArchitectureException($"Linear networks can only have acyclic linear connections, but connection from layer construct {previousConstruct} connects back to itself through {construct}.");
 					}
 				}
+
+				previousConstructs.Add(construct);
 			}
+
+			
 		}
 
 		public void ResolveAllNames()
 		{
+			string formatString = "D" + Math.Ceiling(Math.Log10(LayerCount));
+
 			for (int i = 0; i < _layerConstructs.Count; i++)
 			{
 				if (_layerConstructs[i].UnresolvedName.Contains('#'))
 				{
-					_layerConstructs[i].Name = _layerConstructs[i].UnresolvedName.Replace("#", i.ToString());
+					_layerConstructs[i].Name = _layerConstructs[i].UnresolvedName.Replace("#", i.ToString(formatString));
 				}
 			}
 		}
@@ -138,13 +190,13 @@ namespace Sigma.Core.Architecture.Linear
 			if (LayerCount > 0)
 			{
 				LayerConstruct firstOwn = _layerConstructs.First();
-				LayerConstruct lastOther = _layerConstructs.Last();
+				LayerConstruct lastOther = other._layerConstructs.Last();
 
 				lastOther.AddOutput(firstOwn);
 				firstOwn.AddInput(lastOther);
 			}
 
-			for (int i = other._layerConstructs.Count; i >= 0; i--)
+			for (int i = other._layerConstructs.Count - 1; i >= 0; i--)
 			{
 				_layerConstructs.Insert(0, other._layerConstructs[i]);
 			}
@@ -166,7 +218,7 @@ namespace Sigma.Core.Architecture.Linear
 
 		public static LinearNetworkArchitecture operator +(LayerConstruct other, LinearNetworkArchitecture self)
 		{
-			return self.AppendEnd(new LinearNetworkArchitecture(other));
+			return self.AppendStart(new LinearNetworkArchitecture(other));
 		}
 
 		public static LinearNetworkArchitecture operator *(int multiplier, LinearNetworkArchitecture self)
@@ -181,26 +233,24 @@ namespace Sigma.Core.Architecture.Linear
 				return self;
 			}
 
-			for (int i = 0; i <= multiplier; i++)
+			if (multiplier >= 2)
 			{
-				LinearNetworkArchitecture copy = new LinearNetworkArchitecture(self._layerConstructs.ConvertAll(x =>
+				if (self._layerConstructs.Any(construct => !construct.Name.Contains('#')))
 				{
-					if (!x.Name.Contains('#'))
-					{
-						throw new ArgumentException("Attempted to multiply linear network architecture containing layer construct with static name, which cannot be multiplied. Include '#' in layer name for dynamic auto naming.");
-					}
-
-					return x.Copy();
-				}));
-
-				LayerConstruct lastOwn = self._layerConstructs.Last();
-				LayerConstruct firstOther = copy._layerConstructs.First();
-
-				lastOwn.AddOutput(firstOther);
-				firstOther.AddInput(lastOwn);
+					throw new ArgumentException("Attempted to multiply linear network architecture containing layer construct with static name, which cannot be multiplied. Include '#' in layer name for dynamic auto naming.");
+				}
 			}
 
-			return self;
+			LinearNetworkArchitecture multipliedSelf = new LinearNetworkArchitecture();
+
+			for (int i = 0; i < multiplier; i++)
+			{
+				LinearNetworkArchitecture copy = self.Copy();
+
+				multipliedSelf.AppendEnd(copy);
+			}
+
+			return multipliedSelf;
 		}
 
 		public IEnumerable<LayerConstruct> YieldLayerConstructsOrdered()

@@ -142,6 +142,7 @@ namespace Sigma.Core
 			}
 
 			_trainersByName.Add(trainer.Name, trainer);
+			trainer.Sigma = this;
 
 			return trainer;
 		}
@@ -395,7 +396,7 @@ namespace Sigma.Core
 
 			ActiveSigmaEnvironments.Set(environmentName, environment);
 
-			ClazzLogger.Info($"Created and registered sigma environment \"{environmentName}\"");
+			ClazzLogger.Info($"Created and registered sigma environment \"{environmentName}\".");
 
 			return environment;
 		}

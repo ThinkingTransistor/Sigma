@@ -123,6 +123,8 @@ namespace Sigma.Core.Training
 				throw new InvalidOperationException($"Cannot initialise trainer before assigning a sigma environment.");
 			}
 
+			Network.Validate();
+
 			_logger.Info($"Initialising trainer \"{Name}\" for handler {handler}...");
 
 			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing trainer");
@@ -147,12 +149,23 @@ namespace Sigma.Core.Training
 						initialiser.Initialise(array, handler, Sigma.Random);
 						initialisedCount++;
 					}
+					else
+					{
+						INumber number = value as INumber;
+
+						if (number != null)
+						{
+							initialiser.Initialise(number, handler, Sigma.Random);
+							initialisedCount++;
+						}
+					}
+					
 				}
 			}
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedCount} ndarrays.");
+			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedCount} objects.");
 		}
 	}
 }

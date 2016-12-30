@@ -35,22 +35,20 @@ namespace Sigma.Core.Training.Initialisers
 
 		public void Initialise(INDArray array, IComputationHandler handler, Random random)
 		{
-			if (array == null)
-			{
-				throw new ArgumentNullException(nameof(array));
-			}
-
-			if (handler == null)
-			{
-				throw new ArgumentNullException(nameof(handler));
-			}
-
-			if (random == null)
-			{
-				throw new ArgumentNullException(nameof(random));
-			}
+			if (array == null) throw new ArgumentNullException(nameof(array));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+			if (random == null) throw new ArgumentNullException(nameof(random));
 
 			handler.Fill(ConstantValue, array);
+		}
+
+		public void Initialise(INumber number, IComputationHandler handler, Random random)
+		{
+			if (number == null) throw new ArgumentNullException(nameof(number));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+			if (random == null) throw new ArgumentNullException(nameof(random));
+
+			number.Value = ConstantValue;
 		}
 	}
 }

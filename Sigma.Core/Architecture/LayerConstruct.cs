@@ -128,7 +128,7 @@ namespace Sigma.Core.Architecture
 			}
 			catch (MissingMethodException)
 			{
-				_logger.Error($"Unable to instantiate layer from construct. Referenced class type is missing required constructor with signature LayerClassName(string name, IRegistry parameters, IComputationHandler handler).");
+				_logger.Error($"Unable to instantiate layer from construct {Name}. Referenced class type {_layerClassType} is missing required constructor with signature LayerClassName(string name, IRegistry parameters, IComputationHandler handler).");
 
 				throw;
 			}
