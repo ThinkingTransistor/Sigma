@@ -110,15 +110,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			foreach (LayerConstruct construct in YieldLayerConstructsOrdered())
 			{
-				if (construct.InputsExternal && construct.Inputs.Count > 0)
-				{
-					throw new InvalidNetworkArchitectureException($"Layer constructs marked with external inputs cannot have any internal inputs, but construct {construct} has {construct.Inputs.Count}.");
-				}
-
-				if (construct.OutputsExternal && construct.Outputs.Count > 0)
-				{
-					throw new InvalidNetworkArchitectureException($"Layer constructs marked with external outputs cannot have any internal outputs, but construct {construct} has {construct.Outputs.Count}.");
-				}
+				// TODO internal / external alias check
 
 				foreach (LayerConstruct previousConstruct in previousConstructs)
 				{

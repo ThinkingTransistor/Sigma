@@ -50,16 +50,14 @@ namespace Sigma.Core.Architecture
 		public IDictionary<string, LayerConstruct> Outputs { get; }
 
 		/// <summary>
-		/// Indicate if the inputs of this layer are supplied externally.
-		/// If set, this layer cannot have any internal inputs.
+		/// Indicate the alias names of the input layers to be supplied externally.
 		/// </summary>
-		public bool InputsExternal { get; internal set; }
+		public string[] ExternalInputs { get; internal set; }
 
 		/// <summary>
-		/// Indicate if the outputs of this layer are supplied externally.
-		/// If set, this layer cannot have any internal outputs.
+		/// Indicate the alias names of the output layers to be supplied externally.
 		/// </summary>
-		public bool OutputsExternal { get; internal set; }
+		public string[] ExternalOutputs { get; internal set; }
 
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -77,6 +75,8 @@ namespace Sigma.Core.Architecture
 
 			Inputs = new Dictionary<string, LayerConstruct>();
 			Outputs = new Dictionary<string, LayerConstruct>();
+			ExternalInputs = new string[0];
+			ExternalOutputs = new string[0];
 			Parameters = new Registry(tags: "layer");
 		}
 
@@ -113,8 +113,8 @@ namespace Sigma.Core.Architecture
 			LayerConstruct copy = new LayerConstruct(Name, _layerClassType)
 			{
 				Parameters = Parameters,
-				InputsExternal = InputsExternal,
-				OutputsExternal = OutputsExternal
+				ExternalInputs = (string[]) ExternalInputs.Clone(),
+				ExternalOutputs = (string[]) ExternalOutputs.Clone(),
 			};
 
 			return copy;

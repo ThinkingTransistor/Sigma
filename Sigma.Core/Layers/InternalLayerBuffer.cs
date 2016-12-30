@@ -19,8 +19,8 @@ namespace Sigma.Core.Layers
 	{
 		public ILayer Layer { get; }
 		public IRegistry Parameters { get; }
-		public bool InputsExternal { get; }
-		public bool OutputsExternal { get; }
+		public string[] ExternalInputs { get; }
+		public string[] ExternalOutputs { get; }
 		public IDictionary<string, IRegistry> Inputs { get; }
 		public IDictionary<string, IRegistry> Outputs { get; }
 
@@ -31,22 +31,24 @@ namespace Sigma.Core.Layers
 		/// <param name="parameters">The parameters.</param>
 		/// <param name="inputs">The inputs.</param>
 		/// <param name="outputs">The outputs.</param>
-		/// <param name="inputsExternal">Indicate if inputs are external.</param>
-		/// <param name="outputsExternal">Indicate if outputs are external.</param>
+		/// <param name="externalInputs">Indicate the inputs that are external.</param>
+		/// <param name="externalOutputs">Indicate if outputs are external.</param>
 		public InternalLayerBuffer(ILayer layer, IRegistry parameters, IDictionary<string, IRegistry> inputs, IDictionary<string, IRegistry> outputs,
-									bool inputsExternal, bool outputsExternal)
+									string[] externalInputs, string[] externalOutputs)
 		{
 			if (layer == null) throw new ArgumentNullException(nameof(layer));
 			if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 			if (inputs == null) throw new ArgumentNullException(nameof(inputs));
 			if (outputs == null) throw new ArgumentNullException(nameof(outputs));
+			if (externalInputs == null) throw new ArgumentNullException(nameof(externalInputs));
+			if (externalOutputs == null) throw new ArgumentNullException(nameof(externalOutputs));
 
 			Parameters = parameters;
 			Inputs = inputs;
 			Outputs = outputs;
 			Layer = layer;
-			InputsExternal = inputsExternal;
-			OutputsExternal = outputsExternal;
+			ExternalInputs = externalInputs;
+			ExternalOutputs = externalOutputs;
 		}
 	}
 }

@@ -80,51 +80,47 @@ namespace Sigma.Core.Architecture
 
 				Dictionary<string, IRegistry> inputs = new Dictionary<string, IRegistry>();
 
-				if (layerConstruct.InputsExternal)
+				foreach (string externalInputAlias in layerConstruct.ExternalInputs)
 				{
-					inputs["external"] = new Registry(tags: "external");
+					inputs[externalInputAlias] = new Registry(tags: "external_input");
 				}
-				else
+
+				foreach (string inputAlias in layerConstruct.Inputs.Keys)
 				{
-					foreach (string inputAlias in layerConstruct.Inputs.Keys)
-					{
-						inputs[inputAlias] = mappedRegistriesByInOutputs[new Tuple<LayerConstruct, LayerConstruct>(layerConstruct.Inputs[inputAlias], layerConstruct)];
-					}
+					inputs[inputAlias] = mappedRegistriesByInOutputs[new Tuple<LayerConstruct, LayerConstruct>(layerConstruct.Inputs[inputAlias], layerConstruct)];
 				}
 
 				Dictionary<string, IRegistry> outputs = new Dictionary<string, IRegistry>();
 
-				if (layerConstruct.OutputsExternal)
+				foreach (string externalOutputAlias in layerConstruct.ExternalOutputs)
 				{
-					outputs["external"] = new Registry(tags: "external");
+					inputs[externalOutputAlias] = new Registry(tags: "external_output");
 				}
-				else
+
+				foreach (string outputAlias in layerConstruct.Outputs.Keys)
 				{
-					foreach (string outputAlias in layerConstruct.Outputs.Keys)
-					{
-						LayerConstruct outputConstruct = layerConstruct.Outputs[outputAlias];
+					LayerConstruct outputConstruct = layerConstruct.Outputs[outputAlias];
 
-						Tuple<LayerConstruct, LayerConstruct> inOuTuple = new Tuple<LayerConstruct, LayerConstruct>(layerConstruct, outputConstruct);
+					Tuple<LayerConstruct, LayerConstruct> inOuTuple = new Tuple<LayerConstruct, LayerConstruct>(layerConstruct, outputConstruct);
 
-						Registry outRegistry = new Registry(tags: "internal");
+					Registry outRegistry = new Registry(tags: "internal");
 
-						mappedRegistriesByInOutputs.Add(inOuTuple, outRegistry);
+					mappedRegistriesByInOutputs.Add(inOuTuple, outRegistry);
 
-						outputs[outputAlias] = outRegistry;
-					}
+					outputs[outputAlias] = outRegistry;
 				}
 
 				InternalLayerBuffer layerBuffer = new InternalLayerBuffer(layer, layerConstruct.Parameters, inputs, outputs,
-					layerConstruct.InputsExternal, layerConstruct.OutputsExternal);
+					layerConstruct.ExternalInputs, layerConstruct.ExternalOutputs);
 
 				_orderedLayerBuffers.Add(layerBuffer);
 
-				if (layerConstruct.InputsExternal)
+				if (layerConstruct.ExternalInputs.Length > 0)
 				{
 					_externalInputsLayerBuffers.Add(layerBuffer);
 				}
 
-				if (layerConstruct.OutputsExternal)
+				if (layerConstruct.ExternalOutputs.Length > 0)
 				{
 					_externalOutputsLayerBuffers.Add(layerBuffer);
 				}
