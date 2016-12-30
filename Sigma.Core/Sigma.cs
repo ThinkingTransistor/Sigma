@@ -6,17 +6,19 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using log4net;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace Sigma.Core
 {
@@ -44,7 +46,7 @@ namespace Sigma.Core
 		/// </summary>
 		public string Name
 		{
-			get; internal set;
+			get;
 		}
 
 		/// <summary>
@@ -97,6 +99,7 @@ namespace Sigma.Core
 		public TMonitor AddMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
 		{
 			monitor.Sigma = this;
+			monitor.Registry = new Registry(Registry);
 
 			monitor.Initialise();
 			_monitors.Add(monitor);
@@ -139,6 +142,7 @@ namespace Sigma.Core
 			}
 
 			_trainersByName.Add(trainer.Name, trainer);
+			trainer.Sigma = this;
 
 			return trainer;
 		}
@@ -342,11 +346,15 @@ namespace Sigma.Core
 			get; internal set;
 		}
 
+		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB");
 		internal static IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
 		{
+			CultureInfo.DefaultThreadCurrentCulture = DefaultCultureInfo;
+			Thread.CurrentThread.CurrentCulture = DefaultCultureInfo;
+
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
 
@@ -364,10 +372,10 @@ namespace Sigma.Core
 		/// </summary>
 		private static void RegisterGlobals()
 		{
-			Globals.Set("workspacePath", "workspace/", typeof(string));
-			Globals.Set("cache", Globals.Get<string>("workspacePath") + "cache/", typeof(string));
-			Globals.Set("datasets", Globals.Get<string>("workspacePath") + "datasets/", typeof(string));
-			Globals.Set("webProxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
+			Globals.Set("workspace_path", "workspace/", typeof(string));
+			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
+			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
 		}
 
 		/// <summary>
@@ -388,7 +396,7 @@ namespace Sigma.Core
 
 			ActiveSigmaEnvironments.Set(environmentName, environment);
 
-			ClazzLogger.Info($"Created and registered sigma environment \"{environmentName}\"");
+			ClazzLogger.Info($"Created and registered sigma environment \"{environmentName}\".");
 
 			return environment;
 		}

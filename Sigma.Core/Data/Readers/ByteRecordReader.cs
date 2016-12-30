@@ -22,7 +22,7 @@ namespace Sigma.Core.Data.Readers
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public IDataSetSource Source { get; }
+		public IDataSource Source { get; }
 
 		private readonly int _headerBytes;
 		private readonly int _recordSizeBytes;
@@ -35,7 +35,7 @@ namespace Sigma.Core.Data.Readers
 		/// <param name="source">The source which should read.</param>
 		/// <param name="headerLengthBytes">The header length in bytes (which will be skipped in this implementation).</param>
 		/// <param name="recordSizeBytes">The per record size in bytes.</param>
-		public ByteRecordReader(IDataSetSource source, int headerLengthBytes, int recordSizeBytes)
+		public ByteRecordReader(IDataSource source, int headerLengthBytes, int recordSizeBytes)
 		{
 			if (source == null)
 			{

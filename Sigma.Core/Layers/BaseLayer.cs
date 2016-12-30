@@ -23,25 +23,14 @@ namespace Sigma.Core.Layers
 		/// <param name="handler">The handler to use for ndarray parameter creation.</param>
 		protected BaseLayer(string name, IRegistry parameters, IComputationHandler handler)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException(nameof(name));
-			}
-
-			if (parameters == null)
-			{
-				throw new ArgumentNullException(nameof(parameters));
-			}
-
-			if (handler == null)
-			{
-				throw new ArgumentNullException(nameof(parameters));
-			}
+			if (name == null) throw new ArgumentNullException(nameof(name));
+			if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+			if (handler == null) throw new ArgumentNullException(nameof(parameters));
 
 			Name = name;
 			Parameters = parameters;
 		}
 
-		public abstract void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass = true);
+		public abstract void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass);
 	}
 }

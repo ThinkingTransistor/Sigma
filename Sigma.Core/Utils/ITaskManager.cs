@@ -12,15 +12,31 @@ using System.Linq;
 
 namespace Sigma.Core.Utils
 {
+	public class TaskModifiedEventArgs : EventArgs
+	{
+		public ITaskObserver Task { get; }
+		public TaskObserveStatus NextStatus { get; }
+
+		public TaskModifiedEventArgs(ITaskObserver task, TaskObserveStatus nextStatus)
+		{
+			Task = task;
+			NextStatus = nextStatus;
+		}
+	}
+
 	/// <summary>
 	/// A default implementation of the <see cref="ITaskManager"/> interface. 
 	/// Represents a task manager, that manages a set of task observers. 
 	/// </summary>
 	public class TaskManager : ITaskManager
 	{
+		public event EventHandler<TaskModifiedEventArgs> TaskCreated;
+		public event EventHandler<TaskModifiedEventArgs> TaskCanceled;
+		public event EventHandler<TaskModifiedEventArgs> TaskEnded;
+
 		private readonly IList<ITaskObserver> _runningObservers = new List<ITaskObserver>();
 
-		public ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = false)
+		public ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = true)
 		{
 			if (taskType == null)
 			{
@@ -28,6 +44,7 @@ namespace Sigma.Core.Utils
 			}
 
 			ITaskObserver observer = new TaskObserver(taskType, taskDescription, exposed);
+			OnTaskCreated(observer);
 
 			observer.Status = TaskObserveStatus.Running;
 			observer.StartTime = DateTime.Now;
@@ -42,7 +59,22 @@ namespace Sigma.Core.Utils
 				_runningObservers.Add(observer);
 			}
 
-			return observer;	
+			return observer;
+		}
+
+		protected virtual void OnTaskCreated(ITaskObserver task, object sender = null)
+		{
+			TaskCreated?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Running));
+		}
+
+		protected virtual void OnTaskCanceled(ITaskObserver task, object sender = null)
+		{
+			TaskCanceled?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Canceled));
+		}
+
+		protected virtual void OnTaskEnded(ITaskObserver task, object sender = null)
+		{
+			TaskEnded?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Ended));
 		}
 
 		public void CancelTask(ITaskObserver task)
@@ -52,6 +84,8 @@ namespace Sigma.Core.Utils
 				//nothing to do here, task is not even running
 				return;
 			}
+
+			OnTaskCanceled(task);
 
 			task.Status = TaskObserveStatus.Canceled;
 
@@ -69,6 +103,8 @@ namespace Sigma.Core.Utils
 				return;
 			}
 
+			OnTaskEnded(task);
+
 			task.Status = TaskObserveStatus.Ended;
 
 			lock (_runningObservers)
@@ -81,6 +117,7 @@ namespace Sigma.Core.Utils
 		{
 			return _runningObservers;
 		}
+
 
 		public IEnumerable<ITaskObserver> GetTasks(ITaskType taskType)
 		{
@@ -104,7 +141,7 @@ namespace Sigma.Core.Utils
 		/// <param name="exposed">Indicate whether the task should be exposed to external search requests.</param>
 		/// <param name="indeterminate">Indicate whether the task is indeterminate (unknown total workload).</param>
 		/// <returns></returns>
-		ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = false);
+		ITaskObserver BeginTask(ITaskType taskType, string taskDescription = null, bool exposed = true, bool indeterminate = true);
 
 		/// <summary>
 		/// Cancel a certain task.
@@ -130,6 +167,21 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>All currently running tasks.</returns>
 		ICollection<ITaskObserver> GetTasks();
+
+		/// <summary>
+		/// This event will be raised when a newly created <see cref="ITaskObserver"/> is added.
+		/// </summary>
+		event EventHandler<TaskModifiedEventArgs> TaskCreated;
+
+		/// <summary>
+		/// This event will be raised when a <see cref="ITaskObserver"/> is canceled. 
+		/// </summary>
+		event EventHandler<TaskModifiedEventArgs> TaskCanceled;
+
+		/// <summary>
+		/// This event will be raised when a <see cref="ITaskObserver"/> is ended. 
+		/// </summary>
+		event EventHandler<TaskModifiedEventArgs> TaskEnded;
 	}
 
 	/// <summary>

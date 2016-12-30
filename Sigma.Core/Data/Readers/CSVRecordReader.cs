@@ -31,7 +31,7 @@ namespace Sigma.Core.Data.Readers
 		private StreamReader _reader;
 		private int _numberColumns = NumberColumnsNotSet;
 
-		public IDataSetSource Source
+		public IDataSource Source
 		{
 			get; }
 
@@ -41,7 +41,7 @@ namespace Sigma.Core.Data.Readers
 		/// <param name="source">The data set source.</param>
 		/// <param name="separator">The separator to use in this CSV reader.</param>
 		/// <param name="skipFirstLine">Indicate if the first line should be skipped.</param>
-		public CsvRecordReader(IDataSetSource source, char separator = ',', bool skipFirstLine = false)
+		public CsvRecordReader(IDataSource source, char separator = ',', bool skipFirstLine = false)
 		{
 			if (source == null)
 			{

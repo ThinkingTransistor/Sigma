@@ -1,7 +1,8 @@
-﻿using NUnit.Framework;
-using Sigma.Core.Monitors.WPF.View;
-using System.Threading;
+﻿using System.Threading;
 using System.Windows.Controls;
+using NUnit.Framework;
+using Sigma.Core.Monitors.WPF.View;
+// ReSharper disable InconsistentNaming
 
 namespace Sigma.Core.Monitors.WPF.Tests.View
 {
@@ -14,7 +15,7 @@ namespace Sigma.Core.Monitors.WPF.Tests.View
 			{
 				TestUIWrapperClass wrapper = new TestUIWrapperClass();
 
-				Assert.IsTrue(wrapper.WrappedContent is TestControl);
+				Assert.IsTrue(wrapper.WrappedContent != null);
 
 				wrapper.WrappedContent.Test = "hello";
 

@@ -6,9 +6,10 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 
 namespace Sigma.Core.Utils
 {
@@ -95,6 +96,10 @@ namespace Sigma.Core.Utils
 				{
 					result[i++] = value;
 				}
+			}
+			else
+			{
+				result[0] = start;
 			}
 
 			return result;
@@ -225,10 +230,11 @@ namespace Sigma.Core.Utils
 		/// <param name="array"></param>
 		/// <param name="toStringElement"></param>
 		/// <param name="maxDimensionNewLine"></param>
+		/// <param name="printSeperator"></param>
 		/// <returns></returns>
-		public static string ToString<T>(INDArray array, NDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1)
+		public static string ToString<T>(INDArray array, ADNDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1, bool printSeperator = true)
 		{
-			return ((NDArray<T>) array).ToString(toStringElement, maxDimensionNewLine);
+			return ((ADNDArray<T>) array).ToString(toStringElement, maxDimensionNewLine, printSeperator);
 		}
 
 		/// <summary>

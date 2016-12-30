@@ -7,7 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Threading;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors
 {
@@ -20,7 +20,7 @@ namespace Sigma.Core.Monitors
 
 		/// <summary>
 		/// Start this <see cref="IMonitor"/>.
-		/// If the <see cref="IMonitor"/> runs in a new <see cref="Thread"/>, this function should block until the monitor is completely up and running. 
+		/// If the <see cref="IMonitor"/> runs in a new <see cref="System.Threading.Thread"/>, this function should block until the monitor is completely up and running. 
 		/// </summary>
 		void Start();
 
@@ -28,5 +28,7 @@ namespace Sigma.Core.Monitors
 		/// The sigma environment associated with this monitor.
 		/// </summary>
 		SigmaEnvironment Sigma { get; set; }
+
+		IRegistry Registry { get; set; }
 	}
 }

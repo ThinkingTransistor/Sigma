@@ -17,11 +17,13 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A URL resource used for datasets. Entire resource is downloaded and stored locally for processing.
 	/// </summary>
-	public class UrlSource : IDataSetSource
+	public class UrlSource : IDataSource
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public string ResourceName { get; }
+
+		public int NumberRetriesOnError { get; set; }
 
 		public bool Seekable => true;
 
@@ -47,7 +49,8 @@ namespace Sigma.Core.Data.Sources
 		/// <param name="url">The URL.</param>
 		/// <param name="localDownloadPath">The local download path, where this file will be downloaded to.</param>
 		/// <param name="proxy">The optional web proxy to use for file downloads.</param>
-		public UrlSource(string url, string localDownloadPath, IWebProxy proxy = null)
+		/// <param name="numberRetriesOnError">The number of times to retry the download if it failed.</param>
+		public UrlSource(string url, string localDownloadPath, IWebProxy proxy = null, int numberRetriesOnError = 2)
 		{
 			if (url == null)
 			{
@@ -59,10 +62,16 @@ namespace Sigma.Core.Data.Sources
 				throw new ArgumentNullException(nameof(localDownloadPath));
 			}
 
+			if (numberRetriesOnError < 0)
+			{
+				throw new ArgumentException($"Number retries on error must be >= 0, but was {numberRetriesOnError}.");
+			}
+
 			ResourceName = url;
 			_localDownloadPath = localDownloadPath;
 
-			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
+			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
+			NumberRetriesOnError = numberRetriesOnError;
 		}
 
 		private static string GetFileNameFromUrl(string url)
@@ -129,47 +138,56 @@ namespace Sigma.Core.Data.Sources
 				return;
 			}
 
-			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, ResourceName);
-
 			DirectoryInfo directoryInfo = new FileInfo(_localDownloadPath).Directory;
 			if (directoryInfo != null)
 			{
 				Directory.CreateDirectory(directoryInfo.FullName);
 			}
 
-			if (File.Exists(_localDownloadPath))
+			int numberRetriesLeft = NumberRetriesOnError;
+			bool downloadSuccess = false;
+
+			do
 			{
-				File.Delete(_localDownloadPath);
-			}
+				ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, ResourceName);
 
-			_logger.Info($"Downloading URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\"...");
-
-			using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
-			{
-				bool downloadSuccessful = client.DownloadFile(ResourceName, _localDownloadPath, task);
-
-				if (downloadSuccessful)
+				if (File.Exists(_localDownloadPath))
 				{
-					_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\" ({client.PreviousBytesReceived / 1024}kB).");
-				}
-				else
-				{
-					_logger.Warn($"Failed to download URL source \"{ResourceName}\", could not prepare this URL source correctly.");
-
 					File.Delete(_localDownloadPath);
-
-					SigmaEnvironment.TaskManager.CancelTask(task);
-
-					return;
 				}
-			}
+
+				_logger.Info($"Downloading URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\"...");
+
+				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
+				{
+					downloadSuccess = client.DownloadFile(ResourceName, _localDownloadPath, task);
+
+					if (downloadSuccess)
+					{
+						_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\" ({client.PreviousBytesReceived/1024}kB).");
+
+						SigmaEnvironment.TaskManager.EndTask(task);
+					}
+					else
+					{
+						_logger.Warn($"Failed to download URL source \"{ResourceName}\", could not prepare this URL source correctly.");
+
+						File.Delete(_localDownloadPath);
+
+						SigmaEnvironment.TaskManager.CancelTask(task);
+					}
+				}
+
+				if (!downloadSuccess && numberRetriesLeft > 0)
+				{
+					_logger.Info($"Retrying download, retry attempt {NumberRetriesOnError - numberRetriesLeft + 1} of {NumberRetriesOnError}...");
+				}
+			} while (!downloadSuccess && numberRetriesLeft-- > 0); 
 
 			_logger.Info($"Opened file \"{_localDownloadPath}\".");
 			_localDownloadedFileStream = new FileStream(_localDownloadPath, FileMode.Open);
 
 			_prepared = true;
-
-			SigmaEnvironment.TaskManager.EndTask(task);
 		}
 
 		public Stream Retrieve()

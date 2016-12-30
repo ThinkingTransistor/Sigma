@@ -9,11 +9,12 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data
 {
 	/// <summary>
-	/// A default implementation of the databuffer interface.
+	/// A default implementation of the databuffer interface, compatible with the default Sigma.DiffSharp implementation.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
@@ -30,11 +31,9 @@ namespace Sigma.Core.Data
 
 		public long RelativeOffset { get; }
 
-		public IDataType Type
-		{
-			get; }
+		public IDataType Type { get; }
 
-		public ILargeChunkedArray<T> Data { get; }
+		public T[] Data { get; }
 
 		/// <summary>
 		/// Create a data buffer of a certain type with a certain underlying buffer.
@@ -66,39 +65,6 @@ namespace Sigma.Core.Data
 		/// </summary>
 		/// <param name="data">The large chunked array data.</param>
 		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
-		public DataBuffer(ILargeChunkedArray<T> data, IDataType underlyingType = null) : this(data, 0L, data?.Length ?? 0L, underlyingType)
-		{
-		}
-
-		/// <summary>
-		/// Create a data buffer of a certain large chunked array.
-		/// </summary>
-		/// <param name="data">The large chunked array data.</param>
-		/// <param name="underlyingType">The underlying data type (inferred if not given explicitly).</param>
-		/// <param name="offset">The offset relative to the data array.</param>
-		/// <param name="length">The length this buffer should have.</param>
-		public DataBuffer(ILargeChunkedArray<T> data, long offset, long length, IDataType underlyingType = null)
-		{
-			if (data == null)
-			{
-				throw new ArgumentNullException(nameof(data));
-			}
-
-			CheckBufferBounds(offset, length, offset + length, data.Length);
-
-			Data = data;
-			Length = length;
-			RelativeOffset = offset;
-			Offset = offset;
-
-			Type = InferDataType(underlyingType);
-		}
-
-		/// <summary>
-		/// Create a data buffer of a certain array.
-		/// </summary>
-		/// <param name="data">The data array.</param>
-		/// <param name="underlyingType">The underlying type (inferred if not explicitly given).</param>
 		public DataBuffer(T[] data, IDataType underlyingType = null) : this(data, 0L, data?.Length ?? 0L, underlyingType)
 		{
 		}
@@ -119,7 +85,7 @@ namespace Sigma.Core.Data
 
 			CheckBufferBounds(offset, length, offset + length, data.Length);
 
-			Data = new LargeChunkedArray<T>(data);
+			Data = data;
 			Length = length;
 			RelativeOffset = offset;
 			Offset = offset;
@@ -140,7 +106,7 @@ namespace Sigma.Core.Data
 			}
 
 			Length = length;
-			Data = new LargeChunkedArray<T>(length);
+			Data = new T[length];
 
 			Type = InferDataType(underlyingType);
 		}
@@ -195,19 +161,20 @@ namespace Sigma.Core.Data
 			}
 		}
 
-		public IDataBuffer<T> Copy()
+		public virtual IDataBuffer<T> ShallowCopy()
 		{
 			return new DataBuffer<T>(this);
 		}
 
-		public object DeepCopy()
+		public virtual object DeepCopy()
 		{
-			return new DataBuffer<T>((ILargeChunkedArray<T>) Data.DeepCopy(), Type);
+			// not sure if entire data or just subsection should be copied
+			return new DataBuffer<T>((T[]) Data.Clone(), Offset, Length, Type);
 		}
 
 		public T GetValue(long index)
 		{
-			return Data.GetValue(Offset + index);
+			return Data[Offset + index];
 		}
 
 		public TOther GetValueAs<TOther>(long index)
@@ -215,36 +182,38 @@ namespace Sigma.Core.Data
 			return (TOther) Convert.ChangeType(Data.GetValue(Offset + index), typeof(TOther));
 		}
 
-		public IDataBuffer<T> GetValues(long startIndex, long length)
+		public virtual IDataBuffer<T> GetValues(long startIndex, long length)
 		{
 			return new DataBuffer<T>(this, startIndex, length);
 		}
 
-		public IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
 		{
-			LargeChunkedArray<TOther> otherData = new LargeChunkedArray<TOther>(length);
-
-			otherData.FillWith(Data, Offset + startIndex, 0L, length);
-
-			return new DataBuffer<TOther>(otherData, 0L, length);
+			return new DataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length);
 		}
 
-		public ILargeChunkedArray<T> GetValuesArray(long startIndex, long length)
+		public T[] GetValuesArray(long startIndex, long length)
 		{
-			LargeChunkedArray<T> valuesArray = new LargeChunkedArray<T>(length);
+			T[] valuesArray = new T[length];
 
-			valuesArray.FillWith(Data, Offset + startIndex, 0L, length);
+			System.Array.Copy(Data, Offset + startIndex, valuesArray, 0, length);
 
 			return valuesArray;
 		}
 
-		public ILargeChunkedArray<TOther> GetValuesArrayAs<TOther>(long startIndex, long length)
+		public TOther[] GetValuesArrayAs<TOther>(long startIndex, long length)
 		{
-			LargeChunkedArray<TOther> valuesArray = new LargeChunkedArray<TOther>(length);
+			TOther[] otherData = new TOther[length];
 
-			valuesArray.FillWith(Data, Offset + startIndex, 0L, length);
+			long absoluteStart = Offset + startIndex;
+			Type otherType = typeof(TOther);
 
-			return valuesArray;
+			for (long i = 0; i < length; i++)
+			{
+				otherData[i] = (TOther) Convert.ChangeType(Data[i + absoluteStart], otherType);
+			}
+
+			return otherData;
 		}
 
 		public void SetValue(T value, long index)
@@ -254,12 +223,12 @@ namespace Sigma.Core.Data
 
 		public void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length)
 		{
-			Data.FillWith(buffer.Data, sourceStartIndex + buffer.Offset, destStartIndex + Offset, length);
+			System.Array.Copy(buffer.Data, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
 		public void SetValues(T[] values, long sourceStartIndex, long destStartIndex, long length)
 		{
-			Data.FillWith(values, sourceStartIndex, destStartIndex + Offset, length);
+			System.Array.Copy(values, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
 		public IDataBuffer<T> GetUnderlyingBuffer()
@@ -276,7 +245,7 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < Length; i++)
 			{
-				yield return Data.GetValue(i);
+				yield return Data[i + Offset];
 			}
 		}
 
@@ -284,8 +253,13 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < Length; i++)
 			{
-				yield return Data.GetValue(i);
+				yield return Data[i + Offset];
 			}
+		}
+
+		public override string ToString()
+		{
+			return $"databuffer {Type}x{Length}: " + "[" + string.Join(",", Data.SubArray((int) Offset, (int) Length)) + "]";
 		}
 	}
 }

@@ -66,12 +66,23 @@ namespace Sigma.Core.Utils
 		object Get(string identifier);
 
 		/// <summary>
+		/// Tries to get a generic value.
+		/// </summary>
+		/// <typeparam name="T">The type the object will have.</typeparam>
+		/// <param name="identifier">The identifier. </param>
+		/// <param name="obj">The reference to the object in the registry. </param>
+		/// <returns>true if the registry contains
+		/// an element with the specified key; otherwise, false.
+		/// If the types do not match, it also returns false. </returns>
+		bool TryGetValue<T>(string identifier, out T obj);
+
+		/// <summary>
 		/// Get all values of type T matching the identifier and optionally check if they match a certain type. 
 		/// </summary>
 		/// <typeparam name="T">The type.</typeparam>
 		/// <param name="matchIdentifier">The identifier to match.</param>
 		/// <param name="matchType">The type to match.</param>
-		/// <returns></returns>
+		/// <returns>An array of all values.</returns>
 		T[] GetAllValues<T>(string matchIdentifier, Type matchType = null);
 
 		/// <summary>

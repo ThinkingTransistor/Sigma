@@ -6,16 +6,16 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
-using Sigma.Core.Data.Extractors;
-using Sigma.Core.Handlers;
-using Sigma.Core.MathAbstract;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
+using Sigma.Core.Data.Extractors;
+using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Datasets
 {

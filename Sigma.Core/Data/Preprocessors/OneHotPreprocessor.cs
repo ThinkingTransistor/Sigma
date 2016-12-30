@@ -93,13 +93,13 @@ namespace Sigma.Core.Data.Preprocessors
 				throw new ArgumentException($"Cannot one-hot encode ndarrays whose feature shape (index 2) is not 1, but ndarray.shape[2] was {array.Shape[2]}");
 			}
 
-			INDArray encodedArray = handler.Create(array.Shape[0], array.Shape[1], _valueToIndexMapping.Count);
+			INDArray encodedArray = handler.NDArray(array.Shape[0], array.Shape[1], _valueToIndexMapping.Count);
 
 			long[] bufferIndices = new long[3];
 
 			for (long i = 0; i < array.Length; i++)
 			{
-				bufferIndices = NDArray<int>.GetIndices(i, array.Shape, array.Strides, bufferIndices);
+				bufferIndices = NDArrayUtils.GetIndices(i, array.Shape, array.Strides, bufferIndices);
 
 				object value = array.GetValue<int>(bufferIndices);
 

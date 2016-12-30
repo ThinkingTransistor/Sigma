@@ -1,4 +1,4 @@
-﻿/* 
+/* 
 MIT License
 
 Copyright (c) 2016 Florian Cäsar, Michael Plainer
@@ -56,11 +56,13 @@ namespace Sigma.Core.Utils
 
 		public ISet<string> Tags
 		{
-			get; }
+			get;
+		}
 
 		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
 		{
-			get; }
+			get;
+		}
 
 		/// <summary>
 		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
@@ -70,7 +72,7 @@ namespace Sigma.Core.Utils
 		public Registry(IRegistry parent = null, params string[] tags)
 		{
 			Parent = parent;
-			Root = Parent?.Root == null ? Parent : Parent?.Root;
+			Root = Parent?.Root ?? Parent;
 
 			MappedValues = new Dictionary<string, object>();
 			AssociatedTypes = new Dictionary<string, Type>();
@@ -98,19 +100,20 @@ namespace Sigma.Core.Utils
 				}
 				else
 				{
-					IDeepCopyable cloneable = value as IDeepCopyable;
+					IDeepCopyable deepCopyableValue = value as IDeepCopyable;
 
 					object copiedValue;
 
-					if (cloneable == null)
+					if (deepCopyableValue == null)
 					{
 						if (!ExceptionOnCopyNonDeepCopyable)
 						{
 							copiedValue = value;
 
-							if (value is ICloneable)
+							ICloneable cloneableValue = value as ICloneable;
+							if (cloneableValue != null)
 							{
-								copiedValue = ((ICloneable) value).Clone();
+								copiedValue = cloneableValue.Clone();
 							}
 						}
 						else
@@ -120,7 +123,7 @@ namespace Sigma.Core.Utils
 					}
 					else
 					{
-						copiedValue = cloneable.DeepCopy();
+						copiedValue = deepCopyableValue.DeepCopy();
 					}
 
 					copy.MappedValues.Add(identifier, copiedValue);
@@ -234,6 +237,25 @@ namespace Sigma.Core.Utils
 			return MappedValues[identifier];
 		}
 
+		public bool TryGetValue<T>(string identifier, out T obj)
+		{
+			object val;
+
+			if (TryGetValue(identifier, out val))
+			{
+				if (val is T)
+				{
+					obj = (T) val;
+
+					return true;
+				}
+			}
+
+			obj = default(T);
+
+			return false;
+		}
+
 		public T[] GetAllValues<T>(string matchIdentifier, Type matchType = null)
 		{
 			List<T> matchingValues = new List<T>();
@@ -341,14 +363,14 @@ namespace Sigma.Core.Utils
 		{
 			StringBuilder str = new StringBuilder();
 
-			str.Append("\n[Registry]");
-			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : (string.Join("", Tags))));
+			str.Append("[Registry]");
+			str.Append("\n[Tags] = " + (Tags.Count == 0 ? "<none>" : string.Join("", Tags)));
 
-			foreach (var mappedValue in MappedValues)
+			foreach (KeyValuePair<string, object> mappedValue in MappedValues)
 			{
 				if (mappedValue.Value is IRegistry)
 				{
-					str.Append(mappedValue.Value.ToString().Replace("\n", "\n\t"));
+					str.Append($"\n{mappedValue.Key} is a: ").Append(mappedValue.Value.ToString().Replace("\n", "\n\t"));
 				}
 				else
 				{

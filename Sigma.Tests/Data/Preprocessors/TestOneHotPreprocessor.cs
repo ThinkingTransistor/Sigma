@@ -9,11 +9,12 @@ For full license see LICENSE in the root directory of this project.
 using NUnit.Framework;
 using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends;
 using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 
 namespace Sigma.Tests.Data.Preprocessors
 {
@@ -21,7 +22,7 @@ namespace Sigma.Tests.Data.Preprocessors
 	{
 		private static Dictionary<string, INDArray> GetNamedArrayTestData()
 		{
-			return new Dictionary<string, INDArray>() { ["test"] = new NDArray<float>(new float[] { 0, 2, 1 }, 3, 1, 1) };
+			return new Dictionary<string, INDArray>() { ["test"] = new ADNDArray<float>(new float[] { 0, 2, 1 }, 3, 1, 1) };
 		}
 
 		[TestCase]

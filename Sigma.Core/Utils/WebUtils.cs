@@ -133,7 +133,7 @@ namespace Sigma.Core.Utils
 
 			_timeoutTimer = new Timer(OnTimeout, null, _timeoutMilliseconds, Timeout.Infinite);
 
-			Proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("webProxy");
+			Proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
 		}
 
 		private void OnProgressChanged(long newBytesReceived, long totalBytesReceived, long totalBytes, int progressPercentage)

@@ -11,6 +11,28 @@ using System;
 namespace Sigma.Core.Utils
 {
 	/// <summary>
+	/// The <see cref="TaskProgressEventArgs"/> that will be passed, when a change occurs. 
+	/// </summary>
+	public class TaskProgressEventArgs : EventArgs
+	{
+		/// <summary>
+		/// The previous value of the progress.
+		/// </summary>
+		public float PreviousValue { get; set; }
+
+		/// <summary>
+		/// The current value of the progress. 
+		/// </summary>
+		public float NewValue { get; set; }
+
+		public TaskProgressEventArgs(float previousVale, float newValue)
+		{
+			PreviousValue = previousVale;
+			NewValue = newValue;
+		}
+	}
+
+	/// <summary>
 	/// A task observer, a collection of information about a certain task (does not have to be an actual System.Threading.Task). 
 	/// </summary>
 	public interface ITaskObserver : IProgress<float>
@@ -50,6 +72,12 @@ namespace Sigma.Core.Utils
 		/// The time span since this task was started.
 		/// </summary>
 		TimeSpan TimeSinceStarted { get; }
+
+		/// <summary>
+		/// This event will be raised when the progress is changed, or the <see cref="Status"/>
+		/// of the <see cref="ITaskObserver"/> changes. 
+		/// </summary>
+		event EventHandler<TaskProgressEventArgs> ProgressChanged;
 	}
 
 	/// <summary>
@@ -58,15 +86,30 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TaskObserver : ITaskObserver
 	{
+		private float _progress;
 		public const float TaskIndeterminate = -1.0f;
 
 		public string Description { get; set; }
 		public bool Exposed { get; set; }
-		public float Progress { get; set; }
+
+		public float Progress
+		{
+			get { return _progress; }
+			set
+			{
+				if (_progress != value)
+				{
+					OnProgressChanged(new TaskProgressEventArgs(_progress, value));
+					_progress = value;
+				}
+			}
+		}
+
 		public TaskObserveStatus Status { get; set; }
 		public ITaskType Type { get; set; }
 		public DateTime StartTime { get; set; }
 		public TimeSpan TimeSinceStarted => DateTime.Now - StartTime;
+		public event EventHandler<TaskProgressEventArgs> ProgressChanged;
 
 		public TaskObserver(ITaskType type, string description = null, bool exposed = true)
 		{
@@ -92,6 +135,11 @@ namespace Sigma.Core.Utils
 			Progress = value / 100.0f;
 
 			//Console.WriteLine($"{Type.ExpressedType} {Description} ({Progress * 100:00.0}%)");
+		}
+
+		private void OnProgressChanged(TaskProgressEventArgs args)
+		{
+			ProgressChanged?.Invoke(this, args);
 		}
 	}
 

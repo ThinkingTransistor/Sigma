@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
 {
@@ -21,20 +22,25 @@ namespace Sigma.Core.Architecture
 		int LayerCount { get; }
 
 		/// <summary>
-		/// Validate this network architecture.
+		/// A registry containing all relevant parameters and sub-registries (e.g. layer constructs).
 		/// </summary>
+		IRegistry Registry { get; }
+
+		/// <summary>
+		/// Validate this network architecture. 
+		/// </summary
 		void Validate();
 
 		/// <summary>
-		/// Resolve all layer names. 
+		/// Resolve all layer names to be fully qualified.
+		/// Note: Unresolved names are stored to enable consistency when changing the architecture and re-resolving the layer names.
 		/// </summary>
-		/// <returns>The underlying layer constructs (for convenience).</returns>
-		LayerConstruct[] ResolveAllNames();
+		void ResolveAllNames();
 
 		/// <summary>
 		/// Yield all layers in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<LayerConstruct> YieldLayerConstructs();
+		IEnumerable<LayerConstruct> YieldLayerConstructsOrdered();
 	}
 }

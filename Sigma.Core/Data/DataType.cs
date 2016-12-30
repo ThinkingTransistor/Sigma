@@ -141,5 +141,10 @@ namespace Sigma.Core.Data
 		{
 			return new T[length];
 		}
+
+		public override string ToString()
+		{
+			return Identifier;
+		}
 	}
 }

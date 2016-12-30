@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
-using System;
 
 namespace Sigma.Core.Monitors.WPF.Tests.Model.UI
 {
@@ -27,9 +27,11 @@ namespace Sigma.Core.Monitors.WPF.Tests.Model.UI
 		[TestCase]
 		public void TestGridSizeAssign()
 		{
-			GridSize grid = new GridSize(1, 1);
-			grid.Rows = 2;
-			grid.Columns = 3;
+			GridSize grid = new GridSize(1, 1)
+			{
+				Rows = 2,
+				Columns = 3
+			};
 
 			Assert.AreEqual(grid.Rows, 2);
 			Assert.AreEqual(grid.Columns, 3);

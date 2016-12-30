@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="SigmaGrid/CardColoursDark.xaml" />
+		<ResourceDictionary Source="LiveCharts/AxisDark.xaml" />
+	</ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

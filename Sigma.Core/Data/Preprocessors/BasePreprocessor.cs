@@ -54,17 +54,11 @@ namespace Sigma.Core.Data.Preprocessors
 
 				if (processedArray.Shape[0] != numberOfRecords)
 				{
-					long[] beginIndices = processedArray.Shape.ToArray();
-					long[] endIndices = processedArray.Shape.ToArray();
+					long[] beginIndices = (long[]) processedArray.Shape.Clone();
+					long[] endIndices = (long[]) processedArray.Shape.Clone();
 
-					beginIndices[0] = 0;
-					endIndices[0] = Math.Min(numberOfRecords, processedArray.Shape[0]);
-
-					for (int i = 1; i < processedArray.Rank; i++)
-					{
-						beginIndices[i] = 0;
-						endIndices[i] = processedArray.Shape[i]; 
-					}
+					beginIndices = NDArrayUtils.GetSliceIndicesAlongDimension(0, 0, beginIndices, copyResultShape: false, sliceEndIndex: false);
+					endIndices = NDArrayUtils.GetSliceIndicesAlongDimension(0, Math.Min(numberOfRecords, processedArray.Shape[0]), endIndices, copyResultShape: false, sliceEndIndex: true);
 
 					processedArray = processedArray.Slice(beginIndices, endIndices);
 				}

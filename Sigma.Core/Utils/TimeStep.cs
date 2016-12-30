@@ -57,7 +57,7 @@ namespace Sigma.Core.Utils
 
 			if (liveTime == 0)
 			{
-				throw new ArgumentException($"Live time cannot be zero, but was, well, zero.");
+				throw new ArgumentException("Live time cannot be zero, but was, well, zero.");
 			}
 
 			TimeScale = timeScale;

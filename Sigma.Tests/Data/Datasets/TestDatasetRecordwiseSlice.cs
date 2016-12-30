@@ -6,15 +6,15 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends;
+using System;
+using System.IO;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Datasets
 {
@@ -22,7 +22,7 @@ namespace Sigma.Tests.Data.Datasets
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
-			SigmaEnvironment.Globals["workspacePath"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
 			SigmaEnvironment.Globals["cache"] = Path.GetTempPath();
 			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath();
 		}
@@ -77,7 +77,7 @@ namespace Sigma.Tests.Data.Datasets
 			Dataset dataset = new Dataset("name", 3, extractor);
 			DatasetRecordwiseSlice slice = new DatasetRecordwiseSlice(dataset, 0.1, 0.6);
 
-			Assert.AreEqual(new float[] {5.1f, 4.9f}, slice.FetchBlock(0, new CpuFloat32Handler())["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2).TryGetValuesPackedArray());
+			Assert.AreEqual(new float[] {5.1f, 4.9f}, slice.FetchBlock(0, new CpuFloat32Handler())["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
 
 			extractor.Reader?.Dispose();
 			dataset.Dispose();

@@ -37,6 +37,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -46,12 +47,17 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|AnyCPU'">
     <OutputPath>bin\TravisBuild\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|x64'">
     <OutputPath>bin\x64\TravisBuild\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
@@ -74,6 +80,11 @@
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\CudaSparse.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="DiffSharp, Version=0.7.8.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dependencies\DiffSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -106,9 +117,11 @@
   <ItemGroup>
     <Compile Include="Architecture\INetwork.cs" />
     <Compile Include="Architecture\INetworkArchitecture.cs" />
+    <Compile Include="Architecture\InvalidNetworkArchitectureException.cs" />
     <Compile Include="Architecture\LayerConstruct.cs" />
-    <Compile Include="Architecture\LinearNetwork.cs" />
-    <Compile Include="Architecture\LinearNetworkArchitecture.cs" />
+    <Compile Include="Architecture\Linear\LinearNetworkArchitecture.cs" />
+    <Compile Include="Architecture\Linear\Parallel.cs" />
+    <Compile Include="Architecture\Network.cs" />
     <Compile Include="Data\DataBuffer.cs" />
     <Compile Include="Data\Datasets\Dataset.cs" />
     <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
@@ -125,7 +138,6 @@
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\Iterators\UndividedIterator.cs" />
     <Compile Include="Data\Iterators\UnifiedIterator.cs" />
-    <Compile Include="Data\LargeChunkedArray.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
@@ -135,26 +147,47 @@
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />
     <Compile Include="Data\Sources\FileSource.cs" />
-    <Compile Include="Data\Sources\IDataSetSource.cs" />
+    <Compile Include="Data\Sources\IDataSource.cs" />
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
-    <Compile Include="Handlers\Backends\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpBackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
+    <Compile Include="Handlers\Backends\IBlasBackend.cs" />
+    <Compile Include="Handlers\Backends\ILapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffDataBuffer.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
-    <Compile Include="Layers\ElementwiseLayer.cs" />
+    <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
+    <Compile Include="Layers\OutputLayer.cs" />
+    <Compile Include="Layers\InputLayer.cs" />
+    <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
+    <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
-    <Compile Include="MathAbstract\NDArray.cs" />
+    <Compile Include="MathAbstract\INumber.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\ADNDArray.cs" />
+    <Compile Include="MathAbstract\Backends\DiffSharp\ADNumber.cs" />
+    <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
+    <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
@@ -168,7 +201,8 @@
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
-    <Compile Include="Utils\ILayerBuffer.cs" />
+    <Compile Include="Layers\ILayerBuffer.cs" />
+    <Compile Include="Utils\PrintUtils.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
@@ -178,12 +212,33 @@
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Layers\Convolutional\" />
+    <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
+    <Folder Include="Training\Operators\Backends\NativeCpu\Workers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="libopenblas.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dependencies\DiffSharp.dll" />
+    <Content Include="libgcc_s_seh-1.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libgfortran-3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libopenblas.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="libquadmath-0.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

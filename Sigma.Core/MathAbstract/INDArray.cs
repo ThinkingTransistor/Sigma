@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using System.Diagnostics.CodeAnalysis;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract
 {
@@ -16,10 +17,10 @@ namespace Sigma.Core.MathAbstract
 	/// 
 	/// Why does INDArray not expose the underlying data? 
 	/// Not exposing the internal data directly makes it easier to define the general workflow of how INDArrays should interact in an algorithm without having to think about underlying system data types. 
-	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon, ...).
+	/// That also allows anyone to roll their own implementation, defining where data is stored and how it is processed (System memory, GPU cache, the moon (beware of latency issues, batch calculations), ...).
 	/// </summary>
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
-	public interface INDArray
+	[SuppressMessage("ReSharper", "InconsistentNaming")] // INdArray is stupid 
+	public interface INDArray : ITraceable, IDeepCopyable
 	{
 		/// <summary>
 		/// The rank of this ndarray (number of dimensions). 

@@ -12,12 +12,12 @@ using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends;
 using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Datasets
 {
@@ -25,7 +25,7 @@ namespace Sigma.Tests.Data.Datasets
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
-			SigmaEnvironment.Globals["workspacePath"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
 			SigmaEnvironment.Globals["cache"] = Path.GetTempPath() + "sigmacache";
 			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath() + "sigmadatasets";
 		}
