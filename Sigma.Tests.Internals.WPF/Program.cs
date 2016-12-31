@@ -72,7 +72,7 @@ namespace Sigma.Tests.Internals.WPF
 			guiMonitor.WindowDispatcher(window =>
 			{
 				window.TabControl["Data"].AddCumulativePanel(new LogTextPanel("Log"), 3, 4);
-				window.TabControl["Log2"].AddCumulativePanel(new LogDataGrid("Log"), 3, 4);
+				window.TabControl["Log2"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
 
 				TabUI tab = window.TabControl["Overview"];
 

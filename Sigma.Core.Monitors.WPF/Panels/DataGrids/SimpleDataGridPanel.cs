@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 
 namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 {
 	public class SimpleDataGridPanel<T> : SigmaDataGridPanel
 	{
+		public ObservableCollection<T> Items { get; }
+
 		public SimpleDataGridPanel(string title) : base(title)
 		{
-			Items = new List<T>();
+			Items = new ObservableCollection<T>();
 
 			Content.ItemsSource = Items;
 		}
 
-		public List<T> Items { get; }
 	}
 }

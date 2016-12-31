@@ -27,9 +27,15 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		}
 	}
 
-	public class LogDataGrid : SimpleDataGridPanel<LogEntry>, IAppender
+	public class LogDataGridPanel : SimpleDataGridPanel<LogEntry>, IAppender
 	{
-		public LogDataGrid(string title) : base(title)
+		public LogDataGridPanel(string title) : base(title)
+		{
+			// ReSharper disable once VirtualMemberCallInConstructor
+			AssignToLog();
+		}
+
+		protected virtual void AssignToLog()
 		{
 			((Hierarchy) LogManager.GetRepository()).Root.AddAppender(this);
 		}
@@ -42,24 +48,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		private void AddItem(object item)
 		{
 			Items.Add((LogEntry) item);
-			//Content.LoadingRow += LoadingRow;
 		}
-
-		//private void LoadingRow(object sender, DataGridRowEventArgs e)
-		//{
-		//	DataGridRow row = e.Row;
-		//	DataRowView rView = row.Item as DataRowView;
-
-		//	if (rView != null && rView.Row.ItemArray[2].ToString().Contains("DEBUG"))
-		//	{
-		//		row.Background = Brushes.Green;
-		//	}
-		//	else
-		//	{
-		//		row.Background = Brushes.Red;
-		//	}
-
-		//}
 
 		public void Close()
 		{

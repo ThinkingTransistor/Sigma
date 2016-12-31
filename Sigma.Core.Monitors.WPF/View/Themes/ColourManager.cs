@@ -14,8 +14,6 @@ using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
-// ReSharper disable AccessToStaticMemberViaDerivedType
-
 namespace Sigma.Core.Monitors.WPF.View.Themes
 {
 	public class ColourManager : IColourManager
@@ -162,7 +160,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		}
 
 		/// <summary>
-		///     The primary colour of the app. Get via <see cref="MaterialDesignValues" />.
+		///     The primary colour of the app. Get via <see cref="Model.UI.Resources.MaterialDesignValues" />.
 		/// </summary>
 		public Swatch PrimaryColor
 		{
@@ -185,7 +183,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		}
 
 		/// <summary>
-		///     The secondary colour of the app. Get via <see cref="MaterialDesignValues" />.
+		///     The secondary colour of the app. Get via <see cref="Model.UI.Resources.MaterialDesignValues" />.
 		/// </summary>
 		public Swatch SecondaryColor
 		{
@@ -278,7 +276,10 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 			PrimaryColor = PrimaryColor;
 			SecondaryColor = SecondaryColor;
 
-			// HACK: I really don't know why this is required
+			// HACK: I really don't know why this is required.
+			// if the dark theme is not reapplied AFTER a app has fully started, the style is correctly loaded but not updated
+			// this may be caused by an internal AppStartup listener (from MaterialDesign), that prevents early changes to the colour
+			// ... or there is a "feature" in our code, which - well, is surely not the case.
 			if (Dark)
 			{
 				Dark = false;

@@ -10,7 +10,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 		{
 			Content = new DataGrid
 			{
-				IsReadOnly = true
+				IsReadOnly = true,
+				ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader
 			};
 
 			base.Content = Content;

@@ -131,9 +131,13 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 					  ILog log = LogManager.GetLogger(typeof(TitleBarFactory));
 					  new Thread(() =>
 					  {
-						  for (int i = 0; i < 1000; i++)
+						  for (int i = 1; i <= 100; i++)
 						  {
+							  log.Debug($"Flood {i}");
 							  log.Info($"Flood {i}");
+							  log.Warn($"Flood {i}");
+							  log.Error($"Flood {i}");
+							  log.Fatal($"Flood {i}");
 						  }
 					  }).Start();
 				  })
