@@ -85,7 +85,6 @@ namespace Sigma.Tests.Internals.WPF
 
 				tab.AddCumulativePanel(panel, legend: blueLegend);
 
-
 				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image),
 					nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string),
 					nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));

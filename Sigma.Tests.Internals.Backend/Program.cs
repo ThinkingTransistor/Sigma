@@ -41,7 +41,7 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("testtrainer");
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28) +
-										   2 * (ElementwiseLayer.Construct(2) + ElementwiseLayer.Construct(4)) +
+										   2 * (ElementwiseLayer.Construct(2) + FullyConnectedLayer.Construct(4)) +
 										   OutputLayer.Construct(4);
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));

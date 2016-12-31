@@ -13,6 +13,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Feedforward
 {
+	/// <summary>
+	/// An element-wise layer with element-wise weights and connections. 
+	/// </summary>
 	public class ElementwiseLayer : BaseLayer
 	{
 		public ElementwiseLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
@@ -30,11 +33,12 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray inputActivations = buffer.Inputs["default"].Get<INDArray>("activations");
 		}
 
-		public static LayerConstruct Construct(int size, string name = "#-elementwise")
+		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-elementwise")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(ElementwiseLayer));
 
 			construct.Parameters["size"] = size;
+			construct.Parameters["activation"] = activation;
 
 			return construct;
 		}

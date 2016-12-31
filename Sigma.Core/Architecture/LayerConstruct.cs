@@ -59,6 +59,12 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		public string[] ExternalOutputs { get; internal set; }
 
+		/// <summary>
+		/// Update parameters of this construct before instantiation. 
+		/// Used for parameters influenced by surrounding constructs which cannot be known at initial creation of LayerConstruct.
+		/// </summary>
+		public event EventHandler<LayerConstructBeforeInstantiationUpdateEventArgs> UpdateBeforeInstantiationEvent;
+
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Type _layerInterfaceType = typeof(ILayer);
@@ -115,6 +121,7 @@ namespace Sigma.Core.Architecture
 				Parameters = Parameters,
 				ExternalInputs = (string[]) ExternalInputs.Clone(),
 				ExternalOutputs = (string[]) ExternalOutputs.Clone(),
+				UpdateBeforeInstantiationEvent = UpdateBeforeInstantiationEvent
 			};
 
 			return copy;
@@ -122,6 +129,8 @@ namespace Sigma.Core.Architecture
 
 		public virtual ILayer InstantiateLayer(IComputationHandler handler)
 		{
+			UpdateBeforeInstantiationEvent?.Invoke(this, new LayerConstructBeforeInstantiationUpdateEventArgs(this));
+
 			try
 			{
 				return (ILayer) Activator.CreateInstance(_layerClassType, Name, Parameters, handler);
@@ -190,6 +199,16 @@ namespace Sigma.Core.Architecture
 			}
 
 			return multiplier * new LinearNetworkArchitecture(self);
+		}
+	}
+
+	public class LayerConstructBeforeInstantiationUpdateEventArgs : EventArgs
+	{
+		public readonly LayerConstruct Self;
+
+		internal LayerConstructBeforeInstantiationUpdateEventArgs(LayerConstruct self)
+		{
+			Self = self;
 		}
 	}
 }

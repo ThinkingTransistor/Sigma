@@ -508,6 +508,30 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADFloat32Number(DNumber.SoftPlus(internalValue._adNumberHandle));
 		}
 
+		public INDArray Tanh(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Tanh(internalArray._adArrayHandle));
+		}
+
+		public INumber Tanh(INumber number)
+		{
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Tanh(internalValue._adNumberHandle));
+		}
+
+		public INumber Activation(string activation, INumber number)
+		{
+			return ActivationManager.ApplyActivation(activation, number, this);
+		}
+
+		public INDArray Activation(string activation, INDArray array)
+		{
+			return ActivationManager.ApplyActivation(activation, array, this);
+		}
+
 		public INumber StandardDeviation(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);

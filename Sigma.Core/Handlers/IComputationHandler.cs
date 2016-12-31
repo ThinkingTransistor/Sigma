@@ -346,6 +346,17 @@ namespace Sigma.Core.Handlers
 		/// <returns>The result of the power of the number a to the constant b.</returns>
 		INumber Pow<TOther>(INumber a, TOther b);
 
+		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		INumber Activation(string activation, INumber number);
+
+
+		INDArray Activation(string activation, INDArray array);
+
 		#endregion
 
 		#region Primitive unary mathematical operations
@@ -506,6 +517,20 @@ namespace Sigma.Core.Handlers
 		/// <returns></returns>
 		INumber Atan(INumber number);
 
+		/// <summary>
+		/// Apply the tangent hyperbolic function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Tanh(INDArray array);
+
+		/// <summary>
+		/// Apply the tangent hyperbolic function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INumber Tanh(INumber number);
+
 		#endregion
 
 		#endregion
@@ -524,7 +549,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply the rectified linear function to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the rectified linear function applied.</returns>
 		INumber ReL(INumber number);
 
@@ -538,7 +563,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply the sigmoid to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the sigmoid applied.</returns>
 		INumber Sigmoid(INumber number);
 
@@ -552,7 +577,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply the soft plus function to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the soft plus function applied.</returns>
 		INumber SoftPlus(INumber number);
 

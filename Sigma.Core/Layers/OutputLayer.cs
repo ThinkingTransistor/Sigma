@@ -49,6 +49,7 @@ namespace Sigma.Core.Layers
 			construct.ExternalOutputs = new[] { externalOutputAlias };
 			construct.Parameters["external_output_alias"] = externalOutputAlias;
 			construct.Parameters["shape"] = shape;
+			construct.Parameters["size"] = ArrayUtils.Product(shape);
 
 			return construct;
 		}

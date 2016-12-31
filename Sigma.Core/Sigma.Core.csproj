@@ -151,6 +151,7 @@
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
+    <Compile Include="Handlers\ActivationManager.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpBackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
+    <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
     <Compile Include="Layers\OutputLayer.cs" />
