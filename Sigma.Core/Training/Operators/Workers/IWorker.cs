@@ -23,6 +23,12 @@ namespace Sigma.Core.Training.Operators.Workers
 		IOperator Operator { get; }
 
 		/// <summary>
+		/// The current state of the worker. <see cref="TrainingState.None"/>
+		/// if the worker has not been started yet;
+		/// </summary>
+		TrainingState State { get; }
+
+		/// <summary>
 		/// The computation handler to use for computation and ndarray management. 
 		/// </summary>
 		IComputationHandler Handler { get; }
@@ -30,7 +36,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		/// A local copy of the network (model) to train. Used to enable parallel network training. 
 		/// </summary>
-		INetwork LocalNetwork { get; }
+		INetwork LocalNetwork { get; set; }
 
 		/// <summary>
 		/// The current iteration number since last synchronisation (i.e. how many iterations have been executed on this worker).
@@ -46,5 +52,15 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// Signal this worker to pause at the next opportunity (after an iteration). 
 		/// </summary>
 		void SignalPause();
+
+		/// <summary>
+		///	Signa this worker to resume the work. 
+		/// </summary>
+		void SignalResume();
+
+		/// <summary>
+		/// Signal this worker to stop the execution as soon as possible. 
+		/// </summary>
+		void SignalStop();
 	}
 }

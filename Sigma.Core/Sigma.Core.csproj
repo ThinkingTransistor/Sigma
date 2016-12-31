@@ -188,8 +188,12 @@
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
+    <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
+    <Compile Include="Training\Operators\TrainingState.cs" />
+    <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
     <Compile Include="Training\Trainer.cs" />
@@ -215,7 +219,6 @@
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
-    <Folder Include="Training\Operators\Backends\NativeCpu\Workers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

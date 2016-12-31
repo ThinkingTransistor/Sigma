@@ -8,46 +8,45 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
-using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
+using Sigma.Core.Training.Operators.Workers;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 {
-	public class CpuMultithreadedOperator : IOperator
+	public class CpuSinglethreadedOperator : CpuMultithreadedOperator
 	{
-		public SigmaEnvironment Sigma { get; set; }
-		public IComputationHandler Handler { get; }
-		public ITrainer Trainer { get; }
-		public INetwork Network { get; }
-		public int WorkerCount { get; }
+		public CpuSinglethreadedOperator(SigmaEnvironment sigma, IComputationHandler handler, ITrainer trainer, INetwork network) : base(sigma, handler, trainer, network, 1) { }
+	}
 
-		public void AttachHook(IHook hook)
+	public class CpuMultithreadedOperator : BaseOperator
+	{
+		public CpuMultithreadedOperator(SigmaEnvironment sigma, IComputationHandler handler, ITrainer trainer, INetwork network, int workerCount) : base(sigma, handler, trainer, network, workerCount)
 		{
-			throw new System.NotImplementedException();
 		}
 
-		public void DetachHook(IHook hook)
+		public override IWorker CreateWorker(IOperator @operator)
 		{
-			throw new System.NotImplementedException();
+			return new CpuWorker(@operator);
 		}
 
-		public void Start()
+		public override void StartWorker(IWorker worker)
 		{
-			throw new System.NotImplementedException();
+			worker.Start();
 		}
 
-		public void SignalPause()
+		public override void PauseWorker(IWorker worker)
 		{
-			throw new System.NotImplementedException();
+			worker.SignalPause();
 		}
 
-		public void SignalResume()
+		public override void ResumeWorker(IWorker worker)
 		{
-			throw new System.NotImplementedException();
+			worker.SignalResume();
 		}
 
-		public void SignalStop()
+		public override void StopWorker(IWorker worker)
 		{
-			throw new System.NotImplementedException();
+			worker.SignalStop();
 		}
 	}
 }

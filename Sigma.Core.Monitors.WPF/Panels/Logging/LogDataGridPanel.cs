@@ -23,6 +23,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 			Level = loggingEvent.Level;
 			Thread = loggingEvent.ThreadName;
 			Logger = loggingEvent.LoggerName;
+			int lastIndex = Logger.LastIndexOf(".", StringComparison.Ordinal) + 1;
+			Logger = Logger.Substring(lastIndex, Logger.Length - lastIndex);
+
 			Message = loggingEvent.MessageObject.ToString();
 		}
 	}
@@ -48,6 +51,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		private void AddItem(object item)
 		{
 			Items.Add((LogEntry) item);
+			//Content.ScrollIntoView(item);
 		}
 
 		public void Close()

@@ -6,19 +6,19 @@ Copyright (c) 2016 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Architecture;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Initialisers;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Training.Optimisers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using log4net;
+using Sigma.Core.Architecture;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Initialisers;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
