@@ -1,4 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Collections.ObjectModel;
 
 namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 {

@@ -127,6 +127,9 @@
     <Content Include="Resources\WindowsIcons-license.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Sigma.Core\Sigma.Core.licenseheader">
+      <Link>Sigma.Core.licenseheader</Link>
+    </None>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Resources\Entypo.ttf" />

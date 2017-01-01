@@ -1,4 +1,12 @@
-﻿using System.Windows;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Windows;
 using System.Windows.Media;
 using MaterialDesignColors;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;

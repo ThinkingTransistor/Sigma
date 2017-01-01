@@ -1,4 +1,12 @@
-﻿using NUnit.Framework;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using NUnit.Framework;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using System;

@@ -229,6 +229,7 @@
     </None>
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
+    <None Include="Sigma.Core2.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dependencies\DiffSharp.dll" />
