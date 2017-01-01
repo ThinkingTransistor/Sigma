@@ -198,6 +198,7 @@
     <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />

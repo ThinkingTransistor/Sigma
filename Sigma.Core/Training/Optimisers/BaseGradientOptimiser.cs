@@ -23,6 +23,10 @@ namespace Sigma.Core.Training.Optimisers
 	{
 		private readonly string _externalCostAlias;
 
+		/// <summary>
+		/// Create a base gradient optimiser with an optional external output cost alias to use. 
+		/// </summary>
+		/// <param name="externalCostAlias">The optional external output identifier by which to detect cost layers (defaults to "external_cost").</param>
 		protected BaseGradientOptimiser(string externalCostAlias = "external_cost")
 		{
 			if (externalCostAlias == null) throw new ArgumentNullException(nameof(externalCostAlias));
@@ -36,8 +40,11 @@ namespace Sigma.Core.Training.Optimisers
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 			if (registry == null) throw new ArgumentNullException(nameof(registry));
 
-			IRegistry costRegistry = new Registry(registry, tags: "cost");
+			IRegistry costRegistry = new Registry(registry, tags: "costs");
 			registry["costs"] = costRegistry;
+
+			IRegistry gradientRegistry = new Registry(registry, tags: "gradients");
+			registry["gradients"] = gradientRegistry;
 
 			INumber cost = GetTotalCost(network, handler, costRegistry);
 
@@ -45,7 +52,7 @@ namespace Sigma.Core.Training.Optimisers
 
 			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
-				string layerIdentifier = network.Name + "." + layerBuffer.Layer.Name;
+				string layerIdentifier = layerBuffer.Layer.Name;
 
 				foreach (string trainableParameter in layerBuffer.Layer.TrainableParameters)
 				{
@@ -61,7 +68,9 @@ namespace Sigma.Core.Training.Optimisers
 						INDArray convertedNumber = handler.AsNDArray(asNumber);
 						INDArray convertedGradient = handler.AsNDArray(handler.GetDerivative(asNumber));
 
-						layerBuffer.Parameters[trainableParameter] = handler.AsNumber(Optimise(parameterIdentifier, convertedNumber, convertedGradient, handler), 0, 0);
+						gradientRegistry[parameterIdentifier] = convertedGradient;
+
+						layerBuffer.Parameters[trainableParameter] = handler.AsNumber(Optimise(parameterIdentifier, convertedNumber, convertedGradient, handler, registry), 0, 0);
 					}
 					else
 					{
@@ -69,7 +78,11 @@ namespace Sigma.Core.Training.Optimisers
 
 						if (asArray != null)
 						{
-							layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, asArray, handler.GetDerivative(asArray), handler);
+							INDArray gradient = handler.GetDerivative(asArray);
+
+							gradientRegistry[parameterIdentifier] = gradient;
+
+							layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, asArray, gradient, handler, registry);
 						}
 						else
 						{
@@ -116,11 +129,12 @@ namespace Sigma.Core.Training.Optimisers
 		/// <summary>
 		/// Optimise a certain parameter given a certain gradient using a certain computation handler.
 		/// </summary>
-		/// <param name="parameterIdentifier">The parameter identifier </param>
-		/// <param name="parameter"></param>
-		/// <param name="gradient"></param>
-		/// <param name="handler"></param>
+		/// <param name="paramIdentifier">The parameter identifier (e.g. "3-elementwise.weights").</param>
+		/// <param name="parameter">The parameter to optimise.</param>
+		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
+		/// <param name="handler">The handler to use.</param>
+		/// <param name="registry">The per-network registry in which optional per-network persistent parameters can be stored (e.g. for momentum).</param>
 		/// <returns></returns>
-		protected abstract INDArray Optimise(string parameterIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
+		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler, IRegistry registry);
 	}
 }
