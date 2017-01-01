@@ -24,7 +24,7 @@ namespace Sigma.Core.Training
 	public interface ITrainer
 	{
 		/// <summary>
-		/// The unique name of this trainer. 
+		/// The unique name of this trainer.
 		/// </summary>
 		string Name { get; }
 
@@ -45,7 +45,7 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 
 		/// <summary>
-		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum).
+		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum - one instance per trainer).
 		/// </summary>
 		IOptimiser Optimiser { get; set; }
 
