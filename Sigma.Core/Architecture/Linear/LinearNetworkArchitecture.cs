@@ -141,7 +141,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			foreach (LayerConstruct construct in YieldLayerConstructsOrdered())
 			{
-				// TODO internal / external alias check
+				construct.Validate();
 
 				foreach (string externalInput in construct.ExternalInputs)
 				{

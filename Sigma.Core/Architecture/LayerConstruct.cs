@@ -63,7 +63,13 @@ namespace Sigma.Core.Architecture
 		/// Update parameters of this construct before instantiation. 
 		/// Used for parameters influenced by surrounding constructs which cannot be known at initial creation of LayerConstruct.
 		/// </summary>
-		public event EventHandler<LayerConstructBeforeInstantiationUpdateEventArgs> UpdateBeforeInstantiationEvent;
+		public event EventHandler<LayerConstructEventArgs> UpdateBeforeInstantiationEvent;
+
+		/// <summary>
+		/// Validate parameters of this construct.
+		/// Used for parameters influenced by surrounding constructs which cannot be known at initial creation of LayerConstruct.
+		/// </summary>
+		public event EventHandler<LayerConstructEventArgs> ValidateEvent;
 
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -121,15 +127,21 @@ namespace Sigma.Core.Architecture
 				Parameters = Parameters,
 				ExternalInputs = (string[]) ExternalInputs.Clone(),
 				ExternalOutputs = (string[]) ExternalOutputs.Clone(),
-				UpdateBeforeInstantiationEvent = UpdateBeforeInstantiationEvent
+				UpdateBeforeInstantiationEvent = UpdateBeforeInstantiationEvent,
+				ValidateEvent = ValidateEvent
 			};
 
 			return copy;
 		}
 
+		public virtual void Validate()
+		{
+			ValidateEvent?.Invoke(this, new LayerConstructEventArgs(this));
+		}
+
 		public virtual ILayer InstantiateLayer(IComputationHandler handler)
 		{
-			UpdateBeforeInstantiationEvent?.Invoke(this, new LayerConstructBeforeInstantiationUpdateEventArgs(this));
+			UpdateBeforeInstantiationEvent?.Invoke(this, new LayerConstructEventArgs(this));
 
 			try
 			{
@@ -202,11 +214,11 @@ namespace Sigma.Core.Architecture
 		}
 	}
 
-	public class LayerConstructBeforeInstantiationUpdateEventArgs : EventArgs
+	public class LayerConstructEventArgs : EventArgs
 	{
 		public readonly LayerConstruct Self;
 
-		internal LayerConstructBeforeInstantiationUpdateEventArgs(LayerConstruct self)
+		internal LayerConstructEventArgs(LayerConstruct self)
 		{
 			Self = self;
 		}

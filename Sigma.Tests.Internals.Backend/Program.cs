@@ -40,9 +40,11 @@ namespace Sigma.Tests.Internals.Backend
 			IComputationHandler handler = new CpuFloat32Handler();
 			ITrainer trainer = sigma.CreateTrainer("testtrainer");
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(28, 28) +
-										   2 * (ElementwiseLayer.Construct(2) + FullyConnectedLayer.Construct(4)) +
-										   OutputLayer.Construct(4);
+			trainer.Network.Architecture = InputLayer.Construct(2, 2) +
+										   ElementwiseLayer.Construct(2 * 2) + 
+										   FullyConnectedLayer.Construct(2) +
+										   2 * (FullyConnectedLayer.Construct(4) + FullyConnectedLayer.Construct(2)) +
+										   OutputLayer.Construct(2);
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
 			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));

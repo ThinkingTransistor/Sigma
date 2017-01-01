@@ -83,6 +83,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract INDArray NDArray<TOther>(TOther[] values, params long[] shape);
 		public abstract INumber Number(object value);
 		public abstract IDataBuffer<T> DataBuffer<T>(T[] values);
+		public abstract INDArray AsNDArray(INumber number);
+		public abstract INumber AsNumber(INDArray array, params long[] indices);
 		public abstract bool CanConvert(INDArray array, IComputationHandler otherHandler);
 		public abstract INDArray Convert(INDArray array, IComputationHandler otherHandler);
 		public abstract void Fill(INDArray filler, INDArray arrayToFill);

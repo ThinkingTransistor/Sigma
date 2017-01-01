@@ -76,6 +76,21 @@ namespace Sigma.Core.Handlers
 		IDataBuffer<T> DataBuffer<T>(T[] values);
 
 		/// <summary>
+		/// Get a certain given number as an ndarray (with continuous tracing).
+		/// </summary>
+		/// <param name="number">The number-</param>
+		/// <returns>The number as an 1x1 ndarray.</returns>
+		INDArray AsNDArray(INumber number);
+
+		/// <summary>
+		/// Get a certain index of an ndarray as a number (with continuous tracing).
+		/// </summary>
+		/// <param name="array">The ndarray to get the number from.</param>
+		/// <param name="indices">The indices.</param>
+		/// <returns>The item in the given ndarray at the specified index as a number.</returns>
+		INumber AsNumber(INDArray array, params long[] indices);
+
+		/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
 		/// </summary>
 		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>

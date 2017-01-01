@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
@@ -51,6 +52,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		public override INumber Number(object value)
 		{
 			return new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
+		}
+
+		public override INDArray AsNDArray(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return AssignTag(new ADNDFloat32Array(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
+		}
+
+		public override INumber AsNumber(INDArray array, params long[] indices)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
+
+			return new ADFloat32Number(DNDArray.ToDNumber(internalArray._adArrayHandle, (int) flatIndex));
 		}
 
 		public override void InitAfterDeserialisation(INDArray array)
