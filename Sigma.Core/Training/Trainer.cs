@@ -167,6 +167,11 @@ namespace Sigma.Core.Training
 			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedNDArrayCount} ndarrays and {initialisedNumberCount} numbers.");
 		}
 
+		public void Start()
+		{
+			throw new NotImplementedException();
+		}
+
 		public void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler)
 		{
 			throw new NotImplementedException();

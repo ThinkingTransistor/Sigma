@@ -194,7 +194,7 @@
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
-    <Compile Include="Training\Operators\TrainingState.cs" />
+    <Compile Include="Training\Operators\OperatorState.cs" />
     <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />

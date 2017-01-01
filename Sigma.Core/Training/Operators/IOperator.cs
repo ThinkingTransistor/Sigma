@@ -24,10 +24,10 @@ namespace Sigma.Core.Training.Operators
 		SigmaEnvironment Sigma { get; set; }
 
 		/// <summary>
-		/// The current state of the operator. <see cref="TrainingState.None"/>
+		/// The current state of the operator. <see cref="OperatorState.None"/>
 		/// if the operator has not been started yet. 
 		/// </summary>
-		TrainingState State { get; }
+		OperatorState State { get; }
 
 		/// <summary>
 		/// The handler used to compute everything in this operator.

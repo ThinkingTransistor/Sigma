@@ -8,7 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 namespace Sigma.Core.Training.Operators
 {
-	public enum TrainingState
+	/// <summary>
+	/// An operator state.
+	/// </summary>
+	public enum OperatorState
 	{
 		None,
 		Running,

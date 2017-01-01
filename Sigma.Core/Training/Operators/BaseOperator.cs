@@ -19,7 +19,7 @@ namespace Sigma.Core.Training.Operators
 	public abstract class BaseOperator : IOperator
 	{
 		public SigmaEnvironment Sigma { get; set; }
-		public TrainingState State { get; protected set; } = TrainingState.None;
+		public OperatorState State { get; protected set; } = OperatorState.None;
 		public IComputationHandler Handler { get; }
 		public ITrainer Trainer { get; }
 		public INetwork Network { get; }
@@ -100,14 +100,14 @@ namespace Sigma.Core.Training.Operators
 
 		public void Start()
 		{
-			if (State == TrainingState.None || State == TrainingState.Stopped)
+			if (State == OperatorState.None || State == OperatorState.Stopped)
 			{
 				foreach (IWorker worker in Workers)
 				{
 					StartWorker(worker);
 				}
 
-				State = TrainingState.Running;
+				State = OperatorState.Running;
 			}
 			else
 			{
@@ -117,14 +117,14 @@ namespace Sigma.Core.Training.Operators
 
 		public void SignalPause()
 		{
-			if (State == TrainingState.Running)
+			if (State == OperatorState.Running)
 			{
 				foreach (IWorker worker in Workers)
 				{
 					PauseWorker(worker);
 				}
 
-				State = TrainingState.Paused;
+				State = OperatorState.Paused;
 			}
 			else
 			{
@@ -134,14 +134,14 @@ namespace Sigma.Core.Training.Operators
 
 		public void SignalResume()
 		{
-			if (State == TrainingState.Paused)
+			if (State == OperatorState.Paused)
 			{
 				foreach (IWorker worker in Workers)
 				{
 					ResumeWorker(worker);
 				}
 
-				State = TrainingState.Running;
+				State = OperatorState.Running;
 			}
 			else
 			{
@@ -151,7 +151,7 @@ namespace Sigma.Core.Training.Operators
 
 		public void SignalStop()
 		{
-			if (State != TrainingState.Stopped)
+			if (State != OperatorState.Stopped)
 			{
 				foreach (IWorker worker in Workers)
 				{
@@ -159,7 +159,7 @@ namespace Sigma.Core.Training.Operators
 					StopWorker(worker);
 				}
 
-				State = TrainingState.Stopped;
+				State = OperatorState.Stopped;
 			}
 			else
 			{

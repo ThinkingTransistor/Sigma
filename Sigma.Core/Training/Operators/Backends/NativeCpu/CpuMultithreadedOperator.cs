@@ -15,7 +15,10 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 {
 	public class CpuSinglethreadedOperator : CpuMultithreadedOperator
 	{
-		public CpuSinglethreadedOperator(SigmaEnvironment sigma, IComputationHandler handler, ITrainer trainer, INetwork network) : base(sigma, handler, trainer, network, 1) { }
+		public CpuSinglethreadedOperator(SigmaEnvironment sigma, IComputationHandler handler, ITrainer trainer,
+			INetwork network) : base(sigma, handler, trainer, network, 1)
+		{
+		}
 	}
 
 	public class CpuMultithreadedOperator : BaseOperator
