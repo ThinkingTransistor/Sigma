@@ -14,7 +14,7 @@ namespace Sigma.Core.Training.Operators.Workers
 	public abstract class BaseWorker : IWorker
 	{
 		public IOperator Operator { get; }
-		public OperatorState State { get; } = OperatorState.None;
+		public ExecutionState State { get; protected set; } = ExecutionState.None;
 		public IComputationHandler Handler { get; }
 		public INetwork LocalNetwork { get; set; }
 

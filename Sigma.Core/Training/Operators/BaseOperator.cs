@@ -19,27 +19,23 @@ namespace Sigma.Core.Training.Operators
 	public abstract class BaseOperator : IOperator
 	{
 		public SigmaEnvironment Sigma { get; set; }
-		public OperatorState State { get; protected set; } = OperatorState.None;
+		public ExecutionState State { get; protected set; } = ExecutionState.None;
 		public IComputationHandler Handler { get; }
-		public ITrainer Trainer { get; }
-		public INetwork Network { get; }
+		public ITrainer Trainer { get; set; }
+		public INetwork Network { get; set; }
 		public int WorkerCount { get; }
 
 		protected IEnumerable<IWorker> Workers;
 
 		protected IList<IHook> Hooks;
 
-		protected BaseOperator(SigmaEnvironment sigma, IComputationHandler handler, ITrainer trainer, INetwork network, int workerCount)
+		protected BaseOperator(SigmaEnvironment sigma, IComputationHandler handler, int workerCount)
 		{
 			Sigma = sigma;
 			Handler = handler;
-			Trainer = trainer;
-			Network = network;
 			WorkerCount = workerCount;
 
 			Hooks = new List<IHook>();
-
-			Workers = InitialiseWorkers();
 		}
 
 		protected virtual IEnumerable<IWorker> InitialiseWorkers()
@@ -48,39 +44,39 @@ namespace Sigma.Core.Training.Operators
 
 			for (int i = 0; i < workers.Length; i++)
 			{
-				workers[i] = CreateWorker(this);
+				workers[i] = CreateWorker();
 			}
 
 			return workers;
 		}
 
-		public abstract IWorker CreateWorker(IOperator @operator);
+		protected abstract IWorker CreateWorker();
 
 		/// <summary>
 		///		This method starts a worker. 
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		public abstract void StartWorker(IWorker worker);
+		protected abstract void StartWorker(IWorker worker);
 
 		/// <summary>
 		///		This method pauses a worker. It will also be
 		///		called if the worker is stopped.
 		/// </summary>
 		/// <param name="worker">The worker that will be paused.</param>
-		public abstract void PauseWorker(IWorker worker);
+		protected abstract void PauseWorker(IWorker worker);
 
 		/// <summary>
 		///		This method resumes a worker from it's paused state.
 		/// </summary>
 		/// <param name="worker">The worker that will be resumed.</param>
-		public abstract void ResumeWorker(IWorker worker);
+		protected abstract void ResumeWorker(IWorker worker);
 
 		/// <summary>
 		///		This method stops a worker. All resources should
 		/// be freed. 
 		/// </summary>
 		/// <param name="worker">The worker that will be paused and stopped.</param>
-		public abstract void StopWorker(IWorker worker);
+		protected abstract void StopWorker(IWorker worker);
 
 
 		public void AttachHook(IHook hook)
@@ -93,21 +89,36 @@ namespace Sigma.Core.Training.Operators
 			Hooks.Remove(hook);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="currentState"></param>
+		/// <exception cref="InvalidOperationException"></exception>
 		private void ThrowBadState(string currentState)
 		{
 			throw new InvalidOperationException($"The operator cannot be {currentState} because the state is: {State}!");
 		}
 
+		/// <summary>
+		/// Start this operator in a separate thread (return immediately). 
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is running or paused.</exception>
 		public void Start()
 		{
-			if (State == OperatorState.None || State == OperatorState.Stopped)
+			if (State == ExecutionState.None || State == ExecutionState.Stopped)
 			{
+				// initialise the workers when they are required the first time
+				if (Workers == null)
+				{
+					Workers = InitialiseWorkers();
+				}
+
 				foreach (IWorker worker in Workers)
 				{
 					StartWorker(worker);
 				}
 
-				State = OperatorState.Running;
+				State = ExecutionState.Running;
 			}
 			else
 			{
@@ -115,16 +126,20 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Signal this operator to stop as soon as possible. 
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is not running.</exception>
 		public void SignalPause()
 		{
-			if (State == OperatorState.Running)
+			if (State == ExecutionState.Running)
 			{
 				foreach (IWorker worker in Workers)
 				{
 					PauseWorker(worker);
 				}
 
-				State = OperatorState.Paused;
+				State = ExecutionState.Paused;
 			}
 			else
 			{
@@ -132,16 +147,20 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Signal this operator to resume as soon as possible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is not paused.</exception>
 		public void SignalResume()
 		{
-			if (State == OperatorState.Paused)
+			if (State == ExecutionState.Paused)
 			{
 				foreach (IWorker worker in Workers)
 				{
 					ResumeWorker(worker);
 				}
 
-				State = OperatorState.Running;
+				State = ExecutionState.Running;
 			}
 			else
 			{
@@ -149,9 +168,13 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Signal this operator to stop as soon as possible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is already stopped.</exception>
 		public void SignalStop()
 		{
-			if (State != OperatorState.Stopped)
+			if (State != ExecutionState.Stopped)
 			{
 				foreach (IWorker worker in Workers)
 				{
@@ -159,7 +182,7 @@ namespace Sigma.Core.Training.Operators
 					StopWorker(worker);
 				}
 
-				State = OperatorState.Stopped;
+				State = ExecutionState.Stopped;
 			}
 			else
 			{

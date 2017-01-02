@@ -23,10 +23,10 @@ namespace Sigma.Core.Training.Operators.Workers
 		IOperator Operator { get; }
 
 		/// <summary>
-		/// The current state of the worker. <see cref="OperatorState.None"/>
+		/// The current state of the worker. <see cref="ExecutionState.None"/>
 		/// if the worker has not been started yet;
 		/// </summary>
-		OperatorState State { get; }
+		ExecutionState State { get; }
 
 		/// <summary>
 		/// The computation handler to use for computation and ndarray management. 

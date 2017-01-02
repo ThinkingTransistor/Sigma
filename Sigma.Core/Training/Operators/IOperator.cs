@@ -24,10 +24,10 @@ namespace Sigma.Core.Training.Operators
 		SigmaEnvironment Sigma { get; set; }
 
 		/// <summary>
-		/// The current state of the operator. <see cref="OperatorState.None"/>
+		/// The current state of the operator. <see cref="ExecutionState.None"/>
 		/// if the operator has not been started yet. 
 		/// </summary>
-		OperatorState State { get; }
+		ExecutionState State { get; }
 
 		/// <summary>
 		/// The handler used to compute everything in this operator.
@@ -37,12 +37,12 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		/// The trainer that is being trained in this operators training process.
 		/// </summary>
-		ITrainer Trainer { get; }
+		ITrainer Trainer { get; set; }
 
 		/// <summary>
 		/// The network the training process is operated on.
 		/// </summary>
-		INetwork Network { get; }
+		INetwork Network { get; set; }
 
 		/// <summary>
 		/// The number of workers (threads) used in this operator in parallel. 

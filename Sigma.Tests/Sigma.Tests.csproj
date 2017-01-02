@@ -112,6 +112,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="BaseLocaleTest.cs" />
     <Compile Include="Data\Datasets\TestDataset.cs" />
     <Compile Include="Data\Datasets\TestDatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\TestDatasetRecordwiseSlice.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="Training\Initialisers\TestConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestCustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestGaussianInitialiser.cs" />
+    <Compile Include="Training\Operators\Backend\NativeCpu\TestCpuMultithreadedOperator.cs" />
     <Compile Include="Utils\TestDiskCacheProvider.cs" />
     <Compile Include="Utils\TestRegistryResolver.cs" />
     <Compile Include="Math\TestNDArray.cs" />

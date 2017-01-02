@@ -43,7 +43,9 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		///     If a title is not sufficient modify <see cref="Header" />.
 		/// </summary>
 		/// <param name="title">The given tile.</param>
-		protected SigmaPanel(string title)
+		/// <param name="content">The content for the header. If <c>null</c> is passed,
+		/// the title will be used.</param>
+		protected SigmaPanel(string title, object content = null)
 		{
 			//Don't do this in static constructor, otherwise
 			//we cannot guarantee that the application is already running
@@ -57,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 			Title = title;
 			RootPanel = CreateDockPanel();
 
-			Header = CreateHeader();
+			Header = CreateHeader(content ?? title);
 			AddHeader(RootPanel, Header);
 
 			ContentGrid = CreateContentGrid();
@@ -97,7 +99,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 				}
 				else
 				{
-					_content = value as UIElement ?? new Label {Content = value.ToString()};
+					_content = value as UIElement ?? new Label { Content = value.ToString() };
 					ContentGrid.Children.Add(_content);
 				}
 			}
@@ -135,15 +137,16 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		///     Create the header grid and apply the correct theme to it.
 		///     (This could also be done via a custom style)
 		/// </summary>
+		/// <param name="content">The content for the header. (Set the content of a label).</param>
 		/// <returns>The newly created grid. </returns>
-		protected virtual Grid CreateHeader()
+		protected virtual Grid CreateHeader(object content)
 		{
 			Grid header = new Grid();
 
-			header.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Auto)});
-			header.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Auto)});
+			header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+			header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 
-			Label headerContent = new Label {Content = Title};
+			Label headerContent = new Label { Content = content };
 			header.Children.Add(headerContent);
 
 			header.SetResourceReference(BackgroundProperty, "SigmaPanelHeaderBackground");
@@ -171,8 +174,8 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid grid = new Grid();
 
-			grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Star)});
-			grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)});
+			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			return grid;
 		}
@@ -183,7 +186,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <returns>The newly create <see cref="DockPanel" />.</returns>
 		protected virtual DockPanel CreateDockPanel()
 		{
-			return new DockPanel {LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0)};
+			return new DockPanel { LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0) };
 		}
 	}
 }

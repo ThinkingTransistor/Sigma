@@ -6,14 +6,14 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
-using Sigma.Core.Handlers;
-using Sigma.Core.MathAbstract;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using log4net;
+using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Extractors
 {
@@ -120,6 +120,7 @@ namespace Sigma.Core.Data.Extractors
 							}
 							else
 							{
+								//double.Parse(value, new CultureInfo("en-GB"))
 								array.SetValue(converter.ConvertFromString(value), i, 0, y);
 							}
 						}

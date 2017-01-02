@@ -194,7 +194,7 @@
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
-    <Compile Include="Training\Operators\OperatorState.cs" />
+    <Compile Include="Training\Operators\ExecutionState.cs" />
     <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
     <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
@@ -231,7 +231,6 @@
     </None>
     <None Include="packages.config" />
     <None Include="Sigma.Core.licenseheader" />
-    <None Include="Sigma.Core2.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dependencies\DiffSharp.dll" />

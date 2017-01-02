@@ -6,6 +6,9 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -14,15 +17,12 @@ using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Data.Iterators
 {
-	public class TestUndividedIterator
+	public class TestUndividedIterator : BaseLocaleTest
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -74,7 +74,7 @@ namespace Sigma.Tests.Data.Iterators
 			{
 				if (index == 0)
 				{
-					Assert.AreEqual(new float[] {5.1f, 4.9f}, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
+					Assert.AreEqual(new float[] { 5.1f, 4.9f }, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
 				}
 				else if (index == 1)
 				{

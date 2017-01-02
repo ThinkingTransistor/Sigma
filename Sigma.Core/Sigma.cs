@@ -352,8 +352,7 @@ namespace Sigma.Core
 
 		static SigmaEnvironment()
 		{
-			CultureInfo.DefaultThreadCurrentCulture = DefaultCultureInfo;
-			Thread.CurrentThread.CurrentCulture = DefaultCultureInfo;
+			SetDefaultCulture(DefaultCultureInfo);
 
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
@@ -361,6 +360,18 @@ namespace Sigma.Core
 			Globals = new Registry();
 			RegisterGlobals();
 		}
+
+		/// <summary>
+		/// This method sets the default culture. 
+		/// </summary>
+		/// <param name="culture">The culture that will be the new default. </param>
+		// This method also exists in BaseLocaleTest.
+		private static void SetDefaultCulture(CultureInfo culture)
+		{
+			Thread.CurrentThread.CurrentCulture = culture;
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+		}
+
 
 		/// <summary>
 		/// A global variable pool for globally relevant constants (e.g. workspace path).

@@ -6,19 +6,19 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using System;
-using System.IO;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Datasets
 {
-	public class TestDatasetBlockwiseSlice
+	public class TestDatasetBlockwiseSlice : BaseLocaleTest
 	{
 		private static void RedirectGlobalsToTempPath()
 		{

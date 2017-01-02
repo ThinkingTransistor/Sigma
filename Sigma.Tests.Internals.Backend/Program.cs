@@ -41,7 +41,7 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("testtrainer");
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(2, 2) +
-										   ElementwiseLayer.Construct(2 * 2) + 
+										   ElementwiseLayer.Construct(2 * 2) +
 										   FullyConnectedLayer.Construct(2) +
 										   2 * (FullyConnectedLayer.Construct(4) + FullyConnectedLayer.Construct(2)) +
 										   OutputLayer.Construct(2);

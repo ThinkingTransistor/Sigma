@@ -6,22 +6,22 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.MathAbstract;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.MathAbstract;
 
 namespace Sigma.Tests.Data.Datasets
 {
-	public class TestDataset
+	public class TestDataset : BaseLocaleTest
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
