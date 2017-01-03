@@ -20,7 +20,9 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public int LocalIterationNumber { get; protected set; }
 
-		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler) { }
+		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler)
+		{
+		}
 
 		protected BaseWorker(IOperator @operator, IComputationHandler handler)
 		{

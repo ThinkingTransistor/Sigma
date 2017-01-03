@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -25,6 +26,14 @@ namespace Sigma.Core.Training
 {
 	public class Trainer : ITrainer
 	{
+		private readonly IList<IActiveHook> _activeHooks;
+		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
+		private readonly IList<IHook> _allHooks;
+		private readonly IDictionary<string, IInitialiser> _initialisers;
+
+		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly IList<IPassiveHook> _passiveHooks;
+
 		public string Name { get; }
 		public SigmaEnvironment Sigma { get; set; }
 		public INetwork Network { get; set; }
@@ -39,16 +48,9 @@ namespace Sigma.Core.Training
 		public IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
 		public IRegistry Registry { get; }
 
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		private readonly IList<IHook> _allHooks;
-		private readonly IList<IActiveHook> _activeHooks;
-		private readonly IList<IPassiveHook> _passiveHooks;
-		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
-		private readonly IDictionary<string, IInitialiser> _initialisers;
-
 		public Trainer(string name)
 		{
-			if (name == null) throw new ArgumentNullException(nameof(name));
+			if (name == null) { throw new ArgumentNullException(nameof(name)); }
 
 			Name = name;
 
@@ -78,8 +80,8 @@ namespace Sigma.Core.Training
 
 		public void AddInitialiser(string identifier, IInitialiser initialiser)
 		{
-			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-			if (initialiser == null) throw new ArgumentNullException(nameof(initialiser));
+			if (identifier == null) { throw new ArgumentNullException(nameof(identifier)); }
+			if (initialiser == null) { throw new ArgumentNullException(nameof(initialiser)); }
 
 			if (_initialisers.ContainsKey(identifier))
 			{
@@ -161,6 +163,11 @@ namespace Sigma.Core.Training
 					}
 				}
 			}
+
+			Operator.Sigma = Sigma;
+			Operator.Handler = Operator.Handler ?? handler;
+			Operator.Network = Network;
+			Operator.Trainer = this;
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
@@ -12,9 +13,8 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 		private static CpuMultithreadedOperator CreateOperator()
 		{
 			SigmaEnvironment.Clear();
-			SigmaEnvironment environment = SigmaEnvironment.Create("Test");
 
-			return new CpuMultithreadedOperator(environment, new CpuFloat32Handler(), 10);
+			return new CpuMultithreadedOperator(new CpuFloat32Handler(), 10, ThreadPriority.Normal);
 		}
 
 		[TestCase]
