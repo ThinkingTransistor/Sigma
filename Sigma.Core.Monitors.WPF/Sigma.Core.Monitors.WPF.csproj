@@ -119,9 +119,11 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Panels\Control\ControlPanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
     <Compile Include="Panels\Logging\LogTextPanel.cs" />
+    <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
     <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />
@@ -263,6 +265,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Styles\TitleBar\MenuStyleLight.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CustomControls\Panels\Control\SigmaPlaybackControlGeneric.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CustomControls\StatusBar\StatusBarLegendGeneric.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CustomControls\StatusBar\TaskVisualizerGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

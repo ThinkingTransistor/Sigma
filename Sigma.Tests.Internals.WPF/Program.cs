@@ -18,6 +18,7 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
+using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.View.Factories;
@@ -102,7 +103,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				CreateDefaultCards(window.TabControl["Tests"]);
 
-				tab.AddCumulativePanel(new EmptyPanel("Empty panel"), 2);
+				tab.AddCumulativePanel(new ControlPanel("General"), 2);
 			});
 
 

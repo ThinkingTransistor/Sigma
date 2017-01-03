@@ -95,15 +95,17 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 		public override void SignalStop()
 		{
-			if (State == ExecutionState.Paused)
+			// if the worker is not already stopped
+			if (State != ExecutionState.None && State != ExecutionState.Stopped)
 			{
-				State = ExecutionState.Stopped;
+				// if its not paused, signal it to pause
+				if (State != ExecutionState.Paused)
+				{
+					SignalPause();
+				}
 
+				State = ExecutionState.Stopped;
 				_waitForResume.Set();
-			}
-			else if (State != ExecutionState.Stopped)
-			{
-				throw new InvalidOperationException($"The {nameof(CpuWorker)} can only be stopped if it has been paused first!");
 			}
 		}
 
