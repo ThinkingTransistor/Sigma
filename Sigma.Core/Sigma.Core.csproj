@@ -190,6 +190,7 @@
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeCpu\Workers\BaseCpuWorker.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
     <Compile Include="Utils\ITaskManager.cs" />
+    <Compile Include="Utils\ThreadUtils.cs" />
     <Compile Include="Utils\TimeStep.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>

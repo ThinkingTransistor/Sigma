@@ -74,6 +74,11 @@ namespace Sigma.Core.Training.Operators
 		void Start();
 
 		/// <summary>
+		///		Start this operator for a single time only (return immediately).
+		/// </summary>
+		void StartOnce();
+
+		/// <summary>
 		///     Signal this operator to pause as soon as possible.
 		/// </summary>
 		void SignalPause();
@@ -87,5 +92,11 @@ namespace Sigma.Core.Training.Operators
 		///     Signal this operator to stop as soon as possible.
 		/// </summary>
 		void SignalStop();
+
+		/// <summary>
+		///     This method blocks until the last state change has been fully performed.
+		///     Returns immediately if not implemented.
+		/// </summary>
+		void WaitForStateChanged();
 	}
 }

@@ -31,6 +31,8 @@ namespace Sigma.Core.Training
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
 
+		private bool _initialised;
+
 		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly IList<IPassiveHook> _passiveHooks;
 
@@ -117,19 +119,19 @@ namespace Sigma.Core.Training
 		{
 			if (Network == null)
 			{
-				throw new InvalidOperationException($"Cannot initialise trainer before assigning a network.");
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a network.");
 			}
 
 			if (Sigma == null)
 			{
-				throw new InvalidOperationException($"Cannot initialise trainer before assigning a sigma environment.");
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a sigma environment.");
 			}
 
 			Network.Validate();
 
 			_logger.Info($"Initialising trainer \"{Name}\" for handler {handler}...");
 
-			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing trainer");
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"Preparing trainer {Name}");
 
 			Network.Initialise(handler);
 
@@ -169,19 +171,40 @@ namespace Sigma.Core.Training
 			Operator.Network = Network;
 			Operator.Trainer = this;
 
+			_initialised = true;
+
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
 			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedNDArrayCount} ndarrays and {initialisedNumberCount} numbers.");
 		}
 
+		private void CheckInitialised()
+		{
+			if (!_initialised)
+			{
+				throw new InvalidOperationException($"Trainer {Name} has not been initialised yet. Call {nameof(Initialise)}!");
+			}
+		}
+
 		public void Start()
+		{
+			CheckInitialised();
+
+			Operator.Start();
+
+			throw new NotImplementedException();
+		}
+
+		public void StartOnce()
 		{
 			throw new NotImplementedException();
 		}
 
-		public void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler)
-		{
-			throw new NotImplementedException();
-		}
+		//public void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler)
+		//{
+		//	CheckInitialised();
+
+		//	throw new NotImplementedException();
+		//}
 	}
 }

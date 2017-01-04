@@ -9,11 +9,10 @@ For full license see LICENSE in the root directory of this project.
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
-using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
-{
+{ 
 	/// <summary>
 	/// A neural network consisting of interconnected neural layers and a network architecture.
 	/// </summary>

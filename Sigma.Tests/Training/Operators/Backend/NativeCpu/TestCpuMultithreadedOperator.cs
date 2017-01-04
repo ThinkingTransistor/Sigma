@@ -14,7 +14,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 		{
 			SigmaEnvironment.Clear();
 
-			return new CpuMultithreadedOperator(new CpuFloat32Handler(), 10, ThreadPriority.Normal);
+			return new CpuMultithreadedOperator(new CpuFloat32Handler(), 3, ThreadPriority.Normal);
 		}
 
 		[TestCase]
@@ -22,8 +22,8 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 		{
 			CpuMultithreadedOperator cpuOperator = CreateOperator();
 
-			Assert.AreEqual(cpuOperator.WorkerCount, 10);
-			Assert.AreEqual(cpuOperator.State, ExecutionState.None);
+			Assert.AreEqual(3, cpuOperator.WorkerCount);
+			Assert.AreEqual(ExecutionState.None, cpuOperator.State);
 		}
 
 		[TestCase]
@@ -33,15 +33,23 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 
 			cpuOperator.Start();
 
-			Assert.AreEqual(cpuOperator.State, ExecutionState.Running);
+			cpuOperator.WaitForStateChanged();
+
+			Assert.AreEqual(ExecutionState.Running, cpuOperator.State);
 
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.Start());
 
 			cpuOperator.SignalStop();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.Start();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.SignalPause();
+
+			cpuOperator.WaitForStateChanged();
 
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.Start());
 
@@ -54,13 +62,19 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 			CpuMultithreadedOperator cpuOperator = CreateOperator();
 			cpuOperator.Start();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.SignalPause();
 
-			Assert.AreEqual(cpuOperator.State, ExecutionState.Paused);
+			cpuOperator.WaitForStateChanged();
 
+			Assert.AreEqual(ExecutionState.Paused, cpuOperator.State);
+			
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.SignalPause());
 
 			cpuOperator.SignalStop();
+
+			cpuOperator.WaitForStateChanged();
 
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.SignalPause());
 		}
@@ -71,14 +85,20 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 			CpuMultithreadedOperator cpuOperator = CreateOperator();
 			cpuOperator.Start();
 
+			cpuOperator.WaitForStateChanged();
+
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.SignalResume());
 
 			cpuOperator.SignalPause();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.SignalResume();
 
-			Assert.AreEqual(cpuOperator.State, ExecutionState.Running);
+			cpuOperator.WaitForStateChanged();
 
+			Assert.AreEqual(ExecutionState.Running, cpuOperator.State);
+			
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.SignalResume());
 
 			cpuOperator.SignalStop();
@@ -90,15 +110,23 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 			CpuMultithreadedOperator cpuOperator = CreateOperator();
 			cpuOperator.Start();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.SignalStop();
 
-			Assert.AreEqual(cpuOperator.State, ExecutionState.Stopped);
+			cpuOperator.WaitForStateChanged();
 
+			Assert.AreEqual(ExecutionState.Stopped, cpuOperator.State);
+			
 			Assert.Throws<InvalidOperationException>(() => cpuOperator.SignalStop());
 
 			cpuOperator.Start();
 
+			cpuOperator.WaitForStateChanged();
+
 			cpuOperator.SignalPause();
+
+			cpuOperator.WaitForStateChanged();
 
 			cpuOperator.SignalStop();
 		}

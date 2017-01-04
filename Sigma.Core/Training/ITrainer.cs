@@ -124,11 +124,17 @@ namespace Sigma.Core.Training
 		void Start();
 
 		/// <summary>
+		/// Start the trainer in the current configuration (e.g. using the set network, operator, optimiser, hooks) 
+		/// for one iteration. 
+		/// </summary>
+		void StartOnce();
+
+		/// <summary>
 		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).
 		/// Note: The network's external data inputs and outputs must already be linked and supplied. 
 		/// </summary>
 		/// <param name="localNetwork">The network to train.</param>
 		/// <param name="handler">The computation handler to use.</param>
-		void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler);
+		//void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler);
 	}
 }

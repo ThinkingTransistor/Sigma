@@ -52,12 +52,18 @@ namespace Sigma.Core.Training.Operators.Workers
 		void Start();
 
 		/// <summary>
+		///		Start this worker for one iteration with the parameters defined in the trainer.
+		///		All the initialisation happens here. 
+		/// </summary>
+		void RunTrainingIteration();
+
+		/// <summary>
 		///     Signal this worker to pause at the next opportunity (after an iteration).
 		/// </summary>
 		void SignalPause();
 
 		/// <summary>
-		///     Signa this worker to resume the work.
+		///     Signal this worker to resume the work.
 		/// </summary>
 		void SignalResume();
 

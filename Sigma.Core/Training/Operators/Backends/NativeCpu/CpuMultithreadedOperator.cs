@@ -91,10 +91,10 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		}
 
 		/// <summary>
-		///     This implementation of the <see cref="BaseOperator" /> creates a new <see cref="CpuWorker" />.
+		///     This implementation of the <see cref="BaseOperator" /> creates a new <see cref="BaseCpuWorker" />.
 		///     <see cref="IComputationHandler" /> and <see cref="WorkerPriority" /> are assigned correctly.
 		/// </summary>
-		/// <returns>Return a newly created <see cref="CpuWorker" />.</returns>
+		/// <returns>Return a newly created <see cref="BaseCpuWorker" />.</returns>
 		protected override IWorker CreateWorker()
 		{
 			return new CpuWorker(this, Handler, WorkerPriority);
@@ -103,6 +103,11 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		protected override void StartWorker(IWorker worker)
 		{
 			worker.Start();
+		}
+
+		protected override void StartWorkerOnce(IWorker worker)
+		{
+			worker.RunTrainingIteration();
 		}
 
 		protected override void PauseWorker(IWorker worker)

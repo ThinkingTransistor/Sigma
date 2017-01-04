@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
@@ -26,37 +27,6 @@ namespace Sigma.Core.Training.Operators
 		///     All the <see cref="IWorker" />s managed by this operator.
 		/// </summary>
 		protected IEnumerable<IWorker> Workers;
-
-		/// <summary>
-		///     Create a new <see cref="BaseOperator" /> without specifying the <see cref="IComputationHandler" />.
-		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
-		/// </summary>
-		/// <param name="workerCount">
-		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
-		///     parallel.
-		/// </param>
-		protected BaseOperator(int workerCount)
-		{
-			Hooks = new List<IHook>();
-			WorkerCount = workerCount;
-		}
-
-		/// <summary>
-		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
-		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
-		/// </summary>
-		/// <param name="handler">
-		///     The <see cref="IComputationHandler" /> that will be assigned to the
-		///     <see cref="IComputationHandler" />
-		/// </param>
-		/// <param name="workerCount">
-		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
-		///     parallel.
-		/// </param>
-		protected BaseOperator(IComputationHandler handler, int workerCount) : this(workerCount)
-		{
-			Handler = handler;
-		}
 
 		/// <summary>
 		///     The <see cref="SigmaEnvironment" /> this operator runs in and communicates with.
@@ -95,6 +65,41 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		public int WorkerCount { get; }
 
+		private readonly object _stateChangeLock;
+
+		/// <summary>
+		///     Create a new <see cref="BaseOperator" /> without specifying the <see cref="IComputationHandler" />.
+		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
+		/// </summary>
+		/// <param name="workerCount">
+		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
+		///     parallel.
+		/// </param>
+		protected BaseOperator(int workerCount)
+		{
+			_stateChangeLock = new object();
+
+			Hooks = new List<IHook>();
+			WorkerCount = workerCount;
+		}
+
+		/// <summary>
+		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
+		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
+		/// </summary>
+		/// <param name="handler">
+		///     The <see cref="IComputationHandler" /> that will be assigned to the
+		///     <see cref="IComputationHandler" />
+		/// </param>
+		/// <param name="workerCount">
+		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
+		///     parallel.
+		/// </param>
+		protected BaseOperator(IComputationHandler handler, int workerCount) : this(workerCount)
+		{
+			Handler = handler;
+		}
+
 		public void AttachHook(IHook hook)
 		{
 			Hooks.Add(hook);
@@ -106,76 +111,23 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		///     Start this operator in a separate thread (return immediately).
+		/// This method blocks until the last state change has been fully performed.
+		/// Returns immediately if not implemented.
 		/// </summary>
-		/// <exception cref="InvalidOperationException">If the operator is running or paused.</exception>
-		public void Start()
+		public void WaitForStateChanged()
 		{
-			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
-			{
-				// TODO: check if all required parameter are set
-
-				// initialise the workers when they are required the first time
-				if (Workers == null) { Workers = InitialiseWorkers(); }
-
-				foreach (IWorker worker in Workers) { StartWorker(worker); }
-
-				State = ExecutionState.Running;
-			}
-			else
-			{ ThrowBadState("started"); }
+			lock (_stateChangeLock) { }
 		}
 
 		/// <summary>
-		///     Signal this operator to stop as soon as possible.
+		/// This method assures that <see cref="Workers"/> is initialised (with <see cref="InitialiseWorkers"/>)
+		/// and checks if all required parameters are set. 
 		/// </summary>
-		/// <exception cref="InvalidOperationException">If the operator is not running.</exception>
-		public void SignalPause()
+		protected virtual void PrepareWorkers()
 		{
-			if (State == ExecutionState.Running)
-			{
-				foreach (IWorker worker in Workers) { PauseWorker(worker); }
+			// TODO: check if all required parameter are set
 
-				State = ExecutionState.Paused;
-			}
-			else
-			{ ThrowBadState("paused"); }
-		}
-
-		/// <summary>
-		///     Signal this operator to resume as soon as possible.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">If the operator is not paused.</exception>
-		public void SignalResume()
-		{
-			if (State == ExecutionState.Paused)
-			{
-				foreach (IWorker worker in Workers) { ResumeWorker(worker); }
-
-				State = ExecutionState.Running;
-			}
-			else
-			{ ThrowBadState("resumed"); }
-		}
-
-		/// <summary>
-		///     Signal this operator to stop as soon as possible.
-		/// </summary>
-		/// <exception cref="InvalidOperationException">If the operator is already stopped.</exception>
-		public void SignalStop()
-		{
-			if (State != ExecutionState.Stopped)
-			{
-				foreach (IWorker worker in Workers)
-				{
-					PauseWorker(worker);
-					StopWorker(worker);
-				}
-
-				State = ExecutionState.Stopped;
-			}
-			else
-			{ ThrowBadState("stopped"); }
+			if (Workers == null) { Workers = InitialiseWorkers(); }
 		}
 
 		/// <summary>
@@ -193,6 +145,143 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
+		/// This method starts all workers with <see cref="StartWorker"/>.
+		/// </summary>
+		protected virtual void StartWorkers()
+		{
+			foreach (IWorker worker in Workers) { StartWorker(worker); }
+		}
+
+		protected virtual void StartWorkersOnce()
+		{
+			foreach (IWorker worker in Workers) { StartWorkerOnce(worker); }
+		}
+
+		#region StateControl
+
+		public virtual void StartOnce()
+		{
+			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
+			{
+				new BlockingLockingThread(_stateChangeLock, () =>
+				{
+					PrepareWorkers();
+
+					StartWorkersOnce();
+
+					State = ExecutionState.Running;
+				}).Start();
+			}
+			else
+			{
+				ThrowBadState("started");
+			}
+		}
+
+		/// <summary>
+		///     Start this operator in a separate thread (return immediately).
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is running or paused.</exception>
+		public void Start()
+		{
+			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
+			{
+				new BlockingLockingThread(_stateChangeLock, () =>
+				{
+					PrepareWorkers();
+
+					StartWorkers();
+
+					State = ExecutionState.Running;
+				}).Start();
+			}
+			else
+			{
+				ThrowBadState("started");
+			}
+		}
+
+		/// <summary>
+		///     Signal this operator to stop as soon as possible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is not running.</exception>
+		public void SignalPause()
+		{
+			if (State == ExecutionState.Running)
+			{
+				new BlockingLockingThread(_stateChangeLock, () =>
+				{
+					foreach (IWorker worker in Workers) { PauseWorker(worker); }
+
+					State = ExecutionState.Paused;
+				}).Start();
+			}
+			else
+			{
+				ThrowBadState("paused");
+			}
+		}
+
+		/// <summary>
+		///     Signal this operator to resume as soon as possible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is not paused.</exception>
+		public void SignalResume()
+		{
+			if (State == ExecutionState.Paused)
+			{
+				new BlockingLockingThread(_stateChangeLock, () =>
+				 {
+					 foreach (IWorker worker in Workers) { ResumeWorker(worker); }
+
+					 State = ExecutionState.Running;
+				 }).Start();
+			}
+			else
+			{
+				ThrowBadState("resumed");
+			}
+		}
+
+		/// <summary>
+		///     Signal this operator to stop as soon as possible.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the operator is already stopped.</exception>
+		public void SignalStop()
+		{
+			if (State != ExecutionState.Stopped)
+			{
+				new BlockingLockingThread(_stateChangeLock, () =>
+				 {
+					 foreach (IWorker worker in Workers)
+					 {
+						 PauseWorker(worker);
+						 StopWorker(worker);
+					 }
+
+					 State = ExecutionState.Stopped;
+				 }).Start();
+			}
+			else
+			{
+				ThrowBadState("stopped");
+			}
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="currentState"></param>
+		/// <exception cref="InvalidOperationException"></exception>
+		private void ThrowBadState(string currentState)
+		{
+			throw new InvalidOperationException($"The operator cannot be {currentState} because the state is: {State}!");
+		}
+
+		#endregion
+
+		#region AbstractWorkerMethods
+
+		/// <summary>
 		///     This method creates an <see cref="IWorker" />.
 		/// </summary>
 		/// <returns>The newly created <see cref="IWorker" />.</returns>
@@ -203,6 +292,12 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
 		protected abstract void StartWorker(IWorker worker);
+
+		/// <summary>
+		///     This method starts a worker for a single iteration.
+		/// </summary>
+		/// <param name="worker">The worker that will be started.</param>
+		protected abstract void StartWorkerOnce(IWorker worker);
 
 		/// <summary>
 		///     This method pauses a worker. It will also be
@@ -224,13 +319,6 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="worker">The worker that will be paused and stopped.</param>
 		protected abstract void StopWorker(IWorker worker);
 
-		/// <summary>
-		/// </summary>
-		/// <param name="currentState"></param>
-		/// <exception cref="InvalidOperationException"></exception>
-		private void ThrowBadState(string currentState)
-		{
-			throw new InvalidOperationException($"The operator cannot be {currentState} because the state is: {State}!");
-		}
+		#endregion AbstractWorkerMethods
 	}
 }

@@ -9,7 +9,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 {
 	public class TestCpuWorker
 	{
-		private static CpuWorker CreateCpuWorker()
+		private static BaseCpuWorker CreateCpuWorker()
 		{
 			return new CpuWorker(new CpuMultithreadedOperator(10));
 		}
@@ -18,7 +18,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		public void TestCpuWorkerCreate()
 		{
 			IOperator oOperator = new CpuMultithreadedOperator(10);
-			CpuWorker worker = new CpuWorker(oOperator, oOperator.Handler, ThreadPriority.Normal);
+			BaseCpuWorker worker = new CpuWorker(oOperator, oOperator.Handler, ThreadPriority.Normal);
 
 			Assert.AreSame(oOperator, worker.Operator);
 			Assert.AreEqual(worker.ThreadPriority, ThreadPriority.Normal);
@@ -34,7 +34,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		[TestCase]
 		public void TestCpuWorkerStart()
 		{
-			CpuWorker worker = CreateCpuWorker();
+			BaseCpuWorker worker = CreateCpuWorker();
 
 			worker.Start();
 			Assert.AreEqual(worker.State, ExecutionState.Running);
@@ -60,7 +60,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		[TestCase]
 		public void TestCpuWorkerSignalPause()
 		{
-			CpuWorker worker = CreateCpuWorker();
+			BaseCpuWorker worker = CreateCpuWorker();
 			worker.Start();
 
 			worker.SignalPause();
@@ -80,7 +80,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		[TestCase]
 		public void TestCpuWorkerSignalResume()
 		{
-			CpuWorker worker = CreateCpuWorker();
+			BaseCpuWorker worker = CreateCpuWorker();
 			worker.Start();
 
 			worker.SignalPause();
@@ -99,7 +99,7 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		[TestCase]
 		public void TestCpuWorkerSignalStop()
 		{
-			CpuWorker worker = CreateCpuWorker();
+			BaseCpuWorker worker = CreateCpuWorker();
 			worker.Start();
 
 			worker.SignalStop();
