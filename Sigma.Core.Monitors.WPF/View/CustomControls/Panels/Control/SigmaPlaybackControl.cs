@@ -136,7 +136,10 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				Debug.WriteLine("Rewind!");
 				Control.Running = false;
 #if DEBUG
-				SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				if (Control.Task != null)
+				{
+					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				}
 #endif
 			}
 
