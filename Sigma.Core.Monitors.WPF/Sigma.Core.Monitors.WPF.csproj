@@ -137,8 +137,8 @@
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />
     <Compile Include="Model\SigmaGrid\GridExtensions.cs" />
     <Compile Include="View\CustomControls\GridLayout.cs" />
-    <Compile Include="View\Themes\ColourManager.cs" />
-    <Compile Include="View\Themes\IColourManager.cs" />
+    <Compile Include="View\Colours\ColourManager.cs" />
+    <Compile Include="View\Colours\IColourManager.cs" />
     <Compile Include="Model\UI\Resources\MaterialDesignValues.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarControl.cs" />
     <Compile Include="Model\UI\Resources\UIResources.cs" />
@@ -221,6 +221,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Styles\LiveCharts\AxisDark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Styles\MaterialDesign\MaterialDesignExtensionStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

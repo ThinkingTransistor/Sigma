@@ -25,6 +25,11 @@
 				<ResourceDictionary
 					Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
 
+                <!-- Material Design extension -->
+                
+                <ResourceDictionary 
+                    Source="Themes/Styles/MaterialDesign/MaterialDesignExtensionStyles.xaml"/>
+                
 				<!-- Material Design and MahApps compatibility -->
 				<ResourceDictionary
 					Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml " />

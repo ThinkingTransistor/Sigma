@@ -10,27 +10,30 @@ using System.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Panels
 {
-	public class GenericPanel<T> : SigmaPanel where T : UIElement
-	{
-		private T _content;
+    public class GenericPanel : GenericPanel<UIElement>
+    {
+        public GenericPanel(string title, UIElement content) : base(title, content)
+        {
+        }
+    }
 
-		public GenericPanel(string title) : base(title)
-		{
-		}
+    public class GenericPanel<T> : SigmaPanel where T : UIElement
+    {
+        private T _content;
 
-		public GenericPanel(string title, T content) : base(title)
-		{
-			Content = content;
-		}
+        public GenericPanel(string title, T content) : base(title)
+        {
+            Content = content;
+        }
 
-		public new T Content
-		{
-			get { return _content; }
-			set
-			{
-				_content = value;
-				base.Content = _content;
-			}
-		}
-	}
+        public new T Content
+        {
+            get { return _content; }
+            set
+            {
+                _content = value;
+                base.Content = _content;
+            }
+        }
+    }
 }

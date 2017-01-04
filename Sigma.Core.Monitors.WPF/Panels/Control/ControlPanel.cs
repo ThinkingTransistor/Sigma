@@ -14,7 +14,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Control
 			{
 				Orientation = Orientation.Vertical,
 				HorizontalAlignment = HorizontalAlignment.Center,
-				Margin = new Thickness(0, 10, 0, 0)
+				Margin = new Thickness(0, 20, 0, 0)
 			};
 
 			Content.Children.Add(new SigmaPlaybackControl());
