@@ -132,6 +132,7 @@
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\TaskVisualizerFactory.cs" />
     <Compile Include="View\Factories\Defaults\TabControlFactory.cs" />
+    <Compile Include="View\Factories\LoadingIndicatorFactory.cs" />
     <Compile Include="View\Factories\UIFactory.cs" />
     <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />

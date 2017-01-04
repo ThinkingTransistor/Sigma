@@ -103,8 +103,8 @@ namespace Sigma.Core.Monitors.WPF
 			_windowType = window;
 
 			// this is the one and only appropriate colour configuration - fight me
-			ColourManager = new ColourManager(MaterialDesignValues.BlueGrey, MaterialDesignValues.Amber);
-			ColourManager.Dark = true;
+			ColourManager = new ColourManager(MaterialDesignValues.Blue, MaterialDesignValues.Amber);
+			ColourManager.Dark = false;
 
 			_waitForStart = new ManualResetEvent(false);
 

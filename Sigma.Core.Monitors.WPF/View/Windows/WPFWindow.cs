@@ -51,6 +51,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public Application App { get; }
 
+		/// <summary>
+		/// This boolean determines whether the UI should be fully shown (<see cref="IsInitializing"/> = <c>false</c>)
+		/// or a loading indicator / nothing (depending on the window) is visible. 
+		/// </summary>
+		public abstract bool IsInitializing { get; set; }
 
 		/// <summary>
 		///     In this function components should be initialised that

@@ -25,6 +25,9 @@
 				<ResourceDictionary
 					Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
 
+				<ResourceDictionary
+						Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml" />
+				
                 <!-- Material Design extension -->
                 
                 <ResourceDictionary 

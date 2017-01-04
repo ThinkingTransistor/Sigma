@@ -33,6 +33,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
+		public const string LoadingIndicatorFactoryIdentifier = "loading_indicator_factory";
+
 
 		public const string SigmaIconPath = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/Resources/sigma.ico";
 
@@ -69,6 +71,30 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     This value will never be <c>null</c>.
 		/// </summary>
 		protected SigmaWindow RootWindow;
+
+		protected UIElement RootElement;
+
+		protected UIElement LoadingIndicatorElement;
+
+		private bool _manualOverride;
+
+		private bool _isInitializing;
+
+		public override bool IsInitializing
+		{
+			get { return _isInitializing; }
+			set
+			{
+				if (_isInitializing != value)
+				{
+					_manualOverride = true;
+				}
+
+				_isInitializing = value;
+
+				Content = _isInitializing ? LoadingIndicatorElement : RootElement;
+			}
+		}
 
 		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />.
@@ -122,10 +148,17 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			InitialiseDefaultValues();
 
+			RootElement = CreateContent(monitor, other, out _titleBar);
+			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
+			Content = LoadingIndicatorElement;
 
-			Panel rootLayout = CreateContent(monitor, other, out _titleBar);
-
-			Content = rootLayout;
+			App.Startup += (sender, args) =>
+			{
+				if (!_manualOverride)
+				{
+					IsInitializing = false;
+				}
+			};
 		}
 
 		#region Properties
@@ -168,10 +201,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     Determines whether this window is closed or about to close.
 		/// </summary>
 		public bool IsAlive { get; private set; } = true;
-
-		public void Dispose()
-		{
-		}
 
 		protected virtual Panel CreateContent(WPFMonitor monitor, SigmaWindow other, out TitleBarControl titleBarControl)
 		{
@@ -256,6 +285,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			return ((IUIFactory<T>) monitor.Registry[identifier]).CreateElement(App, this, parameters);
 		}
 
+
 		protected override void InitialiseComponents()
 		{
 			SaveWindowPosition = true;
@@ -292,6 +322,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			{
 				registry[StatusBarFactoryIdentifier] = new StatusBarFactory(registry, 32,
 					new GridLength(3, GridUnitType.Star), new GridLength(1, GridUnitType.Star), new GridLength(3, GridUnitType.Star));
+			}
+
+			if (!registry.ContainsKey(LoadingIndicatorFactoryIdentifier))
+			{
+				registry[LoadingIndicatorFactoryIdentifier] = new LoadingIndicatorFactory();
 			}
 		}
 
@@ -373,6 +408,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			Exception exception = (Exception) e.ExceptionObject;
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
+		}
+
+		public void Dispose()
+		{
 		}
 	}
 }
