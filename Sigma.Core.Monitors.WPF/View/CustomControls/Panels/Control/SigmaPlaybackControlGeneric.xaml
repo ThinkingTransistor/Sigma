@@ -10,6 +10,7 @@
                     <!-- Style for playback control -->
                     <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
                     <ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/Themes/Styles/MaterialDesign/MaterialDesignExtensionStyles.xaml"/>
+                    <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
                     <ResourceDictionary>
                         <Style x:Key="SigmaPlaybackButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFloatingActionButton}">
                             <Setter Property="Margin" Value="8,0,8,0"/>
@@ -18,239 +19,6 @@
 
                         <Style TargetType="Button" BasedOn="{StaticResource SigmaPlaybackButton}"/>
 
-                        <Storyboard x:Key="OnPauseStoryboard">
-                            <Storyboard>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="45">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-8.625">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-4">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="-45">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="6.177">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.167">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="4.197"/>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1.204"/>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-5.688"/>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-6"/>
-                            </DoubleAnimationUsingKeyFrames>
-                        </Storyboard>
-
-                        <Storyboard x:Key="OnResumeStoryboard">
-                            <Storyboard>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="45">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-8.625">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-4">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="-45">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="6.177">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
-                                    <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.167"/>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="4.197">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.027">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.085">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="-5.688">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.101">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="-6">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.101">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="45">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
-                                <EasingDoubleKeyFrame KeyTime="0" Value="0">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-45">
-                                    <EasingDoubleKeyFrame.EasingFunction>
-                                        <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
-                                    </EasingDoubleKeyFrame.EasingFunction>
-                                </EasingDoubleKeyFrame>
-                            </DoubleAnimationUsingKeyFrames>
-                        </Storyboard>
 
                         <Style x:Key="SigmaPlayButton" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignFloatingActionToggleButton}">
                             <Setter Property="SnapsToDevicePixels" Value="False"/>
@@ -275,16 +43,251 @@
                             <Button>
                                 1
                             </Button>
-                            <ToggleButton Style="{StaticResource SigmaPlayButton}">
+                            <ToggleButton Style="{StaticResource SigmaPlayButton}" Command="{TemplateBinding TogglePlay}">
                                 <ToggleButton.Triggers>
                                     <EventTrigger RoutedEvent="ToggleButton.Checked">
                                         <EventTrigger.Actions>
-                                            <BeginStoryboard Storyboard="{StaticResource OnPauseStoryboard}"/>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="45">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-8.625">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-4">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="-45">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="6.177">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.167">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="4.197"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1.204"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-5.688"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-6"/>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+
+                                            </BeginStoryboard>
                                         </EventTrigger.Actions>
                                     </EventTrigger>
                                     <EventTrigger RoutedEvent="ToggleButton.Unchecked">
                                         <EventTrigger.Actions>
-                                            <BeginStoryboard Storyboard="{StaticResource OnResumeStoryboard}"/>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="45">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-8.625">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-4">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="-45">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="6.177">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
+                                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                                    <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                                </EasingDoubleKeyFrame.EasingFunction>
+                                                            </EasingDoubleKeyFrame>
+                                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.167"/>
+                                                        </DoubleAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line2">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="4.197">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.027">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line2">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.085">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Line1">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="-5.688">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0.101">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Line1">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="-6">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-0.101">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="45">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line2">
+                                                        <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                        <EasingDoubleKeyFrame KeyTime="0:0:1" Value="-45">
+                                                            <EasingDoubleKeyFrame.EasingFunction>
+                                                                <BackEase EasingMode="EaseOut" Amplitude="0.5"/>
+                                                            </EasingDoubleKeyFrame.EasingFunction>
+                                                        </EasingDoubleKeyFrame>
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
                                         </EventTrigger.Actions>
                                     </EventTrigger>
                                 </ToggleButton.Triggers>
