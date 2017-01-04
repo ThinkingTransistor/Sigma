@@ -153,6 +153,15 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			public override void Execute(object parameter)
 			{
 				Debug.WriteLine("Step!");
+
+				Control.Running = false;
+
+#if DEBUG
+				if (Control.Task != null)
+				{
+					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				}
+#endif
 			}
 
 			public DefaultStep(SigmaPlaybackControl control) : base(control)

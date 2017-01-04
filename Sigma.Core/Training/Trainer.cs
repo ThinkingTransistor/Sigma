@@ -127,6 +127,11 @@ namespace Sigma.Core.Training
 				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a sigma environment.");
 			}
 
+			if (Operator == null)
+			{
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a operator.");
+			}
+
 			Network.Validate();
 
 			_logger.Info($"Initialising trainer \"{Name}\" for handler {handler}...");

@@ -40,8 +40,7 @@
 							Visibility="{TemplateBinding Visibility}">
 
 						<StackPanel Orientation="{TemplateBinding Orientation}" >
-							<Button	Command="{TemplateBinding Rewind}"
-									>
+							<Button	Command="{TemplateBinding Rewind}">
 								<Button.Triggers>
 									<EventTrigger RoutedEvent="Button.Click">
 										<BeginStoryboard>
@@ -345,7 +344,45 @@
 							</ToggleButton>
 
 							<Button Command="{TemplateBinding Step}">
-								<materialDesign:PackIcon Kind="SkipNext" Width="32" Height="32"/>
+								<Button.Triggers>
+									<EventTrigger RoutedEvent="Button.Click">
+										<BeginStoryboard>
+											<Storyboard>
+												<!-- to the right -->
+												<DoubleAnimation Storyboard.TargetName="NextIcon"
+																 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+																 From="0" To="30"
+																 Duration="0:0:0.35"/>
+
+												<!-- to the left-->
+												<DoubleAnimation Storyboard.TargetName="NextIcon"
+																 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+																 From="-30" To="0"
+																 Duration="0:0:0.35"
+																 BeginTime="0:0:0.35"/>
+
+												<!-- get invisible -->
+												<DoubleAnimation Storyboard.TargetName="NextIcon"
+																 Storyboard.TargetProperty="Opacity"
+																 From="1" To="0"
+																 Duration="0:0:0.35"/>
+												
+												<!-- come back -->
+												<DoubleAnimation Storyboard.TargetName="NextIcon"
+																 Storyboard.TargetProperty="Opacity"
+																 From="0" To="1"
+																 Duration="0:0:0.35"
+																 BeginTime="0:0:0.35"/>
+											</Storyboard>
+										</BeginStoryboard>
+									</EventTrigger>
+								</Button.Triggers>
+
+								<materialDesign:PackIcon x:Name="NextIcon" Kind="SkipNext" Width="32" Height="32">
+									<materialDesign:PackIcon.RenderTransform>
+										<TranslateTransform/>
+									</materialDesign:PackIcon.RenderTransform>	
+								</materialDesign:PackIcon>
 							</Button>
 						</StackPanel>
 
@@ -354,10 +391,4 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-
-
-
-
-
-
 </ResourceDictionary>
