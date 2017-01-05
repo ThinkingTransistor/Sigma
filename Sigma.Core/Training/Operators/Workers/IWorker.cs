@@ -14,6 +14,7 @@ namespace Sigma.Core.Training.Operators.Workers
 	/// <summary>
 	///     A single worker which directly executes the training process defined in a trainer and is spawned by an operator to
 	///     complete some part of a training task.
+	/// 
 	///     Typically multiple workers are used simultaneously and then their individual copies of the trained models are
 	///     merged at certain intervals for optimal device usage.
 	/// </summary>
@@ -41,8 +42,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		INetwork LocalNetwork { get; set; }
 
 		/// <summary>
-		///     The current iteration number since last synchronisation (i.e. how many iterations have been executed on this
-		///     worker).
+		///     The current iteration number (i.e. how many iterations have been executed on this worker).
 		/// </summary>
 		int LocalIterationNumber { get; }
 

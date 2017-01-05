@@ -6,6 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+
 #pragma warning disable 1570
 namespace Sigma.Core.Utils
 {
@@ -52,8 +54,8 @@ namespace Sigma.Core.Utils
 		/// <typeparam name="T">The type of the value.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier. </param>
 		/// <param name="value"></param>
-		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
+		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>). If no associated type is set, the one of the registry will be used (if set). </param>
 		/// <returns>A list of fully qualified matches to the match identifier.</returns>
-		string[] ResolveSet<T>(string matchIdentifier, T value, System.Type associatedType = null);
+		string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null);
 	}
 }

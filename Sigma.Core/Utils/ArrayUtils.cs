@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using ManagedCuda.CudaSolve;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 
@@ -284,6 +285,27 @@ namespace Sigma.Core.Utils
 			}
 
 			return "[" + string.Join(",\n", subarrays) + "]";
+		}
+
+		/// <summary>
+		/// Add an element to the next "free" (null) spot in a given array.
+		/// </summary>
+		/// <typeparam name="T">The type of the array.</typeparam>
+		/// <param name="arr">The array to add the item.</param>
+		/// <param name="value">The item that will be added.</param>
+		/// <returns><c>True</c> if there was a null entry in the array, <c>false</c> otherwise. </returns>
+		public static bool AddToNextNull<T>(this T[] arr, T value)
+		{
+			for (int i = 0; i < arr.Length; i++)
+			{
+				if (arr[i] == null)
+				{
+					arr[i] = value;
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

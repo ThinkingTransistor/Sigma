@@ -9,6 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Operators.Workers;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -51,6 +53,12 @@ namespace Sigma.Core.Training.Operators
 		INetwork Network { get; set; }
 
 		/// <summary>
+		///		This merger is used to merge multiple networks after they get
+		///		reported to the <see cref="IOperator"/>.
+		/// </summary>
+		INetworkMerger Merger { get; set; }
+
+		/// <summary>
 		///     The number of <see cref="Workers.IWorker" />s (threads) used in this
 		///     <see cref="IOperator" /> in parallel.
 		/// </summary>
@@ -67,6 +75,13 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
 		void DetachHook(IHook hook);
+
+		/// <summary>
+		/// A <see cref="IWorker"/> calls this method to report its current progress 
+		/// to the <see cref="IOperator"/>. 
+		/// </summary>
+		/// <param name="worker"></param>
+		void ReportProgress(IWorker worker);
 
 		/// <summary>
 		///     Start this operator in a separate thread (return immediately).

@@ -8,10 +8,12 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using log4net;
 using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 
 namespace Sigma.Core.Training.Operators
@@ -60,11 +62,30 @@ namespace Sigma.Core.Training.Operators
 		public INetwork Network { get; set; }
 
 		/// <summary>
+		///		This merger is used to merge multiple networks after they get
+		///		reported to the <see cref="IOperator"/>.
+		/// </summary>
+		public INetworkMerger Merger { get; set; }
+
+		/// <summary>
 		///     The number of <see cref="IWorker" />s (threads) used in this
 		///     <see cref="IOperator" /> in parallel.
 		/// </summary>
 		public int WorkerCount { get; }
 
+		/// <summary>
+		/// The logger, it will be initialised in the property so that the class matches.
+		/// </summary>
+		private ILog _log;
+
+		/// <summary>
+		/// The logger for the inherited class. 
+		/// </summary>
+		protected ILog Log => _log ?? (_log = LogManager.GetLogger(GetType()));
+
+		/// <summary>
+		/// The lock that will be used to perform asynchronous management of the <see cref="IWorker"/>.
+		/// </summary>
 		private readonly object _stateChangeLock;
 
 		/// <summary>
@@ -145,13 +166,16 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		/// This method starts all workers with <see cref="StartWorker"/>.
+		/// Start all workers with <see cref="StartWorker"/>.
 		/// </summary>
 		protected virtual void StartWorkers()
 		{
 			foreach (IWorker worker in Workers) { StartWorker(worker); }
 		}
 
+		/// <summary>
+		///		Start all workers once (for one iteration) with <see cref="StartWorkerOnce"/>. 
+		/// </summary>
 		protected virtual void StartWorkersOnce()
 		{
 			foreach (IWorker worker in Workers) { StartWorkerOnce(worker); }
@@ -278,6 +302,8 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		#endregion
+
+		public abstract void ReportProgress(IWorker worker);
 
 		#region AbstractWorkerMethods
 

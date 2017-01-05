@@ -50,7 +50,7 @@ namespace Sigma.Core.Training
 		public IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
 		public IRegistry Registry { get; }
 
-		public Trainer(string name)
+		internal Trainer(string name)
 		{
 			if (name == null) { throw new ArgumentNullException(nameof(name)); }
 
@@ -129,12 +129,12 @@ namespace Sigma.Core.Training
 
 			if (Operator == null)
 			{
-				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a operator.");
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning an operator.");
 			}
 
 			Network.Validate();
 
-			_logger.Info($"Initialising trainer \"{Name}\" for handler {handler}...");
+			_logger.Info($"Initialising trainer \"{Name}\" with handler {handler}...");
 
 			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"Preparing trainer {Name}");
 

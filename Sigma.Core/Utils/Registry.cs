@@ -209,6 +209,11 @@ namespace Sigma.Core.Utils
 			}
 		}
 
+		public void SetTyped<T>(string identifier, T value)
+		{
+			Set(identifier, value, typeof(T));
+		}
+
 		public virtual void Add(string key, object value)
 		{
 			MappedValues.Add(key, value);
@@ -276,6 +281,17 @@ namespace Sigma.Core.Utils
 		public bool TryGetValue(string key, out object value)
 		{
 			return MappedValues.TryGetValue(key, out value);
+		}
+
+		public Type GetAssociatedType(string identifier)
+		{
+			Type type;
+
+			if (AssociatedTypes.TryGetValue(identifier, out type))
+			{
+				return type;
+			}
+			return null;
 		}
 
 		public T Remove<T>(string identifier)

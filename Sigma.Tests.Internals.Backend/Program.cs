@@ -16,6 +16,9 @@ using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Initialisers;
+using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
@@ -28,9 +31,49 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleNetworkArchitecture();
+			//SampleNetworkArchitecture();
+
+			SampleNetworkMerging();
 
 			Console.ReadKey();
+		}
+
+		private static void SampleNetworkMerging()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("SigmaMergeTest");
+
+			ITrainer[] trainers = new ITrainer[3];
+			int[] constantValues = { 2,10, 70 };
+
+			//INetworkMerger merger = new WeightedNetworkMerger(10d, 10d, 1d);
+			INetworkMerger merger = new AverageNetworkMerger();
+			IComputationHandler handler = new CpuFloat32Handler();
+
+			for (int i = 0; i < trainers.Length; i++)
+			{
+				trainers[i] = sigma.CreateTrainer($"MergeTrainer{i}");
+				trainers[i].Network = new Network($"{i}");
+				trainers[i].Network.Architecture = InputLayer.Construct(2, 2) + ElementwiseLayer.Construct(2 * 2) + OutputLayer.Construct(2);
+
+				trainers[i].AddInitialiser("*.weights", new ConstantValueInitialiser(constantValues[i]));
+
+				trainers[i].Operator = new CpuMultithreadedOperator(5);
+				trainers[i].Initialise(handler);
+			}
+
+			foreach (ITrainer trainer in trainers)
+			{
+				Console.WriteLine(trainer.Network.Registry);
+			}
+
+			merger.AddMergeEntry("layers.*.weights");
+			merger.Merge(trainers[1].Network, trainers[2].Network, handler);
+
+			Console.WriteLine("*******************");
+			foreach (ITrainer trainer in trainers)
+			{
+				Console.WriteLine(trainer.Network.Registry);
+			}
 		}
 
 		private static void SampleNetworkArchitecture()
@@ -38,7 +81,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
 			IComputationHandler handler = new CpuFloat32Handler();
-			ITrainer trainer = sigma.CreateTrainer("testtrainer");
+			ITrainer trainer = sigma.CreateTrainer("test_trainer");
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(2, 2) +
 										   ElementwiseLayer.Construct(2 * 2) +
@@ -46,11 +89,22 @@ namespace Sigma.Tests.Internals.Backend
 										   2 * (FullyConnectedLayer.Construct(4) + FullyConnectedLayer.Construct(2)) +
 										   OutputLayer.Construct(2);
 
+			trainer.Operator = new CpuMultithreadedOperator(10);
+
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
 			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
 			trainer.Initialise(handler);
 
 			Console.WriteLine(trainer.Network.Registry);
+
+			IRegistryResolver resolver = new RegistryResolver(trainer.Network.Registry);
+
+			Console.WriteLine("===============");
+			object[] weights = resolver.ResolveGet<object>("layers.*.weights");
+			Console.WriteLine(string.Join("\n", weights));
+			Console.WriteLine("===============");
+
+
 
 			//foreach (ILayerBuffer buffer in trainer.Network.YieldLayerBuffersOrdered())
 			//{

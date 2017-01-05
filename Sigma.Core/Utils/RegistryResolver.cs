@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+#pragma warning disable 1570
+
 namespace Sigma.Core.Utils
 {
 	/// <summary>
@@ -19,19 +21,16 @@ namespace Sigma.Core.Utils
 	/// The supported notation syntax is:
 	///		-	'.' separates registries hierarchically
 	///			Example: "trainer2.training.accuracy"
-	///		-	'*' indicates a wild-card mask, match any name - similar to regex's '.'
+	///		-	'*' indicates a wild-card mask, match any name - similar to regex's '.*'
 	///			Example: "trainer*.training.accuracy" match all sub-registries whose name starts with trainer
 	///		-	'*<tag>' conditionally matching wild-card mask, match any name if the conditional tag
 	///			Example: "*<trainer>.training.accuracy" match all sub-registries whose tags include the tag "trainer"	
 	/// </summary>
 	public class RegistryResolver : IRegistryResolver, IRegistryHierarchyChangeListener
 	{
-		public IRegistry Root
-		{
-			get;
-		}
+		public IRegistry Root { get; }
 
-		private static readonly string[] EmptyArray = new string[0] { };
+		private static readonly string[] EmptyStringArray = {};
 
 		private readonly Dictionary<string, MatchIdentifierRequestCacheEntry> _matchIdentifierCache;
 		private readonly ISet<string> _fullIdentifiersToInvalidate;
@@ -40,14 +39,27 @@ namespace Sigma.Core.Utils
 		/// Create a registry resolver with a certain root registry.
 		/// </summary>
 		/// <param name="root">The root registry.</param>
-		public RegistryResolver(IRegistry root)
+		public RegistryResolver(IRegistry root) : this(root, true)
+		{
+		}
+
+		/// <summary>
+		/// Create a registry resolver with a certain root registry.
+		/// </summary>
+		/// <param name="root">The root registry.</param>
+		/// <param name="updateCacheEntries">This boolean decides, whether updates in the registry should also update cached entries.
+		/// Normally this should be <c>true</c>.</param>
+		internal RegistryResolver(IRegistry root, bool updateCacheEntries)
 		{
 			if (root == null)
 			{
 				throw new ArgumentNullException(nameof(root));
 			}
 
-			root.HierarchyChangeListeners.Add(this);
+			if (updateCacheEntries)
+			{
+				root.HierarchyChangeListeners.Add(this);
+			}
 
 			Root = root;
 			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>(8);
@@ -86,8 +98,7 @@ namespace Sigma.Core.Utils
 				do
 				{
 					referredRegistries.Add(referredRegistry);
-				}
-				while ((referredRegistry = referredRegistry.Parent) != null);
+				} while ((referredRegistry = referredRegistry.Parent) != null);
 			}
 
 			return referredRegistries;
@@ -146,10 +157,11 @@ namespace Sigma.Core.Utils
 
 		public T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
 		{
-			string[] emptyArrayThrowaway = EmptyArray;
+			string[] emptyArrayThrowaway = EmptyStringArray;
 
 			return ResolveGet(matchIdentifier, out emptyArrayThrowaway, values);
 		}
+
 
 		public T[] ResolveGet<T>(string matchIdentifier, out string[] fullMatchedIdentifierArray, T[] values = null)
 		{
@@ -184,7 +196,11 @@ namespace Sigma.Core.Utils
 
 			foreach (string fullIdentifier in cacheEntry.FullMatchedIdentifierArray)
 			{
-				cacheEntry.FullMatchedIdentifierRegistries[fullIdentifier].Set(localIdentifier, value, associatedType);
+				IRegistry currentRegistry = cacheEntry.FullMatchedIdentifierRegistries[fullIdentifier];
+
+				associatedType = associatedType ?? currentRegistry.GetAssociatedType(localIdentifier);
+
+				currentRegistry.Set(localIdentifier, value, associatedType);
 			}
 
 			return cacheEntry.FullMatchedIdentifierArray;

@@ -51,6 +51,13 @@ namespace Sigma.Core.Utils
 		void Set(string identifier, object value, Type valueType = null);
 
 		/// <summary>
+		/// Set a value with a given identifier and automatically assign the type.
+		/// </summary>
+		/// <param name="identifier">The identifier.</param>
+		/// <param name="value">The value to set.</param>
+		void SetTyped<T>(string identifier, T value);
+
+		/// <summary>
 		/// Get the type-checked value associated with a given identifier.
 		/// </summary>
 		/// <typeparam name="T">The type the value should be cast to.</typeparam>
@@ -84,6 +91,13 @@ namespace Sigma.Core.Utils
 		/// <param name="matchType">The type to match.</param>
 		/// <returns>An array of all values.</returns>
 		T[] GetAllValues<T>(string matchIdentifier, Type matchType = null);
+
+		/// <summary>
+		/// Get the associated type of an entry. 
+		/// </summary>
+		/// <param name="identifier">The identifier. </param>
+		/// <returns>The type if present in the dictionary, <c>null</c> otherwise.</returns>
+		Type GetAssociatedType(string identifier);
 
 		/// <summary>
 		/// Removes the identifier and the associated type-checked value.

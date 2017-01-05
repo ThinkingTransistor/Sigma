@@ -68,6 +68,24 @@ namespace Sigma.Tests.Utils
 		}
 
 		[TestCase]
+		public void TestRegistryGetAssociatedType()
+		{
+			IRegistry registry = new Registry
+			{
+				CheckTypes = false
+			};
+
+			registry.Set("a", 1, typeof(int));
+			//bad entry
+			registry.Set("b", 2.0, typeof(string));
+			registry.SetTyped("c", 2.0);
+
+			Assert.AreEqual(typeof(int), registry.GetAssociatedType("a"));
+			Assert.AreEqual(typeof(string), registry.GetAssociatedType("b"));
+			Assert.AreEqual(typeof(double), registry.GetAssociatedType("c"));
+		}
+
+		[TestCase]
 		public void TestRegistryDeepCopy()
 		{
 			Registry registry = new Registry();
@@ -103,5 +121,7 @@ namespace Sigma.Tests.Utils
 			Assert.AreSame(second, third.Parent);
 			Assert.AreSame(third, fourth.Parent);
 		}
+
+
 	}
 }

@@ -6,10 +6,14 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
 using System.Threading;
+using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 {
@@ -58,6 +62,11 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		public ThreadPriority WorkerPriority { get; set; }
 
 		/// <summary>
+		/// The current iteration number, with all networks. 
+		/// </summary>
+		private readonly IDictionary<int, INetwork[]> _pushedNetworks;
+
+		/// <summary>
 		///     Create a new <see cref="CpuMultithreadedOperator" /> without specifying the <see cref="IComputationHandler" />.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
 		///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
@@ -88,6 +97,26 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			: base(handler, workerCount)
 		{
 			WorkerPriority = priority;
+			_pushedNetworks = new Dictionary<int, INetwork[]>();
+		}
+
+		public override void ReportProgress(IWorker worker)
+		{
+			PushNetwork(worker);
+		}
+
+		protected virtual void PushNetwork(IWorker worker)
+		{
+			lock (_pushedNetworks)
+			{
+				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalIterationNumber, () => new INetwork[WorkerCount]);
+				if (!networks.AddToNextNull(worker.LocalNetwork))
+				{
+					throw new InvalidOperationException("Too many workers trying to push their network");
+				}
+			}
+
+			Log.Info($"Worker {worker.GetType()} pushed his network for the iteration {worker.LocalIterationNumber}");
 		}
 
 		/// <summary>
