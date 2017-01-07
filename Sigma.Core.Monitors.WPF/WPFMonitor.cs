@@ -241,7 +241,18 @@ namespace Sigma.Core.Monitors.WPF
 				}
 
 				_app.Startup += (sender, args) => { _waitForStart.Set(); };
+#if DEBUG
 				_app.Run(Window);
+#else
+				try
+				{
+					_app.Run(Window);
+				}
+				catch (Exception e)
+				{
+					_log.Error("Uncaught exception in UI has been thrown.", e);
+				}
+#endif
 			});
 
 			//Start the new thread with the given priority and set it to a STAThread (required for WPF windows)

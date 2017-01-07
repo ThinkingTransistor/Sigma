@@ -72,8 +72,20 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		protected SigmaWindow RootWindow;
 
-		protected UIElement RootElement;
+		/// <summary>
+		/// The UIElement that contains the <see cref="LoadingIndicatorElement"/>
+		/// and the <see cref="RootContentElement"/> with different z-indexes.
+		/// </summary>
+		protected Grid RootElement;
 
+		/// <summary>
+		/// The element that contains the content.
+		/// </summary>
+		protected UIElement RootContentElement;
+
+		/// <summary>
+		/// The element that will be displayed while loading. it is contained in the <see cref="RootElement"/>
+		/// </summary>
 		protected UIElement LoadingIndicatorElement;
 
 		private bool _manualOverride;
@@ -92,7 +104,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 				_isInitializing = value;
 
-				Content = _isInitializing ? LoadingIndicatorElement : RootElement;
+				LoadingIndicatorElement.Visibility = _isInitializing ? Visibility.Visible : Visibility.Hidden;
 			}
 		}
 
@@ -148,9 +160,20 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			InitialiseDefaultValues();
 
-			RootElement = CreateContent(monitor, other, out _titleBar);
+			RootElement = new Grid();
+
+			RootContentElement = CreateContent(monitor, other, out _titleBar);
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
-			Content = LoadingIndicatorElement;
+
+			RootElement.Children.Add(RootContentElement);
+			RootElement.Children.Add(LoadingIndicatorElement);
+
+			if (other != null)
+			{
+				LoadingIndicatorElement.Visibility = Visibility.Hidden;
+			}
+
+			Content = RootElement;
 
 			App.Startup += (sender, args) =>
 			{
