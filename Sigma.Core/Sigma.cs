@@ -14,6 +14,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using log4net.Config;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
@@ -352,6 +353,7 @@ namespace Sigma.Core
 
 		static SigmaEnvironment()
 		{
+			// logging not initialised
 			SetDefaultCulture(DefaultCultureInfo);
 
 			ActiveSigmaEnvironments = new Registry();
@@ -387,6 +389,14 @@ namespace Sigma.Core
 			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
 			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
 			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
+		}
+
+		/// <summary>
+		/// Loads the log4net configuration from the corresponding xml file. See log4net for more details.
+		/// </summary>
+		public static void EnableLogging()
+		{
+			XmlConfigurator.Configure();
 		}
 
 		/// <summary>

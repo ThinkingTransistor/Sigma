@@ -319,7 +319,7 @@
 								</ToggleButton.Triggers>
 
 								<Canvas Height="56" Width="56" Margin="-2,-2.25,0,2.25">
-									<Rectangle x:Name="Line1" Height="17.167" Canvas.Left="29.026" Fill="White" Canvas.Top="25.869" Width="3" RenderTransformOrigin="0.5,0.5">
+									<Rectangle x:Name="Line1" Height="17.167" Canvas.Left="29.026" Fill="{DynamicResource PrimaryHueMidForegroundBrush}" Canvas.Top="25.869" Width="3" RenderTransformOrigin="0.5,0.5">
 										<Rectangle.RenderTransform>
 											<TransformGroup>
 												<ScaleTransform/>
@@ -330,7 +330,7 @@
 										</Rectangle.RenderTransform>
 									</Rectangle>
 
-									<Rectangle x:Name="Line2" Height="17.167" Canvas.Left="29.042" Fill="White" Canvas.Top="15.666" Width="3" RenderTransformOrigin="0.5,0.5">
+									<Rectangle x:Name="Line2" Height="17.167" Canvas.Left="29.042" Fill="{DynamicResource PrimaryHueMidForegroundBrush}" Canvas.Top="15.666" Width="3" RenderTransformOrigin="0.5,0.5">
 										<Rectangle.RenderTransform>
 											<TransformGroup>
 												<ScaleTransform/>

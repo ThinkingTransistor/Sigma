@@ -21,8 +21,6 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
-using Sigma.Core.Monitors.WPF.View.Factories;
-using Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 using Sigma.Core.Utils;
 
@@ -34,7 +32,7 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
-			XmlConfigurator.Configure();
+			SigmaEnvironment.EnableLogging();
 
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
@@ -44,23 +42,23 @@ namespace Sigma.Tests.Internals.WPF
 
 			InitializeDownload(guiMonitor, sigma);
 
-			IRegistry reg = new Registry(guiMonitor.Registry);
-			guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
-			reg.Add(StatusBarFactory.CustomFactoryIdentifier,
-				new LambdaUIFactory(
-					(app, window, param) =>
-						new Label
-						{
-							Content = "Sigma is life, Sigma is love",
-							Foreground = Brushes.White,
-							VerticalAlignment = VerticalAlignment.Center,
-							HorizontalAlignment = HorizontalAlignment.Center,
-							FontSize = UIResources.P1
-						}));
+			//IRegistry reg = new Registry(guiMonitor.Registry);
+			//guiMonitor.Registry.Add(StatusBarFactory.RegistryIdentifier, reg);
+			//reg.Add(StatusBarFactory.CustomFactoryIdentifier,
+			//	new LambdaUIFactory(
+			//		(app, window, param) =>
+			//			new Label
+			//			{
+			//				Content = "Sigma is life, Sigma is love",
+			//				Foreground = Brushes.White,
+			//				VerticalAlignment = VerticalAlignment.Center,
+			//				HorizontalAlignment = HorizontalAlignment.Center,
+			//				FontSize = UIResources.P1
+			//			}));
 
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Red));
-			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Netzzz", MaterialColour.Blue));
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net", MaterialColour.Green));
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Pink));
+			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("cisco", MaterialColour.DeepOrange));
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 2", MaterialColour.Brown));
 
 			guiMonitor.Priority = ThreadPriority.Highest;
 			guiMonitor.AddTabs("Overview", "Data", "Tests", "Log2");
@@ -79,7 +77,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				TabUI tab = window.TabControl["Overview"];
 
-				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
+				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Net test 2"));
 
 				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
 

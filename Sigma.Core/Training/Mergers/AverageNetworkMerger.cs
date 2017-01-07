@@ -27,7 +27,7 @@ namespace Sigma.Core.Training.Mergers
 
 		protected override double MergeDoubles(double[] doubles)
 		{
-			return doubles.Sum()/doubles.Length;
+			return doubles.Sum() / doubles.Length;
 		}
 
 		protected override INDArray MergeNDArrays(INDArray[] arrays, IComputationHandler handler)
