@@ -174,11 +174,11 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		///		Start all workers once (for one iteration) with <see cref="StartWorkerOnce"/>. 
+		///		Start all workers once (for one iteration) with <see cref="RunWorkerOnce"/>. 
 		/// </summary>
 		protected virtual void StartWorkersOnce()
 		{
-			foreach (IWorker worker in Workers) { StartWorkerOnce(worker); }
+			foreach (IWorker worker in Workers) { RunWorkerOnce(worker); }
 		}
 
 		#region StateControl
@@ -323,7 +323,7 @@ namespace Sigma.Core.Training.Operators
 		///     This method starts a worker for a single iteration.
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		protected abstract void StartWorkerOnce(IWorker worker);
+		protected abstract void RunWorkerOnce(IWorker worker);
 
 		/// <summary>
 		///     This method pauses a worker. It will also be

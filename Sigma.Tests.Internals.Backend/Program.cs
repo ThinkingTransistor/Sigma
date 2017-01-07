@@ -17,7 +17,6 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
-using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Utils;
 

@@ -68,7 +68,7 @@ namespace Sigma.Core.Training.Mergers
 
 		protected override double MergeDoubles(double[] doubles)
 		{
-			return doubles.Select((t, i) => t*Weights[i]).Sum()/_sum;
+			return doubles.Select((t, i) => t * Weights[i]).Sum() / _sum;
 		}
 
 		protected override INDArray MergeNDArrays(INDArray[] arrays, IComputationHandler handler)

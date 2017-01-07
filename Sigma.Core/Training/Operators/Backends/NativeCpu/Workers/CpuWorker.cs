@@ -21,22 +21,17 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 		}
 
-		public override void RunTrainingIteration()
+		protected override void OnPause()
 		{
 
 		}
 
-		protected override void Pause()
+		protected override void OnResume()
 		{
 
 		}
 
-		protected override void Resume()
-		{
-
-		}
-
-		protected override void Stop()
+		protected override void OnStop()
 		{
 
 		}

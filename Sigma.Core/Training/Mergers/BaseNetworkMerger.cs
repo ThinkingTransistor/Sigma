@@ -79,7 +79,7 @@ namespace Sigma.Core.Training.Mergers
 				// for every element of the object[] 
 				for (int i = 0; i < baseObjectLength; i++)
 				{
-					// get from all objects, the ith object
+					// get from all objects, the i-th object
 					// e.g. 3 passed networks => object[] with length = 3
 					object[] objects = GetAllObjectsWithIndex(keyDataPair.Value, i);
 

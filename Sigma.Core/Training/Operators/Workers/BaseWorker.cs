@@ -31,7 +31,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		}
 
 		public abstract void Start();
-		public abstract void RunTrainingIteration();
+		public abstract void RunOnce();
 		public abstract void SignalPause();
 		public abstract void SignalResume();
 		public abstract void SignalStop();

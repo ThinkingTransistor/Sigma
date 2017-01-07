@@ -6,21 +6,20 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// Some helping wrappers for threads. 
 	/// </summary>
-	public class ThreadUtils
+	public static class ThreadUtils
 	{
 		/// <summary>
-		/// This <see cref="BlockingThread"/> allows the caller to wait for a certain event.
+		/// This <see cref="BlockingThread"/> allows the caller to wait for a certain event until the callee's control flow resumes.
 		/// </summary>
 		public class BlockingThread
 		{
 			/// <summary>
-			/// The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/>
-			/// will receive.
+			/// The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/> will receive.
 			/// </summary>
 			protected Action<ManualResetEvent> Action;
 
 			/// <summary>
-			/// Set the <see cref="Action"/>!
+			/// Set the <see cref="Action"/> manually. 
 			/// </summary>
 			protected BlockingThread()
 			{
@@ -28,8 +27,7 @@ namespace Sigma.Core.Utils
 			}
 
 			/// <summary>
-			/// Create a new blocking thread. After block it blocks as long as <see cref="EventWaitHandle.Set"/> has 
-			/// been called in the <see cref="action"/>.
+			/// Create a new blocking thread. After block it blocks as long as <see cref="EventWaitHandle.Set"/> is called in the <see cref="action"/>.
 			/// </summary>
 			/// <param name="action">The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/> will receive. This action decides when to unlock the caller. </param>
 			public BlockingThread(Action<ManualResetEvent> action) : this()

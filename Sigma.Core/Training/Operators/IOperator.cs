@@ -42,19 +42,19 @@ namespace Sigma.Core.Training.Operators
 
 		/// <summary>
 		///     The <see cref="ITrainer" /> that is being trained in this operators training process.
-		///     This will be automatically set by the corresponding <see cref="ITrainer" />.
+		///     This is automatically set by the corresponding <see cref="ITrainer" />.
 		/// </summary>
 		ITrainer Trainer { get; set; }
 
 		/// <summary>
 		///     The <see cref="INetwork" /> the training process is operated on.
-		///     This will be automatically set by the corresponding <see cref="ITrainer" />.
+		///     This is automatically set by the corresponding <see cref="ITrainer" />.
 		/// </summary>
 		INetwork Network { get; set; }
 
 		/// <summary>
-		///		This merger is used to merge multiple networks after they get
-		///		reported to the <see cref="IOperator"/>.
+		///		This merger is used to merge multiple networks after they are
+		///		submitted to the <see cref="IOperator"/>.
 		/// </summary>
 		INetworkMerger Merger { get; set; }
 

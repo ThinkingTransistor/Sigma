@@ -134,9 +134,9 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			worker.Start();
 		}
 
-		protected override void StartWorkerOnce(IWorker worker)
+		protected override void RunWorkerOnce(IWorker worker)
 		{
-			worker.RunTrainingIteration();
+			worker.RunOnce();
 		}
 
 		protected override void PauseWorker(IWorker worker)

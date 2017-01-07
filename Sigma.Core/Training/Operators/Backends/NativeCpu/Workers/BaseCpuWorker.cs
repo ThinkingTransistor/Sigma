@@ -88,7 +88,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			{
 				lock (_stateLock)
 				{
-					Pause();
+					OnPause();
 
 					State = ExecutionState.Paused;
 				}
@@ -105,7 +105,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			{
 				lock (_stateLock)
 				{
-					Resume();
+					OnResume();
 
 					State = ExecutionState.Running;
 
@@ -131,7 +131,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 						SignalPause();
 					}
 
-					Stop();
+					OnStop();
 
 					State = ExecutionState.Stopped;
 					_waitForResume.Set();
@@ -139,7 +139,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			}
 		}
 
-		public override void RunTrainingIteration()
+		public sealed override void RunOnce()
 		{
 			if (State != ExecutionState.Running)
 			{
@@ -151,7 +151,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 					}
 					else //Paused
 					{
-						Resume();
+						OnResume();
 					}
 
 					new ThreadUtils.BlockingThread(reset =>
@@ -160,7 +160,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 						reset.Set();
 					}).Start();
 
-					Stop();
+					OnStop();
 				}
 			}
 			else
@@ -176,7 +176,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		protected abstract void Initialise();
 
 		/// <summary>
-		/// This method gets updated as long as this worker is not paused or stopped. Maybe even once. 
+		/// This method gets updated as long as this worker is not paused or stopped. Maybe only once. 
 		/// </summary>
 		protected abstract void DoWork();
 
@@ -184,20 +184,20 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		/// This method gets called when the worker is about to pause. It will also be called when the worker
 		/// is stopped.
 		/// </summary>
-		protected abstract void Pause();
+		protected abstract void OnPause();
 
 		/// <summary>
 		/// This method gets called when the worker resumes from its paused state. 
 		/// </summary>
-		protected abstract void Resume();
+		protected abstract void OnResume();
 
 		/// <summary>
 		/// This method gets called when the worker comes to a halt.
 		/// </summary>
-		protected abstract void Stop();
+		protected abstract void OnStop();
 
 		/// <summary>
-		/// Update all the tasks. This method runs as long as its not <see cref="ExecutionState.Stopped"/>.
+		/// Update all the tasks. This method runs as long as it's not <see cref="ExecutionState.Stopped"/>.
 		/// </summary>
 		private void Update()
 		{
