@@ -136,19 +136,20 @@ namespace Sigma.Core.MathAbstract
 		/// <param name="shape">The shape of the ndarray to be sliced.</param>
 		/// <param name="copyResultShape">Indicate whether the resulting shape should be a copy from the passed shape or the original (modified).</param>
 		/// <param name="sliceEndIndex">Indicate whether the slice indices should be calculated as a begin index (all except significant 0) or end index (all except significant shape limit).</param>
+		/// <exception cref="ArgumentException"></exception>
 		/// <returns>The resulting slice indices, with the given index value at the significant dimension and 0 or shape limit in the others (depending on <see cref="sliceEndIndex"/>).</returns>
 		public static long[] GetSliceIndicesAlongDimension(int dimensionIndex, long index, long[] shape, bool copyResultShape = true, bool sliceEndIndex = false)
 		{
 			if (shape == null) throw new ArgumentNullException(nameof(shape));
 
-			if (index < 0 || index > shape.Length)
-			{
-				throw new ArgumentException($"Index must be >= 0 and < shape.Length (ndarray rank), but index was {index} and shape.Length {shape.Length}.");
-			}
-
-			if (dimensionIndex < 0 || dimensionIndex > shape.Length)
+			if (dimensionIndex < 0 || dimensionIndex >= shape.Length)
 			{
 				throw new ArgumentException($"Dimension index must be >= 0 and < shape.Length (ndarray rank), but dimension index was {index} and shape.Length {shape.Length}.");
+			}
+
+			if (index < 0 || index > shape[dimensionIndex])
+			{
+				throw new ArgumentException($"Index must be >= 0 and <= shape[dimensionIndex] (ndarray rank), but index was {index} and shape[{dimensionIndex}] was {shape[dimensionIndex]}.");
 			}
 
 			long[] result = copyResultShape ? new long[shape.Length] : shape;

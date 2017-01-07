@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
@@ -47,6 +48,26 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 
 			Array.Copy(shape, _adArrayHandle.Buffer.Shape, shape.Length);
 		}
+
+		/// <summary>
+		/// Get a slice of this ndarray of a certain region as a new ndarray with the same underlying data.
+		/// </summary>
+		/// <param name="beginIndices">The begin indices (inclusively, where the slice should begin).</param>
+		/// <param name="endIndices">The end indices (exclusively, where the slice should end).</param>
+		/// <returns></returns>
+		public override INDArray Slice(long[] beginIndices, long[] endIndices)
+		{
+			long[] slicedShape = GetSlicedShape(beginIndices, endIndices);
+
+			//we want the end indices to be inclusive for easier handling
+			endIndices = endIndices.Select(i => i - 1).ToArray();
+
+			long absoluteBeginOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, beginIndices);
+			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);
+			long length = absoluteEndOffset - absoluteBeginOffset + 1;
+
+			return new ADNDFloat32Array(new DNDArray(new SigmaDiffDataBuffer<float>(Data, absoluteBeginOffset, length, backendTag: ((SigmaDiffDataBuffer<float>) Data).BackendTag), slicedShape));
+	}
 
 		public override INDArray Reshape(params long[] newShape)
 		{
