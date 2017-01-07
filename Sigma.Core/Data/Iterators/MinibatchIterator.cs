@@ -102,8 +102,8 @@ namespace Sigma.Core.Data.Iterators
 
 					_currentBlockNotTraversedSlices.Clear();
 
-					int numSlices = (int) Math.Ceiling((double) (_currentBlockSizeRecords - 1) / MinibatchSize);
-					foreach (int sliceIndex in ArrayUtils.Range(0, numSlices))
+					int numSlices = (int) Math.Ceiling((double) (_currentBlockSizeRecords) / MinibatchSize);
+					foreach (int sliceIndex in ArrayUtils.Range(0, numSlices - 1))
 					{
 						_currentBlockNotTraversedSlices.Add(sliceIndex);
 					}
