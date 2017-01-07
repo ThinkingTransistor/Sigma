@@ -14,6 +14,9 @@ using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Panels.Control;
+using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
@@ -32,6 +35,10 @@ namespace Sigma.Tests.Internals.Backend
 
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
+			WPFMonitor wpfMonitor = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
+
+			wpfMonitor.AddTabs("Overview", "Log");
+
 			sigma.Prepare();
 
 			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
@@ -47,7 +54,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
 			{
-				//PrintFormattedBlock(block);
+				PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 			}
 		}
 
@@ -207,7 +214,7 @@ namespace Sigma.Tests.Internals.Backend
 				{
 					Thread.Sleep(100);
 
-					PrintFormattedBlock(block);
+					PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 
 					Thread.Sleep(1000);
 				}
@@ -227,12 +234,10 @@ namespace Sigma.Tests.Internals.Backend
 			//dataset.InvalidateAndClearCaches();
 		}
 
-		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)
+		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)
 		{
 			foreach (string name in block.Keys)
 			{
-				char[] palette = PrintUtils.AsciiGreyscalePalette;
-
 				string blockString = name == "inputs"
 						? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
 						: block[name].ToString();

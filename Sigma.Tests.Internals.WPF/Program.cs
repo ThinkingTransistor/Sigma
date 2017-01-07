@@ -23,10 +23,9 @@ namespace Sigma.Tests.Internals.WPF
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging();
-
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
-			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma"));
 
+			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
 			gui.AddTabs("Overview", "Log");
 
 			sigma.Prepare();
@@ -39,28 +38,24 @@ namespace Sigma.Tests.Internals.WPF
 
 			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28*28, source: dataSource);
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
 			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
-
 
 			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
 			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
 			IDataset trainingData = slices[0];
 
 			IDataIterator iterator = new MinibatchIterator(10, trainingData);
-
 			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
 			{
-				PrintFormattedBlock(block);
+				PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 			}
 		}
 
-		private static void PrintFormattedBlock(IDictionary<string, INDArray> block)
+		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)
 		{
 			foreach (string name in block.Keys)
 			{
-				char[] palette = PrintUtils.AsciiGreyscalePalette;
-
 				string blockString = name == "inputs"
 					? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
 					: block[name].ToString();
