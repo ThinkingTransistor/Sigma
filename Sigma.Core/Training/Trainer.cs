@@ -20,6 +20,7 @@ using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
@@ -41,6 +42,7 @@ namespace Sigma.Core.Training
 		public INetwork Network { get; set; }
 		public IOptimiser Optimiser { get; set; }
 		public IOperator Operator { get; set; }
+		public IDataProvider Provider { get; set; } = new DefaultDataProvider();
 
 		public IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 		public IDataIterator TrainingDataIterator { get; set; }
@@ -117,22 +119,7 @@ namespace Sigma.Core.Training
 
 		public void Initialise(IComputationHandler handler)
 		{
-			if (Network == null)
-			{
-				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a network.");
-			}
-
-			if (Sigma == null)
-			{
-				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a sigma environment.");
-			}
-
-			if (Operator == null)
-			{
-				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning an operator.");
-			}
-
-			Network.Validate();
+			ValidateAssignedComponents();
 
 			_logger.Info($"Initialising trainer \"{Name}\" with handler {handler}...");
 
@@ -181,6 +168,31 @@ namespace Sigma.Core.Training
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
 			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedNDArrayCount} ndarrays and {initialisedNumberCount} numbers.");
+		}
+
+		private void ValidateAssignedComponents()
+		{
+			if (Network == null)
+			{
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a network.");
+			}
+
+			if (Sigma == null)
+			{
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a sigma environment.");
+			}
+
+			if (Operator == null)
+			{
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning an operator.");
+			}
+
+			if (Provider == null)
+			{
+				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a data provider.");
+			}
+
+			Network.Validate();
 		}
 
 		private void CheckInitialised()

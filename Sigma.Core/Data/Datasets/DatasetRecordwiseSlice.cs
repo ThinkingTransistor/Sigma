@@ -115,14 +115,14 @@ namespace Sigma.Core.Data.Datasets
 			return UnderlyingDataset.CanFetchBlocksAfter(blockIndex);
 		}
 
-		public Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public IDictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			var block = UnderlyingDataset.FetchBlock(blockIndex, handler, shouldWaitUntilAvailable);
 
 			return block != null ? GetOwnSlice(block) : null;
 		}
 
-		protected Dictionary<string, INDArray> GetOwnSlice(Dictionary<string, INDArray> block)
+		protected Dictionary<string, INDArray> GetOwnSlice(IDictionary<string, INDArray> block)
 		{
 			Dictionary<string, INDArray> slicedBlock = new Dictionary<string, INDArray>();
 
@@ -155,7 +155,7 @@ namespace Sigma.Core.Data.Datasets
 			return slicedBlock;
 		}
 
-		public async Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public async Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			return await Task.Run(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
 		}

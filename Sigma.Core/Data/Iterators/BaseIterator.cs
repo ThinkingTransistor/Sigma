@@ -31,8 +31,8 @@ namespace Sigma.Core.Data.Iterators
 		/// <summary>
 		/// The completely fetched blocks by block index.
 		/// </summary>
-		protected readonly Dictionary<int, Dictionary<string, INDArray>> _fetchedBlocks;
-		private readonly Dictionary<int, Task<Dictionary<string, INDArray>>> _pendingFetchBlockTasks;
+		protected readonly Dictionary<int, IDictionary<string, INDArray>> _fetchedBlocks;
+		private readonly Dictionary<int, Task<IDictionary<string, INDArray>>> _pendingFetchBlockTasks;
 
 		/// <summary>
 		/// Create a base iterator for a certain dataset.
@@ -47,8 +47,8 @@ namespace Sigma.Core.Data.Iterators
 
 			UnderlyingDataset = dataset;
 
-			_fetchedBlocks = new Dictionary<int, Dictionary<string, INDArray>>();
-			_pendingFetchBlockTasks = new Dictionary<int, Task<Dictionary<string, INDArray>>>();
+			_fetchedBlocks = new Dictionary<int, IDictionary<string, INDArray>>();
+			_pendingFetchBlockTasks = new Dictionary<int, Task<IDictionary<string, INDArray>>>();
 		}
 
 		public abstract IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
@@ -81,7 +81,7 @@ namespace Sigma.Core.Data.Iterators
 
 					_pendingFetchBlockTasks[index].Wait();
 
-					Dictionary<string, INDArray> block = _pendingFetchBlockTasks[index].Result;
+					IDictionary<string, INDArray> block = _pendingFetchBlockTasks[index].Result;
 
 					_pendingFetchBlockTasks.Remove(index);
 

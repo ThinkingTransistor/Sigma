@@ -128,7 +128,7 @@ namespace Sigma.Core.Data.Iterators
 			}
 		}
 
-		private IDictionary<string, INDArray> SliceBlock(Dictionary<string, INDArray> block, int beginRecordIndex, long endRecordIndex)
+		private IDictionary<string, INDArray> SliceBlock(IDictionary<string, INDArray> block, int beginRecordIndex, long endRecordIndex)
 		{
 			IDictionary<string, INDArray> slice = new Dictionary<string, INDArray>();
 
@@ -197,7 +197,7 @@ namespace Sigma.Core.Data.Iterators
 				_currentBatchNotTraversedBlockIndices.Add(index);
 			}
 
-			_logger.Info($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} indices/minibatches.");
+			_logger.Info($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} available blocks (including last pending).");
 		}
 	}
 }

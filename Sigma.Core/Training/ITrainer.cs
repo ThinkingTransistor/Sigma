@@ -14,6 +14,7 @@ using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
+using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
@@ -53,6 +54,11 @@ namespace Sigma.Core.Training
 		/// The operator which controls the training process and effectively operates this trainer at runtime. 
 		/// </summary>
 		IOperator Operator { get; set; }
+
+		/// <summary>
+		/// The data provider which links external input and outputs.
+		/// </summary>
+		IDataProvider Provider { get; set; }
 
 		/// <summary>
 		/// The primary training data iterator, used to yield training data for the network to train on.

@@ -24,7 +24,7 @@ namespace Sigma.Core.Data.Iterators
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Dictionary<string, INDArray> _unifiedBlock;
+		private IDictionary<string, INDArray> _unifiedBlock;
 
 		/// <summary>
 		/// Create an unified data iterator for a certain dataset.
@@ -50,7 +50,7 @@ namespace Sigma.Core.Data.Iterators
 			yield return _unifiedBlock;
 		}
 
-		private Dictionary<string, INDArray> FetchAndMergeFromDataset(IComputationHandler handler)
+		private IDictionary<string, INDArray> FetchAndMergeFromDataset(IComputationHandler handler)
 		{
 			Dictionary<string, INDArray> unifiedBlock = new Dictionary<string, INDArray>();
 
@@ -59,7 +59,7 @@ namespace Sigma.Core.Data.Iterators
 			int currentBlockIndex = 0;
 			while (true)
 			{
-				Dictionary<string, INDArray> currentBlock = UnderlyingDataset.FetchBlock(currentBlockIndex, handler);
+				IDictionary<string, INDArray> currentBlock = UnderlyingDataset.FetchBlock(currentBlockIndex, handler);
 
 				if (currentBlock != null)
 				{

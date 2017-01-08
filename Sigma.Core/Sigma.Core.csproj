@@ -205,6 +205,8 @@
     <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Providers\DefaultDataProvider.cs" />
+    <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
@@ -228,6 +230,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Layers\Convolutional\" />
+    <Folder Include="Layers\Cost\" />
+    <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
   </ItemGroup>

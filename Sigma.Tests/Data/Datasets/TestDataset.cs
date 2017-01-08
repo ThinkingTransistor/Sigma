@@ -84,7 +84,7 @@ namespace Sigma.Tests.Data.Datasets
 			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
 			CpuFloat32Handler handler = new CpuFloat32Handler();
 
-			Dictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler, false);
+			IDictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler, false);
 
 			Assert.AreEqual(new[] { 3.5f, 1.4f }, namedArrays["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
 
@@ -132,9 +132,9 @@ namespace Sigma.Tests.Data.Datasets
 			//mock a free block request to freak out the dataset controller
 			dataset.FreeBlock(1, handler);
 
-			Dictionary<string, INDArray> namedArrays0 = await block0;
-			Dictionary<string, INDArray> namedArrays1 = await block1;
-			Dictionary<string, INDArray> namedArrays2 = await block2;
+			IDictionary<string, INDArray> namedArrays0 = await block0;
+			IDictionary<string, INDArray> namedArrays1 = await block1;
+			IDictionary<string, INDArray> namedArrays2 = await block2;
 
 			Assert.IsNotNull(namedArrays1);
 			Assert.AreEqual(new[] { 3.0f, 1.4f }, namedArrays1["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));

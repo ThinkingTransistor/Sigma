@@ -271,14 +271,14 @@ namespace Sigma.Core.Data.Datasets
 			return blockIndex <= _lastAvailableBlockIndex;
 		}
 
-		public async Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public async Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			//TODO check if block even could be fetched to not waste thread resources if shouldWaitUntilAvailable is false anyway
 
 			return await Task.Run(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
 		}
 
-		public Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public IDictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			Dictionary<string, INDArray> block = FetchBlockConstrained(blockIndex, handler);
 
