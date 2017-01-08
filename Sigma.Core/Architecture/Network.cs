@@ -8,9 +8,11 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
@@ -27,6 +29,7 @@ namespace Sigma.Core.Architecture
 		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
 		private List<ILayer> _orderedLayers;
+		private IComputationHandler _initialisationHandler;
 
 		public Network(string name = "unnamed")
 		{
@@ -39,9 +42,55 @@ namespace Sigma.Core.Architecture
 			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
 		}
 
-		public object DeepCopy()
+		public virtual object DeepCopy()
 		{
-			throw new NotImplementedException();
+			Network copy = new Network(Name);
+			copy.Architecture = (INetworkArchitecture) Architecture.DeepCopy();
+
+			if (_initialisationHandler != null)
+			{
+				copy.Initialise(_initialisationHandler);
+
+				for (int i = 0; i < _orderedLayerBuffers.Count; i++)
+				{
+					InternalLayerBuffer originalBuffer = _orderedLayerBuffers[i];
+					InternalLayerBuffer copyBuffer = copy._orderedLayerBuffers[i];
+
+					foreach (string parameterIdentifier in originalBuffer.Parameters.Keys.ToArray())
+					{
+						object value = originalBuffer.Parameters[parameterIdentifier];
+						IDeepCopyable deepCopyableValue = value as IDeepCopyable;
+						object copiedValue;
+
+						// copy and copy efficiently by any means possible
+						if (deepCopyableValue == null)
+						{
+							copiedValue = value;
+
+							ICloneable cloneableValue = value as ICloneable;
+							if (cloneableValue != null)
+							{
+								copiedValue = cloneableValue.Clone();
+							}
+						}
+						else
+						{
+							INDArray asNDArray = value as INDArray;
+
+							if (asNDArray != null)
+							{
+								_initialisationHandler.Fill(asNDArray, copyBuffer.Parameters.Get<INDArray>(parameterIdentifier));
+							}
+
+							copiedValue = deepCopyableValue.DeepCopy();
+						}
+
+						copyBuffer.Parameters[parameterIdentifier] = copiedValue;
+					}
+				}
+			}
+
+			return copy;
 		}
 
 		public void Validate()
@@ -56,12 +105,16 @@ namespace Sigma.Core.Architecture
 
 		public void Initialise(IComputationHandler handler)
 		{
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+
 			if (Architecture == null)
 			{
 				throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
 			}
 
 			_logger.Info($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
+
+			_initialisationHandler = handler;
 
 			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare);
 
@@ -71,20 +124,11 @@ namespace Sigma.Core.Architecture
 			_externalInputsLayerBuffers.Clear();
 			_externalOutputsLayerBuffers.Clear();
 
-			Registry.Clear();
-
-			Registry["architecture"] = Architecture.Registry;
-
-			Registry layersRegistry = new Registry(Registry);
-			Registry["layers"] = layersRegistry;
-
 			Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry> mappedRegistriesByInOutputs = new Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry>();
 
 			foreach (LayerConstruct layerConstruct in Architecture.YieldLayerConstructsOrdered())
 			{
 				ILayer layer = layerConstruct.InstantiateLayer(handler);
-
-				layersRegistry[layer.Name] = layerConstruct.Parameters.DeepCopy();
 
 				Dictionary<string, IRegistry> inputs = new Dictionary<string, IRegistry>();
 
@@ -136,9 +180,27 @@ namespace Sigma.Core.Architecture
 
 			_orderedLayers = _orderedLayerBuffers.ConvertAll(buffer => buffer.Layer);
 
+			UpdateRegistry();
+
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
 			_logger.Info($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
+		}
+
+		protected virtual void UpdateRegistry()
+		{
+			Registry.Clear();
+
+			Registry["name"] = Name;
+			Registry["architecture"] = Architecture?.Registry;
+
+			Registry layersRegistry = new Registry(Registry);
+			Registry["layers"] = layersRegistry;
+
+			foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
+			{
+				layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
+			}
 		}
 
 		public void Run(IComputationHandler handler, bool trainingPass)

@@ -33,12 +33,11 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
+			SampleNetworkArchitecture();
+
+
+			Console.ReadKey();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
-
-			WPFMonitor wpfMonitor = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
-
-			wpfMonitor.AddTabs("Overview", "Log");
-
 			sigma.Prepare();
 
 			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
@@ -104,16 +103,19 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("test_trainer");
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(2, 2) +
-																	   ElementwiseLayer.Construct(2 * 2) +
-																	   FullyConnectedLayer.Construct(2) +
-																	   2 * (FullyConnectedLayer.Construct(4) + FullyConnectedLayer.Construct(2)) +
-																	   OutputLayer.Construct(2);
+											ElementwiseLayer.Construct(2 * 2) +
+											FullyConnectedLayer.Construct(2) +
+											2 * (FullyConnectedLayer.Construct(4) + FullyConnectedLayer.Construct(2)) +
+											OutputLayer.Construct(2);
+			trainer.Network = (INetwork) trainer.Network.DeepCopy();
 
 			trainer.Operator = new CpuMultithreadedOperator(10);
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
 			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
 			trainer.Initialise(handler);
+
+			trainer.Network = (INetwork) trainer.Network.DeepCopy();
 
 			Console.WriteLine(trainer.Network.Registry);
 

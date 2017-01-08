@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using log4net;
@@ -30,14 +31,23 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		{
 			Logger.Debug($"Initialising worker {this}...");
 
-			Operator.PullProgress(this);
-			_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
+			_epochBlockYield = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
 
 			Logger.Debug($"Done initialising worker {this}.");
 		}
 
 		protected override void DoWork()
 		{
+			if (LocalNetwork == null)
+			{
+				Operator.PullProgress(this);
+			}
+
+			if (_epochBlockYield == null)
+			{
+				throw new InvalidOperationException($"Cannot work in worker {this} because the epoch block yield enumerator was not successfully initialised.");
+			}
+
 			if (!_epochBlockYield.MoveNext())
 			{
 				Logger.Info($"Completed epoch {LocalEpochNumber + 1} at iteration {LocalIterationNumber} in worker {this}.");

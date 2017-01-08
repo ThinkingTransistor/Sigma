@@ -168,11 +168,28 @@ namespace Sigma.Core.Training
 			Operator.Network = Network;
 			Operator.Trainer = this;
 
+			UpdateRegistry();
+
 			_initialised = true;
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
 			_logger.Info($"Done initialising trainer \"{Name}\" for handler {handler}, initialised {initialisedNDArrayCount} ndarrays and {initialisedNumberCount} numbers.");
+		}
+
+		protected virtual void UpdateRegistry()
+		{
+			Registry["name"] = Name;
+			Registry["network"] = Network?.Registry;
+			Registry["optimiser"] = Optimiser?.Registry;
+
+			Registry initialiserRegistry = new Registry(Registry, tags: "initialisers");
+			Registry["initialisers"] = initialiserRegistry;
+
+			foreach (string initialiserMatchIdentifier in Initialisers.Keys)
+			{
+				initialiserRegistry[initialiserMatchIdentifier] = Initialisers[initialiserMatchIdentifier];
+			}
 		}
 
 		private void ValidateAssignedComponents()

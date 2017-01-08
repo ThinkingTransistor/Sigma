@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using Sigma.Core.Handlers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 {

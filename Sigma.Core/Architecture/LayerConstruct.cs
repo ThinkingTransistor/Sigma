@@ -124,7 +124,7 @@ namespace Sigma.Core.Architecture
 		{
 			LayerConstruct copy = new LayerConstruct(Name, _layerClassType)
 			{
-				Parameters = Parameters,
+				Parameters = (IRegistry) Parameters.DeepCopy(),
 				ExternalInputs = (string[]) ExternalInputs.Clone(),
 				ExternalOutputs = (string[]) ExternalOutputs.Clone(),
 				UpdateBeforeInstantiationEvent = UpdateBeforeInstantiationEvent,

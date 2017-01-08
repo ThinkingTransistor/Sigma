@@ -118,6 +118,11 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 
 		protected virtual INetwork PullNetwork()
 		{
+			if (Network == null)
+			{
+				throw new InvalidOperationException($"Cannot pull network before assigning a network to operator {this}.");
+			}
+
 			lock (_networkChangedLock)
 			{
 				return (INetwork) Network.DeepCopy();

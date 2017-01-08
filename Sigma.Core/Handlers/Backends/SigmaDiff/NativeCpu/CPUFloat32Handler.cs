@@ -114,7 +114,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> arrayToFillData = ((ADNDArray<float>) arrayToFill).Data;
 			IDataBuffer<float> fillerData = ((ADNDArray<float>) filler).Data;
 
-			arrayToFillData.SetValues(fillerData.Data, 0, 0, Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, arrayToFillData.Offset, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		public override void Fill<TOther>(TOther value, INDArray arrayToFill)

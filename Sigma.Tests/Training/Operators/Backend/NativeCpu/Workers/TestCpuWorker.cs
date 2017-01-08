@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using NUnit.Framework;
+using Sigma.Core.Architecture;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
@@ -11,7 +12,16 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 	{
 		private static BaseCpuWorker CreateCpuWorker()
 		{
-			return new CpuWorker(new CpuMultithreadedOperator(10));
+			return new CpuWorker(CreateOperator());
+		}
+
+		private static IOperator CreateOperator()
+		{
+			IOperator @operator =new CpuMultithreadedOperator(10);
+
+			@operator.Network = new Network();
+
+			return @operator;
 		}
 
 		[TestCase]
