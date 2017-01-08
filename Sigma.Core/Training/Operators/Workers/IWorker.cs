@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Architecture;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
+using Sigma.Core.Training.Optimisers;
 
 namespace Sigma.Core.Training.Operators.Workers
 {
@@ -37,12 +39,27 @@ namespace Sigma.Core.Training.Operators.Workers
 		IComputationHandler Handler { get; }
 
 		/// <summary>
+		///		A local copy of the global training data iterator. Used to enable parallel network training.
+		/// </summary>
+		IDataIterator LocalTrainingDataIterator { get; set; }
+
+		/// <summary>
+		///		A local copy of the global optimiser. Used to enable parallel network training.
+		/// </summary>
+		IOptimiser LocalOptimiser { get; set; }
+
+		/// <summary>
 		///     A local copy of the network (model) to train. Used to enable parallel network training.
 		/// </summary>
 		INetwork LocalNetwork { get; set; }
 
 		/// <summary>
-		///     The current iteration number (i.e. how many iterations have been executed on this worker).
+		///     The current epoch number (i.e. how many epochs have been executed on this worker).
+		/// </summary>
+		int LocalEpochNumber { get; }
+
+		/// <summary>
+		///		The iteration number within the current epoch (i.e. how many training iterations have been executed on this worker in the current epoch).
 		/// </summary>
 		int LocalIterationNumber { get; }
 

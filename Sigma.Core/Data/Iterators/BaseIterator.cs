@@ -52,6 +52,7 @@ namespace Sigma.Core.Data.Iterators
 		}
 
 		public abstract IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
+		public abstract IDataIterator ShallowCopy();
 
 		protected void CheckNotNull(IComputationHandler handler, SigmaEnvironment environment)
 		{

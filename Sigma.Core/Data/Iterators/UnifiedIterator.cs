@@ -34,6 +34,16 @@ namespace Sigma.Core.Data.Iterators
 		{
 		}
 
+		/// <summary>
+		/// Create a shallow copy of this data iterator (copy relevant properties, keep dataset).
+		/// Typically used to provide workers with independent sets of data iterators for the same underlying data.
+		/// </summary>
+		/// <returns>A shallow copy of this data iterator.</returns>
+		public override IDataIterator ShallowCopy()
+		{
+			return new UnifiedIterator(dataset: UnderlyingDataset);
+		}
+
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
 			CheckNotNull(handler, environment);

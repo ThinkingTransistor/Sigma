@@ -86,7 +86,7 @@ namespace Sigma.Core.Architecture.Linear
 			DesolveAllNames();
 		}
 
-		protected virtual LinearNetworkArchitecture Copy()
+		public virtual object DeepCopy()
 		{
 			Dictionary<LayerConstruct, LayerConstruct> mappedConstructCopies = new Dictionary<LayerConstruct, LayerConstruct>();
 			List<LayerConstruct> copiedConstructs = _layerConstructs.ConvertAll(construct =>
@@ -287,7 +287,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			for (int i = 0; i < multiplier; i++)
 			{
-				LinearNetworkArchitecture copy = self.Copy();
+				LinearNetworkArchitecture copy = (LinearNetworkArchitecture) self.DeepCopy();
 
 				multipliedSelf.AppendEnd(copy);
 			}

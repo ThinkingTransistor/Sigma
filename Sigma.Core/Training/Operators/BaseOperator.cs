@@ -74,14 +74,19 @@ namespace Sigma.Core.Training.Operators
 		public int WorkerCount { get; }
 
 		/// <summary>
+		///		The number of the current global epoch in this operator.
+		/// </summary>
+		public int EpochNumber { get; }
+
+		/// <summary>
 		/// The logger, it will be initialised in the property so that the class matches.
 		/// </summary>
-		private ILog _log;
+		private ILog _logger;
 
 		/// <summary>
 		/// The logger for the inherited class. 
 		/// </summary>
-		protected ILog Log => _log ?? (_log = LogManager.GetLogger(GetType()));
+		protected ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
 
 		/// <summary>
 		/// The lock that will be used to perform asynchronous management of the <see cref="IWorker"/>.
@@ -102,6 +107,7 @@ namespace Sigma.Core.Training.Operators
 
 			Hooks = new List<IHook>();
 			WorkerCount = workerCount;
+			EpochNumber = -1;
 		}
 
 		/// <summary>
@@ -123,11 +129,15 @@ namespace Sigma.Core.Training.Operators
 
 		public void AttachHook(IHook hook)
 		{
+			Logger.Debug($"Attached hook {hook} to operator {this}.");
+
 			Hooks.Add(hook);
 		}
 
 		public void DetachHook(IHook hook)
 		{
+			Logger.Debug($"Detached hook {hook} from operator {this}");
+
 			Hooks.Remove(hook);
 		}
 
@@ -303,7 +313,8 @@ namespace Sigma.Core.Training.Operators
 
 		#endregion
 
-		public abstract void ReportProgress(IWorker worker);
+		public abstract void PushProgress(IWorker worker);
+		public abstract void PullProgress(IWorker worker);
 
 		#region AbstractWorkerMethods
 

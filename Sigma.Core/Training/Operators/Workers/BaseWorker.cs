@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Architecture;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
+using Sigma.Core.Training.Optimisers;
 
 namespace Sigma.Core.Training.Operators.Workers
 {
@@ -17,7 +19,10 @@ namespace Sigma.Core.Training.Operators.Workers
 		public ExecutionState State { get; protected set; } = ExecutionState.None;
 		public IComputationHandler Handler { get; }
 		public INetwork LocalNetwork { get; set; }
+		public IDataIterator LocalTrainingDataIterator { get; set; }
+		public IOptimiser LocalOptimiser { get; set; }
 
+		public int LocalEpochNumber { get; protected set; }
 		public int LocalIterationNumber { get; protected set; }
 
 		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler)

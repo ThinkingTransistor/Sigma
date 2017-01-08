@@ -15,6 +15,7 @@ using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
+using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
@@ -25,6 +26,10 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
 {
+	/// <summary>
+	/// The default <see cref="ITrainer"/> implementation.
+	/// A trainer that defines how a network should be trained, denoting initialisers, optimiser, operator, custom hooks and data to apply and use. 
+	/// </summary>
 	public class Trainer : ITrainer
 	{
 		private readonly IList<IActiveHook> _activeHooks;
@@ -205,23 +210,51 @@ namespace Sigma.Core.Training
 
 		public void Start()
 		{
+			_logger.Info($"Validating trainer state of trainer {Name} before start...");
+
+			ValidateAssignedComponents();
 			CheckInitialised();
 
+			_logger.Info($"Starting operator {Operator} with trainer {Name}...");
+
+			Operator.Network = Network;
+			Operator.Trainer = this;
+
 			Operator.Start();
-
-			throw new NotImplementedException();
 		}
 
-		public void StartOnce()
+		public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler)
 		{
-			throw new NotImplementedException();
+			CheckInitialised();
+
+			localNetwork.Run(handler, trainingPass: true);
+			localOptimiser.Run(localNetwork, handler);
 		}
 
-		//public void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler)
-		//{
-		//	CheckInitialised();
+		/// <summary>
+		/// Provide the external data to a network given the current record block (typically as given by the training data iterator).
+		/// </summary>
+		/// <param name="localNetwork">The network to provide the data with.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		public void ProvideExternalData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
+		{
+			CheckInitialised();
 
-		//	throw new NotImplementedException();
-		//}
+			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalInputsLayerBuffers())
+			{
+				foreach (string externalInputAlias in layerBuffer.ExternalInputs)
+				{
+					Provider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
+				}
+			}
+
+			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalOutputsLayerBuffers())
+			{
+				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)
+				{
+					Provider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Inputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
+				}
+			}
+		}
 	}
 }

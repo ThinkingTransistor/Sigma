@@ -15,6 +15,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
 {
+	[Serializable]
 	public class Network : INetwork
 	{
 		public INetworkArchitecture Architecture { get; set; }
@@ -36,6 +37,11 @@ namespace Sigma.Core.Architecture
 			_orderedLayerBuffers = new List<InternalLayerBuffer>();
 			_externalInputsLayerBuffers = new List<InternalLayerBuffer>();
 			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
+		}
+
+		public object DeepCopy()
+		{
+			throw new NotImplementedException();
 		}
 
 		public void Validate()

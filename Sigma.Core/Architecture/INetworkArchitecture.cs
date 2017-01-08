@@ -14,7 +14,7 @@ namespace Sigma.Core.Architecture
 	/// <summary>
 	/// A network architecture from which an actual network can be constructed.
 	/// </summary>
-	public interface INetworkArchitecture
+	public interface INetworkArchitecture : IDeepCopyable
 	{
 		/// <summary>
 		/// The total number of layers in this architecture.

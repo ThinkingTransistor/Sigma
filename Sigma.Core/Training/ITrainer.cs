@@ -14,6 +14,7 @@ using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
@@ -130,17 +131,19 @@ namespace Sigma.Core.Training
 		void Start();
 
 		/// <summary>
-		/// Start the trainer in the current configuration (e.g. using the set network, operator, optimiser, hooks) 
-		/// for one iteration. 
-		/// </summary>
-		void StartOnce();
-
-		/// <summary>
 		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).
 		/// Note: The network's external data inputs and outputs must already be linked and supplied. 
 		/// </summary>
 		/// <param name="localNetwork">The network to train.</param>
+		/// <param name="localOptimiser">The local optimiser to use.</param>
 		/// <param name="handler">The computation handler to use.</param>
-		//void RunTrainingIteration(INetwork localNetwork, IComputationHandler handler);
+		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler);
+
+		/// <summary>
+		/// Provide the external data to a network given the current record block (typically as given by the training data iterator).
+		/// </summary>
+		/// <param name="localNetwork">The network to provide the data with.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		void ProvideExternalData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
 	}
 }

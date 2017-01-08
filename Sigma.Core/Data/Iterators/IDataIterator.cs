@@ -32,5 +32,12 @@ namespace Sigma.Core.Data.Iterators
 		/// <param name="environment">The sigma environment within the block should be yielded.</param>
 		/// <returns>An iterator over blocks from the underlying dataset (until the dataset is fully traversed).</returns>
 		IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
+
+		/// <summary>
+		/// Create a shallow copy of this data iterator (copy relevant properties, keep dataset).
+		/// Typically used to provide workers with independent sets of data iterators for the same underlying data.
+		/// </summary>
+		/// <returns>A shallow copy of this data iterator.</returns>
+		IDataIterator ShallowCopy();
 	}
 }

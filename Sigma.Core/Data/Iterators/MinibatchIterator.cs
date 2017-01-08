@@ -71,6 +71,16 @@ namespace Sigma.Core.Data.Iterators
 			MinibatchSize = minibatchSizeRecords;
 		}
 
+		/// <summary>
+		/// Create a shallow copy of this data iterator (copy all members, keep dataset).
+		/// Typically used to provide workers with independent sets of data iterators for the same underlying data.
+		/// </summary>
+		/// <returns>A shallow copy of this data iterator.</returns>
+		public override IDataIterator ShallowCopy()
+		{
+			return new MinibatchIterator(minibatchSizeRecords: MinibatchSize, dataset: UnderlyingDataset);
+		}
+
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
 			CheckNotNull(handler, environment);

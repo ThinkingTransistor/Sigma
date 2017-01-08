@@ -21,7 +21,12 @@ namespace Sigma.Core.Training.Optimisers
 	/// </summary>
 	public abstract class BaseGradientOptimiser : IOptimiser
 	{
-		private readonly string _externalCostAlias;
+		/// <summary>
+		/// The registry containing data about this optimiser and its last run.
+		/// </summary>
+		public IRegistry Registry { get; }
+
+		protected readonly string _externalCostAlias;
 
 		/// <summary>
 		/// Create a base gradient optimiser with an optional external output cost alias to use. 
@@ -32,19 +37,19 @@ namespace Sigma.Core.Training.Optimisers
 			if (externalCostAlias == null) throw new ArgumentNullException(nameof(externalCostAlias));
 
 			_externalCostAlias = externalCostAlias;
+			Registry = new Registry(tags: "optimiser");
 		}
 
-		public void Run(INetwork network, IComputationHandler handler, IRegistry registry)
+		public void Run(INetwork network, IComputationHandler handler)
 		{
 			if (network == null) throw new ArgumentNullException(nameof(network));
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
-			if (registry == null) throw new ArgumentNullException(nameof(registry));
 
-			IRegistry costRegistry = new Registry(registry, tags: "costs");
-			registry["costs"] = costRegistry;
+			IRegistry costRegistry = new Registry(Registry, tags: "costs");
+			Registry["costs"] = costRegistry;
 
-			IRegistry gradientRegistry = new Registry(registry, tags: "gradients");
-			registry["gradients"] = gradientRegistry;
+			IRegistry gradientRegistry = new Registry(Registry, tags: "gradients");
+			Registry["gradients"] = gradientRegistry;
 
 			INumber cost = GetTotalCost(network, handler, costRegistry);
 
@@ -70,7 +75,7 @@ namespace Sigma.Core.Training.Optimisers
 
 						gradientRegistry[parameterIdentifier] = convertedGradient;
 
-						layerBuffer.Parameters[trainableParameter] = handler.AsNumber(Optimise(parameterIdentifier, convertedNumber, convertedGradient, handler, registry), 0, 0);
+						layerBuffer.Parameters[trainableParameter] = handler.AsNumber(Optimise(parameterIdentifier, convertedNumber, convertedGradient, handler), 0, 0);
 					}
 					else
 					{
@@ -82,7 +87,7 @@ namespace Sigma.Core.Training.Optimisers
 
 							gradientRegistry[parameterIdentifier] = gradient;
 
-							layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, asArray, gradient, handler, registry);
+							layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, asArray, gradient, handler);
 						}
 						else
 						{
@@ -133,8 +138,13 @@ namespace Sigma.Core.Training.Optimisers
 		/// <param name="parameter">The parameter to optimise.</param>
 		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
 		/// <param name="handler">The handler to use.</param>
-		/// <param name="registry">The per-network registry in which optional per-network persistent parameters can be stored (e.g. for momentum).</param>
 		/// <returns></returns>
-		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler, IRegistry registry);
+		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
+
+		/// <summary>
+		/// Deep copy this object.
+		/// </summary>
+		/// <returns>A deep copy of this object.</returns>
+		public abstract object DeepCopy();
 	}
 }

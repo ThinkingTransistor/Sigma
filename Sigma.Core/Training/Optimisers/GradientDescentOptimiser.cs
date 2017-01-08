@@ -17,8 +17,6 @@ namespace Sigma.Core.Training.Optimisers
 	/// </summary>
 	public class GradientDescentOptimiser : BaseGradientOptimiser
 	{
-		private readonly double _learningRate;
-
 		/// <summary>
 		/// Create a gradient descent optimiser with a certain learning rate.
 		/// </summary>
@@ -26,12 +24,21 @@ namespace Sigma.Core.Training.Optimisers
 		/// <param name="externalCostAlias">The optional external output identifier by which to detect cost layers (defaults to "external_cost").</param>
 		protected GradientDescentOptimiser(double learningRate, string externalCostAlias = "external_cost") : base(externalCostAlias)
 		{
-			_learningRate = learningRate;
+			Registry["learning_rate"] = learningRate;
 		}
 
-		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler, IRegistry registry)
+		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
 		{
-			return handler.Add(parameter, handler.Multiply(gradient, -_learningRate));
+			return handler.Add(parameter, handler.Multiply(gradient, -Registry.Get<double>("learning_rate")));
+		}
+
+		/// <summary>
+		/// Deep copy this object.
+		/// </summary>
+		/// <returns>A deep copy of this object.</returns>
+		public override object DeepCopy()
+		{
+			return new GradientDescentOptimiser(learningRate: Registry.Get<double>("learning_rate"), externalCostAlias: _externalCostAlias);
 		}
 	}
 }

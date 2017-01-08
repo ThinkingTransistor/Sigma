@@ -13,6 +13,7 @@ using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
@@ -62,9 +63,11 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		public ThreadPriority WorkerPriority { get; set; }
 
 		/// <summary>
-		/// The current iteration number, with all networks. 
+		/// The current epoch number, with all networks. 
 		/// </summary>
 		private readonly IDictionary<int, INetwork[]> _pushedNetworks;
+
+		private readonly object _networkChangedLock;
 
 		/// <summary>
 		///     Create a new <see cref="CpuMultithreadedOperator" /> without specifying the <see cref="IComputationHandler" />.
@@ -98,25 +101,41 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		{
 			WorkerPriority = priority;
 			_pushedNetworks = new Dictionary<int, INetwork[]>();
+			_networkChangedLock = new object();
 		}
 
-		public override void ReportProgress(IWorker worker)
+		public override void PushProgress(IWorker worker)
 		{
 			PushNetwork(worker);
+		}
+
+		public override void PullProgress(IWorker worker)
+		{
+			worker.LocalNetwork = PullNetwork();
+			worker.LocalTrainingDataIterator = worker.LocalTrainingDataIterator ?? Trainer.TrainingDataIterator.ShallowCopy();
+			worker.LocalOptimiser = (IOptimiser) Trainer.Optimiser.DeepCopy();
+		}
+
+		protected virtual INetwork PullNetwork()
+		{
+			lock (_networkChangedLock)
+			{
+				return (INetwork) Network.DeepCopy();
+			}
 		}
 
 		protected virtual void PushNetwork(IWorker worker)
 		{
 			lock (_pushedNetworks)
 			{
-				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalIterationNumber, () => new INetwork[WorkerCount]);
+				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
 				if (!networks.AddToNextNull(worker.LocalNetwork))
 				{
-					throw new InvalidOperationException("Too many workers trying to push their network");
+					throw new InvalidOperationException($"Too many workers trying to push their network, worker {worker} attempted to push his network but {WorkerCount} workers already pushed their network for epoch {worker.LocalEpochNumber}.");
 				}
 			}
 
-			Log.Info($"Worker {worker.GetType()} pushed his network for the iteration {worker.LocalIterationNumber}");
+			Logger.Info($"Worker {worker.GetType()} pushed his network for the epoch {worker.LocalEpochNumber}.");
 		}
 
 		/// <summary>
@@ -131,26 +150,36 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 
 		protected override void StartWorker(IWorker worker)
 		{
+			Logger.Info($"Starting worker {worker} in operator {this}...");
+
 			worker.Start();
 		}
 
 		protected override void RunWorkerOnce(IWorker worker)
 		{
+			Logger.Debug($"Running worker {worker} once in operator {this}...");
+
 			worker.RunOnce();
 		}
 
 		protected override void PauseWorker(IWorker worker)
 		{
+			Logger.Debug($"Signalling pause to worker {worker} in operator {this}...");
+
 			worker.SignalPause();
 		}
 
 		protected override void ResumeWorker(IWorker worker)
 		{
+			Logger.Debug($"Signalling resume to worker {worker} in operator {this}...");
+
 			worker.SignalResume();
 		}
 
 		protected override void StopWorker(IWorker worker)
 		{
+			Logger.Info($"Stopping worker {worker} in operator {this}...");
+
 			worker.SignalStop();
 		}
 	}

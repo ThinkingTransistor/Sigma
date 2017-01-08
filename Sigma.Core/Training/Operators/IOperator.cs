@@ -65,6 +65,11 @@ namespace Sigma.Core.Training.Operators
 		int WorkerCount { get; }
 
 		/// <summary>
+		///		The number of the current global epoch in this operator.
+		/// </summary>
+		int EpochNumber { get; }
+
+		/// <summary>
 		///     Attach a hook to this operator.
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
@@ -77,11 +82,16 @@ namespace Sigma.Core.Training.Operators
 		void DetachHook(IHook hook);
 
 		/// <summary>
-		/// A <see cref="IWorker"/> calls this method to report its current progress 
-		/// to the <see cref="IOperator"/>. 
+		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 
 		/// </summary>
-		/// <param name="worker"></param>
-		void ReportProgress(IWorker worker);
+		/// <param name="worker">The worker.</param>
+		void PushProgress(IWorker worker);
+
+		/// <summary>
+		///     Pull the progress of the <see cref="IOperator"/> to the worker (e.g. copy of global network).
+		/// </summary>
+		/// <param name="worker">The worker.</param>
+		void PullProgress(IWorker worker);
 
 		/// <summary>
 		///     Start this operator in a separate thread (return immediately).

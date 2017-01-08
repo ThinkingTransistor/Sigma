@@ -38,12 +38,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		{
 		}
 
-		protected BaseCpuWorker(IOperator @operator, IComputationHandler handler) : this(@operator, handler, ThreadPriority.Highest)
-		{
-
-		}
-
-		protected BaseCpuWorker(IOperator @operator, IComputationHandler handler, ThreadPriority priority) : base(@operator, handler)
+		protected BaseCpuWorker(IOperator @operator, IComputationHandler handler, ThreadPriority priority = ThreadPriority.Highest) : base(@operator, handler)
 		{
 			_stateLock = new object();
 
@@ -167,7 +162,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			{
 				ThrowBadState("started once");
 			}
-
 		}
 
 		/// <summary>
