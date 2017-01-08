@@ -15,15 +15,36 @@ using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators
 {
 	public abstract class BaseOperator : IOperator
 	{
 		/// <summary>
-		///     All <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
+		///     All <see cref="IActiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected ICollection<IHook> Hooks;
+		protected ICollection<IActiveHook> ActiveHooks;
+
+		/// <summary>
+		///     All <see cref="IPassiveHook" />s that are attached to this <see cref="IOperator" />.
+		/// </summary>
+		protected ICollection<IPassiveHook> PassiveHooks;
+
+		/// <summary>
+		///		All active hooks sorted by time scale.
+		/// </summary>
+		protected IDictionary<TimeScale, ISet<IActiveHook>> ActiveHooksByTimeScale;
+
+		/// <summary>
+		///		All passive hooks sorted by time scale.
+		/// </summary>
+		protected IDictionary<TimeScale, ISet<IPassiveHook>> PassiveHooksByTimescale;
+
+		/// <summary>
+		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
+		/// </summary>
+		protected IDictionary<IHook, int> PassiveHookTimescaleCountdowns;
 
 		/// <summary>
 		///     All the <see cref="IWorker" />s managed by this operator.
@@ -105,7 +126,10 @@ namespace Sigma.Core.Training.Operators
 		{
 			_stateChangeLock = new object();
 
-			Hooks = new List<IHook>();
+			ActiveHooks = new List<IActiveHook>();
+			PassiveHooks = new List<IPassiveHook>();
+			ActiveHooksByTimeScale = new Dictionary<TimeScale, ISet<IActiveHook>>();
+			PassiveHooksByTimescale = new Dictionary<TimeScale, ISet<IPassiveHook>>();
 			WorkerCount = workerCount;
 			EpochNumber = -1;
 		}
@@ -127,18 +151,76 @@ namespace Sigma.Core.Training.Operators
 			Handler = handler;
 		}
 
-		public void AttachHook(IHook hook)
+		public void AttachHook(IActiveHook hook)
 		{
-			Logger.Debug($"Attached hook {hook} to operator {this}.");
+			ActiveHooks.Add(hook);
 
-			Hooks.Add(hook);
+			if (!ActiveHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
+			{
+				ActiveHooksByTimeScale.Add(hook.TimeStep.TimeScale, new HashSet<IActiveHook>());
+			}
+
+			ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Add(hook);
+
+			Logger.Debug($"Attached active hook {hook} to operator {this}.");
 		}
 
-		public void DetachHook(IHook hook)
+		public void DetachHook(IActiveHook hook)
 		{
-			Logger.Debug($"Detached hook {hook} from operator {this}");
+			if (ActiveHooks.Remove(hook))
+			{
+				ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
 
-			Hooks.Remove(hook);
+				Logger.Debug($"Detached active hook {hook} from operator {this}");
+			}
+		}
+
+		public void AttachHook(IPassiveHook hook)
+		{
+			PassiveHooks.Add(hook);
+
+			if (!PassiveHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
+			{
+				PassiveHooksByTimescale.Add(hook.TimeStep.TimeScale, new HashSet<IPassiveHook>());
+			}
+
+			PassiveHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
+
+			Logger.Debug($"Attached passive hook {hook} to operator {this}.");
+		}
+
+		public void DetachHook(IPassiveHook hook)
+		{
+			if (PassiveHooks.Remove(hook))
+			{
+				PassiveHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
+
+				Logger.Debug($"Detached passive hook {hook} from operator {this}");
+			}
+		}
+
+
+		/// <summary>
+		/// Invoke active hooks for a certain time scale with a certain worker.
+		/// </summary>
+		/// <param name="timeScale">The time scale.</param>
+		/// <param name="worker">The worker to invoke the hook with.</param>
+		/// <param name="timeScaleCountdowns">The time scale countdowns to use.</param>
+		public void InvokeActiveHooks(TimeScale timeScale, IWorker worker, IDictionary<IHook, int> timeScaleCountdowns)
+		{
+			foreach (IActiveHook activeHook in ActiveHooksByTimeScale[timeScale])
+			{
+				int timeScaleCountdown = activeHook.TimeStep.Interval;
+
+				timeScaleCountdowns.TryGetValue(activeHook, out timeScaleCountdown);
+
+				timeScaleCountdowns[activeHook] = timeScaleCountdown - 1;
+
+				if (timeScaleCountdowns[activeHook] <= 0)
+				{
+					// TODO invoke hook
+				}
+			}
 		}
 
 		/// <summary>

@@ -67,11 +67,11 @@ namespace Sigma.Core.Utils
 	}
 
 	/// <summary>
-	/// A time scale, the basic unit for <see cref="ITimeStep"/> (e.g. EPOCH or UPDATE).
+	/// A time scale, the basic unit for <see cref="ITimeStep"/> (e.g. epoch or iteration).
 	/// </summary>
 	public class TimeScale
 	{
 		public static readonly TimeScale Epoch = new TimeScale();
-		public static readonly TimeScale Update = new TimeScale();
+		public static readonly TimeScale Iteration = new TimeScale();
 	}
 }

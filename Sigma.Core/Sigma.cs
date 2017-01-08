@@ -248,7 +248,18 @@ namespace Sigma.Core
 
 				if (_hooksToAttach.TryDequeue(out hookPair))
 				{
-					hookPair.Value.AttachHook(hookPair.Key);
+					if (hookPair.Key is ActiveHook)
+					{
+						hookPair.Value.AttachHook((ActiveHook) hookPair.Key);
+					}
+					else if (hookPair.Key is PassiveHook)
+					{
+						hookPair.Value.AttachHook((PassiveHook) hookPair.Key);
+					}
+					else
+					{
+						_logger.Warn($"Unable to attach hook {hookPair.Key} to operator {hookPair.Value}, hook is neither active nor passive hook.");
+					}
 				}
 			}
 		}

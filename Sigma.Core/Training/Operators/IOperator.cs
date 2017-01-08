@@ -6,11 +6,13 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -70,16 +72,36 @@ namespace Sigma.Core.Training.Operators
 		int EpochNumber { get; }
 
 		/// <summary>
-		///     Attach a hook to this operator.
+		///     Attach an active hook to this operator.
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
-		void AttachHook(IHook hook);
+		void AttachHook(IActiveHook hook);
+
+		/// <summary>
+		///     Attach a passive hook to this operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		void AttachHook(IPassiveHook hook);
 
 		/// <summary>
 		///     Detach a hook from this operator.
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
-		void DetachHook(IHook hook);
+		void DetachHook(IActiveHook hook);
+
+		/// <summary>
+		///     Detach a passive from this operator.
+		/// </summary>
+		/// <param name="hook">The hook to detach.</param>
+		void DetachHook(IPassiveHook hook);
+
+		/// <summary>
+		/// Invoke active hooks for a certain time scale with a certain worker.
+		/// </summary>
+		/// <param name="timeScale">The time scale.</param>
+		/// <param name="worker">The worker to invoke the hook with.</param>
+		/// <param name="timeScaleCountdowns">The time scale countdowns to use.</param>
+		void InvokeActiveHooks(TimeScale timeScale, IWorker worker, IDictionary<IHook, int> timeScaleCountdowns);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

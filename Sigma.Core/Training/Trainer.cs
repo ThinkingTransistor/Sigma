@@ -32,15 +32,14 @@ namespace Sigma.Core.Training
 	/// </summary>
 	public class Trainer : ITrainer
 	{
+		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly IList<IActiveHook> _activeHooks;
+		private readonly IList<IPassiveHook> _passiveHooks;
 		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
 
 		private bool _initialised;
-
-		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-		private readonly IList<IPassiveHook> _passiveHooks;
 
 		public string Name { get; }
 		public SigmaEnvironment Sigma { get; set; }
