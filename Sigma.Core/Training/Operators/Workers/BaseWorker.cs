@@ -31,7 +31,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
 		/// </summary>
-		protected readonly IDictionary<IHook, int> ActiveHooksTimeScaleCountdowns;
+		protected readonly IDictionary<IHook, TimeStep> LocalActiveHookTimeSteps;
 
 		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler)
 		{
@@ -41,7 +41,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		{
 			Operator = @operator;
 			Handler = handler;
-			ActiveHooksTimeScaleCountdowns = new Dictionary<IHook, int>();
+			LocalActiveHookTimeSteps = new Dictionary<IHook, TimeStep>();
 		}
 
 		public abstract void Start();
@@ -54,9 +54,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// Invoke active hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		public void InvokeActiveHooks(TimeScale timeScale)
+		public void EjectTimeScaleEvent(TimeScale timeScale)
 		{
-			Operator.InvokeActiveHooks(timeScale, this, ActiveHooksTimeScaleCountdowns);
+			Operator.EjectTimeScaleEvent(timeScale, this, Operator.Trainer.ActiveHooks, LocalActiveHookTimeSteps);
 		}
 	}
 }

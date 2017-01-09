@@ -58,7 +58,7 @@ namespace Sigma.Core.Data.Iterators
 
 				var currentBlock = _fetchedBlocks[currentIndex];
 
-				_logger.Info($"Yielding undivided block at index {currentIndex}.");
+				_logger.Debug($"Yielding undivided block at index {currentIndex}.");
 
 				yield return currentBlock;
 

@@ -235,7 +235,7 @@ namespace Sigma.Core
 
 				if (_hooksToExecute.TryDequeue(out hook))
 				{
-					new Task(() => hook.Execute(hook.RegistryCopy)).Start();
+					new Task(() => hook.Invoke(hook.RegistryCopy)).Start();
 				}
 			}
 		}

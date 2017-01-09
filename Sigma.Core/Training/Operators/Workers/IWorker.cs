@@ -93,9 +93,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		void SignalStop();
 
 		/// <summary>
-		/// Invoke active hooks for a certain time scale with a certain worker.
+		/// Eject a certain time scale event and invoke the active hooks that correspond to to that local timestep.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		void InvokeActiveHooks(TimeScale timeScale);
+		void EjectTimeScaleEvent(TimeScale timeScale);
 	}
 }

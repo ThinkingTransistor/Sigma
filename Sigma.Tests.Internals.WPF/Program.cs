@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
@@ -48,7 +49,15 @@ namespace Sigma.Tests.Internals.WPF
 			IDataIterator iterator = new MinibatchIterator(10, trainingData);
 			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
 			{
-				PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			}
+
+			Console.WriteLine("+=+ Iterating over dataset again +=+");
+			Thread.Sleep(3000);
+
+			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
+			{
+				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 			}
 		}
 

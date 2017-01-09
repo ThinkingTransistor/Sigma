@@ -30,10 +30,10 @@ namespace Sigma.Core.Training.Hooks
 		ISet<string> RequiredRegistryEntries { get; }
 
 		/// <summary>
-		/// Execute this hook with a certain parameter registry.
+		/// Invoke this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		void Execute(IRegistry registry);		
+		void Invoke(IRegistry registry);		
 	}
 
 	/// <summary>
@@ -85,7 +85,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Execute this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		public abstract void Execute(IRegistry registry);
+		public abstract void Invoke(IRegistry registry);
 
 		/// <summary>
 		/// Create a hook with a certain time step and a set of required global registry entries. 

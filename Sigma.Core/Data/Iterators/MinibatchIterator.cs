@@ -85,6 +85,8 @@ namespace Sigma.Core.Data.Iterators
 		{
 			CheckNotNull(handler, environment);
 
+			_traversedAllBlocks = false;
+
 			while (!_traversedAllBlocks || _currentBatchNotTraversedBlockIndices.Count > 0)
 			{
 				if (_requireNewBlock)
@@ -132,7 +134,7 @@ namespace Sigma.Core.Data.Iterators
 					_requireNewBlock = true;
 				}
 
-				_logger.Info($"Yielding minibatch from block with index {_currentBlockIndex}, record range from {beginRecordIndex} to {endRecordIndex}.");
+				_logger.Debug($"Yielding minibatch from block with index {_currentBlockIndex}, record range from {beginRecordIndex} to {endRecordIndex}.");
 
 				yield return SliceBlock(_fetchedBlocks[_currentBlockIndex], beginRecordIndex, endRecordIndex);
 			}

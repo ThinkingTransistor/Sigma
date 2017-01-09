@@ -50,12 +50,12 @@ namespace Sigma.Core.Data.Iterators
 
 			if (_unifiedBlock == null)
 			{
-				_logger.Info("First time yielding from this iterator, fetching and unifying all blocks from dataset...");
+				_logger.Info($"First time yielding from iterator {this}, fetching and unifying all blocks from dataset...");
 
 				_unifiedBlock = FetchAndMergeFromDataset(handler);
 			}
 
-			_logger.Info($"Yielding unified block for handler {handler} consisting of {_unifiedBlock.First().Value.Shape[0]} records.");
+			_logger.Debug($"Yielding unified block for handler {handler} consisting of {_unifiedBlock.First().Value.Shape[0]} records.");
 
 			yield return _unifiedBlock;
 		}

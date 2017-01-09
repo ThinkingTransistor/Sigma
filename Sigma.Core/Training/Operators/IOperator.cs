@@ -96,12 +96,13 @@ namespace Sigma.Core.Training.Operators
 		void DetachHook(IPassiveHook hook);
 
 		/// <summary>
-		/// Invoke active hooks for a certain time scale with a certain worker.
+		/// Invoke hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
 		/// <param name="worker">The worker to invoke the hook with.</param>
-		/// <param name="timeScaleCountdowns">The time scale countdowns to use.</param>
-		void InvokeActiveHooks(TimeScale timeScale, IWorker worker, IDictionary<IHook, int> timeScaleCountdowns);
+		/// <param name="hooks">The hooks to check and invoke.</param>
+		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
+		void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

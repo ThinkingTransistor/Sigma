@@ -24,22 +24,22 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///     All <see cref="IActiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected ICollection<IActiveHook> ActiveHooks;
+		protected readonly ICollection<IActiveHook> ActiveHooks;
 
 		/// <summary>
 		///     All <see cref="IPassiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected ICollection<IPassiveHook> PassiveHooks;
+		protected readonly ICollection<IPassiveHook> PassiveHooks;
 
 		/// <summary>
 		///		All active hooks sorted by time scale.
 		/// </summary>
-		protected IDictionary<TimeScale, ISet<IActiveHook>> ActiveHooksByTimeScale;
+		protected readonly IDictionary<TimeScale, ISet<IActiveHook>> ActiveHooksByTimeScale;
 
 		/// <summary>
 		///		All passive hooks sorted by time scale.
 		/// </summary>
-		protected IDictionary<TimeScale, ISet<IPassiveHook>> PassiveHooksByTimescale;
+		protected readonly IDictionary<TimeScale, ISet<IPassiveHook>> PassiveHooksByTimescale;
 
 		/// <summary>
 		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
@@ -199,26 +199,37 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
-
 		/// <summary>
-		/// Invoke active hooks for a certain time scale with a certain worker.
+		/// Invoke hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
 		/// <param name="worker">The worker to invoke the hook with.</param>
-		/// <param name="timeScaleCountdowns">The time scale countdowns to use.</param>
-		public void InvokeActiveHooks(TimeScale timeScale, IWorker worker, IDictionary<IHook, int> timeScaleCountdowns)
+		/// <param name="hooks">The hooks to check and invoke.</param>
+		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
+		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps)
 		{
-			foreach (IActiveHook activeHook in ActiveHooksByTimeScale[timeScale])
+			Logger.Debug($"Invoking time scale event {timeScale} for worker {worker} in operator {this}...");
+
+			foreach (IHook hook in hooks)
 			{
-				int timeScaleCountdown = activeHook.TimeStep.Interval;
-
-				timeScaleCountdowns.TryGetValue(activeHook, out timeScaleCountdown);
-
-				timeScaleCountdowns[activeHook] = timeScaleCountdown - 1;
-
-				if (timeScaleCountdowns[activeHook] <= 0)
+				if (!localHookTimeSteps.ContainsKey(hook))
 				{
-					// TODO invoke hook
+					TimeStep timeStep = (TimeStep) hook.TimeStep.DeepCopy();
+
+					timeStep.LocalLiveTime = timeStep.LiveTime;
+					timeStep.LocalInterval = timeStep.Interval;
+				}
+
+				if (hook.TimeStep.LocalLiveTime > 0)
+				{
+					hook.TimeStep.LocalInterval--;
+
+					if (hook.TimeStep.LocalInterval == 0)
+					{
+						// TODO invoke hook
+
+						hook.TimeStep.LocalLiveTime--;
+					}
 				}
 			}
 		}

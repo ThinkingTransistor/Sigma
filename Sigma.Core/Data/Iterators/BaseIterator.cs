@@ -105,16 +105,19 @@ namespace Sigma.Core.Data.Iterators
 		{
 			foreach (int index in indices)
 			{
-				_pendingFetchBlockTasks.Add(index, Task.Run(() =>
+				if (!_pendingFetchBlockTasks.ContainsKey(index) && !_fetchedBlocks.ContainsKey(index))
 				{
-					_logger.Info($"Started asynchronous background preparation of block with index {index}.");
+					_pendingFetchBlockTasks.Add(index, Task.Run(() =>
+					{
+						_logger.Info($"Started asynchronous background preparation of block with index {index}.");
 
-					var block = UnderlyingDataset.FetchBlock(index, handler);
+						var block = UnderlyingDataset.FetchBlock(index, handler);
 
-					_logger.Info($"Done with asynchronous background preparation of block with index {index}.");
+						_logger.Info($"Done with asynchronous background preparation of block with index {index}.");
 
-					return block;
-				}));
+						return block;
+					}));
+				}
 			}
 		}
 	}
