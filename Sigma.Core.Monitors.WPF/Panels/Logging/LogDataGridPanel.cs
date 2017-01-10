@@ -1,4 +1,4 @@
-﻿/* 
+/* 
 MIT License
 
 Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.ComponentModel;
 using System.Threading;
+using System.Windows.Data;
 using System.Windows.Threading;
 using log4net;
 using log4net.Appender;
@@ -42,6 +44,15 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 	{
 		public LogDataGridPanel(string title) : base(title)
 		{
+			// Sort after 
+			ICollectionView dataView = CollectionViewSource.GetDefaultView(Content.ItemsSource);
+			//clear the existing sort order
+			dataView.SortDescriptions.Clear();
+			//create a new sort order for the sorting that is done lastly
+			dataView.SortDescriptions.Add(new SortDescription("TimeStamp", ListSortDirection.Descending));
+			//refresh the view which in turn refresh the grid
+			dataView.Refresh();
+
 			// ReSharper disable once VirtualMemberCallInConstructor
 			AssignToLog();
 		}

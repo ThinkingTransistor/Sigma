@@ -1,7 +1,7 @@
 /* 
 MIT License
 
-Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cï¿½sar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using log4net;
+using MaterialDesignThemes.Wpf;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
@@ -155,7 +157,16 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			AddSigmaFunction((app, window) => new TitleBarItem("Settings", "Toggle Dark",
 				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), "Toggle Alternate",
 				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)));
-			TitleBarFuncs.Add((app, window) => new TitleBarItem("About", "Sigma"));
+
+			TitleBarFuncs.Add((app, window) =>
+			{
+				TitleBarItem about = new TitleBarItem(new MenuItem { Header = "About" });
+				//about.SetFunction(about.Content, (application, parentwindow, titlebaritem) => titlebaritem.Content.Command.Execute(null));
+
+				about.Content.Command = DialogHost.OpenDialogCommand;
+				about.Content.CommandParameter = "this is a test";
+				return about;
+			});
 		}
 
 		/// <summary>

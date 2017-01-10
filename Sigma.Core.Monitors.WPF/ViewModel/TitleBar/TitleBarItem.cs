@@ -1,7 +1,7 @@
 /* 
 MIT License
 
-Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cï¿½sar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -27,7 +27,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     or an <see cref="UIElement" />
 		///     - otherwise a <see cref="ArgumentException" /> is thrown.
 		/// </param>
-		public TitleBarItem(object header, params object[] children) : this(new MenuItem { Header = header }, children)
+		public TitleBarItem(object header, params object[] children) : this(new MenuItem {Header = header}, children)
 		{
 		}
 
@@ -59,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				{
 					//The key and header are simply the string
 					newElementKey = (string) children[i];
-					newElement = new MenuItem { Header = (string) children[i] };
+					newElement = new MenuItem {Header = (string) children[i]};
 				}
 				else if (children[i] is TitleBarItem)
 				{
@@ -109,10 +109,10 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 						i++;
 						SetFunction(newElement, (Action) children[i]);
 					}
-					else if (children[i + 1] is Action<Application, Window>)
+					else if (children[i + 1] is Action<Application, Window, TitleBarItem>)
 					{
 						i++;
-						SetFunction(newElement, (Action<Application, Window>) children[i]);
+						SetFunction(newElement, (Action<Application, Window, TitleBarItem>) children[i]);
 					}
 				}
 			}
@@ -173,7 +173,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(string elementKey, Action<Application, Window> action)
+		public TitleBarItem SetFunction(string elementKey, Action<Application, Window, TitleBarItem> action)
 		{
 			return SetFunction(Children[elementKey], action);
 		}
@@ -194,7 +194,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
 		public TitleBarItem SetFunction(UIElement item, Action action)
 		{
-			return SetFunction(item, (app, window) => action());
+			return SetFunction(item, (app, window, element) => action());
 		}
 
 		/// <summary>
@@ -211,7 +211,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(UIElement item, Action<Application, Window> action)
+		public TitleBarItem SetFunction(UIElement item, Action<Application, Window, TitleBarItem> action)
 		{
 			if (item == null)
 			{
@@ -222,13 +222,13 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				throw new ArgumentNullException(nameof(action));
 			}
 
-			item.MouseLeftButtonUp += (sender, args) => action(App, Window);
-			item.TouchDown += (sender, args) => action(App, Window);
+			item.MouseLeftButtonUp += (sender, args) => action(App, Window, this);
+			item.TouchDown += (sender, args) => action(App, Window, this);
 
 			MenuItem menuItem = item as MenuItem;
 			if (menuItem != null)
 			{
-				menuItem.Click += (sender, args) => action(App, Window);
+				menuItem.Click += (sender, args) => action(App, Window, this);
 			}
 
 			return this;
