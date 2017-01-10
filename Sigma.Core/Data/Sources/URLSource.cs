@@ -23,7 +23,7 @@ namespace Sigma.Core.Data.Sources
 
 		public string ResourceName { get; }
 
-		public int NumberRetriesOnError { get; set; }
+		public int NumberRetriesOnError { get; }
 
 		public bool Seekable => true;
 
@@ -32,6 +32,7 @@ namespace Sigma.Core.Data.Sources
 		private bool _prepared;
 
 		private readonly string _localDownloadPath;
+		private readonly string _localTempDownloadPath;
 		private FileStream _localDownloadedFileStream;
 		private readonly IWebProxy _proxy;
 
@@ -43,14 +44,19 @@ namespace Sigma.Core.Data.Sources
 		{
 		}
 
+		public UrlSource(string url, string localDownloadPath) : this(url, localDownloadPath, localDownloadPath + ".sgdownload")
+		{
+		}
+
 		/// <summary>
 		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
 		/// </summary>
 		/// <param name="url">The URL.</param>
-		/// <param name="localDownloadPath">The local download path, where this file will be downloaded to.</param>
+		/// <param name="localDownloadPath">The local download path, where this file will available after completing download.</param>
+		/// <param name="localTempDownloadPath">The local temp download path, where the file is downloaded to until download completion.</param>
 		/// <param name="proxy">The optional web proxy to use for file downloads.</param>
 		/// <param name="numberRetriesOnError">The number of times to retry the download if it failed.</param>
-		public UrlSource(string url, string localDownloadPath, IWebProxy proxy = null, int numberRetriesOnError = 2)
+		public UrlSource(string url, string localDownloadPath, string localTempDownloadPath, IWebProxy proxy = null, int numberRetriesOnError = 2)
 		{
 			if (url == null)
 			{
@@ -69,6 +75,7 @@ namespace Sigma.Core.Data.Sources
 
 			ResourceName = url;
 			_localDownloadPath = localDownloadPath;
+			_localTempDownloadPath = localTempDownloadPath;
 
 			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
 			NumberRetriesOnError = numberRetriesOnError;
@@ -145,7 +152,7 @@ namespace Sigma.Core.Data.Sources
 			}
 
 			int numberRetriesLeft = NumberRetriesOnError;
-			bool downloadSuccess = false;
+			bool downloadSuccess;
 
 			do
 			{
@@ -156,15 +163,31 @@ namespace Sigma.Core.Data.Sources
 					File.Delete(_localDownloadPath);
 				}
 
-				_logger.Info($"Downloading URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\"...");
+				_logger.Info($"Downloading URL resource \"{ResourceName}\" to local temp path \"{_localTempDownloadPath}\"...");
 
 				using (BlockingWebClient client = new BlockingWebClient(timeoutMilliseconds: 16000))
 				{
-					downloadSuccess = client.DownloadFile(ResourceName, _localDownloadPath, task);
+					downloadSuccess = client.DownloadFile(ResourceName, _localTempDownloadPath, task);
 
 					if (downloadSuccess)
 					{
-						_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local path \"{_localDownloadPath}\" ({client.PreviousBytesReceived/1024}kB).");
+						_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local temp path \"{_localDownloadPath}\" ({client.PreviousBytesReceived/1024}kB).");
+
+						_logger.Info($"Moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\"...");
+
+						try
+						{
+							File.Move(_localTempDownloadPath, _localDownloadPath);
+						}
+						catch (Exception e)
+						{
+							_logger.Error($"Unable to move temporary download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\": " + e);
+
+							SigmaEnvironment.TaskManager.CancelTask(task);
+							
+							throw;
+						}
+						_logger.Info($"Done moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\".");
 
 						SigmaEnvironment.TaskManager.EndTask(task);
 					}
@@ -172,7 +195,7 @@ namespace Sigma.Core.Data.Sources
 					{
 						_logger.Warn($"Failed to download URL source \"{ResourceName}\", could not prepare this URL source correctly.");
 
-						File.Delete(_localDownloadPath);
+						File.Delete(_localTempDownloadPath);
 
 						SigmaEnvironment.TaskManager.CancelTask(task);
 					}
