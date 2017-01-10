@@ -24,6 +24,7 @@ namespace Sigma.Tests.Internals.WPF
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging();
+			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));

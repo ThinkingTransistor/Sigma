@@ -90,7 +90,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 			{
 				Progress = args.NewValue*100;
 
-				if (Progress < 0)
+				if (Progress < 0) 
 				{
 					Progress = 0;
 				}

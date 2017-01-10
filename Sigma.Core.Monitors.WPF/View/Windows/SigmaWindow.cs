@@ -254,8 +254,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		private void InitialiseDefaultValues()
 		{
-			MinHeight = 750;
-			MinWidth = 1000;
+			MinHeight = 650;
+			MinWidth = 880;
 			FontFamily = UIResources.FontFamily;
 			TitleAlignment = HorizontalAlignment.Center;
 		}

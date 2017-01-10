@@ -28,7 +28,7 @@ namespace Sigma.Core.Utils
 	/// A default implementation of the <see cref="ITaskManager"/> interface. 
 	/// Represents a task manager, that manages a set of task observers. 
 	/// </summary>
-	public class TaskManager : ITaskManager
+	public sealed class TaskManager : ITaskManager
 	{
 		public event EventHandler<TaskModifiedEventArgs> TaskCreated;
 		public event EventHandler<TaskModifiedEventArgs> TaskCanceled;
@@ -62,17 +62,17 @@ namespace Sigma.Core.Utils
 			return observer;
 		}
 
-		protected virtual void OnTaskCreated(ITaskObserver task, object sender = null)
+		private void OnTaskCreated(ITaskObserver task, object sender = null)
 		{
 			TaskCreated?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Running));
 		}
 
-		protected virtual void OnTaskCanceled(ITaskObserver task, object sender = null)
+		private void OnTaskCanceled(ITaskObserver task, object sender = null)
 		{
 			TaskCanceled?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Canceled));
 		}
 
-		protected virtual void OnTaskEnded(ITaskObserver task, object sender = null)
+		private void OnTaskEnded(ITaskObserver task, object sender = null)
 		{
 			TaskEnded?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Ended));
 		}
