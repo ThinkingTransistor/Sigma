@@ -226,7 +226,7 @@ namespace Sigma.Core.Training.Operators
 
 					if (hook.TimeStep.LocalInterval == 0)
 					{
-						// TODO invoke hook
+						// TODO invoke hook / return hooks to invoke somehow? out list parameter? 
 
 						hook.TimeStep.LocalLiveTime--;
 					}

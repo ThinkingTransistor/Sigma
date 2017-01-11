@@ -635,13 +635,13 @@ namespace Sigma.Core.Data.Datasets
 		{
 			Dictionary<string, INDArray> namedBlocks = new Dictionary<string, INDArray>();
 
-			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "extractors for dataset \"" + Name + "\"", indeterminate: true);
+			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "preparing extractors for dataset \"" + Name + "\"", indeterminate: true);
 
 			PrepareExtractors();
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, $"block {blockIndex} for dataset \"{Name}\"", indeterminate: true);
+			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Extract, $"extracting block {blockIndex} for dataset \"{Name}\"", indeterminate: true);
 
 			int extractorIndex = 0;
 			foreach (IRecordExtractor extractor in _recordExtractors)
