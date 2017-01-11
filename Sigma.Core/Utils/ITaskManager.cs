@@ -209,7 +209,7 @@ namespace Sigma.Core.Utils
 		public static readonly ITaskType Download = new TaskType("Download", "Downloading");
 		public static readonly ITaskType Load = new TaskType("Load", "Loading");
 		public static readonly ITaskType Save = new TaskType("Save", "Saving");
-		public static readonly ITaskType Unpack = new TaskType("Unpack", "Extracting");
+		public static readonly ITaskType Unpack = new TaskType("Unpack", "Unpacking");
 		public static readonly ITaskType Extract = new TaskType("Extract", "Extracting");
 		public static readonly ITaskType Preprocess = new TaskType("Preprocess", "Preprocessing");
 		public static readonly ITaskType Prepare = new TaskType("Prepare", "Preparing");

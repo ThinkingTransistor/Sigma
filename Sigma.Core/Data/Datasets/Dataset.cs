@@ -746,15 +746,11 @@ namespace Sigma.Core.Data.Datasets
 
 			string cacheIdentifier = $"extracted.{blockIndex}.{handler.DataType.Identifier}";
 
-			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Save, cacheIdentifier, indeterminate: true);
-
 			_cacheProvider.Store(cacheIdentifier, block);
 
 			bool keepReference = TotalActiveBlockSizeBytes + blockSizeBytes < MaxTotalActiveBlockSizeBytes;
 
 			RegisterCachedBlock(block, blockIndex, handler, keepReference);
-
-			SigmaEnvironment.TaskManager.EndTask(task);
 
 			_totalCachedBlockSizeBytes += blockSizeBytes;
 		}
