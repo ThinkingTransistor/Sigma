@@ -261,7 +261,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
+		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
 		{
 			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
 			if (worker == null) throw new ArgumentNullException(nameof(worker));
@@ -288,21 +288,23 @@ namespace Sigma.Core.Training.Operators
 					timeStep.LocalInterval = timeStep.Interval;
 				}
 
-				hook.TimeStep.LocalInterval--;
+				ITimeStep localTimeStep = localHookTimeSteps[hook];
 
-				if (hook.TimeStep.LocalInterval == 0)
+				localTimeStep.LocalInterval--;
+
+				if (localTimeStep.LocalInterval == 0)
 				{
 					// TODO invoke hook / return hooks to invoke somehow? -> add to worker
 					resultHooksToInvoke.Add(hook);
 
-					if (hook.TimeStep.LocalLiveTime > 0)
+					if (localTimeStep.LocalLiveTime > 0)
 					{
-						hook.TimeStep.LocalLiveTime--;
+						localTimeStep.LocalLiveTime--;
 
 						//TODO check if LocalLiveTime == 0 in callee and mark as dead accordingly
 					}
 
-					hook.TimeStep.LocalInterval = hook.TimeStep.Interval;
+					localTimeStep.LocalInterval = localTimeStep.Interval;
 				}
 			}
 

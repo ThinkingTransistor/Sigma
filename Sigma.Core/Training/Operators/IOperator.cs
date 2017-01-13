@@ -110,7 +110,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke"></param>
-		void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke);
+		void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

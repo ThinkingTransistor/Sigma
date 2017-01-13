@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -33,7 +34,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
 		/// </summary>
-		protected readonly IDictionary<IHook, TimeStep> LocalActiveHookTimeSteps;
+		protected readonly IDictionary<IHook, ITimeStep> LocalActiveHookTimeSteps;
 
 
 		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler)
@@ -44,7 +45,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		{
 			Operator = @operator;
 			Handler = handler;
-			LocalActiveHookTimeSteps = new Dictionary<IHook, TimeStep>();
+			LocalActiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			_bufferHooksToInvoke = new HashSet<IHook>();
 		}
 
@@ -56,9 +57,31 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public void EjectAndInvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			Operator.EjectTimeScaleEvent(timeScale, this, Operator.Trainer.ActiveHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
+			var activeHooks = Operator.Trainer.ActiveHooks;
 
+			Operator.EjectTimeScaleEvent(timeScale, this, activeHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
+
+			MarkDeadHooks(activeHooks, LocalActiveHookTimeSteps);
+			
 			// TODO actually invoke hooks, maybe find better method name or split in two methods
+		}
+
+		protected void MarkDeadHooks(IEnumerable<IActiveHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
+		{
+			foreach (IHook hook in _bufferHooksToInvoke)
+			{
+				IActiveHook asActiveHook = hook as IActiveHook;
+
+				if (asActiveHook == null)
+				{
+					throw new InvalidOperationException($"Internal error: Buffered hooks to invoke in worker may only contain active hooks but hook {hook} could not be cast accordingly.");
+				}
+
+				if (LocalActiveHookTimeSteps[hook].LocalLiveTime == 0)
+				{
+					Operator.MarkHookDead(asActiveHook, this);
+				}
+			}
 		}
 	}
 }
