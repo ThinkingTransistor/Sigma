@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Utils
 {
@@ -62,7 +63,7 @@ namespace Sigma.Core.Utils
 				throw new ArgumentNullException(nameof(timeScale));
 			}
 
-			if (interval < 0)
+			if (interval <= 0)
 			{
 				throw new ArgumentNullException($"Time step interval must be >= 1, but was {interval}.");
 			}
@@ -97,10 +98,25 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public class TimeScale
 	{
+		/// <summary>
+		/// The name of this time scale.
+		/// </summary>
 		public string Name { get; }
 
+		/// <summary>
+		/// A time scale for one training epoch (single forward + backward pass on the entire training data, consisting of multiple iterations).
+		/// </summary>
 		public static readonly TimeScale Epoch = new TimeScale(nameof(Epoch));
+
+		/// <summary>
+		/// A time scale for one training iteration (single forward + backward pass on iterator yield).
+		/// </summary>
 		public static readonly TimeScale Iteration = new TimeScale(nameof(Iteration));
+
+		/// <summary>
+		/// A time scale that is managed by the callee (e.g. when only invoking once, like for <see cref="ICommand"/>).
+		/// </summary>
+		public static readonly TimeScale Indeterminate = new TimeScale(nameof(Indeterminate));
 
 		public TimeScale(string name)
 		{

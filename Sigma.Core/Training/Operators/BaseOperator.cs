@@ -8,6 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using log4net;
 using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
@@ -42,14 +44,19 @@ namespace Sigma.Core.Training.Operators
 		protected readonly IDictionary<TimeScale, ISet<IPassiveHook>> PassiveHooksByTimescale;
 
 		/// <summary>
-		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
+		///		The alive hooks by an array of flags of workers keeping it alive.
 		/// </summary>
-		protected IDictionary<IHook, int> PassiveHookTimescaleCountdowns;
+		protected readonly IDictionary<IActiveHook, bool[]> AliveHooksByInWorkerStates;
 
 		/// <summary>
 		///     All the <see cref="IWorker" />s managed by this operator.
 		/// </summary>
 		protected IEnumerable<IWorker> Workers;
+
+		/// <summary>
+		///		The worker indices by workers for quick access.
+		/// </summary>
+		protected IReadOnlyDictionary<IWorker, int> WorkerIndicesByWorkers;
 
 		/// <summary>
 		///     The <see cref="SigmaEnvironment" /> this operator runs in and communicates with.
@@ -130,6 +137,7 @@ namespace Sigma.Core.Training.Operators
 			PassiveHooks = new List<IPassiveHook>();
 			ActiveHooksByTimeScale = new Dictionary<TimeScale, ISet<IActiveHook>>();
 			PassiveHooksByTimescale = new Dictionary<TimeScale, ISet<IPassiveHook>>();
+			AliveHooksByInWorkerStates = new Dictionary<IActiveHook, bool[]>();
 			WorkerCount = workerCount;
 			EpochNumber = -1;
 		}
@@ -153,6 +161,13 @@ namespace Sigma.Core.Training.Operators
 
 		public void AttachHook(IActiveHook hook)
 		{
+			if (ActiveHooks.Contains(hook))
+			{
+				Logger.Debug($"Unable to attach active hook {hook} to operator {this}, hook is already attached.");
+
+				return;
+			}
+
 			ActiveHooks.Add(hook);
 
 			if (!ActiveHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
@@ -162,6 +177,8 @@ namespace Sigma.Core.Training.Operators
 
 			ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Add(hook);
 
+			AliveHooksByInWorkerStates.Add(hook, new bool[WorkerCount].Populate(true));
+
 			Logger.Debug($"Attached active hook {hook} to operator {this}.");
 		}
 
@@ -170,13 +187,21 @@ namespace Sigma.Core.Training.Operators
 			if (ActiveHooks.Remove(hook))
 			{
 				ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
+				AliveHooksByInWorkerStates.Remove(hook);
 
-				Logger.Debug($"Detached active hook {hook} from operator {this}");
+				Logger.Debug($"Detached active hook {hook} from operator {this}.");
 			}
 		}
 
 		public void AttachHook(IPassiveHook hook)
 		{
+			if (PassiveHooks.Contains(hook))
+			{
+				Logger.Debug($"Unable to attach passive hook {hook} to operator {this}, hook is already attached.");
+
+				return;
+			}
+
 			PassiveHooks.Add(hook);
 
 			if (!PassiveHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
@@ -200,18 +225,61 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		/// Invoke hooks for a certain time scale with a certain worker.
+		/// Mark an active hook as dead in a certain worker.
+		/// </summary>
+		/// <param name="hook">The hook to mark.</param>
+		/// <param name="worker">The worker in which this hook was deemed dead.</param>
+		public void MarkHookDead(IActiveHook hook, IWorker worker)
+		{
+			if (!AliveHooksByInWorkerStates.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Unable to mark hook {hook} as dead in operator {this} for worker {worker}, hook is not registered as alive.");
+			}
+
+			if (!WorkerIndicesByWorkers.ContainsKey(worker))
+			{
+				throw new InvalidOperationException($"Unable to mark hook {hook} as dead in operator {this} for worker {worker}, worker does not belong to this operator.");
+			}
+
+			bool[] aliveFlags = AliveHooksByInWorkerStates[hook];
+
+			aliveFlags[WorkerIndicesByWorkers[worker]] = false;
+
+			if (aliveFlags.All(flag => !flag))
+			{
+				Logger.Debug($"Detaching hook {hook} in operator {this}, hook is deemed completely dead and can be safely detached.");
+
+				DetachHook(hook);
+			}
+		}
+
+		/// <summary>
+		/// Eject a certain time scale event within a certain worker and update the local time steps.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
 		/// <param name="worker">The worker to invoke the hook with.</param>
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps)
+		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
+		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, TimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
 		{
-			Logger.Debug($"Invoking time scale event {timeScale} for worker {worker} in operator {this}...");
+			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
+			if (worker == null) throw new ArgumentNullException(nameof(worker));
+			if (hooks == null) throw new ArgumentNullException(nameof(hooks));
+			if (localHookTimeSteps == null) throw new ArgumentNullException(nameof(localHookTimeSteps));
+			if (resultHooksToInvoke == null) throw new ArgumentNullException(nameof(resultHooksToInvoke));
+
+			Logger.Debug($"Ejecting time scale event {timeScale} for worker {worker} in operator {this}...");
+
+			resultHooksToInvoke.Clear();
 
 			foreach (IHook hook in hooks)
 			{
+				if (hook.TimeStep.LocalLiveTime == 0)
+				{
+					continue;
+				}
+
 				if (!localHookTimeSteps.ContainsKey(hook))
 				{
 					TimeStep timeStep = (TimeStep) hook.TimeStep.DeepCopy();
@@ -220,18 +288,25 @@ namespace Sigma.Core.Training.Operators
 					timeStep.LocalInterval = timeStep.Interval;
 				}
 
-				if (hook.TimeStep.LocalLiveTime > 0)
+				hook.TimeStep.LocalInterval--;
+
+				if (hook.TimeStep.LocalInterval == 0)
 				{
-					hook.TimeStep.LocalInterval--;
+					// TODO invoke hook / return hooks to invoke somehow? -> add to worker
+					resultHooksToInvoke.Add(hook);
 
-					if (hook.TimeStep.LocalInterval == 0)
+					if (hook.TimeStep.LocalLiveTime > 0)
 					{
-						// TODO invoke hook / return hooks to invoke somehow? out list parameter? 
-
 						hook.TimeStep.LocalLiveTime--;
+
+						//TODO check if LocalLiveTime == 0 in callee and mark as dead accordingly
 					}
+
+					hook.TimeStep.LocalInterval = hook.TimeStep.Interval;
 				}
 			}
+
+			Logger.Debug($"Done ejecting time scale event {timeScale} for worker {worker} in operator {this}, total of {resultHooksToInvoke.Count} hooks to invoke.");
 		}
 
 		/// <summary>
@@ -262,8 +337,15 @@ namespace Sigma.Core.Training.Operators
 		protected virtual IEnumerable<IWorker> InitialiseWorkers()
 		{
 			IWorker[] workers = new IWorker[WorkerCount];
+			IDictionary<IWorker, int> workerIndicesByWorkers = new Dictionary<IWorker, int>();
 
-			for (int i = 0; i < workers.Length; i++) { workers[i] = CreateWorker(); }
+			for (int i = 0; i < workers.Length; i++)
+			{
+				workers[i] = CreateWorker();
+				workerIndicesByWorkers.Add(workers[i], i);
+			}
+
+			WorkerIndicesByWorkers = new ReadOnlyDictionary<IWorker, int>(workerIndicesByWorkers);
 
 			return workers;
 		}
@@ -273,7 +355,10 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		protected virtual void StartWorkers()
 		{
-			foreach (IWorker worker in Workers) { StartWorker(worker); }
+			foreach (IWorker worker in Workers)
+			{
+				StartWorker(worker);
+			}
 		}
 
 		/// <summary>
@@ -281,7 +366,10 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		protected virtual void StartWorkersOnce()
 		{
-			foreach (IWorker worker in Workers) { RunWorkerOnce(worker); }
+			foreach (IWorker worker in Workers)
+			{
+				RunWorkerOnce(worker);
+			}
 		}
 
 		#region StateControl

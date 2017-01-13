@@ -48,6 +48,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 				throw new InvalidOperationException($"Cannot work in worker {this} because the epoch block yield enumerator was not successfully initialised.");
 			}
 
+			// no more blocks in this yield, therefore epoch is done
 			if (!_epochBlockYield.MoveNext())
 			{
 				Logger.Info($"Completed epoch {LocalEpochNumber + 1} at iteration {LocalIterationNumber} in worker {this}.");

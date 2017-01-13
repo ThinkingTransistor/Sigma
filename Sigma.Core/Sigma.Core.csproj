@@ -184,6 +184,7 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Hooks\Hook.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />

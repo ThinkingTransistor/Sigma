@@ -270,6 +270,23 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Populate an array with a certain fixed.
+		/// </summary>
+		/// <typeparam name="T">The type of the array and value.</typeparam>
+		/// <param name="array">The array.</param>
+		/// <param name="value">The value to populate with.</param>
+		/// <returns>The array (for convenience).</returns>
+		public static T[] Populate<T>(this T[] array, T value)
+		{
+			for (int i = 0; i < array.Length; i++)
+			{
+				array[i] = value;
+			}
+
+			return array;
+		}
+
+		/// <summary>
 		/// Extended ToString method for two-dimensional arrays of any type.
 		/// </summary>
 		/// <typeparam name="T">The type.</typeparam>

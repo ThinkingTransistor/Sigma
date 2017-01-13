@@ -28,10 +28,13 @@ namespace Sigma.Core.Training.Operators.Workers
 		public int LocalEpochNumber { get; protected set; }
 		public int LocalIterationNumber { get; protected set; }
 
+		private readonly ISet<IHook> _bufferHooksToInvoke;
+
 		/// <summary>
 		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
 		/// </summary>
 		protected readonly IDictionary<IHook, TimeStep> LocalActiveHookTimeSteps;
+
 
 		protected BaseWorker(IOperator @operator) : this(@operator, @operator.Handler)
 		{
@@ -42,6 +45,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			Operator = @operator;
 			Handler = handler;
 			LocalActiveHookTimeSteps = new Dictionary<IHook, TimeStep>();
+			_bufferHooksToInvoke = new HashSet<IHook>();
 		}
 
 		public abstract void Start();
@@ -50,13 +54,11 @@ namespace Sigma.Core.Training.Operators.Workers
 		public abstract void SignalResume();
 		public abstract void SignalStop();
 
-		/// <summary>
-		/// Invoke active hooks for a certain time scale with a certain worker.
-		/// </summary>
-		/// <param name="timeScale">The time scale.</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale)
+		public void EjectAndInvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			Operator.EjectTimeScaleEvent(timeScale, this, Operator.Trainer.ActiveHooks, LocalActiveHookTimeSteps);
+			Operator.EjectTimeScaleEvent(timeScale, this, Operator.Trainer.ActiveHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
+
+			// TODO actually invoke hooks, maybe find better method name or split in two methods
 		}
 	}
 }
