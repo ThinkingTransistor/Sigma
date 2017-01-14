@@ -13,6 +13,7 @@ using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -25,6 +26,11 @@ namespace Sigma.Core.Data.Iterators
 		/// The underlying dataset of this data iterator.
 		/// </summary>
 		public IDataset UnderlyingDataset { get; }
+
+		/// <summary>
+		/// A registry containing relevant parameters of this data iterator.
+		/// </summary>
+		public IRegistry Registry { get; }
 
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -46,6 +52,7 @@ namespace Sigma.Core.Data.Iterators
 			}
 
 			UnderlyingDataset = dataset;
+			Registry = new Registry(tags: "iterator");
 
 			_fetchedBlocks = new Dictionary<int, IDictionary<string, INDArray>>();
 			_pendingFetchBlockTasks = new Dictionary<int, Task<IDictionary<string, INDArray>>>();

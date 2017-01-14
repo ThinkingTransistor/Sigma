@@ -30,8 +30,6 @@ namespace Sigma.Core.Utils
 	{
 		public IRegistry Root { get; }
 
-		private static readonly string[] EmptyStringArray = {};
-
 		private readonly Dictionary<string, MatchIdentifierRequestCacheEntry> _matchIdentifierCache;
 		private readonly ISet<string> _fullIdentifiersToInvalidate;
 
@@ -157,7 +155,7 @@ namespace Sigma.Core.Utils
 
 		public T[] ResolveGet<T>(string matchIdentifier, T[] values = null)
 		{
-			string[] emptyArrayThrowaway = EmptyStringArray;
+			string[] emptyArrayThrowaway;
 
 			return ResolveGet(matchIdentifier, out emptyArrayThrowaway, values);
 		}
@@ -217,7 +215,7 @@ namespace Sigma.Core.Utils
 
 			string[] matchIdentifierParts = matchIdentifier.Split('.');
 
-			ISet<string>[] conditionalTagsPerLevel = new HashSet<string>[matchIdentifierParts.Length];
+			ISet<string>[] conditionalTagsPerLevel = new ISet<string>[matchIdentifierParts.Length];
 
 			for (int i = 0; i < matchIdentifierParts.Length; i++)
 			{

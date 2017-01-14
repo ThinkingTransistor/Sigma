@@ -10,6 +10,7 @@ using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System.Collections.Generic;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -23,6 +24,11 @@ namespace Sigma.Core.Data.Iterators
 		/// The dataset underlying this data iterator.
 		/// </summary>
 		IDataset UnderlyingDataset { get; }
+
+		/// <summary>
+		/// A registry containing relevant parameters of this data iterator.
+		/// </summary>
+		IRegistry Registry { get; }
 
 		/// <summary>
 		/// Yield a block from this data iterator for and with a certain handler within a certain environment.

@@ -87,6 +87,7 @@ namespace Sigma.Core.Data.Iterators
 
 			_traversedAllBlocks = false;
 
+			// TODO populate registry with relevant parameters
 			while (!_traversedAllBlocks || _currentBatchNotTraversedBlockIndices.Count > 0)
 			{
 				if (_requireNewBlock)

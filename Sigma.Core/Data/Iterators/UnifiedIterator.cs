@@ -48,6 +48,7 @@ namespace Sigma.Core.Data.Iterators
 		{
 			CheckNotNull(handler, environment);
 
+			// TODO populate registry with relevant parameters
 			if (_unifiedBlock == null)
 			{
 				_logger.Info($"First time yielding from iterator {this}, fetching and unifying all blocks from dataset...");

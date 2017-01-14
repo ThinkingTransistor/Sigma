@@ -6,11 +6,9 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
-using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
@@ -93,9 +91,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		void SignalStop();
 
 		/// <summary>
-		/// Eject a certain time scale event and invoke the active hooks that correspond to the local time scale change.
+		/// Invoke the active hooks that correspond to the local time scale change.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		void EjectAndInvokeTimeScaleEvent(TimeScale timeScale);
+		void InvokeTimeScaleEvent(TimeScale timeScale);
 	}
 }

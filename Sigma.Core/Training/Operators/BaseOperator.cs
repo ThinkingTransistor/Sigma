@@ -13,16 +13,23 @@ using System.Linq;
 using log4net;
 using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
+using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators
 {
 	public abstract class BaseOperator : IOperator
 	{
+		/// <summary>
+		///		A registry containing relevant parameters of this operator.
+		/// </summary>
+		public IRegistry Registry { get; }
+
 		/// <summary>
 		///     All <see cref="IActiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
@@ -121,6 +128,11 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private readonly object _stateChangeLock;
 
+		private readonly IRegistryResolver _bufferRegistryResolver;
+		private readonly ISet<string> _bufferCurrentRequiredHookParameters;
+		private readonly ISet<string> _bufferPreviousRequiredHookParameters;
+		private readonly ISet<string> _bufferResolvedRequiredHookParameters;
+
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> without specifying the <see cref="IComputationHandler" />.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
@@ -133,13 +145,21 @@ namespace Sigma.Core.Training.Operators
 		{
 			_stateChangeLock = new object();
 
+			WorkerCount = workerCount;
+			EpochNumber = -1;
+
 			ActiveHooks = new List<IActiveHook>();
 			PassiveHooks = new List<IPassiveHook>();
 			ActiveHooksByTimeScale = new Dictionary<TimeScale, ISet<IActiveHook>>();
 			PassiveHooksByTimescale = new Dictionary<TimeScale, ISet<IPassiveHook>>();
 			AliveHooksByInWorkerStates = new Dictionary<IActiveHook, bool[]>();
-			WorkerCount = workerCount;
-			EpochNumber = -1;
+
+			Registry = new Registry(tags: "operator");
+			_bufferRegistryResolver = new RegistryResolver(Registry);
+
+			_bufferCurrentRequiredHookParameters = new HashSet<string>();
+			_bufferPreviousRequiredHookParameters = new HashSet<string>();
+			_bufferResolvedRequiredHookParameters = new HashSet<string>();
 		}
 
 		/// <summary>
@@ -250,6 +270,41 @@ namespace Sigma.Core.Training.Operators
 				Logger.Debug($"Detaching hook {hook} in operator {this}, hook is deemed completely dead and can be safely detached.");
 
 				DetachHook(hook);
+			}
+		}
+
+		protected void ResolveAllRequiredRegistryEntries(IRegistryResolver registryResolver, ISet<string> allRequiredRegistryEntries, ISet<string> resultAllResolvedRequiredRegistryEntries)
+		{
+			resultAllResolvedRequiredRegistryEntries.Clear();
+
+			foreach (string registryEntry in allRequiredRegistryEntries)
+			{
+				string[] resolvedEntries;
+
+				registryResolver.ResolveGet<object>(registryEntry, out resolvedEntries, null);
+			}
+		}
+
+		protected void FetchAllRequiredRegistryEntries(IEnumerable<IHook> hooks, ISet<string> bufferAllRequiredRegistryEntries = null)
+		{
+			if (bufferAllRequiredRegistryEntries == null)
+			{
+				bufferAllRequiredRegistryEntries = new HashSet<string>();
+			}
+			else
+			{
+				bufferAllRequiredRegistryEntries.Clear();
+			}
+
+			foreach (IHook hook in hooks)
+			{
+				foreach (string registryEntry in hook.RequiredRegistryEntries)
+				{
+					if (!bufferAllRequiredRegistryEntries.Contains(registryEntry))
+					{
+						bufferAllRequiredRegistryEntries.Add(registryEntry);
+					}
+				}
 			}
 		}
 
@@ -495,6 +550,42 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		#endregion
+
+		/// <summary>
+		///		Populate a registry using a certain worker's local values.
+		/// </summary>
+		/// <param name="registry">The registry to populate.</param>
+		/// <param name="worker">The worker to fetch local values from.</param>
+		public void PopulateWorkerRegistry(IRegistry registry, IWorker worker)
+		{
+			registry.Clear();
+
+			UpdateRegistry(registry, worker.LocalNetwork, worker.LocalOptimiser, worker.LocalTrainingDataIterator, worker.LocalEpochNumber, worker.LocalIterationNumber);
+		}
+
+		/// <summary>
+		/// Update a given registry with certain local values (typically for workers convenience).
+		/// </summary>
+		/// <param name="registry">The registry to update.</param>
+		/// <param name="localNetwork">The local network.</param>
+		/// <param name="localOptimiser">The local optimiser.</param>
+		/// <param name="localIterator">The local data iterator.</param>
+		/// <param name="localEpochNumber">The local epoch number.</param>
+		/// <param name="localIterationNumber">The local iteration number.</param>
+		protected void UpdateRegistry(IRegistry registry, INetwork localNetwork, IOptimiser localOptimiser, IDataIterator localIterator, 
+			int localEpochNumber, int localIterationNumber)
+		{
+			if (registry == null) throw new ArgumentNullException(nameof(registry));
+			if (localNetwork == null) throw new ArgumentNullException(nameof(localNetwork));
+			if (localOptimiser == null) throw new ArgumentNullException(nameof(localOptimiser));
+			if (localIterator == null) throw new ArgumentNullException(nameof(localIterator));
+
+			registry["network"] = localNetwork.Registry;
+			registry["optimiser"] = localOptimiser.Registry;
+			registry["iterator"] = localIterator.Registry;
+			registry["epoch"] = localEpochNumber;
+			registry["iteration"] = localIterationNumber;
+		}
 
 		public abstract void PushProgress(IWorker worker);
 		public abstract void PullProgress(IWorker worker);

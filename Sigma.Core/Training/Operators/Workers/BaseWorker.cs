@@ -30,6 +30,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		public int LocalIterationNumber { get; protected set; }
 
 		private readonly ISet<IHook> _bufferHooksToInvoke;
+		private readonly IRegistry _bufferRegistry;
 
 		/// <summary>
 		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
@@ -47,6 +48,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			Handler = handler;
 			LocalActiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			_bufferHooksToInvoke = new HashSet<IHook>();
+			_bufferRegistry = new Registry();
 		}
 
 		public abstract void Start();
@@ -55,15 +57,19 @@ namespace Sigma.Core.Training.Operators.Workers
 		public abstract void SignalResume();
 		public abstract void SignalStop();
 
-		public void EjectAndInvokeTimeScaleEvent(TimeScale timeScale)
+		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
 			var activeHooks = Operator.Trainer.ActiveHooks;
 
 			Operator.EjectTimeScaleEvent(timeScale, this, activeHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
-
 			MarkDeadHooks(activeHooks, LocalActiveHookTimeSteps);
-			
-			// TODO actually invoke hooks, maybe find better method name or split in two methods
+
+			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
+
+			foreach (IActiveHook hook in activeHooks)
+			{
+				hook.Invoke(_bufferRegistry);
+			}
 		}
 
 		protected void MarkDeadHooks(IEnumerable<IActiveHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)

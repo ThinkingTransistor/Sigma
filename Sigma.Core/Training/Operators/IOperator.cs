@@ -30,6 +30,11 @@ namespace Sigma.Core.Training.Operators
 		SigmaEnvironment Sigma { get; set; }
 
 		/// <summary>
+		///		A registry containing relevant parameters of this operator.
+		/// </summary>
+		IRegistry Registry { get; }
+
+		/// <summary>
 		///     The current <see cref="ExecutionState" /> of the <see cref="IOperator" />. <see cref="ExecutionState.None" />
 		///     if the operator has not been started yet.
 		/// </summary>
@@ -154,5 +159,12 @@ namespace Sigma.Core.Training.Operators
 		///     Returns immediately if not implemented.
 		/// </summary>
 		void WaitForStateChanged();
+
+		/// <summary>
+		///		Populate a registry using a certain worker's local values.
+		/// </summary>
+		/// <param name="registry">The registry to populate.</param>
+		/// <param name="worker">The worker to fetch local values from.</param>
+		void PopulateWorkerRegistry(IRegistry registry, IWorker worker);
 	}
 }

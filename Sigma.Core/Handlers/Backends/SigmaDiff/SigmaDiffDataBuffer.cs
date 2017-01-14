@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using Sigma.Core.Data;
-using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff

@@ -45,6 +45,7 @@ namespace Sigma.Core.Data.Iterators
 
 			int currentIndex = 0;
 
+			// TODO populate registry with relevant parameters
 			while (true)
 			{
 				RequireBlocks(handler, currentIndex);
