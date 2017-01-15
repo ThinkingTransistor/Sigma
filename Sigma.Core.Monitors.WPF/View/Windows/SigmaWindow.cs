@@ -8,11 +8,13 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Dragablz.Dockablz;
+using MahApps.Metro;
 using MahApps.Metro.Controls.Dialogs;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
@@ -151,13 +153,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				other.Children.Add(this);
 			}
 
-			Closed += (sender, args) =>
-			{
-				IsAlive = false;
-				PropagateAction(window => { window.Children.Remove(this); });
-				Dispose();
-			};
-
 			InitialiseDefaultValues();
 
 			RootElement = new Grid();
@@ -175,13 +170,25 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			Content = RootElement;
 
-			App.Startup += (sender, args) =>
+			App.Startup += OnStart;
+			Closed += OnClosed;
+		}
+
+		protected virtual void OnStart(object sender, StartupEventArgs startupEventArgs)
+		{
+			if (!_manualOverride)
 			{
-				if (!_manualOverride)
-				{
-					IsInitializing = false;
-				}
-			};
+				IsInitializing = false;
+			}
+		}
+
+		protected virtual void OnClosed(object sender, EventArgs eventArgs)
+		{
+			App.Startup -= OnStart;
+			Closed -= OnClosed;
+
+			IsAlive = false;
+			Dispose();
 		}
 
 		#region Properties
@@ -211,7 +218,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		/// <summary>
 		///     The <see cref="TabControl" /> for the tabs. It allows to access each <see cref="TabUI" />
-		///     and therefore, the <see cref="System.Windows.Controls.TabItem" />.
+		///     and therefore, the <see cref="TabItem" />.
 		/// </summary>
 		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
@@ -383,7 +390,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		/// <param name="tabControl">
 		///     The <see cref="TabControlUI{T, U}" />, where the
-		///     <see cref="System.Windows.Controls.TabItem" />s will be added to.
+		///     <see cref="TabItem" />s will be added to.
 		/// </param>
 		/// <param name="names">A list that contains the names of each tab that will be created. </param>
 		protected virtual void AddTabs(TabControlUI<SigmaWindow, TabUI> tabControl, List<string> names)
@@ -433,8 +440,61 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
 		}
 
+		protected virtual void SetRoot(SigmaWindow window)
+		{
+			if (window.ParentWindow != null)
+			{
+				foreach (SigmaWindow sibling in window.ParentWindow.Children)
+				{
+					if (!ReferenceEquals(sibling, window))
+					{
+						sibling.ParentWindow = window;
+					}
+				}
+			}
+
+			window.ParentWindow = null;
+			App.MainWindow = window;
+		}
+
 		public void Dispose()
 		{
+			SigmaWindow newParent = null;
+
+			//one of the children will become the parent
+			if (ParentWindow == null)
+			{
+				if (Children[0] != null)
+				{
+					newParent = Children[0];
+					SetRoot(newParent);
+				}
+			}
+			else
+			{
+				newParent = ParentWindow;
+			}
+
+			// pass parent and update monitor if root
+			foreach (SigmaWindow child in Children)
+			{
+				if (child.ParentWindow != null)
+				{
+					child.ParentWindow = newParent;
+				}
+			}
+			Children.Clear();
+
+			ParentWindow = null;
+			RootWindow = null;
+			RootElement = null;
+			RootContentElement = null;
+			LoadingIndicatorElement = null;
+		}
+
+		~SigmaWindow()
+		{
+			Dispose();
 		}
 	}
 }

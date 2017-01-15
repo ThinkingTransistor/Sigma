@@ -122,7 +122,7 @@ namespace Sigma.Core.Monitors.WPF
 		///     This property returns the current window.
 		///     <see cref="Window" /> is <see langword="null" /> until <see cref="SigmaEnvironment.Prepare" /> has been called.
 		/// </summary>
-		public WPFWindow Window { get; private set; }
+		public WPFWindow Window { get; internal set; }
 
 		/// <summary>
 		///     Property for the title of the window.

@@ -120,15 +120,15 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			}
 
 			// dispose the manager on close
-			window.Closed += (sender, args) =>
-			{
-				manager.Dispose();
+			//window.Closed += (sender, args) =>
+			//{
+			//	manager.Dispose();
 
-				lock (_visualizationManagers)
-				{
-					_visualizationManagers.Remove(manager);
-				}
-			};
+			//	lock (_visualizationManagers)
+			//	{
+			//		_visualizationManagers.Remove(manager);
+			//	}
+			//};
 
 			Grid grid = new Grid();
 

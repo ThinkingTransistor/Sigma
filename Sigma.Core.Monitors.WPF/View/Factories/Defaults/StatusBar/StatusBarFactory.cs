@@ -25,7 +25,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 		private readonly int _customColumn;
 
-
 		private readonly GridLength[] _gridLengths;
 
 		private readonly double _height;
@@ -120,7 +119,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 				statusBarGrid.ColumnDefinitions.Add(newColumn);
 			}
 
-			if ((_customColumn >= 0) && (customFactory != null))
+			if (_customColumn >= 0 && customFactory != null)
 			{
 				AddCustom(app, window, statusBarGrid, customFactory, parameters);
 			}
@@ -129,6 +128,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			{
 				AddTaskVisualizer(app, window, statusBarGrid, taskVisualizerFactory, parameters);
 			}
+
 			if (_legendColumn >= 0)
 			{
 				AddLegends(app, window, statusBarGrid, legendFactory, parameters);
@@ -153,13 +153,12 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		}
 
 
-		protected void AddGenericFactory(Application app, Window window, Grid grid, IUIFactory<UIElement> factory, int column,
-			IEnumerable<object> parameters)
+		protected void AddGenericFactory(Application app, Window window, Grid grid, IUIFactory<UIElement> factory, int column, IEnumerable<object> parameters)
 		{
-			UIElement taskVisualizer = factory.CreateElement(app, window, parameters);
+			UIElement newElement = factory.CreateElement(app, window, parameters);
 
-			grid.Children.Add(taskVisualizer);
-			Grid.SetColumn(taskVisualizer, column);
+			grid.Children.Add(newElement);
+			Grid.SetColumn(newElement, column);
 		}
 
 

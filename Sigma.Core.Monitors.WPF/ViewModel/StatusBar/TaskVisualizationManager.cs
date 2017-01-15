@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
@@ -161,14 +162,16 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 			// remove the events
 			TaskManager = null;
 
+			// clear the pending tasks
+			_pendingTasks.Clear();
+
 			// remove the references to all TaskVisualizers
 			for (int i = 0; i < TaskVisualizers.Length; i++)
 			{
+				Debug.WriteLine($"Clearing task... {TaskVisualizers[i].ActiveTask}");
+				TaskVisualizers[i].SetActive(null);
 				TaskVisualizers[i] = null;
 			}
-
-			// clear the pending tasks
-			_pendingTasks.Clear();
 		}
 
 		/// <summary>
@@ -242,7 +245,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 					}
 				}
 
-				ShowMoreIndicator((ActiveTasksCount == TaskVisualizers.Length) && (_pendingTasks.Count > 0));
+				ShowMoreIndicator((ActiveTasksCount == TaskVisualizers.Length) && _pendingTasks.Count > 0);
 
 				// set new active tasks
 				for (int i = 0; i < TaskVisualizers.Length; i++)

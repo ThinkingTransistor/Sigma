@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -57,6 +58,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 			if (ActiveTask != null)
 			{
 				ActiveTask.ProgressChanged -= UpdatedTask;
+				Debug.WriteLine("Unassigned");
 			}
 
 			if (task != null)
@@ -88,9 +90,9 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		{
 			Dispatcher.Invoke(() =>
 			{
-				Progress = args.NewValue*100;
+				Progress = args.NewValue * 100;
 
-				if (Progress < 0) 
+				if (Progress < 0)
 				{
 					Progress = 0;
 				}

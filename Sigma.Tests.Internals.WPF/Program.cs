@@ -38,28 +38,28 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
 			});
 
-			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
+			//IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+			//ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
+			//IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
-			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
-			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
-			IDataset trainingData = slices[0];
+			//IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
+			//IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
+			//IDataset trainingData = slices[0];
 
-			IDataIterator iterator = new MinibatchIterator(10, trainingData);
-			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
-			{
-				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
-			}
+			//IDataIterator iterator = new MinibatchIterator(10, trainingData);
+			//foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
+			//{
+			//	//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			//}
 
-			Console.WriteLine("+=+ Iterating over dataset again +=+");
-			Thread.Sleep(3000);
+			//Console.WriteLine("+=+ Iterating over dataset again +=+");
+			//Thread.Sleep(3000);
 
-			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
-			{
-				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
-			}
+			//foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
+			//{
+			//	//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			//}
 		}
 
 		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)
