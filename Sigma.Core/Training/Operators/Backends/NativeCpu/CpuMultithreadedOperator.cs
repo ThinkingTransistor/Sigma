@@ -106,14 +106,25 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 
 		public override void PushProgress(IWorker worker)
 		{
-			PushNetwork(worker);
+			// first iteration of new epoch complete
+			if (worker.LocalEpochNumber > EpochNumber && worker.LocalIterationNumber == 1)
+			{
+				PushEpochNetwork(worker);
+			}
+
+			// TODO merge networks after all epochs of one network are completed
+			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
 		}
 
 		public override void PullProgress(IWorker worker)
 		{
-			worker.LocalNetwork = PullNetwork();
-			worker.LocalTrainingDataIterator = worker.LocalTrainingDataIterator ?? Trainer.TrainingDataIterator.ShallowCopy();
-			worker.LocalOptimiser = (IOptimiser) Trainer.Optimiser.DeepCopy();
+			// before first iteration of new epoch
+			if (worker.LocalEpochNumber < EpochNumber && worker.LocalIterationNumber == 0)
+			{
+				worker.LocalNetwork = PullNetwork();
+				worker.LocalTrainingDataIterator = worker.LocalTrainingDataIterator ?? Trainer.TrainingDataIterator.ShallowCopy();
+				worker.LocalOptimiser = (IOptimiser) Trainer.Optimiser.DeepCopy();
+			}
 		}
 
 		protected virtual INetwork PullNetwork()
@@ -129,7 +140,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			}
 		}
 
-		protected virtual void PushNetwork(IWorker worker)
+		protected virtual void PushEpochNetwork(IWorker worker)
 		{
 			lock (_pushedNetworks)
 			{

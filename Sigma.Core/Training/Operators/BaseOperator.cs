@@ -23,6 +23,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators
 {
+	[Serializable]
 	public abstract class BaseOperator : IOperator
 	{
 		/// <summary>

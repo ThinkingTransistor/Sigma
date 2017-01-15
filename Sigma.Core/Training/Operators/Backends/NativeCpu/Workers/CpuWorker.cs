@@ -37,11 +37,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 		protected override void DoWork()
 		{
-			if (LocalNetwork == null)
-			{
-				Operator.PullProgress(this);
-			}
-
 			if (_epochBlockYield == null)
 			{
 				throw new InvalidOperationException($"Cannot work in worker {this} because the epoch block yield enumerator was not successfully initialised.");
@@ -55,20 +50,17 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 				LocalEpochNumber++;
 				LocalIterationNumber = 0;
 				_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
-
-				// epoch done, push progress for this epoch
-				Operator.PushProgress(this);
-
-				if (Operator.EpochNumber >= LocalEpochNumber)
-				{
-					Operator.PullProgress(this);
-				}
 			}
+
+			Operator.PullProgress(this);
 
 			Operator.Trainer.ProvideExternalData(LocalNetwork, _epochBlockYield.Current);
 			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, Operator.Handler);
 
 			LocalIterationNumber++;
+
+			// push progress for this iteration
+			Operator.PushProgress(this);
 		}
 
 		protected override void OnPause()

@@ -119,6 +119,7 @@ namespace Sigma.Core.Training.Operators
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 
+		///		Note: The operator determines what parts of the progress to push and use (e.g. depending on local / global iteration / epoch).
 		/// </summary>
 		/// <param name="worker">The worker.</param>
 		void PushProgress(IWorker worker);
