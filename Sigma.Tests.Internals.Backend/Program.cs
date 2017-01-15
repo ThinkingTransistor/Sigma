@@ -33,33 +33,38 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
-			SampleNetworkArchitecture();
+			SampleTrainerOperatorWorker();
+		}
 
+		private static void SampleTrainerOperatorWorker()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
 
-			Console.ReadKey();
-			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 			sigma.Prepare();
 
-			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
-
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
 			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
-			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
-			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
-			IDataset trainingData = slices[0];
+			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-			IDataIterator iterator = new MinibatchIterator(10, trainingData);
+			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			ITrainer trainer = sigma.CreateTrainer("test");
 
-			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
-			{
-				PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
-			}
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(28, 28) + OutputLayer.Construct(10);
+			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
+			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+
+			sigma.Run();
 		}
 
 		private static void SampleNetworkMerging()
 		{
-			SigmaEnvironment sigma = SigmaEnvironment.Create("SigmaMergeTest");
+			SigmaEnvironment sigma = SigmaEnvironment.Create("merge_test");
 
 			ITrainer[] trainers = new ITrainer[3];
 			int[] constantValues = { 2, 10, 70 };

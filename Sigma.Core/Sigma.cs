@@ -160,6 +160,7 @@ namespace Sigma.Core
 
 			Running = true;
 
+			InitialiseTrainers();
 			FetchRunningOperators();
 			StartRunningOperators();
 
@@ -181,6 +182,14 @@ namespace Sigma.Core
 			Running = false;
 
 			_logger.Info($"Stopped sigma environment {Name}.");
+		}
+
+		private void InitialiseTrainers()
+		{
+			foreach (ITrainer trainer in _trainersByName.Values)
+			{
+				trainer.Initialise(trainer.Operator.Handler);
+			}
 		}
 
 		protected void FetchRunningOperators()
