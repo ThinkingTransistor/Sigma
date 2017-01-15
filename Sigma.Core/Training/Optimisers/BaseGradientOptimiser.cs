@@ -26,7 +26,7 @@ namespace Sigma.Core.Training.Optimisers
 		/// </summary>
 		public IRegistry Registry { get; }
 
-		protected readonly string _externalCostAlias;
+		protected readonly string ExternalCostAlias;
 
 		/// <summary>
 		/// Create a base gradient optimiser with an optional external output cost alias to use. 
@@ -36,7 +36,7 @@ namespace Sigma.Core.Training.Optimisers
 		{
 			if (externalCostAlias == null) throw new ArgumentNullException(nameof(externalCostAlias));
 
-			_externalCostAlias = externalCostAlias;
+			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
 		}
 
@@ -112,12 +112,12 @@ namespace Sigma.Core.Training.Optimisers
 
 			foreach (ILayerBuffer layerBuffer in network.YieldExternalOutputsLayerBuffers())
 			{
-				if (layerBuffer.Outputs.ContainsKey(_externalCostAlias))
+				if (layerBuffer.Outputs.ContainsKey(ExternalCostAlias))
 				{
-					IRegistry externalCostRegistry = layerBuffer.Outputs[_externalCostAlias];
+					IRegistry externalCostRegistry = layerBuffer.Outputs[ExternalCostAlias];
 
 					INumber partialCost = externalCostRegistry.Get<INumber>("cost");
-					float partialImportance = externalCostRegistry.Get<float>("importance");
+					double partialImportance = externalCostRegistry.Get<double>("importance");
 
 					costRegistry["partial_" + layerBuffer.Layer.Name] = partialCost;
 					costRegistry["partial_" + layerBuffer.Layer.Name + "_importance"] = partialImportance;

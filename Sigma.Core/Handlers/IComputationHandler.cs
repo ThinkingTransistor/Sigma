@@ -550,7 +550,7 @@ namespace Sigma.Core.Handlers
 
 		#endregion
 
-		#region Complex unary mathematical operations (e.g. activation functions)
+		#region Complex mathematical operations (e.g. activation functions)
 
 		#region Activation functions
 
@@ -583,10 +583,10 @@ namespace Sigma.Core.Handlers
 		INumber Sigmoid(INumber number);
 
 		/// <summary>
-		/// Apply the sigmoid function to an ndarray.
+		/// Apply the soft plus function to an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
-		/// <returns>The ndarray with the sigmoid function applied element-wise.</returns>
+		/// <returns>The ndarray with the soft plus function applied element-wise.</returns>
 		INDArray SoftPlus(INDArray array);
 
 		/// <summary>
@@ -595,6 +595,13 @@ namespace Sigma.Core.Handlers
 		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the soft plus function applied.</returns>
 		INumber SoftPlus(INumber number);
+
+		/// <summary>
+		/// Apply the soft max function to an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The ndarray with the soft plus function applied element-wise.</returns>
+		INDArray SoftMax(INDArray array);
 
 		#endregion
 
@@ -611,6 +618,15 @@ namespace Sigma.Core.Handlers
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The variance of the given ndarray.</returns>
 		INumber Variance(INDArray array);
+
+		/// <summary>
+		/// Clip the contents of an ndarray to a certain range.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="minValue">The min value.</param>
+		/// <param name="maxValue">The max value.</param>
+		/// <returns>A clipped version of the given ndarray using the given range.</returns>
+		INDArray Clip(INDArray array, INumber minValue, INumber maxValue);
 
 		#endregion
 

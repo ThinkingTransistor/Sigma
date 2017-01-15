@@ -37,7 +37,7 @@ namespace Sigma.Core.Training.Optimisers
 		/// <returns>A deep copy of this object.</returns>
 		public override object DeepCopy()
 		{
-			return new GradientDescentOptimiser(learningRate: Registry.Get<double>("learning_rate"), externalCostAlias: _externalCostAlias);
+			return new GradientDescentOptimiser(learningRate: Registry.Get<double>("learning_rate"), externalCostAlias: ExternalCostAlias);
 		}
 	}
 }

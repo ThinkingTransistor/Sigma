@@ -13,6 +13,7 @@ using DiffSharp.Interop.Float32;
 using log4net;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
 
@@ -510,6 +511,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADFloat32Number(DNumber.SoftPlus(internalValue._adNumberHandle));
 		}
 
+		public INDArray SoftMax(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.SoftMax(internalArray._adArrayHandle));
+		}
+
 		public INDArray Tanh(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -546,6 +554,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.Variance(internalArray._adArrayHandle));
+		}
+
+		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
+			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
+
+			return new ADNDFloat32Array(DNDArray.Max(DNDArray.Min(internalArray._adArrayHandle, internalMinValue._adNumberHandle), internalMaxValue._adNumberHandle));
 		}
 
 		public uint BeginTrace()
