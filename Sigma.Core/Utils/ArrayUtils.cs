@@ -25,11 +25,45 @@ namespace Sigma.Core.Utils
 		/// <returns>The product of the given array.</returns>
 		public static long Product(params long[] array)
 		{
+			return Product(0, array.Length, array);
+		}
+
+		/// <summary>
+		/// The product of an integer array (i.e. all values multiplied with each other).
+		/// </summary>
+		/// <param name="offset">The start offset of the array.</param>
+		/// <param name="length">The length of the section.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The product of the given array.</returns>
+		public static long Product(int offset, long[] array)
+		{
+			return Product(offset, array.Length - offset, array);
+		}
+
+		/// <summary>
+		/// The product of an integer array (i.e. all values multiplied with each other).
+		/// </summary>
+		/// <param name="offset">The start offset of the array.</param>
+		/// <param name="length">The length of the section.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The product of the given array.</returns>
+		public static long Product(int offset, int length, long[] array)
+		{
+			if (offset < 0)
+			{
+				throw new ArgumentOutOfRangeException($"Offset must be >= 0 but was {nameof(offset)}.");
+			}
+
+			if (offset + length > array.Length)
+			{
+				throw new ArgumentOutOfRangeException($"Offset + length must be < array.Length, but offset {offset} + length {length} was {offset + length} and array.Length {array.Length}.");
+			}
+
 			long product = 1L;
 
-			foreach (long element in array)
+			for (int i = 0; i < length; i++)
 			{
-				product *= element;
+				product = checked(product * array[i]);
 			}
 
 			return product;

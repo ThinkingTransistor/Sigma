@@ -39,10 +39,10 @@ namespace Sigma.Core.Layers.Cost
 			INDArray predictions = buffer.Inputs["default"].Get<INDArray>("activations");
 			INDArray targets = buffer.Inputs[buffer.Parameters.Get<string>("external_target_alias")].Get<INDArray>("activations");
 
-			costOutput["cost"] = CalculateCost(predictions, targets, buffer.Parameters);
+			costOutput["cost"] = CalculateCost(handler.FlattenAllButLast(predictions), handler.FlattenAllButLast(targets), buffer.Parameters, handler);
 			costOutput["importance"] = buffer.Parameters["cost_importance"];
 		}
 
-		protected abstract INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters);
+		protected abstract INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler);
 	}
 }

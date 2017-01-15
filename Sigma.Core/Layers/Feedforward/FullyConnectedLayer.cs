@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Feedforward
@@ -31,7 +32,14 @@ namespace Sigma.Core.Layers.Feedforward
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			throw new NotImplementedException();
+			INDArray activations = handler.FlattenTimeAndFeatures(buffer.Inputs["default"].Get<INDArray>("activations"));
+			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
+			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
+
+			activations = handler.Add(handler.Multiply(activations, weights), biases);
+			activations = handler.Activation(buffer.Parameters.Get<string>("activation"), activations);
+
+			buffer.Outputs["default"]["actiations"] = activations;
 		}
 
 		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")

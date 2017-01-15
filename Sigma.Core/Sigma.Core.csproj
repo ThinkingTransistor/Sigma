@@ -165,6 +165,7 @@
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\Cost\CostLayer.cs" />
+    <Compile Include="Layers\Cost\SoftMaxCrossEntropyCostLayer.cs" />
     <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
     <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />

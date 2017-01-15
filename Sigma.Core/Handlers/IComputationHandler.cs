@@ -130,6 +130,38 @@ namespace Sigma.Core.Handlers
 
 		#endregion
 
+		#region INDArray dimension management (BatchTimeFeatures)
+
+		/// <summary>
+		/// Get an ndarray with flattened time dimension.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenTime(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with flattened feature dimensions.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenFeatures(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with flattened time and feature dimensions.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenTimeAndFeatures(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with all flattened dimensions but the last.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenAllButLast(INDArray array);
+
+		#endregion
+
 		#region Primitive binary mathematical operations
 
 		/// <summary>

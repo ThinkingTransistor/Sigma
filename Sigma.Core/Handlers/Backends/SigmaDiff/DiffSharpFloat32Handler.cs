@@ -91,6 +91,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract void Fill(INDArray filler, INDArray arrayToFill);
 		public abstract void Fill<TOther>(TOther value, INDArray arrayToFill);
 
+		public INDArray FlattenFeatures(INDArray array)
+		{
+			return array.Reshape(array.Shape[0], array.Shape[1], ArrayUtils.Product(2, array.Shape));
+		}
+
+		public INDArray FlattenTime(INDArray array)
+		{
+			long[] newShape = new long[array.Shape.Length - 1];
+			newShape[0] = checked(array.Shape[0] * array.Shape[1]);
+
+			for (var i = 0; i < newShape.Length; i++)
+			{
+				newShape[i] = array.Shape[i + 1];
+			}
+
+			return array.Reshape(newShape);
+		}
+
+		public INDArray FlattenTimeAndFeatures(INDArray array)
+		{
+			return array.Reshape(array.Shape[0], ArrayUtils.Product(1, array.Shape));
+		}
+
+		public INDArray FlattenAllButLast(INDArray array)
+		{
+			return array.Reshape(ArrayUtils.Product(0, array.Rank - 1, array.Shape), array.Shape[array.Rank - 1]);
+		}
+
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
