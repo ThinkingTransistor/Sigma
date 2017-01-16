@@ -268,7 +268,7 @@ namespace Sigma.Core.Training
 			{
 				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)
 				{
-					Provider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Inputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
+					Provider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
 				}
 			}
 		}

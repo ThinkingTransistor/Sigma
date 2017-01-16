@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using DiffSharp;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
@@ -77,7 +78,8 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			}
 
 			DNDArray adArrayHandleCopy = _adArrayHandle.ShallowCopy();
-			Array.Copy(newShape, adArrayHandleCopy.Buffer.Shape, newShape.Length);
+
+			adArrayHandleCopy.Buffer.Shape = newShape;
 
 			return new ADNDFloat32Array(adArrayHandleCopy);
 		}

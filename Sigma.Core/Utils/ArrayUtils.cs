@@ -61,7 +61,9 @@ namespace Sigma.Core.Utils
 
 			long product = 1L;
 
-			for (int i = 0; i < length; i++)
+			length += offset;
+
+			for (int i = offset; i < length; i++)
 			{
 				product = checked(product * array[i]);
 			}

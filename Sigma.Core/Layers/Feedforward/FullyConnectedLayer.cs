@@ -25,7 +25,7 @@ namespace Sigma.Core.Layers.Feedforward
 			int inputSize = parameters.Get<int>("default_input_size");
 
 			parameters["weights"] = handler.NDArray(size * inputSize);
-			parameters["biases"] = handler.Number(size);
+			parameters["biases"] = handler.NDArray(size);
 
 			TrainableParameters = new[] { "weights", "biases" };
 		}
@@ -39,7 +39,7 @@ namespace Sigma.Core.Layers.Feedforward
 			activations = handler.Add(handler.Multiply(activations, weights), biases);
 			activations = handler.Activation(buffer.Parameters.Get<string>("activation"), activations);
 
-			buffer.Outputs["default"]["actiations"] = activations;
+			buffer.Outputs["default"]["activations"] = activations;
 		}
 
 		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")

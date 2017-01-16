@@ -148,7 +148,7 @@ namespace Sigma.Core.Architecture
 
 				foreach (string externalOutputAlias in layerConstruct.ExternalOutputs)
 				{
-					inputs[externalOutputAlias] = new Registry(tags: "external_output");
+					outputs[externalOutputAlias] = new Registry(tags: "external_output");
 				}
 
 				foreach (string outputAlias in layerConstruct.Outputs.Keys)

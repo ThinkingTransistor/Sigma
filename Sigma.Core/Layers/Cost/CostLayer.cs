@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
@@ -23,7 +24,7 @@ namespace Sigma.Core.Layers.Cost
 		/// <param name="handler">The handler to use for ndarray parameter creation.</param>
 		protected CostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
-			ExpectedInputs = new[] { "default", parameters.Get<string>("external_target_alias") };
+			ExpectedInputs = new[] { parameters.Get<string>("external_targets_alias"), "default" };
 			ExpectedOutputs = new[] { parameters.Get<string>("external_cost_alias") };
 		}
 
@@ -37,12 +38,24 @@ namespace Sigma.Core.Layers.Cost
 		{
 			IRegistry costOutput = buffer.Outputs[buffer.Parameters.Get<string>("external_cost_alias")];
 			INDArray predictions = buffer.Inputs["default"].Get<INDArray>("activations");
-			INDArray targets = buffer.Inputs[buffer.Parameters.Get<string>("external_target_alias")].Get<INDArray>("activations");
+			INDArray targets = buffer.Inputs[buffer.Parameters.Get<string>("external_targets_alias")].Get<INDArray>("activations");
 
 			costOutput["cost"] = CalculateCost(handler.FlattenAllButLast(predictions), handler.FlattenAllButLast(targets), buffer.Parameters, handler);
 			costOutput["importance"] = buffer.Parameters["cost_importance"];
 		}
 
 		protected abstract INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler);
+
+		protected static LayerConstruct InitialiseConstruct(LayerConstruct construct, double costImportance, string externalTargetsAlias, string externalCostAlias)
+		{
+			construct.ExternalInputs = new[] { externalTargetsAlias };
+			construct.ExternalOutputs = new[] { externalCostAlias };
+
+			construct.Parameters["external_targets_alias"] = externalTargetsAlias;
+			construct.Parameters["external_cost_alias"] = externalCostAlias;
+			construct.Parameters["cost_importance"] = costImportance;
+
+			return construct;
+		}
 	}
 }

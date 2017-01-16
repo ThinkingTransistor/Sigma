@@ -21,7 +21,7 @@ namespace Sigma.Core.Training.Optimisers
 		/// </summary>
 		/// <param name="learningRate">The learning rate.</param>
 		/// <param name="externalCostAlias">The optional external output identifier by which to detect cost layers (defaults to "external_cost").</param>
-		protected GradientDescentOptimiser(double learningRate, string externalCostAlias = "external_cost") : base(externalCostAlias)
+		public GradientDescentOptimiser(double learningRate, string externalCostAlias = "external_cost") : base(externalCostAlias)
 		{
 			Registry["learning_rate"] = learningRate;
 		}

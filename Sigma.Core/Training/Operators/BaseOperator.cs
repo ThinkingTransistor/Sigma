@@ -15,6 +15,8 @@ using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.SigmaDiff;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
@@ -135,17 +137,37 @@ namespace Sigma.Core.Training.Operators
 		private readonly ISet<string> _bufferResolvedRequiredHookParameters;
 
 		/// <summary>
-		///     Create a new <see cref="BaseOperator" /> without specifying the <see cref="IComputationHandler" />.
+		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
+		///		TODO update documentation 
 		/// </summary>
 		/// <param name="workerCount">
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
 		///     parallel.
 		/// </param>
-		protected BaseOperator(int workerCount)
+		protected BaseOperator(int workerCount) : this(new CpuFloat32Handler(), workerCount)
 		{
+		}
+
+		/// <summary>
+		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
+		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
+		/// </summary>
+		/// <param name="handler">
+		///     The <see cref="IComputationHandler" /> that will be assigned to the
+		///     <see cref="IComputationHandler" />
+		/// </param>
+		/// <param name="workerCount">
+		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
+		///     parallel.
+		/// </param>
+		protected BaseOperator(IComputationHandler handler, int workerCount)
+		{
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+
 			_stateChangeLock = new object();
 
+			Handler = handler;
 			WorkerCount = workerCount;
 			EpochNumber = -1;
 
@@ -161,23 +183,6 @@ namespace Sigma.Core.Training.Operators
 			_bufferCurrentRequiredHookParameters = new HashSet<string>();
 			_bufferPreviousRequiredHookParameters = new HashSet<string>();
 			_bufferResolvedRequiredHookParameters = new HashSet<string>();
-		}
-
-		/// <summary>
-		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
-		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
-		/// </summary>
-		/// <param name="handler">
-		///     The <see cref="IComputationHandler" /> that will be assigned to the
-		///     <see cref="IComputationHandler" />
-		/// </param>
-		/// <param name="workerCount">
-		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
-		///     parallel.
-		/// </param>
-		protected BaseOperator(IComputationHandler handler, int workerCount) : this(workerCount)
-		{
-			Handler = handler;
 		}
 
 		public void AttachHook(IActiveHook hook)
@@ -383,8 +388,14 @@ namespace Sigma.Core.Training.Operators
 		protected virtual void PrepareWorkers()
 		{
 			// TODO: check if all required parameter are set
+			// TODO uncomment this code and add more parameter checks
+			//if (Trainer == null) throw new InvalidOperationException($"{nameof(Trainer)} cannot be null.");
+			//if (Trainer.TrainingDataIterator == null) throw new InvalidOperationException($"{nameof(Trainer.TrainingDataIterator)} cannot be null.");
 
-			if (Workers == null) { Workers = InitialiseWorkers(); }
+			if (Workers == null)
+			{
+				Workers = InitialiseWorkers();
+			}
 		}
 
 		/// <summary>
@@ -400,6 +411,8 @@ namespace Sigma.Core.Training.Operators
 			for (int i = 0; i < workers.Length; i++)
 			{
 				workers[i] = CreateWorker();
+				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
+				workers[i].LocalOptimiser = (IOptimiser) Trainer?.Optimiser?.DeepCopy();
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
 
@@ -573,7 +586,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="localIterator">The local data iterator.</param>
 		/// <param name="localEpochNumber">The local epoch number.</param>
 		/// <param name="localIterationNumber">The local iteration number.</param>
-		protected void UpdateRegistry(IRegistry registry, INetwork localNetwork, IOptimiser localOptimiser, IDataIterator localIterator, 
+		protected void UpdateRegistry(IRegistry registry, INetwork localNetwork, IOptimiser localOptimiser, IDataIterator localIterator,
 			int localEpochNumber, int localIterationNumber)
 		{
 			if (registry == null) throw new ArgumentNullException(nameof(registry));

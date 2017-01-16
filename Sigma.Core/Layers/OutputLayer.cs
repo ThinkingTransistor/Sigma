@@ -30,6 +30,7 @@ namespace Sigma.Core.Layers
 		{
 			buffer.Outputs[buffer.Parameters.Get<string>("external_output_alias")]["activations"] = buffer.Inputs["default"]["activations"];
 			buffer.Outputs["default"]["activations"] = buffer.Inputs["default"]["activations"];
+			// TODO create output layer without passthrough, maybe optional flag
 		}
 
 		public static LayerConstruct Construct(params long[] shape)
@@ -47,7 +48,7 @@ namespace Sigma.Core.Layers
 			NDArrayUtils.CheckShape(shape);
 
 			LayerConstruct construct = new LayerConstruct(name, typeof(OutputLayer));
-
+			
 			construct.ExternalOutputs = new[] { externalOutputAlias };
 			construct.Parameters["external_output_alias"] = externalOutputAlias;
 			construct.Parameters["shape"] = shape;

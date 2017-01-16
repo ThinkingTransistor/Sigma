@@ -241,6 +241,11 @@ namespace Sigma.Core.Utils
 
 		public object Get(string identifier)
 		{
+			if (!MappedValues.ContainsKey(identifier))
+			{
+				throw new KeyNotFoundException($"The given identifier {identifier} does not exist in this registry.");
+			}
+
 			return MappedValues[identifier];
 		}
 

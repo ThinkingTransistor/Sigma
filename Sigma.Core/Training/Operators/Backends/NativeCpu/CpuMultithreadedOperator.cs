@@ -11,9 +11,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
 using Sigma.Core.Training.Operators.Workers;
-using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
@@ -26,11 +26,10 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 	public class CpuSinglethreadedOperator : CpuMultithreadedOperator
 	{
 		/// <summary>
-		///     Create a new <see cref="CpuSinglethreadedOperator" /> without specifying the <see cref="IComputationHandler" />.
-		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
+		///     Create a new <see cref="CpuSinglethreadedOperator" /> using the default <see cref="IComputationHandler" /> (<see cref="CpuFloat32Handler"/>).
 		///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
 		/// </summary>
-		public CpuSinglethreadedOperator() : this(null, ThreadPriority.Highest)
+		public CpuSinglethreadedOperator() : this(new CpuFloat32Handler(), ThreadPriority.Highest)
 		{
 		}
 
@@ -70,15 +69,14 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		private readonly object _networkChangedLock;
 
 		/// <summary>
-		///     Create a new <see cref="CpuMultithreadedOperator" /> without specifying the <see cref="IComputationHandler" />.
-		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
+		///     Create a new <see cref="CpuMultithreadedOperator" /> using the default <see cref="IComputationHandler" /> (<see cref="CpuFloat32Handler"/>).
 		///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
 		/// </summary>
 		/// <param name="workerCount">
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
 		///     parallel.
 		/// </param>
-		public CpuMultithreadedOperator(int workerCount) : this(null, workerCount, ThreadPriority.Highest)
+		public CpuMultithreadedOperator(int workerCount) : this(new CpuFloat32Handler(), workerCount, ThreadPriority.Highest)
 		{
 		}
 
@@ -118,12 +116,10 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 
 		public override void PullProgress(IWorker worker)
 		{
-			// before first iteration of new epoch
-			if (worker.LocalEpochNumber < EpochNumber && worker.LocalIterationNumber == 0)
+			// before first iteration of new epoch or network has not been initialised yet
+			if (worker.LocalEpochNumber < EpochNumber && worker.LocalIterationNumber == 0 || worker.LocalNetwork == null)
 			{
 				worker.LocalNetwork = PullNetwork();
-				worker.LocalTrainingDataIterator = worker.LocalTrainingDataIterator ?? Trainer.TrainingDataIterator.ShallowCopy();
-				worker.LocalOptimiser = (IOptimiser) Trainer.Optimiser.DeepCopy();
 			}
 		}
 

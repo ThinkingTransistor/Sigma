@@ -40,9 +40,11 @@ namespace Sigma.Core.Layers.Cost
 			return handler.Divide(handler.Sum(cost), cost.Length);
 		}
 
-		public static LayerConstruct Construct(string name = "#-softmaxce")
+		public static LayerConstruct Construct(string name = "#-softmaxce", double importance = 1.0, string externalTargetsAlias = "external_targets", string externalCostAlias = "external_cost")
 		{
-			return new LayerConstruct(name, typeof(SoftMaxCrossEntropyCostLayer));
+			LayerConstruct construct = new LayerConstruct(name, typeof(SoftMaxCrossEntropyCostLayer));
+
+			return InitialiseConstruct(construct, importance, externalTargetsAlias, externalCostAlias);
 		}
 	}
 }

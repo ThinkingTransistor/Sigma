@@ -30,7 +30,16 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		{
 			Logger.Debug($"Initialising worker {this}...");
 
-			_epochBlockYield = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
+			var blockYieldEnumerable = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma);
+
+			if (blockYieldEnumerable == null)
+			{
+				_logger.Warn($"Unable to yield block enumerable from local training iterator {LocalTrainingDataIterator} in worker {this}");
+
+				return;
+			}
+
+			_epochBlockYield = blockYieldEnumerable.GetEnumerator();
 
 			Logger.Debug($"Done initialising worker {this}.");
 		}
@@ -39,7 +48,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 		{
 			if (_epochBlockYield == null)
 			{
-				throw new InvalidOperationException($"Cannot work in worker {this} because the epoch block yield enumerator was not successfully initialised.");
+				throw new InvalidOperationException($"Unable to do work in worker {this}, worker was not initialised successfully (epoch yield is null).");
 			}
 
 			// no more blocks in this yield, therefore epoch is done

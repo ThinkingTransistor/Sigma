@@ -105,6 +105,8 @@ namespace Sigma.Core
 			monitor.Initialise();
 			_monitors.Add(monitor);
 
+			_logger.Debug($"Added monitor {monitor} to sigma environment \"{Name}\".");
+
 			return monitor;
 		}
 
@@ -139,7 +141,7 @@ namespace Sigma.Core
 		{
 			if (_trainersByName.ContainsKey(trainer.Name))
 			{
-				throw new InvalidOperationException($"Trainer with name {trainer.Name} is already registered in this environment ({Name}).");
+				throw new InvalidOperationException($"Trainer with name \"{trainer.Name}\" is already registered in this environment (\"{Name}\").");
 			}
 
 			_trainersByName.Add(trainer.Name, trainer);
@@ -154,7 +156,7 @@ namespace Sigma.Core
 		/// </summary>
 		public void Run()
 		{
-			_logger.Info($"Starting sigma environment {Name}...");
+			_logger.Info($"Starting sigma environment \"{Name}\"...");
 
 			bool shouldRun = true;
 
@@ -164,6 +166,8 @@ namespace Sigma.Core
 			FetchRunningOperators();
 			StartRunningOperators();
 
+			_logger.Info($"Started sigma environment \"{Name}\".");
+
 			while (shouldRun)
 			{
 				ProcessHooksToAttach();
@@ -171,7 +175,7 @@ namespace Sigma.Core
 
 				if (_requestedStop)
 				{
-					_logger.Info($"Stopping sigma environment {Name} as request stop flag was set...");
+					_logger.Info($"Stopping sigma environment \"{Name}\" as request stop flag was set...");
 
 					shouldRun = false;
 				}
@@ -181,7 +185,7 @@ namespace Sigma.Core
 
 			Running = false;
 
-			_logger.Info($"Stopped sigma environment {Name}.");
+			_logger.Info($"Stopped sigma environment \"{Name}\".");
 		}
 
 		private void InitialiseTrainers()
@@ -199,6 +203,8 @@ namespace Sigma.Core
 				_logger.Info($"No trainers attached to this environment ({Name}).");
 			}
 
+			_logger.Debug($"Fetching operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
 				_runningOperators.Add(trainer.Operator);
@@ -209,6 +215,8 @@ namespace Sigma.Core
 
 		private void StartRunningOperators()
 		{
+			_logger.Debug($"Starting operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
 			foreach (IOperator op in _runningOperators)
 			{
 				op.Start();
@@ -217,6 +225,8 @@ namespace Sigma.Core
 
 		private void StopRunningOperators()
 		{
+			_logger.Debug($"Stopping operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
 			foreach (IOperator op in _runningOperators)
 			{
 				op.SignalStop();
@@ -232,6 +242,8 @@ namespace Sigma.Core
 			{
 				return;
 			}
+
+			_logger.Debug($"Stop signal received in environment \"{Name}\".");
 
 			_requestedStop = true;
 		}

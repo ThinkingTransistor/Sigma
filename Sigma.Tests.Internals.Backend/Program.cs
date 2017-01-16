@@ -12,6 +12,7 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers;
+using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
@@ -21,6 +22,7 @@ using Sigma.Core.Training;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.Backend
@@ -52,8 +54,9 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("test");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(28, 28) + OutputLayer.Construct(10);
+			trainer.Network.Architecture = InputLayer.Construct(28, 28) + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
