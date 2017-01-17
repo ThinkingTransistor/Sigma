@@ -28,6 +28,9 @@ namespace Sigma.Core.Training.Optimisers
 
 		protected readonly string ExternalCostAlias;
 
+		private bool _prepared;
+		private uint _traceTag;
+
 		/// <summary>
 		/// Create a base gradient optimiser with an optional external output cost alias to use. 
 		/// </summary>
@@ -40,10 +43,36 @@ namespace Sigma.Core.Training.Optimisers
 			Registry = new Registry(tags: "optimiser");
 		}
 
+		/// <summary>
+		/// Prepare for a single iteration of the network (model) optimisation process (<see cref="IOptimiser.Run"/>).
+		/// Typically used to trace trainable parameters to retrieve the derivatives in <see cref="IOptimiser.Run"/>.
+		/// </summary>
+		/// <param name="network">The network to prepare for optimisation.</param>
+		/// <param name="handler">THe handler to use.</param>
+		public void PrepareRun(INetwork network, IComputationHandler handler)
+		{
+			_traceTag = handler.BeginTrace();
+
+			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
+			{
+				foreach (string identifier in layerBuffer.Layer.TrainableParameters)
+				{
+					layerBuffer.Layer.Parameters[identifier] = handler.Trace(layerBuffer.Layer.Parameters.Get<ITraceable>(identifier), _traceTag);
+				}
+			}
+
+			_prepared = true;
+		}
+
 		public void Run(INetwork network, IComputationHandler handler)
 		{
 			if (network == null) throw new ArgumentNullException(nameof(network));
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
+
+			if (!_prepared)
+			{
+				throw new InvalidOperationException($"Cannot run network optimisation on network {network} in optimiser {this} before {nameof(PrepareRun)} is called.");
+			}
 
 			IRegistry costRegistry = new Registry(Registry, tags: "costs");
 			Registry["costs"] = costRegistry;
@@ -95,6 +124,8 @@ namespace Sigma.Core.Training.Optimisers
 																$" in layer \"{layerBuffer.Layer.Name}\") but it is marked as trainable.");
 						}
 					}
+
+					layerBuffer.Parameters[trainableParameter] = handler.ClearTrace(layerBuffer.Parameters.Get<ITraceable>(trainableParameter));
 				}
 			}
 		}

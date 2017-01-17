@@ -243,6 +243,7 @@ namespace Sigma.Core.Training
 		{
 			CheckInitialised();
 
+			localOptimiser.PrepareRun(localNetwork, handler);
 			localNetwork.Run(handler, trainingPass: true);
 			localOptimiser.Run(localNetwork, handler);
 		}
