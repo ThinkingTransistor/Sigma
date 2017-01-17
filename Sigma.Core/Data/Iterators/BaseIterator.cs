@@ -85,7 +85,7 @@ namespace Sigma.Core.Data.Iterators
 
 				if (_pendingFetchBlockTasks.ContainsKey(index))
 				{
-					_logger.Info($"Waiting for already running asynchronous block fetch for index {index} to complete as it is now required...");
+					_logger.Debug($"Waiting for already running asynchronous block fetch for index {index} to complete as it is now required...");
 
 					_pendingFetchBlockTasks[index].Wait();
 
@@ -95,15 +95,15 @@ namespace Sigma.Core.Data.Iterators
 
 					_fetchedBlocks.Add(index, block);
 
-					_logger.Info($"Done waiting for asynchronous block fetch for index {index} to complete, fetch completed.");
+					_logger.Debug($"Done waiting for asynchronous block fetch for index {index} to complete, fetch completed.");
 				}
 				else
 				{
-					_logger.Info($"Fetching required block with index {index}...");
+					_logger.Debug($"Fetching required block with index {index}...");
 
 					_fetchedBlocks.Add(index, UnderlyingDataset.FetchBlock(index, handler));
 
-					_logger.Info($"Done fetching required block with index {index}.");
+					_logger.Debug($"Done fetching required block with index {index}.");
 				}
 			}
 		}
@@ -116,11 +116,11 @@ namespace Sigma.Core.Data.Iterators
 				{
 					_pendingFetchBlockTasks.Add(index, Task.Run(() =>
 					{
-						_logger.Info($"Started asynchronous background preparation of block with index {index}.");
+						_logger.Debug($"Started asynchronous background preparation of block with index {index}.");
 
 						var block = UnderlyingDataset.FetchBlock(index, handler);
 
-						_logger.Info($"Done with asynchronous background preparation of block with index {index}.");
+						_logger.Debug($"Done with asynchronous background preparation of block with index {index}.");
 
 						return block;
 					}));

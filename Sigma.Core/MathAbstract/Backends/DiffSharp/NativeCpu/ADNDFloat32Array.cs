@@ -9,7 +9,6 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using DiffSharp;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
@@ -39,6 +38,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
 			_adArrayHandle = adArrayHandle;
+			_adArrayHandle.Buffer.Shape = Shape; // reset shape reference in case it was changed to improve shape (e.g. vector to row-vector).
 		}
 
 		protected override void Reinitialise(long[] shape, long[] strides)
@@ -47,7 +47,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 
 			base.Reinitialise(shape, strides);
 
-			Array.Copy(shape, _adArrayHandle.Buffer.Shape, shape.Length);
+			_adArrayHandle.Buffer.Shape = shape;
 		}
 
 		/// <summary>
