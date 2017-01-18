@@ -3,6 +3,8 @@
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="../../Model/UI/Resources/FontResource.xaml" />
 
+		<ResourceDictionary Source="Window/DialogHostStyle.xaml"/>
+		
 		<ResourceDictionary Source="TitleBar/MenuStyle.xaml" />
 
 		<ResourceDictionary Source="SigmaGrid/CardStyle.xaml" />
@@ -10,6 +12,8 @@
 		<ResourceDictionary Source="SigmaStatusBar/StatusBarLegendStyle.xaml" />
 		<ResourceDictionary Source="SigmaStatusBar/TaskVisualizerStyle.xaml" />
 
+		<ResourceDictionary Source="TitleBar/SigmaAboutBoxStyle.xaml"/>
+		
 		<!-- Panels -->
 		<ResourceDictionary Source="Panels/DataGrid.xaml" />
 

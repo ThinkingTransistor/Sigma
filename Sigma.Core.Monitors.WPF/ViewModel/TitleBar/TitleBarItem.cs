@@ -1,13 +1,14 @@
 /* 
 MIT License
 
-Copyright (c) 2016-2017 Florian C�sar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -27,7 +28,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     or an <see cref="UIElement" />
 		///     - otherwise a <see cref="ArgumentException" /> is thrown.
 		/// </param>
-		public TitleBarItem(object header, params object[] children) : this(new MenuItem {Header = header}, children)
+		public TitleBarItem(object header, params object[] children) : this(new MenuItem { Header = header }, children)
 		{
 		}
 
@@ -50,7 +51,18 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 			Children = new Dictionary<string, UIElement>();
 			TitleBarItemChildren = new List<TitleBarItem>();
 
-			for (int i = 0; i < children.Length; i++)
+			// if the first parameter is for the given item
+			// this is out of the loop in order to improve performance
+			int startIndex = 0;
+			if (children.Length > 0)
+			{
+				if (TryAddFunction(item, children[0]))
+				{
+					startIndex = 1;
+				}
+			}
+
+			for (int i = startIndex; i < children.Length; i++)
 			{
 				string newElementKey = null;
 				UIElement newElement;
@@ -59,7 +71,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				{
 					//The key and header are simply the string
 					newElementKey = (string) children[i];
-					newElement = new MenuItem {Header = (string) children[i]};
+					newElement = new MenuItem { Header = (string) children[i] };
 				}
 				else if (children[i] is TitleBarItem)
 				{
@@ -102,18 +114,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 				Content.Items.Add(newElement);
 
 				//Check if next parameter is a function
-				if (i + 1 < children.Length)
+				if (i + 1 < children.Length && TryAddFunction(newElement, children[i + 1]))
 				{
-					if (children[i + 1] is Action)
-					{
-						i++;
-						SetFunction(newElement, (Action) children[i]);
-					}
-					else if (children[i + 1] is Action<Application, Window, TitleBarItem>)
-					{
-						i++;
-						SetFunction(newElement, (Action<Application, Window, TitleBarItem>) children[i]);
-					}
+					i++;
 				}
 			}
 		}
@@ -137,6 +140,32 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		public TitleBarItem Parent { get; private set; }
 
 		/// <summary>
+		/// This method trys to cast the object to an <see cref="Action"/> - 
+		/// if it is, it will be added and true is returned.
+		/// </summary>
+		/// <param name="item">The item that the function will be added to.</param>
+		/// <param name="function">The (maybe) function that will be added</param>
+		/// <returns><c>True</c>if function is a suitable function. <c>False</c> otherwise. </returns>
+		private bool TryAddFunction(UIElement item, object function)
+		{
+			Debug.WriteLine($"Try adding {function}...");
+			if (function is Action)
+			{
+				SetFunction(item, (Action) function);
+			}
+			else if (function is Action<Application, Window, TitleBarItem>)
+			{
+				SetFunction(item, (Action<Application, Window, TitleBarItem>) function);
+			}
+			else
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		///     Set the onClick for a given <see cref="UIElement" />. This
 		///     element has to be identifiable by its <paramref name="elementKey" />.
 		///     If this is not the case see <see cref="SetFunction(UIElement, Action)" />
@@ -152,7 +181,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(string elementKey, Action action)
+		protected TitleBarItem SetFunction(string elementKey, Action action)
 		{
 			return SetFunction(Children[elementKey], action);
 		}
@@ -173,7 +202,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(string elementKey, Action<Application, Window, TitleBarItem> action)
+		protected TitleBarItem SetFunction(string elementKey, Action<Application, Window, TitleBarItem> action)
 		{
 			return SetFunction(Children[elementKey], action);
 		}
@@ -192,7 +221,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(UIElement item, Action action)
+		protected TitleBarItem SetFunction(UIElement item, Action action)
 		{
 			return SetFunction(item, (app, window, element) => action());
 		}
@@ -211,7 +240,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		///     to the <see cref="UIElement" />
 		/// </param>
 		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
-		public TitleBarItem SetFunction(UIElement item, Action<Application, Window, TitleBarItem> action)
+		protected TitleBarItem SetFunction(UIElement item, Action<Application, Window, TitleBarItem> action)
 		{
 			if (item == null)
 			{
@@ -232,6 +261,37 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 			}
 
 			return this;
+		}
+
+		/// <summary>
+		///     Set the onClick for a given <see cref="UIElement" />.
+		///     Use this function for speed or when the key may be
+		///     ambiguous.
+		/// </summary>
+		/// <param name="action">
+		///     The <see cref="Action" /> that will be assigned
+		///     to the <see cref="UIElement" />
+		/// </param>
+		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
+		public TitleBarItem SetFunction(Action<Application, Window, TitleBarItem> action)
+		{
+			return SetFunction(Content, action);
+		}
+
+
+		/// <summary>
+		///     Set the onClick for a given <see cref="UIElement" />.
+		///     Use this function for speed or when the key may be
+		///     ambiguous.
+		/// </summary>
+		/// <param name="action">
+		///     The <see cref="Action" /> that will be assigned
+		///     to the <see cref="UIElement" />
+		/// </param>
+		/// <returns>The <see cref="TitleBarItem" /> for concatenation. </returns>
+		public TitleBarItem SetFunction(Action action)
+		{
+			return SetFunction(Content, action);
 		}
 
 		public override string ToString()

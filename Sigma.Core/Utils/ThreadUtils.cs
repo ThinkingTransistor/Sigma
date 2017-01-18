@@ -16,14 +16,31 @@ namespace Sigma.Core.Utils
 			/// <summary>
 			/// The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/> will receive.
 			/// </summary>
-			protected Action<ManualResetEvent> Action;
+			private Action<ManualResetEvent> _action;
+
+			/// <summary>
+			/// The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/> will receive.
+			/// </summary>
+			protected Action<ManualResetEvent> Action
+			{
+				get { return _action; }
+				set
+				{
+					_action = value;
+					Thread = new Thread(() => Action.Invoke(_stateChangeStart));
+				}
+			}
+
+			private readonly ManualResetEvent _stateChangeStart;
+
+			public Thread Thread { get; private set; }
 
 			/// <summary>
 			/// Set the <see cref="Action"/> manually. 
 			/// </summary>
 			protected BlockingThread()
 			{
-
+				_stateChangeStart = new ManualResetEvent(false);
 			}
 
 			/// <summary>
@@ -46,13 +63,11 @@ namespace Sigma.Core.Utils
 			/// </summary>
 			public void Start()
 			{
-				using (ManualResetEvent stateChangeStart = new ManualResetEvent(false))
-				{
-					// ReSharper disable once AccessToDisposedClosure
-					new Thread(() => Action.Invoke(stateChangeStart)).Start();
+				Thread.Start();
 
-					stateChangeStart.WaitOne();
-				}
+				_stateChangeStart.WaitOne();
+
+				_stateChangeStart.Dispose();
 			}
 		}
 

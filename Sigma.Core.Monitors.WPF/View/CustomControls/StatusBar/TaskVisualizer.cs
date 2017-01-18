@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 	///     has been set. If the <see cref="ITaskObserver" /> is set to <c>null</c>, the <see cref="TaskVisualizer" />
 	///     will be invisible again.
 	/// </summary>
-	public class TaskVisualizer : Control
+	public class TaskVisualizer : Control, IDisposable
 	{
 		static TaskVisualizer()
 		{
@@ -46,6 +47,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		/// </summary>
 		public ITaskObserver ActiveTask { get; private set; }
 
+		public Window window { get; set; }
+
 		/// <summary>
 		///     Set the active <see cref="ITaskObserver" />.
 		///     The <see cref="TaskVisualizer" /> is <see cref="Visibility.Hidden" />
@@ -55,11 +58,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		/// <param name="task">The <see cref="ITaskObserver" /> that the visualizer will be locked to.</param>
 		public void SetActive(ITaskObserver task)
 		{
-			if (ActiveTask != null)
-			{
-				ActiveTask.ProgressChanged -= UpdatedTask;
-				Debug.WriteLine("Unassigned");
-			}
+			RemoveActiveTask();
+
 
 			if (task != null)
 			{
@@ -79,6 +79,15 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 
 			ActiveTask = task;
 		}
+
+		private void RemoveActiveTask()
+		{
+			if (ActiveTask != null)
+			{
+				ActiveTask.ProgressChanged -= UpdatedTask;
+			}
+		}
+
 
 		/// <summary>
 		///     This method is meant to be called from a non-UI thread, it will be called
@@ -184,5 +193,10 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		#endregion Properties
+
+		public void Dispose()
+		{
+			RemoveActiveTask();
+		}
 	}
 }

@@ -123,11 +123,14 @@
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
     <Compile Include="Panels\Logging\LogTextPanel.cs" />
+    <Compile Include="Utils\WindowUtils.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
     <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />
     <Compile Include="ViewModel\StatusBar\TaskVisualizationManager.cs" />
+    <Compile Include="View\CustomControls\TitleBar\SigmaAboutBox.cs" />
+    <Compile Include="View\Factories\Defaults\AboutFactory.cs" />
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\TaskVisualizerFactory.cs" />
@@ -273,6 +276,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Themes\Styles\TitleBar\SigmaAboutBoxStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Styles\Window\DialogHostStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\CustomControls\Panels\Control\SigmaPlaybackControlGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -282,6 +293,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\CustomControls\StatusBar\TaskVisualizerGeneric.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CustomControls\TitleBar\SigmaAboutBoxGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -296,7 +311,10 @@
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\sigma.ico" />
+    <Resource Include="Resources\icons\sigma.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons\sigma_256x256.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -43,16 +43,17 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 		/// <summary>
 		/// </summary>
-		/// <param name="parentRegistry"></param>
-		/// <param name="height"></param>
-		/// <param name="customColumn"></param>
+		/// <param name="parentRegistry">The parent registry. If it not already contains a registry with the key <see cref="RegistryIdentifier"/>,
+		/// a new <see cref="IRegistry"/> will be created and added to the given registry. </param>
+		/// <param name="height">The height of the statusbar.</param>
+		/// <param name="customColumn">The index for the <see cref="CustomFactoryIdentifier"/> - a column to use as you wish.</param>
 		/// <param name="taskColumn">The index for the task visualizer to use. If negativ, no task visualizer will be added. </param>
 		/// <param name="legendColumn">The index for the column to use. If negativ, no legend will be added. </param>
 		/// <param name="gridLengths"></param>
 		public StatusBarFactory(IRegistry parentRegistry, double height, int customColumn, int taskColumn, int legendColumn,
 			params GridLength[] gridLengths)
 		{
-			if ((parentRegistry == null) || !parentRegistry.ContainsKey(RegistryIdentifier))
+			if (parentRegistry == null || !parentRegistry.ContainsKey(RegistryIdentifier))
 			{
 				Registry = new Registry(parentRegistry);
 				parentRegistry?.Add(RegistryIdentifier, Registry);
@@ -86,6 +87,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		}
 
 		/// <summary>
+		/// The <see cref="IRegistry"/> where all required factories are contained. 
 		/// </summary>
 		public IRegistry Registry { get; set; }
 
@@ -172,7 +174,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		{
 			IUIFactory<UIElement> factory;
 
-			if (!Registry.TryGetValue(identifier, out factory) && (createFactory != null))
+			if (!Registry.TryGetValue(identifier, out factory) && createFactory != null)
 			{
 				factory = createFactory();
 				Registry.Add(identifier, factory);

@@ -14,8 +14,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Dragablz.Dockablz;
-using MahApps.Metro;
 using MahApps.Metro.Controls.Dialogs;
+using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Factories;
@@ -37,8 +37,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
 		public const string LoadingIndicatorFactoryIdentifier = "loading_indicator_factory";
 
-
-		public const string SigmaIconPath = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/Resources/sigma.ico";
+		public const string SigmaIconPath = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/Resources/icons/sigma.ico";
 
 		public static bool UseSigmaIcon = true;
 
@@ -90,9 +89,36 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		protected UIElement LoadingIndicatorElement;
 
+		/// <summary>
+		/// The prefix-identifier for <see cref="DialogHost"/>.
+		/// Should be unique
+		/// </summary>
+		private const string BaseDialogHostIdentifier = "SigmaRootDialog";
+
+		/// <summary>
+		/// The identifier for the <see cref="DialogHost"/> of this window. 
+		/// </summary>
+		public readonly string DialogHostIdentifier;
+
+		/// <summary>
+		/// The <see cref="DialogHost"/> in order to show popups.
+		/// It is identified with <see cref="DialogHostIdentifier"/>.
+		/// </summary>
+		public DialogHost DialogHost { get; }
+
 		private bool _manualOverride;
 
 		private bool _isInitializing;
+
+		/// <summary>
+		/// The index of the current window.
+		/// </summary>
+		public long WindowIndex { get; }
+
+		/// <summary>
+		/// The count that will be used to iterate through windows.
+		/// </summary>
+		private static long windowCount = 0;
 
 		public override bool IsInitializing
 		{
@@ -135,6 +161,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other)
 			: base(monitor, app, title)
 		{
+			WindowIndex = windowCount++;
 			if (UseSigmaIcon)
 			{
 				Icon = new BitmapImage(new Uri(SigmaIconPath));
@@ -157,10 +184,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			RootElement = new Grid();
 
-			RootContentElement = CreateContent(monitor, other, out _titleBar);
+			DialogHostIdentifier = BaseDialogHostIdentifier + WindowIndex;
+			DialogHost = new DialogHost {Identifier = DialogHostIdentifier };
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
+			RootContentElement = CreateContent(monitor, other, out _titleBar);
 
 			RootElement.Children.Add(RootContentElement);
+			RootElement.Children.Add(DialogHost);
 			RootElement.Children.Add(LoadingIndicatorElement);
 
 			if (other != null)
@@ -340,7 +370,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (!registry.ContainsKey(TitleBarFactoryIdentifier))
 			{
-				registry[TitleBarFactoryIdentifier] = new TitleBarFactory();
+				registry[TitleBarFactoryIdentifier] = new TitleBarFactory(registry);
 			}
 
 			if (!registry.ContainsKey(TabControlFactoryIdentifier))
@@ -464,7 +494,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			//one of the children will become the parent
 			if (ParentWindow == null)
 			{
-				if (Children[0] != null)
+				if (Children.Count > 0 && Children[0] != null)
 				{
 					newParent = Children[0];
 					SetRoot(newParent);

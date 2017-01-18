@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Threading;
 using log4net;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -37,12 +37,6 @@ namespace Sigma.Core.Monitors.WPF
 		private readonly List<Action<object>> _onWindowStartup = new List<Action<object>>();
 
 		/// <summary>
-		///     When the <see cref="Start" /> method is called, the thread should block
-		///     until WPF is up and running.
-		/// </summary>
-		private readonly ManualResetEvent _waitForStart;
-
-		/// <summary>
 		///     The type of the window that will be created.
 		///     A type is passed in order to prevent generics.
 		///     (Mostly that user does not have to care about it)
@@ -53,16 +47,6 @@ namespace Sigma.Core.Monitors.WPF
 		///     The root application for all WPF interactions.
 		/// </summary>
 		private App _app;
-
-		/// <summary>
-		///     This <see cref="bool" /> will be set to true,
-		///     as soon as all <see cref="_onWindowStartup" />
-		///     actions have been added.
-		/// </summary>
-		/// TODO: HACK:
-#pragma warning disable 414
-		private bool _onWindowStartupAdded;
-#pragma warning restore 414
 
 		/// <summary>
 		///     This <see cref="bool" /> will be set to true,
@@ -102,12 +86,8 @@ namespace Sigma.Core.Monitors.WPF
 			Title = title;
 			_windowType = window;
 
-			// this is the one and only appropriate colour configuration - fight me
-			ColourManager = new ColourManager(MaterialDesignValues.DeepOrange, MaterialDesignValues.Amber);
-			ColourManager.Dark = false;
-			ColourManager.Alternate = true;
-
-			_waitForStart = new ManualResetEvent(false);
+			// default colours are taken from the ColourManager itself
+			ColourManager = new ColourManager();
 
 			_log.Info($"{nameof(WPFMonitor)} has been created.");
 		}
@@ -215,7 +195,7 @@ namespace Sigma.Core.Monitors.WPF
 
 		public override void Start()
 		{
-			Thread wpfThread = new Thread(() =>
+			ThreadUtils.BlockingThread wpfThread = new ThreadUtils.BlockingThread(reset =>
 			{
 				_app = new App(this);
 				ColourManager.App = _app;
@@ -237,11 +217,9 @@ namespace Sigma.Core.Monitors.WPF
 					}
 
 					_app.Startup += (sender, args) => _onWindowStartupExecuted = true;
-
-					_onWindowStartupAdded = true;
 				}
 
-				_app.Startup += (sender, args) => { _waitForStart.Set(); };
+				_app.Startup += (sender, args) => { reset.Set(); };
 #if DEBUG
 				_app.Run(Window);
 #else
@@ -257,13 +235,9 @@ namespace Sigma.Core.Monitors.WPF
 			});
 
 			//Start the new thread with the given priority and set it to a STAThread (required for WPF windows)
-			wpfThread.SetApartmentState(ApartmentState.STA);
-			wpfThread.Priority = Priority;
+			wpfThread.Thread.SetApartmentState(ApartmentState.STA);
+			wpfThread.Thread.Priority = Priority;
 			wpfThread.Start();
-
-			//Wait until the thread has finished execution
-			_waitForStart.WaitOne();
-			_waitForStart.Reset();
 
 			ColourManager.ForceUpdate();
 

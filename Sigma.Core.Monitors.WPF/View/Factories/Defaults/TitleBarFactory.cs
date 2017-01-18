@@ -1,13 +1,14 @@
 /* 
 MIT License
 
-Copyright (c) 2016-2017 Florian C�sar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -24,14 +25,39 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 {
 	public class TitleBarFactory : IUIFactory<TitleBarControl>
 	{
+		public const string RegistryIdentifier = "titlebar_registry";
+
+		public const string AboutFactoryIdentifier = "about_factory";
+
 		public readonly List<Func<Application, Window, TitleBarItem>> TitleBarFuncs;
 
-		public TitleBarFactory() : this(new Thickness(0), new Thickness(0))
+		/// <summary>
+		/// The <see cref="IRegistry"/> where all required factories are contained. 
+		/// </summary>
+		public IRegistry Registry { get; set; }
+
+		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0))
 		{
 		}
 
-		public TitleBarFactory(Thickness margin, Thickness padding)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parentRegistry">The parent registry. If it not already contains a registry with the key <see cref="RegistryIdentifier"/>,
+		/// a new <see cref="IRegistry"/> will be created and added to the given registry. </param>		/// <param name="margin"></param>
+		/// <param name="padding"></param>
+		public TitleBarFactory(IRegistry parentRegistry, Thickness margin, Thickness padding)
 		{
+			if (parentRegistry == null || !parentRegistry.ContainsKey(RegistryIdentifier))
+			{
+				Registry = new Registry(parentRegistry);
+				parentRegistry?.Add(RegistryIdentifier, Registry);
+			}
+			else
+			{
+				Registry = (IRegistry) parentRegistry[RegistryIdentifier];
+			}
+
 			Margin = margin;
 			Padding = padding;
 
@@ -158,13 +184,17 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), "Toggle Alternate",
 				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)));
 
-			TitleBarFuncs.Add((app, window) =>
+			AddSigmaFunction((app, window) =>
 			{
-				TitleBarItem about = new TitleBarItem(new MenuItem { Header = "About" });
-				//about.SetFunction(about.Content, (application, parentwindow, titlebaritem) => titlebaritem.Content.Command.Execute(null));
+				IUIFactory<UIElement> aboutFactory = (IUIFactory<UIElement>) Registry.TryGetValue(AboutFactoryIdentifier, () => new AboutFactory(window.DialogHost));
+				object aboutContent = aboutFactory.CreateElement(app, window);
 
-				about.Content.Command = DialogHost.OpenDialogCommand;
-				about.Content.CommandParameter = "this is a test";
+				TitleBarItem about = new TitleBarItem(new MenuItem { Header = "About" }, (Action) (async () =>
+				{
+					window.DialogHost.IsOpen = false;
+					await DialogHost.Show(aboutContent, window.DialogHostIdentifier);
+				}));
+
 				return about;
 			});
 		}

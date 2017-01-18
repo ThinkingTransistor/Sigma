@@ -12,10 +12,16 @@ using Dragablz;
 using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.View.Themes
 {
+	/// <summary>
+	/// This <see cref="IColourManager"/> allows to modify the theme for
+	/// MaterialDesignInXAML. It also allows to automatically load dark
+	/// and light themes (also custom ones). 
+	/// </summary>
 	public class ColourManager : IColourManager
 	{
 		/// <summary>
@@ -26,14 +32,32 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// <summary>
 		///     The path for the Sigma light style theme.
 		/// </summary>
-		private const string SIGMA_STYLE_LIGHT_PATH =
+		private const string SigmaStyleLightPath =
 			"pack://application:,,,/Sigma.Core.Monitors.WPF;component/Themes/Styles/LightStyle.xaml";
 
 		/// <summary>
 		///     The path for the Sigma dark style theme.
 		/// </summary>
-		private const string SIGMA_STYLE_DARK_PATH =
+		private const string SigmaStyleDarkPath =
 			"pack://application:,,,/Sigma.Core.Monitors.WPF;component/Themes/Styles/DarkStyle.xaml";
+
+		/// <summary>
+		/// This boolean determines the default value for dark / light.
+		/// </summary>
+		public static bool DarkDefault = false;
+		
+		/// <summary>
+		/// This boolean determines the default value for alternate.
+		/// </summary>
+		public static bool AlternateDefault = true;
+		/// <summary>
+		/// This <see cref="Swatch"/>  determines the default primary colour.
+		/// </summary>
+		public static Swatch PrimaryDefault = MaterialDesignValues.DeepOrange;
+		/// <summary>
+		/// This <see cref="Swatch"/> determines the default accent colour.
+		/// </summary>
+		public static Swatch SecondaryDefault = MaterialDesignValues.Amber;
 
 		/// <summary>
 		///     Option for an alternate style for tabs.
@@ -97,6 +121,17 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		///     The corresponding <see cref="SigmaWindow" />.
 		/// </summary>
 		private SigmaWindow _sigmaWindow;
+
+		/// <summary>
+		///		Create a new <see cref="ColourManager"/> with the values:
+		///		<see cref="PrimaryDefault"/>, <see cref="SecondaryDefault"/>,
+		///		<see cref="DarkDefault"/>, <see cref="AlternateDefault"/>.
+		/// </summary>
+		public ColourManager() : this(PrimaryDefault, SecondaryDefault)
+		{
+			Dark = DarkDefault;
+			Alternate = AlternateDefault;
+		}
 
 		/// <summary>
 		///     Create a new <see cref="ColourManager" />.
@@ -247,8 +282,8 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// <param name="e">The <see cref="StartupEventArgs" />.</param>
 		private void AppStartup(object sender, StartupEventArgs e)
 		{
-			_sigmaStyleLightDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_LIGHT_PATH, UriKind.Absolute) };
-			_sigmaStyleDarkDictionary = new ResourceDictionary { Source = new Uri(SIGMA_STYLE_DARK_PATH, UriKind.Absolute) };
+			_sigmaStyleLightDictionary = new ResourceDictionary { Source = new Uri(SigmaStyleLightPath, UriKind.Absolute) };
+			_sigmaStyleDarkDictionary = new ResourceDictionary { Source = new Uri(SigmaStyleDarkPath, UriKind.Absolute) };
 
 			if (CustomLightPath != null)
 			{

@@ -169,7 +169,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 			for (int i = 0; i < TaskVisualizers.Length; i++)
 			{
 				Debug.WriteLine($"Clearing task... {TaskVisualizers[i].ActiveTask}");
-				TaskVisualizers[i].SetActive(null);
+				TaskVisualizers[i].Dispose();
 				TaskVisualizers[i] = null;
 			}
 		}
