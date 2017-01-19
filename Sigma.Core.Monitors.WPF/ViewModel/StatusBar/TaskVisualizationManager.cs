@@ -109,6 +109,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 				// if there was already a taskmanager
 				if (_taskManager != null)
 				{
+					Debug.WriteLine("Removing three tasks from taskmanager");
 					TaskManager.TaskCreated -= TaskCreated;
 					TaskManager.TaskEnded -= TaskStopped;
 					TaskManager.TaskCanceled -= TaskStopped;

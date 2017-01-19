@@ -148,7 +148,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		/// <returns><c>True</c>if function is a suitable function. <c>False</c> otherwise. </returns>
 		private bool TryAddFunction(UIElement item, object function)
 		{
-			Debug.WriteLine($"Try adding {function}...");
 			if (function is Action)
 			{
 				SetFunction(item, (Action) function);

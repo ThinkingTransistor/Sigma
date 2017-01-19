@@ -36,7 +36,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		///     A list of all generated <see cref="IWpfTaskVisualizationManager" />. This is required
 		///     for passing active and pending tasks through tabs.
 		/// </summary>
-		private readonly List<IWpfTaskVisualizationManager> _visualizationManagers;
+		private readonly IList<IWpfTaskVisualizationManager> _visualizationManagers;
 
 		/// <summary>
 		///     Create a <see cref="TaskVisualizerFactory" /> with the given amount of <see cref="maxElements" />.
@@ -119,6 +119,10 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 				_visualizationManagers.Add(manager);
 			}
 
+			// TODO: ASSIGN TO CLOSE EVENT OF WINDOW
+			// ONCLOSE REMOVE CURRENT MANAGER
+
+
 			Grid grid = new Grid();
 
 			// + 1 for the show more indicator
@@ -139,6 +143,14 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			Grid.SetColumn(showMoreIndicator, _maxElements);
 
 			return grid;
+		}
+
+		private void RemoveManager(IWpfTaskVisualizationManager manager)
+		{
+			lock (_visualizationManagers)
+			{
+				manager.Dispose();
+			}
 		}
 
 		/// <summary>

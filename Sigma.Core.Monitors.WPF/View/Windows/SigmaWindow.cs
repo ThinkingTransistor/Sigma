@@ -118,7 +118,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <summary>
 		/// The count that will be used to iterate through windows.
 		/// </summary>
-		private static long windowCount = 0;
+		private static long _windowCount;
 
 		public override bool IsInitializing
 		{
@@ -161,7 +161,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other)
 			: base(monitor, app, title)
 		{
-			WindowIndex = windowCount++;
+			WindowIndex = _windowCount++;
 			if (UseSigmaIcon)
 			{
 				Icon = new BitmapImage(new Uri(SigmaIconPath));
@@ -185,7 +185,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			RootElement = new Grid();
 
 			DialogHostIdentifier = BaseDialogHostIdentifier + WindowIndex;
-			DialogHost = new DialogHost {Identifier = DialogHostIdentifier };
+			DialogHost = new DialogHost { Identifier = DialogHostIdentifier };
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
 			RootContentElement = CreateContent(monitor, other, out _titleBar);
 
@@ -503,6 +503,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			else
 			{
 				newParent = ParentWindow;
+
+				if (ReferenceEquals(App.MainWindow, this))
+				{
+					Debug.WriteLine("Setting new MainWindow");
+					App.MainWindow = newParent;
+				}
 			}
 
 			// pass parent and update monitor if root
