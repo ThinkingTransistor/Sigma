@@ -36,6 +36,8 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging();
 
 			SampleTrainerOperatorWorker();
+
+			Console.ReadKey();
 		}
 
 		private static void SampleTrainerOperatorWorker()
@@ -59,8 +61,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
-			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
 
 			sigma.Run();
 		}
@@ -120,7 +122,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Operator = new CpuMultithreadedOperator(10);
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
-			trainer.AddInitialiser("*.bias", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
 			trainer.Initialise(handler);
 
 			trainer.Network = (INetwork) trainer.Network.DeepCopy();
@@ -170,7 +172,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			array = handler.Multiply(array, f);
 
-			INumber cost = handler.Sum(array);
+			INumber cost = handler.Divide(handler.Sum(array), array.Length);
 
 			Console.WriteLine("cost: " + cost);
 

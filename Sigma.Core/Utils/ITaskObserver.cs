@@ -133,8 +133,6 @@ namespace Sigma.Core.Utils
 			}
 
 			Progress = value / 100.0f;
-
-			//Console.WriteLine($"{Type.ExpressedType} {Description} ({Progress * 100:00.0}%)");
 		}
 
 		private void OnProgressChanged(TaskProgressEventArgs args)

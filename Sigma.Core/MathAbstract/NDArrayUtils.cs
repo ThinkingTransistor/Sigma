@@ -36,10 +36,11 @@ namespace Sigma.Core.MathAbstract
 		}
 
 		/// <summary>
-		/// Check a shape for logical correctness (i.e. all values must be > 0, total length must be > 0). If incorrect, this method throws an appropriate argument exception.
+		/// Get a checked shape for logical correctness (i.e. all values must be > 0, total length must be > 0). 
+		/// If incorrect, this method throws an appropriate argument exception. If one-dimensional, change to row-vector.
 		/// </summary>
 		/// <param name="shape">The shape array to check.</param>
-		/// <returns>The same shape array (for convenience).</returns>
+		/// <returns>The checked shape array (not guaranteed to be the same reference).</returns>
 		public static long[] CheckShape(params long[] shape)
 		{
 			if (shape == null)
@@ -54,10 +55,16 @@ namespace Sigma.Core.MathAbstract
 
 			for (int i = 0; i < shape.Length; i++)
 			{
-				if (shape[i] <= 0)
+				if (shape[i] < 0)
 				{
-					throw new ArgumentException($"Invalid shape: all shape dimensions must be > 0, but dimension {i} was {shape[i]}.");
+					throw new ArgumentException($"Invalid shape: all shape dimensions must be >= 0, but dimension {i} was {shape[i]}.");
 				}
+			}
+
+			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
+			if (shape.Length == 1 && shape[0] > 1)
+			{
+				shape = new[] { 1, shape[0] };
 			}
 
 			return shape;

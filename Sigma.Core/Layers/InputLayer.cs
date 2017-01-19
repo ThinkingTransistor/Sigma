@@ -43,6 +43,7 @@ namespace Sigma.Core.Layers
 		public static LayerConstruct Construct(string name, string inputAlias, params long[] shape)
 		{
 			NDArrayUtils.CheckShape(shape);
+
 			LayerConstruct construct = new LayerConstruct(name, typeof(InputLayer));
 
 			construct.ExternalInputs = new[] { inputAlias };

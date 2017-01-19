@@ -133,9 +133,9 @@ namespace Sigma.Core.Data
 				throw new ArgumentException($"Offset must be > 0 but was {offset}.");
 			}
 
-			if (length < 1)
+			if (length < 0)
 			{
-				throw new ArgumentException($"Length must be >= 1 but was {length}.");
+				throw new ArgumentException($"Length must be >= 0 but was {length}.");
 			}
 
 			if (requestedEndPosition > underlyingLength)

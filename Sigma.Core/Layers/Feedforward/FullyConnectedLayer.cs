@@ -6,7 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -24,19 +23,20 @@ namespace Sigma.Core.Layers.Feedforward
 			int size = parameters.Get<int>("size");
 			int inputSize = parameters.Get<int>("default_input_size");
 
-			parameters["weights"] = handler.NDArray(size, inputSize);
+			parameters["weights"] = handler.NDArray(inputSize, size);
 			parameters["biases"] = handler.NDArray(size);
 
-			TrainableParameters = new[] { "weights", "biases" };
+			TrainableParameters = new[] { "weights" };
 		}
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
 			INDArray activations = handler.FlattenTimeAndFeatures(buffer.Inputs["default"].Get<INDArray>("activations"));
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
-			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
+			//INDArray biases = buffer.Parameters.Get<INDArray>("biases");
+			// TODO add add_mv operation with vector-to-matrix broadcasting for ndarrays (e.g. for biases in this case)
 
-			activations = handler.Add(handler.Dot(activations, weights), biases);
+			activations = handler.Dot(activations, weights);
 			activations = handler.Activation(buffer.Parameters.Get<string>("activation"), activations);
 
 			buffer.Outputs["default"]["activations"] = activations;

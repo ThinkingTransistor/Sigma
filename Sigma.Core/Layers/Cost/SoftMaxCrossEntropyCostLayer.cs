@@ -29,15 +29,9 @@ namespace Sigma.Core.Layers.Cost
 		{
 			predictions = handler.SoftMax(predictions);
 
-			// cross entropy
-			// |	a	|  |	   b		 |
-			// y * ln(x) + (1 - y) * ln(1 - x)
+			INumber cost = handler.Divide(handler.Sum(handler.Multiply(targets, handler.Log(predictions))), -predictions.Length);
 
-			INDArray a = handler.Multiply(predictions, handler.Log(targets));
-			INDArray b = handler.Multiply(handler.Subtract(1, targets), handler.Log(handler.Subtract(1, predictions)));
-			INDArray cost = handler.Add(a, b);
-
-			return handler.Divide(handler.Sum(cost), cost.Length);
+			return cost;
 		}
 
 		public static LayerConstruct Construct(string name = "#-softmaxce", double importance = 1.0, string externalTargetsAlias = "external_targets", string externalCostAlias = "external_cost")

@@ -586,11 +586,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
+			throw new NotImplementedException($"Clipping is currently not supported in this handler ({this}).");
+
+/*
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
 			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
 
-			return new ADNDFloat32Array(DNDArray.Max(DNDArray.Min(internalArray._adArrayHandle, internalMinValue._adNumberHandle), internalMaxValue._adNumberHandle));
+			DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
+
+			DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
+
+			return new ADNDFloat32Array(clipped);
+*/
 		}
 
 		public uint BeginTrace()

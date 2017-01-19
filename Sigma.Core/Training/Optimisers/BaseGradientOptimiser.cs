@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
@@ -28,6 +29,7 @@ namespace Sigma.Core.Training.Optimisers
 
 		protected readonly string ExternalCostAlias;
 
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private bool _prepared;
 		private uint _traceTag;
 
@@ -82,8 +84,11 @@ namespace Sigma.Core.Training.Optimisers
 
 			INumber cost = GetTotalCost(network, handler, costRegistry);
 
+			_logger.Warn("Total cost for current optimiser run: " + cost);
+
 			handler.ComputeDerivativesTo(cost);
 
+			// TODO check diffsharp Mul_DMCons_DM operator, cost to trainable param (weight) trace seems to get lost there (all zeroes after that trace op)
 			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
 				string layerIdentifier = layerBuffer.Layer.Name;

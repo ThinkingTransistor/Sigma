@@ -25,11 +25,11 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	{
 		public DNDArray _adArrayHandle;
 
-		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), shape))
+		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), NDArrayUtils.CheckShape(shape)))
 		{
 		}
 
-		public ADNDFloat32Array(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), shape))
+		public ADNDFloat32Array(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), NDArrayUtils.CheckShape(shape)))
 		{
 		}
 
@@ -38,7 +38,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
 			_adArrayHandle = adArrayHandle;
-			_adArrayHandle.Buffer.Shape = Shape; // reset shape reference in case it was changed to improve shape (e.g. vector to row-vector).
+			_adArrayHandle.Buffer.Shape = Shape; 
 		}
 
 		protected override void Reinitialise(long[] shape, long[] strides)

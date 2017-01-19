@@ -136,13 +136,6 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 		private void Initialise(long[] shape, long[] strides)
 		{
-			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
-			if (shape.Length == 1 && shape[0] > 1)
-			{
-				shape = new[] { 1, shape[0] };
-				strides = NDArrayUtils.GetStrides(shape);
-			}
-
 			Shape = shape;
 			Strides = strides;
 			Length = ArrayUtils.Product(shape);
