@@ -49,18 +49,15 @@
 								<StackPanel Orientation="Horizontal"
 											HorizontalAlignment="Center"
 											Margin="0 0 0 -4">
-									<Label>Made with</Label>
+									<Label Foreground="SlateGray">Made with</Label>
 									<materialDesign:PackIcon Kind="Heart"
 															 Foreground="DarkRed"
 															 VerticalAlignment="Center"/>
-								</StackPanel>
-								<StackPanel Orientation="Horizontal"
-											HorizontalAlignment="Center"
-											Margin="0 0 0 -4">
-									<Label>By ThinkingTransistor</Label>
+									<Label Foreground="SlateGray">by ThinkingTransistor</Label>
 									<materialDesign:PackIcon Kind="LedOn"
 															 VerticalAlignment="Center"/>
 								</StackPanel>
+								<TextBlock Foreground="SlateGray" TextAlignment="Center">Florian Cäsar, Michael Plainer</TextBlock>
 							</StackPanel>
 						</StackPanel>
 						

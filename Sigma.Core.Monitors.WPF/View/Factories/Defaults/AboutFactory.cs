@@ -48,8 +48,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				Heading = "Sigma",
 				Text = "Rocket powered machine learning.\n" +
 						"Create, compare, adapt, improve - neural networks at the speed of thought.\n" +
-						"\n" +
-						"With Sigma, you can do everything you heart desires ...",
+						"Free to use for anyone (MIT license)."
 			};
 		}
 	}
