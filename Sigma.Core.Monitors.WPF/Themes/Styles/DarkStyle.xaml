@@ -5,5 +5,6 @@
 		<ResourceDictionary Source="SigmaGrid/CardColoursDark.xaml" />
 		<ResourceDictionary Source="LiveCharts/AxisDark.xaml" />
 		<ResourceDictionary Source="TitleBar/MenuStyleDark.xaml" />
+        <ResourceDictionary Source="TitleBar/SigmaAboutBoxStyleDark.xaml"/>
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

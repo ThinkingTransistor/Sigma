@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 					xmlns:titleBar="clr-namespace:Sigma.Core.Monitors.WPF.View.CustomControls.TitleBar">
 	
-	<Style TargetType="titleBar:SigmaAboutBox" BasedOn="{StaticResource {x:Type titleBar:SigmaAboutBox}}">
+	<Style x:Key="SigmaAboutBoxStyle" TargetType="titleBar:SigmaAboutBox" BasedOn="{StaticResource {x:Type titleBar:SigmaAboutBox}}">
 		<Setter Property="Margin" Value="10"/>
 		<Setter Property="Image" Value="/Sigma.Core.Monitors.WPF;component/Resources/icons/sigma_256x256.png"/>
 		<Setter Property="ImageWidth" Value="128"/>
@@ -10,5 +10,7 @@
 		<Setter Property="ButtonContent" Value="AWESOME"/>
 		<Setter Property="Width" Value="330"/>
 	</Style>
+    
+    <Style TargetType="titleBar:SigmaAboutBox" BasedOn="{StaticResource SigmaAboutBoxStyle}"/>
 	
 </ResourceDictionary>

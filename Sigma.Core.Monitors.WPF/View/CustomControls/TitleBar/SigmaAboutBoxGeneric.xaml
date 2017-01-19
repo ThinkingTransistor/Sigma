@@ -10,7 +10,6 @@
 					<Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-							Margin="{TemplateBinding Margin}"
 							Width="Auto"
 							Height="Auto">
 						
