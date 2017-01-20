@@ -1,5 +1,5 @@
 # Sigma 
-| Build Status                        | Build Status (Development)        |
+| Build Status (master)               | Build Status (development)        |
 |:------------------------------------|:----------------------------------|
 |[![Build Status](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)|[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)|
 
