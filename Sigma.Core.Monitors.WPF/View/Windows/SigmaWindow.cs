@@ -104,7 +104,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// The <see cref="DialogHost"/> in order to show popups.
 		/// It is identified with <see cref="DialogHostIdentifier"/>.
 		/// </summary>
-		public DialogHost DialogHost { get; }
+		public DialogHost DialogHost { get; private set; }
 
 		private bool _manualOverride;
 
@@ -522,10 +522,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Children.Clear();
 
 			ParentWindow = null;
-			RootWindow = null;
+			RootWindow = null; 
 			RootElement = null;
 			RootContentElement = null;
 			LoadingIndicatorElement = null;
+			TabControl = null;
+			DialogHost = null;
 		}
 
 		~SigmaWindow()

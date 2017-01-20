@@ -36,7 +36,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 		///     A list of all generated <see cref="IWpfTaskVisualizationManager" />. This is required
 		///     for passing active and pending tasks through tabs.
 		/// </summary>
-		private readonly IList<IWpfTaskVisualizationManager> _visualizationManagers;
+		private readonly WeakList<IWpfTaskVisualizationManager> _visualizationManagers;
 
 		/// <summary>
 		///     Create a <see cref="TaskVisualizerFactory" /> with the given amount of <see cref="maxElements" />.
@@ -94,7 +94,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			}
 
 			_maxElements = maxElements;
-			_visualizationManagers = new List<IWpfTaskVisualizationManager>();
+			_visualizationManagers = new WeakList<IWpfTaskVisualizationManager>();
 
 			_showMoreFactory = showMoreFactory;
 		}
@@ -106,21 +106,25 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 			lock (_visualizationManagers)
 			{
-				IEnumerable<ITaskObserver> activeTasks = _visualizationManagers.Count > 0
-					? _visualizationManagers[0].ActiveTasks
-					: null;
-				IEnumerable<ITaskObserver> pendingTasks = _visualizationManagers.Count > 0
-					? _visualizationManagers[0].PendingTasks
-					: null;
+				IWpfTaskVisualizationManager firstManager = _visualizationManagers.FirstAvailable();
 
-				manager = new TaskVisualizationManager(_maxElements, showMoreIndicator, SigmaEnvironment.TaskManager, activeTasks,
-					pendingTasks);
+				IEnumerable<ITaskObserver> activeTasks = firstManager?.ActiveTasks;
+				IEnumerable<ITaskObserver> pendingTasks = firstManager?.PendingTasks;
+
+				manager = new TaskVisualizationManager(_maxElements, showMoreIndicator, SigmaEnvironment.TaskManager, activeTasks, pendingTasks);
 
 				_visualizationManagers.Add(manager);
 			}
 
-			// TODO: ASSIGN TO CLOSE EVENT OF WINDOW
-			// ONCLOSE REMOVE CURRENT MANAGER
+			// When the window is closed, unassign the manager to prevent memory leaks.
+			EventHandler handler = null;
+			handler = (sender, args) =>
+			{
+				RemoveManager(manager);
+				window.Closed -= handler;
+			};
+
+			window.Closed += handler;
 
 
 			Grid grid = new Grid();
@@ -128,7 +132,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			// + 1 for the show more indicator
 			for (int i = 0; i <= _maxElements; i++)
 			{
-				grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Auto)});
+				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 			}
 
 			// add the TaskVisualizers
@@ -145,11 +149,13 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 			return grid;
 		}
 
+
 		private void RemoveManager(IWpfTaskVisualizationManager manager)
 		{
+			manager.Dispose();
 			lock (_visualizationManagers)
 			{
-				manager.Dispose();
+				_visualizationManagers.Remove(manager);
 			}
 		}
 
@@ -191,7 +197,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar
 
 			public UIElement CreateElement(Application app, Window window, params object[] parameters)
 			{
-				return new Label {Content = _content, Style = _labelStyle};
+				return new Label { Content = _content, Style = _labelStyle };
 			}
 		}
 	}

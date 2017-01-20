@@ -130,6 +130,7 @@
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Math\TestNumber.cs" />
+    <Compile Include="Training\Mergers\TestAverageNetworkMerger.cs" />
     <Compile Include="Training\Initialisers\TestConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestCustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestGaussianInitialiser.cs" />

@@ -109,7 +109,6 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 				// if there was already a taskmanager
 				if (_taskManager != null)
 				{
-					Debug.WriteLine("Removing three tasks from taskmanager");
 					TaskManager.TaskCreated -= TaskCreated;
 					TaskManager.TaskEnded -= TaskStopped;
 					TaskManager.TaskCanceled -= TaskStopped;
@@ -166,12 +165,14 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 			// clear the pending tasks
 			_pendingTasks.Clear();
 
-			// remove the references to all TaskVisualizers
-			for (int i = 0; i < TaskVisualizers.Length; i++)
+			if (TaskVisualizers != null)
 			{
-				Debug.WriteLine($"Clearing task... {TaskVisualizers[i].ActiveTask}");
-				TaskVisualizers[i].Dispose();
-				TaskVisualizers[i] = null;
+				// remove the references to all TaskVisualizers
+				for (int i = 0; i < TaskVisualizers.Length; i++)
+				{
+					TaskVisualizers[i]?.Dispose();
+					TaskVisualizers[i] = null;
+				}
 			}
 		}
 
@@ -246,7 +247,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 					}
 				}
 
-				ShowMoreIndicator((ActiveTasksCount == TaskVisualizers.Length) && _pendingTasks.Count > 0);
+				ShowMoreIndicator(ActiveTasksCount == TaskVisualizers.Length && _pendingTasks.Count > 0);
 
 				// set new active tasks
 				for (int i = 0; i < TaskVisualizers.Length; i++)

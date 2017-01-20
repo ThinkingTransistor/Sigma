@@ -22,7 +22,7 @@ namespace Sigma.Core.Training.Mergers
 	{
 		protected override object MergeDefault(object[] objects, IComputationHandler handler)
 		{
-			throw new InvalidOperationException($"Cannot merge {objects} because they are probably of type {objects[0].GetType()} (or maybe because they have different types).");
+			throw new InvalidOperationException($"Cannot merge {objects} because they are probably of type {objects[0].GetType()} which is not supported (or maybe because the passed objects have different types).");
 		}
 
 		protected override double MergeDoubles(double[] doubles)
