@@ -88,7 +88,7 @@ namespace Sigma.Core.Training.Optimisers
 
 			handler.ComputeDerivativesTo(cost);
 
-			// TODO check diffsharp Mul_DMCons_DM operator, cost to trainable param (weight) trace seems to get lost there (all zeroes after that trace op)
+			// TODO check diffsharp Mul_DMCons_DM operator, the Transpose func called is not implemented properly
 			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
 				string layerIdentifier = layerBuffer.Layer.Name;
