@@ -1,5 +1,7 @@
 # Sigma 
-[![Build Status](https://travis-ci.org/GreekDictionary/Sigma.svg?branch=master)](https://travis-ci.org/GreekDictionary/Sigma)
+| Build Status                        | Build Status (Development)        |
+|:------------------------------------|:----------------------------------|
+|[![Build Status](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)|[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)|
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
 
