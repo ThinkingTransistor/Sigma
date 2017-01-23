@@ -15,6 +15,7 @@ using Sigma.Core.Layers;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
@@ -35,7 +36,19 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
-			SampleTrainerOperatorWorker();
+			IComputationHandler handler = new CpuFloat32Handler();
+
+			INDArray a = handler.NDArray(ArrayUtils.Range(1, 6), 2, 3);
+			INDArray b = handler.NDArray(ArrayUtils.Range(1, 12), 3, 4);
+
+			Console.WriteLine("a = " + ArrayUtils.ToString(a, (ADNDArray<float>.ToStringElement) null, 0, true));
+			Console.WriteLine("b = " + ArrayUtils.ToString(b, (ADNDArray<float>.ToStringElement) null, 0, true));
+
+			INDArray c = handler.Dot(a, b);
+
+			Console.WriteLine("c = " + ArrayUtils.ToString(c, (ADNDArray<float>.ToStringElement) null, 0, true));
+
+			//SampleTrainerOperatorWorker();
 
 			Console.ReadKey();
 		}
