@@ -130,10 +130,12 @@
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
     <Compile Include="Math\TestNumber.cs" />
+    <Compile Include="Training\Mergers\NetworkMergerTestUtils.cs" />
     <Compile Include="Training\Mergers\TestAverageNetworkMerger.cs" />
     <Compile Include="Training\Initialisers\TestConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestCustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestGaussianInitialiser.cs" />
+    <Compile Include="Training\Mergers\TestWeightedNetworkMerger.cs" />
     <Compile Include="Training\Operators\Backend\NativeCpu\TestCpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backend\NativeCpu\Workers\TestCpuWorker.cs" />
     <Compile Include="Utils\TestDiskCacheProvider.cs" />

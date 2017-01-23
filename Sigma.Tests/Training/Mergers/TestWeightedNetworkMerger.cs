@@ -1,27 +1,19 @@
-﻿using System.Diagnostics;
-using NUnit.Framework;
-using Sigma.Core;
+﻿using NUnit.Framework;
 using Sigma.Core.Architecture;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.Layers;
-using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
-using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Training.Mergers
 {
-	public class TestAverageNetworkMerger
+	public class TestWeightedNetworkMerger
 	{
 		[TestCase]
-		public void TestAverageNetworkMergerMerge()
+		public void TestWeightedNetworkMergerMerge()
 		{
-			INetworkMerger merger = new AverageNetworkMerger();
+			INetworkMerger merger = new WeightedNetworkMerger(3, 8);
 			INetwork netA = NetworkMergerTestUtils.GenerateNetwork(1);
-			INetwork netB = NetworkMergerTestUtils.GenerateNetwork(5);
+			INetwork netB = NetworkMergerTestUtils.GenerateNetwork(9);
 
 			merger.AddMergeEntry("layers.*.weights");
 
@@ -32,15 +24,15 @@ namespace Sigma.Tests.Training.Mergers
 
 			INDArray weightsA = resolverA.ResolveGet<INDArray>("layers.*.weights")[0];
 			INDArray weightsB = resolverB.ResolveGet<INDArray>("layers.*.weights")[0];
-		
+
 			float firstValueA = weightsA.GetValue<float>(0, 0);
 			float firstValueB = weightsB.GetValue<float>(0, 0);
 
 			// the first value will change
-			Assert.AreEqual(3, firstValueA);
+			Assert.AreEqual(6.82, System.Math.Round(firstValueA * 100) / 100);
 
 			// the second net may not be changed
-			Assert.AreEqual(5, firstValueB);
+			Assert.AreEqual(9, firstValueB);
 
 			merger.RemoveMergeEntry("layers.*.weights");
 
@@ -48,7 +40,8 @@ namespace Sigma.Tests.Training.Mergers
 			weightsA = resolverA.ResolveGet<INDArray>("layers.*.weights")[0];
 			firstValueA = weightsA.GetValue<float>(0, 0);
 
-			Assert.AreEqual(3, firstValueA);
+			// may not change
+			Assert.AreEqual(6.82, System.Math.Round(firstValueA * 100) / 100);
 		}
 	}
 }
