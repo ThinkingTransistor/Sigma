@@ -503,11 +503,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				char transa = 'N', transb = 'N';
 				float alpha = 1.0f, beta = 0.0f;
 				int m = a.Rows, n = b.Cols, k = b.Rows;
-				int arg_lda = m, arg_ldb = k, arg_ldc = n;
-
-				Console.WriteLine($"call sgemm with a_shape={string.Join(",", a.Shape)}, b_shape={string.Join(",", b.Shape)} -> m={m}, n={n}, k={k} -> arg_lda={arg_lda}, arg_ldb={arg_ldb}, arg_ldc={arg_ldc}");
 				
-				BlasBackend.Sgemm(&transa, &transb, &m, &n, &k, &alpha, aref, &arg_lda, bref, &arg_ldb, &beta, zref, &arg_ldc);
+				BlasBackend.Sgemm(&transa, &transb, &n, &m, &k, &alpha, bref, &n, aref, &k, &beta, zref, &n);
 			}
 
 			return new ShapedDataBufferView<float>(z, a.Rows, b.Cols);

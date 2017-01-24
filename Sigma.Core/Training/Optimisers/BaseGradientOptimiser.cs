@@ -88,7 +88,6 @@ namespace Sigma.Core.Training.Optimisers
 
 			handler.ComputeDerivativesTo(cost);
 
-			// TODO check diffsharp Mul_DMCons_DM operator, the Transpose func called is not implemented properly
 			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
 				string layerIdentifier = layerBuffer.Layer.Name;

@@ -36,10 +36,17 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
+			SampleTrainerOperatorWorker();
+
+			Console.ReadKey();
+		}
+
+		private static void SampleDotProduct()
+		{
 			IComputationHandler handler = new CpuFloat32Handler();
 
-			INDArray a = handler.NDArray(ArrayUtils.Range(1, 6), 2, 3);
-			INDArray b = handler.NDArray(ArrayUtils.Range(1, 12), 3, 4);
+			INDArray a = handler.NDArray(ArrayUtils.Range(1, 6), 3, 2);
+			INDArray b = handler.NDArray(ArrayUtils.Range(1, 6), 2, 3);
 
 			Console.WriteLine("a = " + ArrayUtils.ToString(a, (ADNDArray<float>.ToStringElement) null, 0, true));
 			Console.WriteLine("b = " + ArrayUtils.ToString(b, (ADNDArray<float>.ToStringElement) null, 0, true));
@@ -47,10 +54,6 @@ namespace Sigma.Tests.Internals.Backend
 			INDArray c = handler.Dot(a, b);
 
 			Console.WriteLine("c = " + ArrayUtils.ToString(c, (ADNDArray<float>.ToStringElement) null, 0, true));
-
-			//SampleTrainerOperatorWorker();
-
-			Console.ReadKey();
 		}
 
 		private static void SampleTrainerOperatorWorker()
@@ -71,7 +74,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28) + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
