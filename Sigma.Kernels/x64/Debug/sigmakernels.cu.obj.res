@@ -1,1 +1,0 @@
--nologo -c -TP /EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd -I"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v8.0/include" -I"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v8.0/include" "-IC:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\bin/../include"   -EHsc -Zi "x64/Debug/sigmakernels.cu.cpp.ii" 
