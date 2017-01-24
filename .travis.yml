@@ -9,9 +9,9 @@ branches:
 # Environment variables
 env:
   global:
-    - GH_REPO_NAME: <your_repo>
-    - DOXYFILE: $TRAVIS_BUILD_DIR/<path_to_your_doxygen_configuration_file>
-    - GH_REPO_REF: github.com/<your_name>/<your_repo>.git
+    - GH_REPO_NAME: Sigma
+    #- DOXYFILE: $TRAVIS_BUILD_DIR/<path_to_your_doxygen_configuration_file>
+    - GH_REPO_REF: github.com/ThinkingTransistor/Sigma.git
 
 # Install dependencies
 addons:
