@@ -1,0 +1,4 @@
+#line 194 "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\include\\vcruntime.h"
+typedef unsigned long long size_t;
+#include "crt/device_runtime.h"
+#include "common_functions.h"

@@ -1,0 +1,460 @@
+2017-01-04 14:44:42,320 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-04 14:44:42,367 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-04 14:44:42,369 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-04 14:44:42,373 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-04 14:44:42,689 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-04 14:44:42,689 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-04 14:44:42,696 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-04 14:44:42,836 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-04 14:44:42,837 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-04 14:44:42,841 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-04 14:44:43,061 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-04 14:44:43,062 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-04 14:44:43,063 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-04 14:44:43,063 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-04 14:44:43,063 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-04 14:44:43,063 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-04 14:44:43,068 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-04 14:44:43,692 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now blue.
+2017-01-04 14:44:43,706 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-04 14:44:43,709 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-04 14:44:43,710 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-04 14:44:44,150 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-04 14:44:44,150 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-04 14:44:44,243 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-04 14:44:44,247 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-04 14:44:44,254 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-04 14:44:44,348 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-04 14:44:44,396 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-04 14:44:44,399 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-04 14:44:44,402 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-04 14:44:44,407 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-04 14:44:44,411 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-04 14:44:44,412 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-04 14:44:44,414 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-04 14:44:44,416 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-04 14:44:44,417 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-04 14:44:44,419 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-04 14:44:44,421 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-04 14:44:44,565 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-04 14:44:44,567 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-04 14:44:44,572 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:36:44,713 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:36:44,751 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:36:44,752 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:36:44,758 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:36:45,120 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:36:45,120 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:36:45,125 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:36:45,254 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:36:45,254 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:36:45,257 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:36:45,445 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:36:45,445 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:36:45,446 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:36:45,447 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:36:45,447 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:36:45,447 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:36:45,451 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:36:46,113 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now blue.
+2017-01-07 16:36:46,126 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:36:46,130 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:36:46,131 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:36:46,735 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:36:46,736 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:36:46,825 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:36:46,829 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:36:46,835 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:36:46,977 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:36:47,031 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:36:47,034 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:36:47,049 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:36:47,087 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:36:47,110 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:36:47,114 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:36:47,116 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:36:47,118 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:36:47,120 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:36:47,122 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:36:47,234 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:36:47,236 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:36:47,239 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:36:47,248 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:37:09,259 [1] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:37:09,291 [1] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:37:09,292 [1] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:37:09,295 [1] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:37:09,572 [1] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:37:09,572 [1] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:37:09,577 [1] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:37:10,059 [1] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:37:10,059 [1] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:37:10,062 [1] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:37:10,237 [1] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:37:10,237 [1] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:37:10,238 [1] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:37:10,238 [1] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:37:10,238 [1] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:37:10,238 [1] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:37:10,242 [1] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:37:10,766 [4] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now blue.
+2017-01-07 16:37:10,785 [4] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:37:10,788 [4] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:37:10,789 [4] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:37:11,143 [4] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:37:11,143 [1] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:37:11,155 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:37:11,157 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:37:11,163 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:37:11,195 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:37:11,231 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:37:11,234 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:37:11,245 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:37:11,274 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:37:11,301 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:37:11,303 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:37:11,304 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:37:11,305 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:37:11,306 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:37:11,307 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:37:11,310 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:37:11,311 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:37:11,312 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:37:11,319 [4] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:44:53,379 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:44:53,429 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:44:53,430 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:44:53,436 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:44:53,711 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:44:53,711 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:44:53,718 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:44:53,849 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:44:53,849 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:44:53,853 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:44:54,085 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:44:54,086 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:44:54,087 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:44:54,087 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:44:54,088 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:44:54,088 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:44:54,092 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:44:54,699 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now orange.
+2017-01-07 16:44:54,714 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:44:54,718 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:44:54,719 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:44:55,339 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:44:55,339 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:44:55,434 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:44:55,438 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:44:55,447 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:44:55,569 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:44:55,613 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:44:55,617 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:44:55,644 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:44:55,674 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:44:55,698 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:44:55,703 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:44:55,705 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:44:55,707 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:44:55,798 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:44:55,800 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:44:55,802 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:44:55,804 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:44:55,805 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:44:55,813 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:45:27,293 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:45:27,334 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:45:27,336 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:45:27,341 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:45:27,625 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:45:27,625 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:45:27,630 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:45:27,770 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:45:27,777 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:45:27,788 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:45:28,064 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:45:28,064 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:45:28,065 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:45:28,066 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:45:28,066 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:45:28,066 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:45:28,071 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:45:28,684 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:45:28,697 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:45:28,701 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:45:28,702 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:45:29,364 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:45:29,365 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:45:29,458 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:45:29,462 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:45:29,470 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:45:29,637 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:45:29,679 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:45:29,683 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:45:29,709 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:45:29,742 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:45:29,766 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:45:29,770 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:45:29,772 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:45:29,774 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:45:29,960 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:45:29,997 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:45:30,008 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:45:30,011 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:45:30,022 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:45:30,053 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:46:22,258 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:46:22,305 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:46:22,307 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:46:22,314 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:46:22,589 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:46:22,589 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:46:22,596 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:46:22,734 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:46:22,735 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:46:22,740 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:46:22,953 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:46:22,953 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:46:22,955 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:46:22,955 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:46:22,955 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:46:22,955 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:46:22,960 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:46:23,640 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:46:23,654 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:46:23,658 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:46:23,659 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:46:24,258 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:46:24,259 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:46:24,377 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:46:24,380 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:46:24,386 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:46:24,538 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:46:24,578 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:46:24,581 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:46:24,608 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:46:24,640 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:46:24,667 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:46:24,671 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:46:24,674 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:46:24,676 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:46:24,767 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:46:24,769 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:46:24,771 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:46:24,773 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:46:24,775 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:46:24,784 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:47:10,892 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:47:10,940 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:47:10,941 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:47:10,946 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:47:11,214 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:47:11,214 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:47:11,220 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:47:11,361 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:47:11,361 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:47:11,365 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:47:11,609 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:47:11,609 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:47:11,610 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:47:11,611 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:47:11,611 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:47:11,611 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:47:11,616 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:47:12,258 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:47:12,273 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:47:12,278 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:47:12,279 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:47:12,865 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:47:12,866 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:47:13,069 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:47:13,073 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:47:13,082 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:47:13,220 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:47:13,266 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:47:13,271 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:47:13,299 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:47:13,331 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:47:13,357 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:47:13,360 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:47:13,361 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:47:13,363 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:47:13,364 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:47:13,450 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:47:13,452 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:47:13,454 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:47:13,455 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:47:13,515 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:51:00,774 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:51:00,815 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:51:00,816 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:51:00,821 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:51:01,097 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:01,097 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:01,104 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:51:01,237 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:01,238 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:01,244 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:51:01,472 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:51:01,473 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:51:01,474 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:51:01,474 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:51:01,474 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:51:01,475 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:51:01,479 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:51:02,119 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:51:02,133 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:51:02,136 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:51:02,137 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:51:02,734 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:51:02,735 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:51:02,912 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:02,915 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:02,921 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:03,056 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:03,100 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:03,103 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:51:03,128 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:51:03,163 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:51:03,185 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:03,187 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:51:03,189 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:51:03,191 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:51:03,193 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:51:03,195 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:51:03,197 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:51:03,199 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:51:03,201 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:51:03,219 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:51:15,336 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:51:15,380 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:51:15,381 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:51:15,386 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:51:15,672 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:15,675 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:15,681 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:51:15,824 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:15,825 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:15,828 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:51:16,107 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:51:16,107 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:51:16,109 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:51:16,109 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:51:16,109 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:51:16,109 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:51:16,113 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:51:16,807 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:51:16,823 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:51:16,828 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:51:16,829 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:51:17,609 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:51:17,641 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:51:17,641 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:51:17,642 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:51:17,785 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:17,788 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:17,795 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:17,925 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:17,968 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:17,972 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:51:17,984 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:51:18,023 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:51:18,054 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:18,057 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:51:18,058 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:51:18,060 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:51:18,062 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:51:18,063 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:51:18,065 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:51:18,067 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:51:18,152 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:51:18,160 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:51:56,794 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:51:56,843 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:51:56,844 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:51:56,849 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:51:57,123 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:57,123 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:57,130 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:51:57,262 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:51:57,263 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:51:57,267 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:51:57,547 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:51:57,547 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:51:57,549 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:51:57,549 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:51:57,549 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:51:57,550 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:51:57,554 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:51:58,219 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:51:58,233 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:51:58,236 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:51:58,237 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:51:58,971 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:51:59,003 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:51:59,004 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:51:59,005 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:51:59,169 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:59,174 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:59,181 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:59,322 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:51:59,366 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:59,370 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:51:59,382 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:51:59,414 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:51:59,449 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:51:59,451 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:51:59,453 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:51:59,456 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:51:59,458 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:51:59,561 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:51:59,563 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:51:59,565 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:51:59,567 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:51:59,594 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
+2017-01-07 16:52:02,569 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is not alternate anymore.
+2017-01-07 16:52:03,524 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:52:09,625 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:52:23,254 [8] INFO Sigma.Core.SigmaEnvironment - Created and registered sigma environment "test".
+2017-01-07 16:52:23,294 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been created.
+2017-01-07 16:52:23,295 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been initialised.
+2017-01-07 16:52:23,301 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz exists and is accessible...
+2017-01-07 16:52:23,606 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz" exists and is accessible.
+2017-01-07 16:52:23,606 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:52:23,613 [8] INFO Sigma.Core.Data.Sources.UrlSource - Establishing web connection to check if URL http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz exists and is accessible...
+2017-01-07 16:52:23,743 [8] INFO Sigma.Core.Data.Sources.UrlSource - Web connection ended, URL "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz" exists and is accessible.
+2017-01-07 16:52:23,743 [8] INFO Sigma.Core.Data.Sources.MultiSource - Found existing underlying source Sigma.Core.Data.Sources.UrlSource, set as active source and forwarding its output.
+2017-01-07 16:52:23,748 [8] INFO Sigma.Core.Handlers.Backends.SigmaDiff.PlatformDependentUtils - Detected Windows system, using windows libraries (.dll).
+2017-01-07 16:52:24,028 [8] INFO Sigma.Core.Data.Datasets.Dataset - Flushing all caches for dataset "mnist-training" as flushCache flag was set...
+2017-01-07 16:52:24,029 [8] INFO Sigma.Core.Data.Datasets.Dataset - Invalidating and clearing all caches...
+2017-01-07 16:52:24,031 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache"...
+2017-01-07 16:52:24,031 [8] INFO Sigma.Core.Utils.DiskCacheProvider - Done removing ALL of 0 cache entries from this provider from disk using pattern "workspace/cache/mnist-training/*.cache".
+2017-01-07 16:52:24,031 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done invalidating and clearing all caches.
+2017-01-07 16:52:24,038 [8] INFO Sigma.Core.Data.Datasets.Dataset - Done flushing all caches for dataset "mnist-training."
+2017-01-07 16:52:24,045 [8] DEBUG Sigma.Core.Monitors.WPF.WPFMonitor - Added 4 tabs: Overview, Data, Tests, Log2.
+2017-01-07 16:52:24,714 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The primary colour of the window is now deeporange.
+2017-01-07 16:52:24,727 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The secondary colour of the window is now amber.
+2017-01-07 16:52:24,732 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:52:24,733 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:52:25,499 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now light.
+2017-01-07 16:52:25,531 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now dark.
+2017-01-07 16:52:25,533 [10] DEBUG Sigma.Core.Monitors.WPF.View.Themes.ColourManager - The window is now alternate.
+2017-01-07 16:52:25,536 [8] INFO Sigma.Core.Monitors.WPF.WPFMonitor - WPFMonitor has been started. The window SigmaWindow should now be visible. 
+2017-01-07 16:52:25,703 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:52:25,706 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogTextPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:52:25,713 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:52:25,855 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LogDataGridPanel at 0, 0, with a span of 3, 4
+2017-01-07 16:52:25,900 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:52:25,903 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added LineChartPanel at 0, 0, with a span of 2, 3
+2017-01-07 16:52:25,917 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added SimpleDataGridPanel`1 at 0, 3, with a span of 1, 1
+2017-01-07 16:52:25,952 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added CustomDataGridPanel at 2, 0, with a span of 1, 3
+2017-01-07 16:52:25,986 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - The GridLayout has been created with the size 3, 4. From now on it cannot be modified.
+2017-01-07 16:52:25,990 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 0, with a span of 1, 1
+2017-01-07 16:52:25,992 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 1, with a span of 1, 1
+2017-01-07 16:52:26,100 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 2, with a span of 1, 1
+2017-01-07 16:52:26,103 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 0, 3, with a span of 3, 1
+2017-01-07 16:52:26,106 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 0, with a span of 2, 1
+2017-01-07 16:52:26,108 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 1, with a span of 1, 1
+2017-01-07 16:52:26,109 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 1, 2, with a span of 1, 1
+2017-01-07 16:52:26,112 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added EmptyPanel at 2, 1, with a span of 1, 2
+2017-01-07 16:52:26,122 [10] DEBUG Sigma.Core.Monitors.WPF.ViewModel.Tabs.TabUI - Added ControlPanel at 1, 3, with a span of 2, 1
