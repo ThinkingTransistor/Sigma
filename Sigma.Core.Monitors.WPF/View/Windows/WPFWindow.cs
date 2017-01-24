@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Globalization;
 using System.Windows;
 using MahApps.Metro.Controls;
 
@@ -40,6 +41,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			InitialiseComponents();
 		}
+
+		//public abstract void SetUiCulture(CultureInfo uiCultureInfo);
 
 		/// <summary>
 		///     The corresponding WPFMonitor

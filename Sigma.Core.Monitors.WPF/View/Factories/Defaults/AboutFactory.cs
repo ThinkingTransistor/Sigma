@@ -45,10 +45,9 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			return new SigmaAboutBox
 			{
 				DialogHost = _windowDialogHost,
-				Heading = "Sigma",
-				Text = "Rocket powered machine learning.\n" +
-						"Create, compare, adapt, improve - neural networks at the speed of thought.\n" +
-						"Free to use for anyone (MIT license)."
+				Heading = Properties.Resources.AboutBoxHeader,
+				Text = Properties.Resources.AboutBoxText,
+				ButtonContent = Properties.Resources.AboutBoxOk
 			};
 		}
 	}

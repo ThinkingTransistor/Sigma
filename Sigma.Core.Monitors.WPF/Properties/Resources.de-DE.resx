@@ -118,23 +118,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AboutBoxCompany" xml:space="preserve">
-    <value>By ThinkingTransisitor</value>
+    <value>Von ThinkingTransisitor</value>
   </data>
   <data name="AboutBoxCreated" xml:space="preserve">
-    <value>Made with</value>
+    <value>Gemacht mit</value>
   </data>
   <data name="AboutBoxHeader" xml:space="preserve">
     <value>Sigma</value>
   </data>
   <data name="AboutBoxOk" xml:space="preserve">
-    <value>AWESOME</value>
+    <value>TOLL</value>
   </data>
   <data name="AboutBoxText" xml:space="preserve">
-    <value>Rocket powered machine learning.
-Create, compare, adapt, improve - neural networks at the speed of thought.
-Free to use for anyone (MIT license).</value>
+    <value>Racketenbetriebenes maschinelles Lernen.
+Erschaffen, vergleichen, adaptieren, verbessern - neurale Netzwerke mit Gedankengeschwindigkeit.
+Frei für jeden zu verwenden (MIT Lizenz).</value>
   </data>
   <data name="ButtonAbout" xml:space="preserve">
-    <value>About</value>
+    <value>Info</value>
   </data>
 </root>

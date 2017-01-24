@@ -380,6 +380,7 @@ namespace Sigma.Core
 		}
 
 		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB");
+
 		internal static IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

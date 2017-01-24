@@ -9,7 +9,9 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -430,6 +432,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
 			}
 		}
+
+		//public override void SetUiCulture(CultureInfo uiCultureInfo)
+		//{
+		//	PropagateAction(window => window.Dispatcher.Invoke(() =>
+		//	{
+		//		Thread.CurrentThread.CurrentUICulture = uiCultureInfo;
+		//		Debug.WriteLine(Thread.CurrentThread.CurrentUICulture);
+		//	}));
+		//}
 
 		/// <summary>
 		///     Execute an action on every active <see cref="SigmaWindow" />.

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Threading;
 using log4net;
@@ -61,12 +62,74 @@ namespace Sigma.Core.Monitors.WPF
 		private string _title;
 
 		/// <summary>
-		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" />.
+		/// The thread in which the UI runs.
+		/// </summary>
+		private Thread _wpfThread;
+
+		/// <summary>
+		/// The UI culture info for all windows. 
+		/// </summary>
+		private CultureInfo _uiCultureInfo;
+
+		/// <summary>
+		/// The UI culture info for all windows. 
+		/// </summary>
+		public CultureInfo UiCultureInfo
+		{
+			get { return _uiCultureInfo; }
+			set
+			{
+				_uiCultureInfo = value;
+
+				_log.Info($"UI language changed to {_uiCultureInfo}");
+
+				if (_wpfThread != null)
+				{
+					_wpfThread.CurrentUICulture = _uiCultureInfo;
+				}
+			}
+		}
+
+		/// <summary>
+		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
+		///		ThreadCulture. 
+		///  </summary>
+		/// <param name="title">The title of the new window.</param>
+		public WPFMonitor(string title) : this(title, typeof(SigmaWindow)) { }
+
+		/// <summary>
+		///     The constructor for the WPF Monitor - it uses the current <see cref="Thread.CurrentUICulture"/>.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
-		public WPFMonitor(string title) : this(title, typeof(SigmaWindow))
-		{
-		}
+		/// <param name="window">
+		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
+		///     whit the same arguments as <see cref="WPFWindow" />.
+		/// </param>
+		public WPFMonitor(string title, Type window) : this(title, window, Thread.CurrentThread.CurrentUICulture) { }
+
+		/// <summary>
+		///		The cunstrucotr for the WPF Monitor with a given title and UI culture info. <see cref="SigmaWindow"/> will be used.
+		/// </summary>
+		/// <param name="title">The title of the new window.</param>
+		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
+		public WPFMonitor(string title, string uiCultureInfo) : this(title, new CultureInfo(uiCultureInfo)) { }
+
+		/// <summary>
+		///		The cunstrucotr for the WPF Monitor with a given title and UI culture info. <see cref="SigmaWindow"/> will be used.
+		/// </summary>
+		/// <param name="title">The title of the new window.</param>
+		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
+		public WPFMonitor(string title, CultureInfo uiCultureInfo) : this(title, typeof(SigmaWindow), uiCultureInfo) { }
+		/// <summary>
+		///     The constructor for the WPF Monitor.
+		/// </summary>
+		/// <param name="title">The title of the new window.</param>
+		/// <param name="window">
+		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
+		///     whit the same arguments as <see cref="WPFWindow" />.
+		/// </param>
+		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
+		public WPFMonitor(string title, Type window, string uiCultureInfo) : this(title, window, new CultureInfo(uiCultureInfo)) { }
 
 		/// <summary>
 		///     The constructor for the WPF Monitor.
@@ -76,12 +139,15 @@ namespace Sigma.Core.Monitors.WPF
 		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
 		///     whit the same arguments as <see cref="WPFWindow" />.
 		/// </param>
-		public WPFMonitor(string title, Type window)
+		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
+		public WPFMonitor(string title, Type window, CultureInfo uiCultureInfo)
 		{
 			if (!window.IsSubclassOf(typeof(WPFWindow)))
 			{
 				throw new ArgumentException($"Type {window} does not extend from {typeof(WPFWindow)}!");
 			}
+
+			_uiCultureInfo = uiCultureInfo;
 
 			Title = title;
 			_windowType = window;
@@ -90,6 +156,7 @@ namespace Sigma.Core.Monitors.WPF
 			ColourManager = new ColourManager();
 
 			_log.Info($"{nameof(WPFMonitor)} has been created.");
+
 		}
 
 		/// <summary>
@@ -121,14 +188,11 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
-		//HACK: decide what Tabs is
 		/// <summary>
 		///     The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare" />.
 		/// </summary>
 		public List<string> Tabs { get; private set; }
 
-		//HACK: 
-		//TODO: documentation
 
 		internal Dictionary<string, StatusBarLegendInfo> Legends { get; private set; }
 
@@ -200,7 +264,7 @@ namespace Sigma.Core.Monitors.WPF
 				_app = new App(this);
 				ColourManager.App = _app;
 
-				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+				Window = (WPFWindow)Activator.CreateInstance(_windowType, this, _app, _title);
 
 				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
 
@@ -214,12 +278,17 @@ namespace Sigma.Core.Monitors.WPF
 						{
 							_app.Startup += (sender, args) => action?.Invoke(Window);
 						}
+
 					}
 
 					_app.Startup += (sender, args) => _onWindowStartupExecuted = true;
 				}
 
-				_app.Startup += (sender, args) => { reset.Set(); };
+				_app.Startup += (sender, args) =>
+				{
+					reset.Set();
+					_onWindowStartup.Clear();
+				};
 #if DEBUG
 				_app.Run(Window);
 #else
@@ -234,9 +303,12 @@ namespace Sigma.Core.Monitors.WPF
 #endif
 			});
 
+			_wpfThread = wpfThread.Thread;
+
 			//Start the new thread with the given priority and set it to a STAThread (required for WPF windows)
 			wpfThread.Thread.SetApartmentState(ApartmentState.STA);
 			wpfThread.Thread.Priority = Priority;
+			wpfThread.Thread.CurrentUICulture = _uiCultureInfo;
 			wpfThread.Start();
 
 			ColourManager.ForceUpdate();
@@ -267,11 +339,11 @@ namespace Sigma.Core.Monitors.WPF
 
 			if (Window == null)
 			{
-				_onWindowStartup.Add(obj => action((T) obj));
+				_onWindowStartup.Add(obj => action((T)obj));
 			}
 			else
 			{
-				Window.Dispatcher.Invoke(() => action((T) Window), priority);
+				Window.Dispatcher.Invoke(() => action((T)Window), priority);
 			}
 
 			if (onFinished != null)

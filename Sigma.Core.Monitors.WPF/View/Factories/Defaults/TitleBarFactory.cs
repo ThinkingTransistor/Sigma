@@ -189,7 +189,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				IUIFactory<UIElement> aboutFactory = (IUIFactory<UIElement>) Registry.TryGetValue(AboutFactoryIdentifier, () => new AboutFactory(window.DialogHost));
 				object aboutContent = aboutFactory.CreateElement(app, window);
 
-				TitleBarItem about = new TitleBarItem(new MenuItem { Header = "About" }, (Action) (async () =>
+				TitleBarItem about = new TitleBarItem(Properties.Resources.ButtonAbout, (Action) (async () =>
 				{
 					window.DialogHost.IsOpen = false;
 					await DialogHost.Show(aboutContent, window.DialogHostIdentifier);
