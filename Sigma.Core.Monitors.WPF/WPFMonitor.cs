@@ -112,7 +112,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
 		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
-		public WPFMonitor(string title, string uiCultureInfo) : this(title, new CultureInfo(uiCultureInfo)) { }
+		public WPFMonitor(string title, string uiCultureInfo) : this(title, typeof(SigmaWindow), uiCultureInfo) { }
 
 		/// <summary>
 		///		The cunstrucotr for the WPF Monitor with a given title and UI culture info. <see cref="SigmaWindow"/> will be used.
@@ -129,7 +129,7 @@ namespace Sigma.Core.Monitors.WPF
 		///     whit the same arguments as <see cref="WPFWindow" />.
 		/// </param>
 		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
-		public WPFMonitor(string title, Type window, string uiCultureInfo) : this(title, window, new CultureInfo(uiCultureInfo)) { }
+		public WPFMonitor(string title, Type window, string uiCultureInfo) : this(title, window, CultureInfo.GetCultureInfo(uiCultureInfo)) { }
 
 		/// <summary>
 		///     The constructor for the WPF Monitor.

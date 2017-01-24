@@ -22,7 +22,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sigma.Core.Monitors.WPF.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,9 +61,9 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to By ThinkingTransisitor.
+        ///   Looks up a localized string similar to by ThinkingTransisitor.
         /// </summary>
-        internal static string AboutBoxCompany {
+        public static string AboutBoxCompany {
             get {
                 return ResourceManager.GetString("AboutBoxCompany", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Made with.
         /// </summary>
-        internal static string AboutBoxCreated {
+        public static string AboutBoxCreated {
             get {
                 return ResourceManager.GetString("AboutBoxCreated", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Sigma.
         /// </summary>
-        internal static string AboutBoxHeader {
+        public static string AboutBoxHeader {
             get {
                 return ResourceManager.GetString("AboutBoxHeader", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to AWESOME.
         /// </summary>
-        internal static string AboutBoxOk {
+        public static string AboutBoxOk {
             get {
                 return ResourceManager.GetString("AboutBoxOk", resourceCulture);
             }
@@ -99,20 +99,102 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Rocket powered machine learning.
         ///Create, compare, adapt, improve - neural networks at the speed of thought.
+        ///
         ///Free to use for anyone (MIT license)..
         /// </summary>
-        internal static string AboutBoxText {
+        public static string AboutBoxText {
             get {
                 return ResourceManager.GetString("AboutBoxText", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to About.
+        ///   Looks up a localized string similar to Debug.
         /// </summary>
-        internal static string ButtonAbout {
+        public static string ButtonDebug {
             get {
-                return ResourceManager.GetString("ButtonAbout", resourceCulture);
+                return ResourceManager.GetString("ButtonDebug", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Environment.
+        /// </summary>
+        public static string ButtonEnvironment {
+            get {
+                return ResourceManager.GetString("ButtonEnvironment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Help.
+        /// </summary>
+        public static string ButtonHelp {
+            get {
+                return ResourceManager.GetString("ButtonHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string ButtonSettings {
+            get {
+                return ResourceManager.GetString("ButtonSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to About Sigma.
+        /// </summary>
+        public static string MenuButtonAbout {
+            get {
+                return ResourceManager.GetString("MenuButtonAbout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Load.
+        /// </summary>
+        public static string MenuButtonLoad {
+            get {
+                return ResourceManager.GetString("MenuButtonLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        public static string MenuButtonSave {
+            get {
+                return ResourceManager.GetString("MenuButtonSave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Style.
+        /// </summary>
+        public static string MenuButtonStyle {
+            get {
+                return ResourceManager.GetString("MenuButtonStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle alternate theme.
+        /// </summary>
+        public static string MenuButtonToggleAlternate {
+            get {
+                return ResourceManager.GetString("MenuButtonToggleAlternate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle dark theme.
+        /// </summary>
+        public static string MenuButtonToggleDark {
+            get {
+                return ResourceManager.GetString("MenuButtonToggleDark", resourceCulture);
             }
         }
     }

@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AboutBoxCompany" xml:space="preserve">
-    <value>Von ThinkingTransisitor</value>
+    <value>von ThinkingTransisitor</value>
   </data>
   <data name="AboutBoxCreated" xml:space="preserve">
     <value>Gemacht mit</value>
@@ -132,9 +132,37 @@
   <data name="AboutBoxText" xml:space="preserve">
     <value>Racketenbetriebenes maschinelles Lernen.
 Erschaffen, vergleichen, adaptieren, verbessern - neurale Netzwerke mit Gedankengeschwindigkeit.
+
 Frei für jeden zu verwenden (MIT Lizenz).</value>
   </data>
-  <data name="ButtonAbout" xml:space="preserve">
-    <value>Info</value>
+  <data name="ButtonDebug" xml:space="preserve">
+    <value>Entwanzen</value>
+  </data>
+  <data name="ButtonEnvironment" xml:space="preserve">
+    <value>Umgebung</value>
+  </data>
+  <data name="ButtonHelp" xml:space="preserve">
+    <value>Hilfe</value>
+  </data>
+  <data name="ButtonSettings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="MenuButtonAbout" xml:space="preserve">
+    <value>Über Sigma</value>
+  </data>
+  <data name="MenuButtonLoad" xml:space="preserve">
+    <value>Laden</value>
+  </data>
+  <data name="MenuButtonSave" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="MenuButtonStyle" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="MenuButtonToggleAlternate" xml:space="preserve">
+    <value>Alternatives Design wechseln</value>
+  </data>
+  <data name="MenuButtonToggleDark" xml:space="preserve">
+    <value>Dunkles Design wechseln</value>
   </data>
 </root>

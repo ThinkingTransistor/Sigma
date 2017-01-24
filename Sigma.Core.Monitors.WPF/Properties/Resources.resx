@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AboutBoxCompany" xml:space="preserve">
-    <value>By ThinkingTransisitor</value>
+    <value>by ThinkingTransisitor</value>
   </data>
   <data name="AboutBoxCreated" xml:space="preserve">
     <value>Made with</value>
@@ -132,9 +132,37 @@
   <data name="AboutBoxText" xml:space="preserve">
     <value>Rocket powered machine learning.
 Create, compare, adapt, improve - neural networks at the speed of thought.
+
 Free to use for anyone (MIT license).</value>
   </data>
-  <data name="ButtonAbout" xml:space="preserve">
-    <value>About</value>
+  <data name="ButtonDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="ButtonEnvironment" xml:space="preserve">
+    <value>Environment</value>
+  </data>
+  <data name="ButtonHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="ButtonSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="MenuButtonAbout" xml:space="preserve">
+    <value>About Sigma</value>
+  </data>
+  <data name="MenuButtonLoad" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="MenuButtonSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="MenuButtonStyle" xml:space="preserve">
+    <value>Style</value>
+  </data>
+  <data name="MenuButtonToggleAlternate" xml:space="preserve">
+    <value>Toggle alternate theme</value>
+  </data>
+  <data name="MenuButtonToggleDark" xml:space="preserve">
+    <value>Toggle dark theme</value>
   </data>
 </root>

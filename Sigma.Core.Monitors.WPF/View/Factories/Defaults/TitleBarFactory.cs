@@ -93,11 +93,11 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 		{
 			TitleBarFuncs.Add(
 				(app, window) =>
-					new TitleBarItem("Environment", "Load", "Store",
+					new TitleBarItem(Properties.Resources.ButtonEnvironment, Properties.Resources.MenuButtonLoad, Properties.Resources.MenuButtonSave,
 						new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 
 #if DEBUG
-			AddSigmaFunction((app, window) => new TitleBarItem("Debug", "Download mnist", (Action) (() =>
+			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonDebug, "Download mnist", (Action) (() =>
 				{
 					BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
 					IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
@@ -180,20 +180,20 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			));
 #endif
 
-			AddSigmaFunction((app, window) => new TitleBarItem("Settings", "Toggle Dark",
-				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), "Toggle Alternate",
-				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)));
+			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonSettings, new TitleBarItem(Properties.Resources.MenuButtonStyle, Properties.Resources.MenuButtonToggleDark,
+				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), Properties.Resources.MenuButtonToggleAlternate,
+				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate))));
 
 			AddSigmaFunction((app, window) =>
 			{
 				IUIFactory<UIElement> aboutFactory = (IUIFactory<UIElement>) Registry.TryGetValue(AboutFactoryIdentifier, () => new AboutFactory(window.DialogHost));
 				object aboutContent = aboutFactory.CreateElement(app, window);
 
-				TitleBarItem about = new TitleBarItem(Properties.Resources.ButtonAbout, (Action) (async () =>
+				TitleBarItem about = new TitleBarItem(Properties.Resources.ButtonHelp, new TitleBarItem(Properties.Resources.MenuButtonAbout, (Action) (async () =>
 				{
 					window.DialogHost.IsOpen = false;
 					await DialogHost.Show(aboutContent, window.DialogHostIdentifier);
-				}));
+				})));
 
 				return about;
 			});
