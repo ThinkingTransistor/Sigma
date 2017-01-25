@@ -83,8 +83,9 @@ namespace Sigma.Core.Training.Optimisers
 			Registry["gradients"] = gradientRegistry;
 
 			INumber cost = GetTotalCost(network, handler, costRegistry);
+			Registry["total_cost"] = cost;
 
-			_logger.Warn("Total cost for current optimiser run: " + cost);
+			//_logger.Warn("Total cost for current optimiser run: " + cost);
 
 			handler.ComputeDerivativesTo(cost);
 

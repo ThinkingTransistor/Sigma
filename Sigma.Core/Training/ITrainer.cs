@@ -15,6 +15,7 @@ using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
@@ -59,7 +60,7 @@ namespace Sigma.Core.Training
 		/// <summary>
 		/// The data provider which links external input and outputs.
 		/// </summary>
-		IDataProvider Provider { get; set; }
+		IDataProvider DataProvider { get; set; }
 
 		/// <summary>
 		/// The primary training data iterator, used to yield training data for the network to train on.

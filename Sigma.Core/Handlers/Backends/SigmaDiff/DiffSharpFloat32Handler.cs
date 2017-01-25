@@ -652,13 +652,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				ADFloat32Number number = (ADFloat32Number) traceable;
 
-				AD.ReverseProp(new DNumber(1000.0f).asADD, number._adNumberHandle.asADD);
+				AD.ReverseProp(new DNumber(1.0f).asADD, number._adNumberHandle.asADD);
 			}
 			else if (traceable is ADNDFloat32Array)
 			{
 				ADNDFloat32Array array = (ADNDFloat32Array) traceable;
 
-				AD.ReverseProp(new DNumber(1000.0f).asADD, array._adArrayHandle.asADDND);
+				AD.ReverseProp(new DNumber(1.0f).asADD, array._adArrayHandle.asADDND);
 			}
 			else
 			{

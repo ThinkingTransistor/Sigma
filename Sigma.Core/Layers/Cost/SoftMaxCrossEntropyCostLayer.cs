@@ -29,6 +29,7 @@ namespace Sigma.Core.Layers.Cost
 		{
 			predictions = handler.SoftMax(predictions);
 
+			// TODO replace with proper cross entropy cost
 			INumber cost = handler.Divide(handler.Sum(handler.Multiply(targets, handler.Log(predictions))), -predictions.Length);
 
 			return cost;

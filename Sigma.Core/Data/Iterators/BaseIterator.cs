@@ -120,7 +120,14 @@ namespace Sigma.Core.Data.Iterators
 
 						var block = UnderlyingDataset.FetchBlock(index, handler);
 
-						_logger.Debug($"Done with asynchronous background preparation of block with index {index}.");
+						if (block == null)
+						{
+							_logger.Debug($"Unable to asynchronously prepare block with index {index}, block appears to be empty (null).");
+						}
+						else
+						{
+							_logger.Debug($"Done with asynchronous background preparation of block with index {index}.");
+						}
 
 						return block;
 					}));

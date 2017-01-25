@@ -101,9 +101,9 @@ namespace Sigma.Core.Training.Operators
 
 		/// <summary>
 		///		This merger is used to merge multiple networks after they get
-		///		reported to the <see cref="IOperator"/>.
+		///		reported to the <see cref="IOperator"/>. Defaults to <see cref="AverageNetworkMerger"/>.
 		/// </summary>
-		public INetworkMerger Merger { get; set; }
+		public INetworkMerger NetworkMerger { get; set; } = new AverageNetworkMerger();
 
 		/// <summary>
 		///     The number of <see cref="IWorker" />s (threads) used in this
@@ -114,7 +114,7 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///		The number of the current global epoch in this operator.
 		/// </summary>
-		public int EpochNumber { get; }
+		public int EpochNumber { get; protected set; }
 
 		/// <summary>
 		/// The logger, it will be initialised in the property so that the class matches.
@@ -391,6 +391,7 @@ namespace Sigma.Core.Training.Operators
 			// TODO uncomment this code and add more parameter checks
 			//if (Trainer == null) throw new InvalidOperationException($"{nameof(Trainer)} cannot be null.");
 			//if (Trainer.TrainingDataIterator == null) throw new InvalidOperationException($"{nameof(Trainer.TrainingDataIterator)} cannot be null.");
+			//if (NetworkMerger == null) throw new InvalidOperationException($"{nameof(NetworkMerger)} cannot be null.");
 
 			if (Workers == null)
 			{

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
@@ -59,7 +60,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		///     The <see cref="ThreadPriority" /> with which newly created Threads
 		///     will be started. This is <see cref="ThreadPriority.Highest" /> per default.
 		/// </summary>
-		public ThreadPriority WorkerPriority { get; set; }
+		public ThreadPriority WorkerPriority { get; }
 
 		/// <summary>
 		/// The current epoch number, with all networks. 
@@ -110,7 +111,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 				PushEpochNetwork(worker);
 			}
 
-			// TODO merge networks after all epochs of one network are completed
 			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
 		}
 
@@ -138,16 +138,35 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 
 		protected virtual void PushEpochNetwork(IWorker worker)
 		{
+			bool allNetworksForEpochPushed;
+
 			lock (_pushedNetworks)
 			{
 				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
-				if (!networks.AddToNextNull(worker.LocalNetwork))
+				if (!networks.AddToNextNull(worker.LocalNetwork.DeepCopy()))
 				{
 					throw new InvalidOperationException($"Too many workers trying to push their network, worker {worker} attempted to push his network but {WorkerCount} workers already pushed their network for epoch {worker.LocalEpochNumber}.");
 				}
+
+				allNetworksForEpochPushed = _pushedNetworks[worker.LocalEpochNumber][WorkerCount - 1] != null;
 			}
 
-			Logger.Info($"Worker {worker.GetType()} pushed his network for the epoch {worker.LocalEpochNumber}.");
+			Logger.Info($"Worker {worker.GetType()} pushed its network for the epoch {worker.LocalEpochNumber}.");
+
+			if (allNetworksForEpochPushed)
+			{
+				EpochNumber++;
+
+				Logger.Info($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
+				Logger.Info($"Merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}...");
+
+				lock (_networkChangedLock)
+				{
+					NetworkMerger.Merge(Network, _pushedNetworks[worker.LocalEpochNumber]);
+				}
+
+				Logger.Info($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
+			}
 		}
 
 		/// <summary>

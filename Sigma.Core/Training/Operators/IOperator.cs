@@ -63,7 +63,7 @@ namespace Sigma.Core.Training.Operators
 		///		This merger is used to merge multiple networks after they are
 		///		submitted to the <see cref="IOperator"/>.
 		/// </summary>
-		INetworkMerger Merger { get; set; }
+		INetworkMerger NetworkMerger { get; set; }
 
 		/// <summary>
 		///     The number of <see cref="Workers.IWorker" />s (threads) used in this

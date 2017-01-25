@@ -19,7 +19,9 @@ using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
+using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators;
+using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
@@ -38,15 +40,14 @@ namespace Sigma.Core.Training
 		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
-
 		private bool _initialised;
 
 		public string Name { get; }
 		public SigmaEnvironment Sigma { get; set; }
 		public INetwork Network { get; set; }
 		public IOptimiser Optimiser { get; set; }
-		public IOperator Operator { get; set; }
-		public IDataProvider Provider { get; set; } = new DefaultDataProvider();
+		public IOperator Operator { get; set; } = new CpuSinglethreadedOperator();
+		public IDataProvider DataProvider { get; set; } = new DefaultDataProvider();
 
 		public IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 		public IDataIterator TrainingDataIterator { get; set; }
@@ -208,7 +209,7 @@ namespace Sigma.Core.Training
 				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning an operator.");
 			}
 
-			if (Provider == null)
+			if (DataProvider == null)
 			{
 				throw new InvalidOperationException($"Cannot initialise trainer {Name} before assigning a data provider.");
 			}
@@ -261,7 +262,7 @@ namespace Sigma.Core.Training
 			{
 				foreach (string externalInputAlias in layerBuffer.ExternalInputs)
 				{
-					Provider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
+					DataProvider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
 				}
 			}
 
@@ -269,7 +270,7 @@ namespace Sigma.Core.Training
 			{
 				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)
 				{
-					Provider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
+					DataProvider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
 				}
 			}
 		}

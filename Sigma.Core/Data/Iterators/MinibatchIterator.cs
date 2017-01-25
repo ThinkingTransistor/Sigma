@@ -101,17 +101,17 @@ namespace Sigma.Core.Data.Iterators
 						UnderlyingDataset.FreeBlock(_currentBlockIndex, handler);
 					}
 
-					_currentBlockIndex = yieldedIndex;
-					_currentBlock = _fetchedBlocks[_currentBlockIndex];
-					_currentBatchNotTraversedBlockIndices.Remove(yieldedIndex);
-					_currentBlockSizeRecords = _currentBlock.First().Value.Shape[0];
-
 					if (_traversedAllBlocks)
 					{
 						ResetNotTraversedBlockIndices();
 
 						yield break;
 					}
+
+					_currentBlockIndex = yieldedIndex;
+					_currentBlock = _fetchedBlocks[_currentBlockIndex];
+					_currentBatchNotTraversedBlockIndices.Remove(yieldedIndex);
+					_currentBlockSizeRecords = _currentBlock.First().Value.Shape[0];
 
 					_currentBlockNotTraversedSlices.Clear();
 
@@ -135,7 +135,7 @@ namespace Sigma.Core.Data.Iterators
 					_requireNewBlock = true;
 				}
 
-				_logger.Debug($"Yielding minibatch from block with index {_currentBlockIndex}, record range from {beginRecordIndex} to {endRecordIndex}.");
+				//_logger.Debug($"Yielding minibatch from block with index {_currentBlockIndex}, record range from {beginRecordIndex} to {endRecordIndex}.");
 
 				yield return SliceBlock(_fetchedBlocks[_currentBlockIndex], beginRecordIndex, endRecordIndex);
 			}
@@ -192,10 +192,11 @@ namespace Sigma.Core.Data.Iterators
 
 				ResetNotTraversedBlockIndices();
 
-				_currentHighestTraversedBlockIndex = 0;
-				yieldedIndex = 0;
+				_currentHighestTraversedBlockIndex = -1;
+				yieldedIndex = -1;
 
-				PrepareBlocksAsync(handler, 0);
+				// we cannot know whether we will reach the end of the dataset with the next element, so no preparation at the moment
+				// TODO find way to prepare first block after traversing entire dataset, maybe remember last available block index once traversed
 			}
 
 			return yieldedIndex;
