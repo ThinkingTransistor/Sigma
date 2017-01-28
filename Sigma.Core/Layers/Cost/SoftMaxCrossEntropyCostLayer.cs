@@ -27,6 +27,7 @@ namespace Sigma.Core.Layers.Cost
 
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
+			// TODO urgent fix softmax call to properly work with batch / time dimension > 1
 			predictions = handler.SoftMax(predictions);
 
 			// TODO replace with proper cross entropy cost

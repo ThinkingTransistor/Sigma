@@ -77,8 +77,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4) + FullyConnectedLayer.Construct(3) + OutputLayer.Construct(3) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
+			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.05);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
