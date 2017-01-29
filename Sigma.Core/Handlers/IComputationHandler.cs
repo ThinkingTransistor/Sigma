@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 
@@ -159,6 +160,23 @@ namespace Sigma.Core.Handlers
 		/// <param name="array">The array.</param>
 		/// <returns>A flattened version of the given ndarray.</returns>
 		INDArray FlattenAllButLast(INDArray array);
+
+		/// <summary>
+		/// Transform an ndarray row-wise to another type (may also be ndarray).
+		/// </summary>
+		/// <typeparam name="TOther">The other type.</typeparam>
+		/// <param name="array">The array to split row-wise and then transform.</param>
+		/// <param name="transformFunction">The transform function to transform each row with.</param>
+		/// <returns>An array of values as given by the transform function when applied to each row individually.</returns>
+		TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction);
+
+		/// <summary>
+		/// Apply a function along the second (column) dimension of an ndarray.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="function">The function to apply.</param>
+		/// <returns>An ndarray with the given function applied column-wise to the given ndarray.</returns>
+		INDArray RowWise(INDArray array, Func<INDArray, INDArray> function);
 
 		#endregion
 

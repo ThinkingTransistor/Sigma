@@ -27,11 +27,18 @@ namespace Sigma.Core.Layers.Cost
 
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
-			// TODO urgent fix softmax call to properly work with batch / time dimension > 1
+			// TODO fix rowwise softmax call, not returning properly softmaxed values (all averaged out at 0.33)
+			//predictions = handler.RowWise(predictions, handler.SoftMax);
 			predictions = handler.SoftMax(predictions);
 
-			// TODO replace with proper cross entropy cost
-			INumber cost = handler.Divide(handler.Sum(handler.Multiply(targets, handler.Log(predictions))), -predictions.Length);
+			INDArray logPredictions = handler.Log(predictions);
+			INDArray a = handler.Multiply(targets, logPredictions);
+
+			INDArray inverseTargets = handler.Subtract(1, targets);
+			INDArray inversePredictions = handler.Subtract(1, predictions);
+			INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
+
+			INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -predictions.Length);
 
 			return cost;
 		}

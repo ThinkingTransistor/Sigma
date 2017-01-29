@@ -8,9 +8,11 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using DiffSharp;
+using DiffSharp.AD;
 using DiffSharp.Config;
 using DiffSharp.Interop.Float32;
 using log4net;
+using Microsoft.FSharp.Core;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
@@ -117,6 +119,47 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public INDArray FlattenAllButLast(INDArray array)
 		{
 			return array.Reshape(ArrayUtils.Product(0, array.Rank - 1, array.Shape), array.Shape[array.Rank - 1]);
+		}
+
+		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
+		{
+			throw new NotImplementedException();
+		}
+
+		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			INDArray[] rows = SliceRowWise(array, internalArray);
+
+			for (int i = 0; i < rows.Length; i++)
+			{
+				rows[i] = function.Invoke(rows[i]);
+			}
+
+			DNDArray[] internalRowHandles = new DNDArray[rows.Length];
+			for (int i = 0; i < rows.Length; i++)
+			{
+				internalRowHandles[i] = InternaliseArray(rows[i])._adArrayHandle;
+			}
+
+			return new ADNDFloat32Array(new DNDArray(DNDArray.OfRows(internalRowHandles, DiffsharpBackendHandle)));
+		}
+
+		private static INDArray[] SliceRowWise(INDArray array, ADNDFloat32Array internalArray)
+		{
+			INDArray[] rows = new INDArray[array.Shape[0]];
+
+			var colStart = FSharpOption<int>.Some(0);
+			var colFinish = FSharpOption<int>.Some(checked((int) array.Shape[1] - 1));
+
+			for (var i = 0; i < rows.Length; i++)
+			{
+				var row = FSharpOption<int>.Some(i);
+
+				rows[i] = new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(row, row, colStart, colFinish));
+			}
+
+			return rows;
 		}
 
 		public INDArray Add<TOther>(INDArray array, TOther value)
@@ -588,17 +631,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			throw new NotImplementedException($"Clipping is currently not supported in this handler ({this}).");
 
-/*
-			ADNDFloat32Array internalArray = InternaliseArray(array);
-			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
-			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
+			/*
+						ADNDFloat32Array internalArray = InternaliseArray(array);
+						ADFloat32Number internalMinValue = InternaliseNumber(minValue);
+						ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
 
-			DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
+						DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
 
-			DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
+						DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
 
-			return new ADNDFloat32Array(clipped);
-*/
+						return new ADNDFloat32Array(clipped);
+			*/
 		}
 
 		public uint BeginTrace()

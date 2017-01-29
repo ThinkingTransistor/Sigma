@@ -475,15 +475,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			b = b.DeepCopy();
-			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			// note: doesn't work like this with blas since result inc cannot be 0
+			//fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			//{
+			//	int len = b.Length;
+			//	int inca = 0, incb = 1;
+			//	float alpha = -1.0f;
+
+			//	BlasBackend.Saxpy(&len, &alpha, bref, &incb, &a, &inca);
+			//}
+
+			// TODO update with blas implementation if applicable
+			float[] data = b.DataBuffer.Data;
+			int offset = b.DataBuffer.Offset;
+			int len = b.DataBuffer.Length + offset;
+
+			for (int i = offset; i < len; i++)
 			{
-				int len = b.Length;
-				int inca = 0, incb = 1;
-				float alpha = -1.0f;
-
-				BlasBackend.Saxpy(&len, &alpha, &a, &inca, bref, &incb);
+				data[i] = a - data[i];
 			}
-
+			 
 			return b;
 		}
 
@@ -653,12 +664,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> ReshapeCopy_MRows_V(ShapedDataBufferView<float> value)
 		{
-			throw new NotImplementedException();
+			if (value.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
+			return value.DataBuffer.DeepCopy();
 		}
 
 		public override ShapedDataBufferView<float> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)
 		{
-			throw new NotImplementedException();
+			if (value.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			int n = value.Length / rows;
+
+			return new ShapedDataBufferView<float>(value.DeepCopy(), rows, n);
 		}
 
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)

@@ -64,6 +64,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<T>) ((Util.ShapedDataBufferView<T>) obj).DataBuffer).BackendTag];
 			}
+			else if (obj is SigmaDiffDataBuffer<T>)
+			{
+				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<T>) obj).BackendTag];
+			}
 
 			throw new InvalidOperationException($"Cannot get backend for unknown object {obj} of type {obj.GetType()}, object is neither a known type nor a backend mapped type.");
 		}

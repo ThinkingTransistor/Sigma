@@ -80,6 +80,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ISigmaDiffDataBuffer<T>) GetValues(startIndex, length);
 		}
 
+		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		{
+			int newSize = (rowFinish - rowStart + 1) * (colFinish - colStart + 1);
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
+			int colLength = colFinish - colStart;
+
+			for (int m = rowStart; m <= rowFinish; m++)
+			{
+				System.Array.Copy(Data, Offset, values.Data, m * totalCols + colStart, colLength);
+			}
+
+			return values;
+		}
+
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
 			T[] copyData = new T[Length];
