@@ -11,6 +11,7 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Utils;
@@ -32,11 +33,26 @@ namespace Sigma.Tests.Internals.WPF
 
 			sigma.Prepare();
 
+			LineChartPanel lineChart = null;
+
 			gui.WindowDispatcher(window =>
 			{
 				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
+
+				lineChart = new LineChartPanel("Example");
+				window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2);
+
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
 			});
+
+
+			Random rand = new Random();
+			while (true)
+			{
+				Thread.Sleep(1000);
+
+				gui.WindowDispatcher(window => lineChart.Add(rand.Next(7) + 3));
+			}
 
 			//IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
@@ -72,6 +88,6 @@ namespace Sigma.Tests.Internals.WPF
 
 				Console.WriteLine($"[{name}]=\n" + blockString);
 			}
-		} 
+		}
 	}
 }

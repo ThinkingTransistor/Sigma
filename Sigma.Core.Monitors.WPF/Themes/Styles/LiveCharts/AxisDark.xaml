@@ -6,7 +6,23 @@
 		<Setter Property="Foreground" Value="{StaticResource PrimaryHueDarkForegroundBrush}" />
 	</Style>
 
-	<!--<Style TargetType="lvc:Separator">
-		<Setter Property="Stroke" Value="Red"></Setter>
-	</Style>-->
+	<Style TargetType="lvc:Separator">
+		<Setter Property="StrokeThickness" Value="1.3"/>
+		
+		<Setter Property="StrokeDashArray">
+			<Setter.Value>
+				<DoubleCollection>5</DoubleCollection>
+			</Setter.Value>
+		</Setter>
+		
+		<Setter Property="Stroke" Value="DarkGray"/>
+		
+		<!-- Trigger disables X-axis -->
+		<Style.Triggers>
+			<Trigger Property="AxisOrientation" Value="X">
+				<Setter Property="IsEnabled" Value="False"/>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+
 </ResourceDictionary>

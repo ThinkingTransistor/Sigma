@@ -7,36 +7,62 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Sigma.Core.Monitors.WPF.Panels.Charts.Definitions;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	public class LineChartPanel : SigmaPanel
+	public class LineChartPanel : GenericPanel<CartesianChart>, IPointVisualiser<double>
 	{
-		public LineChartPanel(string title) : base(title)
+		protected readonly StepLineSeries StepLine;
+
+		public LineChartPanel(string title, object headerContent = null) : base(title, headerContent)
 		{
 			Content = new CartesianChart();
 
-			StepLineSeries stepLine = new StepLineSeries
+			StepLine = new StepLineSeries
 			{
-				Values = new ChartValues<double> {9, 6, 5, 7, 8, 9, 7, 6, 7, 5}
+				Values = new ChartValues<double>()
 			};
 
-			Content.AnimationsSpeed = TimeSpan.FromMilliseconds(100);
+			// TODO: set the AnimationSpeed in style
+			//Content.AnimationsSpeed = TimeSpan.FromMilliseconds(100);
 
-			Content.SetDrawMarginWidth(Content.GetDrawMarginElements()*0.9);
+			//Content.SetDrawMarginWidth(Content.GetDrawMarginElements() * 0.9);
 
-			Content.Series.Add(stepLine);
-
+			Content.Series.Add(StepLine);
 
 			//Content.VisualElements.Chart.AxisX[0].MinValue = 10;
 
-			base.Content = Content;
 			ContentGrid.Margin = new Thickness(20);
 		}
 
-		public new CartesianChart Content { get; }
+		protected virtual void AddNoUpdate(double value)
+		{
+			StepLine.Values.Add(value);
+		}
+
+		/// <summary>
+		/// Add a give value to the LineChart and update the view.
+		/// </summary>
+		/// <param name="value">The value that will be added.</param>
+		public virtual void Add(double value)
+		{
+			AddNoUpdate(value);
+			//TODO: update
+		}
+
+		/// <summary>
+		/// Add a range of given values to the LineChart and update the view once.
+		/// </summary>
+		/// <param name="values">The range of values that will be added.</param>
+		public virtual void AddRange(IEnumerable<double> values)
+		{
+			foreach (double value in values) { AddNoUpdate(value); }
+			//TODO: update
+		}
 	}
 }

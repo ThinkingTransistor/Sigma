@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using log4net;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
@@ -264,7 +265,7 @@ namespace Sigma.Core.Monitors.WPF
 				_app = new App(this);
 				ColourManager.App = _app;
 
-				Window = (WPFWindow)Activator.CreateInstance(_windowType, this, _app, _title);
+				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
 
 				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
 
@@ -289,18 +290,18 @@ namespace Sigma.Core.Monitors.WPF
 					reset.Set();
 					_onWindowStartup.Clear();
 				};
-#if DEBUG
-				_app.Run(Window);
-#else
+
 				try
 				{
 					_app.Run(Window);
 				}
 				catch (Exception e)
 				{
-					_log.Error("Uncaught exception in UI has been thrown.", e);
-				}
+					_log.Error("Uncaught exception in UI has been thrown. Sigma will continue execution ...", e);
+#if DEBUG
+					throw;
 #endif
+				}
 			});
 
 			_wpfThread = wpfThread.Thread;
@@ -321,16 +322,13 @@ namespace Sigma.Core.Monitors.WPF
 		///     All commands will be executed in the thread of the window!
 		///     If the environment has note been prepared, the function will be executed
 		///     in OnStartup function of the window.
+		/// 
+		///		The method will block until fully executed (if the window has already been started).
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
-		/// <param name="onFinished">
-		///     The action that should be called after the action has been finished. This action will be
-		///     called from the caller thread.
-		/// </param>
 		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished" /> is not yet implemented.</exception>
-		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal,
-			Action onFinished = null) where T : WPFWindow
+		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
 		{
 			if (typeof(T) != _windowType)
 			{
@@ -339,16 +337,19 @@ namespace Sigma.Core.Monitors.WPF
 
 			if (Window == null)
 			{
-				_onWindowStartup.Add(obj => action((T)obj));
+				_onWindowStartup.Add(obj => action((T) obj));
 			}
 			else
 			{
-				Window.Dispatcher.Invoke(() => action((T)Window), priority);
-			}
-
-			if (onFinished != null)
-			{
-				throw new InvalidOperationException($"{nameof(onFinished)} not yet implemented... Sorry");
+				try
+				{
+					Window.Dispatcher.Invoke(() => action((T) Window), priority);
+				}
+				catch (TaskCanceledException e)
+				{
+					_log.Error("A window dispatcher method has been cancelled. This happens most likely when the window is closed, but a task still executing / newly added.", e);
+					throw;
+				}
 			}
 		}
 
@@ -360,15 +361,10 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
-		/// <param name="onFinished">
-		///     The action that should be called after the action has been finished. This action will be
-		///     called from the caller thread.
-		/// </param>
 		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished" /> is not implemented.</exception>
-		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal,
-			Action onFinished = null)
+		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal)
 		{
-			WindowDispatcher<SigmaWindow>(action, priority, onFinished);
+			WindowDispatcher<SigmaWindow>(action, priority);
 		}
 	}
 }
