@@ -74,6 +74,23 @@ namespace Sigma.Core.Data.Iterators
 			}
 		}
 
+		protected void FreeBlocks(IComputationHandler handler, params int[] indices)
+		{
+			foreach (int index in indices)
+			{
+				if (!_fetchedBlocks.ContainsKey(index))
+				{
+					continue;
+				}
+
+				var block = _fetchedBlocks[index];
+
+				UnderlyingDataset.FreeBlock(index, handler);
+
+				_fetchedBlocks.Remove(index);
+			}
+		}
+
 		protected void RequireBlocks(IComputationHandler handler, params int[] indices)
 		{
 			foreach (int index in indices)

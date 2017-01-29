@@ -60,7 +60,7 @@ namespace Sigma.Core.Utils
 		{
 			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Save, $"storing {identifier} on disk", indeterminate: true);
 
-			_logger.Info($"Caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\"...");
+			_logger.Debug($"Caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\"...");
 
 			Stream fileStream;
 
@@ -74,7 +74,7 @@ namespace Sigma.Core.Utils
 				_serialisationFormatter.Serialize(fileStream, data);
 			}
 
-			_logger.Info($"Done caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\".");
+			_logger.Debug($"Done caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\".");
 
 			SigmaEnvironment.TaskManager.EndTask(task);
 		}
@@ -88,7 +88,7 @@ namespace Sigma.Core.Utils
 
 			ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Load, $"loading {identifier} from disk", indeterminate: true);
 
-			_logger.Info($"Loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
+			_logger.Debug($"Loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
 
 			Stream fileStream;
 
@@ -103,7 +103,7 @@ namespace Sigma.Core.Utils
 				{
 					T obj = (T) _serialisationFormatter.Deserialize(fileStream);
 
-					_logger.Info($"Done loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
+					_logger.Debug($"Done loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
 
 					SigmaEnvironment.TaskManager.EndTask(task);
 
@@ -124,14 +124,14 @@ namespace Sigma.Core.Utils
 		{
 			if (IsCached(identifier))
 			{
-				_logger.Info($"Removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
+				_logger.Debug($"Removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\"...");
 
 				lock (this)
 				{
 					File.Delete(RootDirectory + identifier);
 				}
 
-				_logger.Info($"Done removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
+				_logger.Debug($"Done removing cache entry with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
 			}
 		}
 
@@ -139,7 +139,7 @@ namespace Sigma.Core.Utils
 		{
 			string[] cacheFiles = Directory.GetFiles(RootDirectory, $"*{CacheFileExtension}", SearchOption.AllDirectories);
 
-			_logger.Info($"Removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
+			_logger.Debug($"Removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\"...");
 
 			lock (this)
 			{
@@ -149,7 +149,7 @@ namespace Sigma.Core.Utils
 				}
 			}
 
-			_logger.Info($"Done removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
+			_logger.Debug($"Done removing ALL of {cacheFiles.Length} cache entries from this provider from disk using pattern \"{RootDirectory}*{CacheFileExtension}\".");
 		}
 
 		public void Dispose()

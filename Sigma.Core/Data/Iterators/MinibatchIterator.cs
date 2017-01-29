@@ -92,14 +92,14 @@ namespace Sigma.Core.Data.Iterators
 			{
 				if (_requireNewBlock)
 				{
-					_logger.Info("Requiring new block for next yield, fetching block from dataset...");
-
-					int yieldedIndex = YieldBlock(handler, environment);
+					_logger.Debug("Requiring new block for next yield, fetching block from dataset...");
 
 					if (_currentBlockIndex >= 0)
 					{
-						UnderlyingDataset.FreeBlock(_currentBlockIndex, handler);
+						FreeBlocks(handler, _currentBlockIndex);
 					}
+
+					int yieldedIndex = YieldBlock(handler, environment);
 
 					if (_traversedAllBlocks)
 					{
@@ -184,7 +184,7 @@ namespace Sigma.Core.Data.Iterators
 
 			if (_fetchedBlocks[yieldedIndex] == null)
 			{
-				_fetchedBlocks.Remove(yieldedIndex);
+				FreeBlocks(handler, yieldedIndex);
 
 				_traversedAllBlocks = true;
 
@@ -211,7 +211,7 @@ namespace Sigma.Core.Data.Iterators
 				_currentBatchNotTraversedBlockIndices.Add(index);
 			}
 
-			_logger.Info($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} available blocks (including last pending).");
+			_logger.Debug($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} available blocks (including last pending).");
 		}
 	}
 }

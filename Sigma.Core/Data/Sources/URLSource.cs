@@ -88,7 +88,7 @@ namespace Sigma.Core.Data.Sources
 
 		private void CheckExists()
 		{
-			_logger.Info($"Establishing web connection to check if URL {ResourceName} exists and is accessible...");
+			_logger.Debug($"Establishing web connection to check if URL {ResourceName} exists and is accessible...");
 
 			HttpWebRequest request = WebRequest.Create(ResourceName) as HttpWebRequest;
 
@@ -116,7 +116,7 @@ namespace Sigma.Core.Data.Sources
 				_exists = false;
 			}
 
-			_logger.Info(_exists
+			_logger.Debug(_exists
 				? $"Web connection ended, URL \"{ResourceName}\" exists and is accessible."
 				: $"Web connection ended, URL \"{ResourceName}\" does not exist or is not accessible.");
 		}
@@ -173,7 +173,7 @@ namespace Sigma.Core.Data.Sources
 					{
 						_logger.Info($"Completed download of URL resource \"{ResourceName}\" to local temp path \"{_localDownloadPath}\" ({client.PreviousBytesReceived/1024}kB).");
 
-						_logger.Info($"Moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\"...");
+						_logger.Debug($"Moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\"...");
 
 						try
 						{
@@ -187,7 +187,7 @@ namespace Sigma.Core.Data.Sources
 							
 							throw;
 						}
-						_logger.Info($"Done moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\".");
+						_logger.Debug($"Done moving temp download file \"{_localTempDownloadPath}\" to local download target location \"{_localDownloadPath}\".");
 
 						SigmaEnvironment.TaskManager.EndTask(task);
 					}
@@ -207,7 +207,7 @@ namespace Sigma.Core.Data.Sources
 				}
 			} while (!downloadSuccess && numberRetriesLeft-- > 0); 
 
-			_logger.Info($"Opened file \"{_localDownloadPath}\".");
+			_logger.Debug($"Opened file \"{_localDownloadPath}\".");
 			_localDownloadedFileStream = new FileStream(_localDownloadPath, FileMode.Open);
 
 			_prepared = true;

@@ -76,7 +76,7 @@ namespace Sigma.Core.Data.Sources
 				{
 					ActiveSource = source;
 
-					_logger.Info($"Found existing underlying source {source}, set as active source and forwarding its output.");
+					_logger.Debug($"Found existing underlying source {source}, set as active source and forwarding its output.");
 
 					break;
 				}

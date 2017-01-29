@@ -81,7 +81,7 @@ namespace Sigma.Core.Data.Sources
 			{
 				_fileStream = new FileStream(_fullPath, FileMode.Open);
 
-				_logger.Info($"Opened file \"{_fullPath}\".");
+				_logger.Debug($"Opened file \"{_fullPath}\".");
 			}
 		}
 

@@ -99,7 +99,7 @@ namespace Sigma.Core.Data.Readers
 				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
 			}
 
-			_logger.Info($"Reading requested {numberOfRecords} records from source {Source}...");
+			_logger.Debug($"Reading requested {numberOfRecords} records from source {Source}...");
 
 			List<string[]> records = new List<string[]>();
 			int numberRecordsRead = 0;
@@ -147,7 +147,7 @@ namespace Sigma.Core.Data.Readers
 				return null;
 			}
 
-			_logger.Info($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");
+			_logger.Debug($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");
 
 			return records.ToArray<string[]>();
 		}
