@@ -150,6 +150,9 @@ Frei für jeden zu verwenden (MIT Lizenz).</value>
   <data name="MenuButtonAbout" xml:space="preserve">
     <value>Über Sigma</value>
   </data>
+  <data name="MenuButtonLanguage" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
   <data name="MenuButtonLoad" xml:space="preserve">
     <value>Laden</value>
   </data>

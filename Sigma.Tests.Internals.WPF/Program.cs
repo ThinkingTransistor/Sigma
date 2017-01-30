@@ -11,6 +11,8 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
@@ -24,14 +26,14 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
+			Console.WriteLine(Thread.CurrentThread.CurrentUICulture);
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
-			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo", "en-GB"));
+			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
+			gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
 			gui.AddTabs("Overview", "Log");
-
-			sigma.Prepare();
 
 			LineChartPanel lineChart = null;
 
@@ -40,19 +42,12 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
 
 				lineChart = new LineChartPanel("Example");
-				window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2);
+				window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
 
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
 			});
 
-
-			Random rand = new Random();
-			while (true)
-			{
-				Thread.Sleep(1000);
-
-				gui.WindowDispatcher(window => lineChart.Add(rand.Next(7) + 3));
-			}
+			sigma.Prepare();
 
 			//IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
@@ -74,8 +69,16 @@ namespace Sigma.Tests.Internals.WPF
 
 			//foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
 			//{
-			//	//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			//	PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 			//}
+
+			Random rand = new Random();
+			for (int i = 0; i < 30; i++)
+			{
+				Thread.Sleep(1000);
+
+				gui.WindowDispatcher(window => lineChart.Add(rand.Next(7) + 3));
+			}
 		}
 
 		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)

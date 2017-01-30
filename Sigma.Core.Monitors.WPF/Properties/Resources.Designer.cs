@@ -154,6 +154,15 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Language.
+        /// </summary>
+        public static string MenuButtonLanguage {
+            get {
+                return ResourceManager.GetString("MenuButtonLanguage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Load.
         /// </summary>
         public static string MenuButtonLoad {

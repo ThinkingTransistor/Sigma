@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -75,6 +76,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				Padding = Padding
 			};
 
+			//TODO: hack
 			if (TitleBarFuncs.Count == 0)
 			{
 				InitialiseDefaultTabs();
@@ -181,8 +183,14 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 #endif
 
 			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonSettings, new TitleBarItem(Properties.Resources.MenuButtonStyle, Properties.Resources.MenuButtonToggleDark,
-				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), Properties.Resources.MenuButtonToggleAlternate,
-				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate))));
+				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark),
+				Properties.Resources.MenuButtonToggleAlternate, (Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)/*,
+				Properties.Resources.MenuButtonLanguage, (Action< Application, Window, TitleBarItem>) ((application, genericWindow, item) =>
+				{
+					WPFMonitor monitor = window.Monitor;
+					monitor.UiCultureInfo = CultureInfo.GetCultureInfo("de-DE");
+					monitor.Reload();
+				})*/)));
 
 			AddSigmaFunction((app, window) =>
 			{

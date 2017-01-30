@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 using log4net;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
@@ -258,6 +259,21 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been initialised.");
 		}
 
+		public void Reload()
+		{
+			_app.Dispatcher.Invoke(() =>
+			{
+				WPFWindow oldWindow = Window;
+				
+				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
+				ColourManager.Window = Window;
+
+				_app.Dispatcher.Invoke( () => _app.Run(Window));
+
+				oldWindow.Close();
+			});
+		}
+
 		public override void Start()
 		{
 			ThreadUtils.BlockingThread wpfThread = new ThreadUtils.BlockingThread(reset =>
@@ -288,7 +304,6 @@ namespace Sigma.Core.Monitors.WPF
 				_app.Startup += (sender, args) =>
 				{
 					reset.Set();
-					_onWindowStartup.Clear();
 				};
 
 				try
@@ -327,7 +342,6 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
-		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished" /> is not yet implemented.</exception>
 		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
 		{
 			if (typeof(T) != _windowType)
@@ -361,7 +375,6 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
-		/// <exception cref="NotImplementedException">Currently, <paramref name="onFinished" /> is not implemented.</exception>
 		public void WindowDispatcher(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal)
 		{
 			WindowDispatcher<SigmaWindow>(action, priority);

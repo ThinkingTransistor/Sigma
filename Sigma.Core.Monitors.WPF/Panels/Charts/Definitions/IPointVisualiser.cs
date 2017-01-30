@@ -2,9 +2,9 @@
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts.Definitions
 {
-	public interface IPointVisualiser<in T>
+	public interface IPointVisualiser
 	{
-		void Add(T value);
-		void AddRange(IEnumerable<T> values);
+		void Add(object value);
+		void AddRange(IEnumerable<object> values);
 	}
 }

@@ -4,7 +4,7 @@ using Sigma.Core.Monitors.WPF.Panels.Charts.Definitions;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	public class CartesianChartPanel : GenericPanel<CartesianChart>, IPointVisualiser<double>
+	public class CartesianChartPanel : GenericPanel<CartesianChart>, IPointVisualiser
 	{
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -20,11 +20,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 		}
 
-		public void Add(double value)
+		public void Add(object value)
 		{
 		}
 
-		public void AddRange(IEnumerable<double> values)
+		public void AddRange(IEnumerable<object> values)
 		{
 
 		}

@@ -6,7 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using System.Collections.Generic;
 using System.Windows;
 using LiveCharts;
@@ -15,7 +14,7 @@ using Sigma.Core.Monitors.WPF.Panels.Charts.Definitions;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	public class LineChartPanel : GenericPanel<CartesianChart>, IPointVisualiser<double>
+	public class LineChartPanel : GenericPanel<CartesianChart>
 	{
 		protected readonly StepLineSeries StepLine;
 
@@ -40,29 +39,24 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			ContentGrid.Margin = new Thickness(20);
 		}
 
-		protected virtual void AddNoUpdate(double value)
-		{
-			StepLine.Values.Add(value);
-		}
-
 		/// <summary>
 		/// Add a give value to the LineChart and update the view.
 		/// </summary>
 		/// <param name="value">The value that will be added.</param>
 		public virtual void Add(double value)
 		{
-			AddNoUpdate(value);
-			//TODO: update
+			StepLine.Values.Add(value);
+			
 		}
 
 		/// <summary>
 		/// Add a range of given values to the LineChart and update the view once.
 		/// </summary>
 		/// <param name="values">The range of values that will be added.</param>
-		public virtual void AddRange(IEnumerable<double> values)
-		{
-			foreach (double value in values) { AddNoUpdate(value); }
-			//TODO: update
-		}
+		//public virtual void AddRange(IEnumerable<double> values)
+		//{
+		//	StepLine.Values.AddRange(values);
+		//	//TODO: update
+		//}
 	}
 }

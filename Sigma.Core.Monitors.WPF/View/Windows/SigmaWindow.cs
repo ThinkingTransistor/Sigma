@@ -519,6 +519,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				{
 					Debug.WriteLine("Setting new MainWindow");
 					App.MainWindow = newParent;
+					Monitor.Window = newParent;
 				}
 			}
 
