@@ -19,6 +19,8 @@ namespace Sigma.Core.Training.Providers
 	/// </summary>
 	public interface IDataProvider
 	{
+		// TODO rename links to bindings, it's more fitting (also in DefaultDataProvider)
+
 		/// <summary>
 		/// The external input links attached to this provider.
 		/// </summary>

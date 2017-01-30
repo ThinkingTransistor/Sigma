@@ -48,6 +48,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create an ndarray of a certain shape.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
 		/// <returns>An ndarray with the given shape.</returns>
@@ -55,6 +56,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create an ndarray of a certain shape with an initial set of values.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
 		/// <param name="values">The values to fill the ndarray with.</param>
@@ -63,6 +65,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create a single value (i.e. number) with a certain initial value.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="value">The value to wrap in a single value wrapper.</param>
 		/// <returns>A single value wrapper with the given value for computation.</returns>
@@ -93,6 +96,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
+		///	This is not a traceable operation. 
 		/// </summary>
 		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>
 		/// <returns>The merged ndarray consisting of the given ndarrays contents.</returns>
@@ -108,6 +112,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Converts a certain ndarray from another handler to this handler's format and returns a COPY of its contents in this handler's format.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="array">The array for which a copy in this handler's format should be created.</param>
 		/// <param name="otherHandler">The other handler which created the array.</param>
@@ -116,6 +121,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Fill an ndarray with the contents of another ndarray.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="filler">The filler ndarray (from which the values will be copied).</param>
 		/// <param name="arrayToFill">The ndarray to fill.</param>
@@ -123,6 +129,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Fill an ndarray with a single value.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="value">The value to set all elements of the ndarray to</param>
@@ -163,6 +170,8 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Transform an ndarray row-wise to another type (may also be ndarray).
+		/// This is not required to be a traceable operation (and typically isn't).
+		/// Note: Traceability should be consistent independent of type of <see cref="TOther"/>.  
 		/// </summary>
 		/// <typeparam name="TOther">The other type.</typeparam>
 		/// <param name="array">The array to split row-wise and then transform.</param>

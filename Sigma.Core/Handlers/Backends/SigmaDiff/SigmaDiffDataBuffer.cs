@@ -84,7 +84,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			int newSize = (rowFinish - rowStart + 1) * (colFinish - colStart + 1);
 			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
-			int colLength = colFinish - colStart;
+			int colLength = colFinish - colStart + 1;
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
