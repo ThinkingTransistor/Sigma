@@ -1,0 +1,23 @@
+# Sigma Roadmap
+
+The never ending list of nice-to-have things by project. These lists are not meant to be taken entirely seriously. Though they would be nice to have.
+
+## Sigma.Core Roadmap
+
+* Automated hyperparameter search across trainers
+* Truly distributed operator across devices
+  * Operates on sub-operators for each device
+
+## Sigma.Core.Monitors General Roadmap
+
+* TCP monitor
+  * allow TCP connections to receive and send hooks (just like any monitor)
+  * remote monitoring and interaction from other devices
+  
+* HTTP monitor
+  * on top of TCP monitor
+  * as a website (maybe webhost) to easily remotely monitor and do fancy stuff
+
+## Sigma.Core.Monitors.WPF Roadmap
+
+* Language change within the GUI having to restart _everything_
