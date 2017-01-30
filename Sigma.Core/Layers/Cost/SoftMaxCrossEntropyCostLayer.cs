@@ -27,7 +27,7 @@ namespace Sigma.Core.Layers.Cost
 
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
-			// TODO fix rowwise softmax call, not returning properly softmaxed values (all averaged out at 0.33)
+			// TODO fix trace / gradients for rowwise operation, still difference to direct handler.SoftMax operation
 			//predictions = handler.RowWise(predictions, handler.SoftMax);
 			predictions = handler.SoftMax(predictions);
 

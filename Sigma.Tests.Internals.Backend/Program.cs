@@ -38,7 +38,7 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
-			SampleCachedFastIteration();
+			SampleTrainerOperatorWorker();
 
 			Console.ReadKey();
 		}
