@@ -34,6 +34,8 @@ namespace Sigma.Core.Utils
 
 			if (!File.Exists(filepath))
 			{
+				Logger.Info($"Using default web proxy ({defaultProxy}), given proxy file \"{filepath}\" does not exist.");
+
 				return defaultProxy;
 			}
 
@@ -72,22 +74,27 @@ namespace Sigma.Core.Utils
 					}
 					catch (Exception ex)
 					{
-						Logger.Warn($"Invalid entry at line {line} in file {filepath}.", ex);
+						Logger.Warn($"Invalid entry at line {line} in file \"{filepath}\".", ex);
 					}
 				}
 			}
 
 			if (address == null)
 			{
+				Logger.Info($"Using default web proxy ({defaultProxy}), given proxy file \"{filepath}\" did not contain a proxy address (key=\"address\").");
+
 				return defaultProxy;
 			}
 
 			WebProxy customProxy = new WebProxy(address, port);
 
-			if (username != null)
+			bool credentialsProvided = username != null;
+			if (credentialsProvided)
 			{
 				customProxy.Credentials = new NetworkCredential(username, password);
 			}
+
+			Logger.Info($"Using custom proxy ({defaultProxy})" + (credentialsProvided ? "with" : "without") + "credentials");
 
 			return customProxy;
 		}

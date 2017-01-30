@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -35,8 +37,39 @@ namespace Sigma.Tests.Internals.Backend
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging();
+			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 
-			SampleTrainerOperatorWorker();
+			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
+
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+
+			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
+			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
+			IDataset trainingData = slices[0];
+
+			Stopwatch stopwatch = Stopwatch.StartNew();
+
+			IDataIterator iterator = new MinibatchIterator(10, trainingData);
+			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
+			{
+				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			}
+
+			Console.Write("\nFirst iteration took " + stopwatch.Elapsed + "\n+=+ Iterating over dataset again +=+ Dramatic pause...");
+
+			ArrayUtils.Range(1, 10).ToList().ForEach(i => { Thread.Sleep(500); Console.Write("."); });
+
+			stopwatch.Restart();
+
+			foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
+			{
+				//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
+			}
+
+			Console.WriteLine("Second iteration took " + stopwatch.Elapsed);
+
+			//SampleTrainerOperatorWorker();
 
 			Console.ReadKey();
 		}

@@ -80,6 +80,8 @@ namespace Sigma.Core.Data.Datasets
 		private readonly bool _autoSetBlockSize;
 		private bool _autoSetExternalChangeBlockSize;
 
+		// TODO fix available blocks semaphore logic
+		// the waitones/releases are inconsistent, because blocks aren't always actually allocated, such as null returns are not considered 
 		private readonly Semaphore _availableBlocksSemaphore;
 		private int _availableBlocksSemaphoreState;
 
@@ -511,8 +513,8 @@ namespace Sigma.Core.Data.Datasets
 				}
 			}
 
-			_availableBlocksSemaphore.WaitOne();
-			_availableBlocksSemaphoreState--;
+			//_availableBlocksSemaphore.WaitOne();
+			//_availableBlocksSemaphoreState--;
 
 			return LoadAndExtractRaw(blockIndex, handler);
 		}
@@ -540,8 +542,8 @@ namespace Sigma.Core.Data.Datasets
 				return null;
 			}
 
-			_availableBlocksSemaphore.WaitOne();
-			_availableBlocksSemaphoreState--;
+			//_availableBlocksSemaphore.WaitOne();
+			//_availableBlocksSemaphoreState--;
 
 			return ConvertNamedBlocks(bestMatchedBlock.NamedBlockSections, handler);
 		}
@@ -712,8 +714,8 @@ namespace Sigma.Core.Data.Datasets
 
 					DeregisterActiveBlock(block);
 
-					_availableBlocksSemaphore.Release();
-					_availableBlocksSemaphoreState++;
+					//_availableBlocksSemaphore.Release();
+					//_availableBlocksSemaphoreState++;
 
 					_logger.Debug($"Done freeing block with index {blockIndex} for handler {handler}.");
 
