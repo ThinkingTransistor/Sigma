@@ -6,8 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Sigma.Core.Monitors.WPF.Panels.Charts.Definitions;
@@ -20,7 +22,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 		public LineChartPanel(string title, object headerContent = null) : base(title, headerContent)
 		{
-			Content = new CartesianChart();
+			Content = new CartesianChart { Zoom = ZoomingOptions.Xy };
+
 
 			StepLine = new StepLineSeries
 			{
@@ -28,7 +31,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			};
 
 			// TODO: set the AnimationSpeed in style
-			//Content.AnimationsSpeed = TimeSpan.FromMilliseconds(100);
+			Content.AnimationsSpeed = TimeSpan.FromMilliseconds(100);
 
 			//Content.SetDrawMarginWidth(Content.GetDrawMarginElements() * 0.9);
 
@@ -36,7 +39,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 			//Content.VisualElements.Chart.AxisX[0].MinValue = 10;
 
-			ContentGrid.Margin = new Thickness(20);
+			ContentGrid.Margin = new Thickness(5);
 		}
 
 		/// <summary>
@@ -46,7 +49,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public virtual void Add(double value)
 		{
 			StepLine.Values.Add(value);
-			
+
 		}
 
 		/// <summary>

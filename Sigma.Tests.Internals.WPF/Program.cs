@@ -1,6 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Threading;
+using System.Windows.Media;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
@@ -15,7 +18,10 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
+using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
+using Sigma.Core.Monitors.WPF.View.Windows;
+using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF
@@ -32,22 +38,34 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
-			gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
-			gui.AddTabs("Overview", "Log");
+			
+			gui.AddTabs("Overview", "Log", "Tests");
 
 			LineChartPanel lineChart = null;
+			CartesianChartPanel cartesianChart = null;
 
+			gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
 			gui.WindowDispatcher(window =>
 			{
+				window.IsInitializing = true;
 				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
 
-				lineChart = new LineChartPanel("Example");
-				window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
+				//lineChart = new LineChartPanel("Example");
+				//window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
+				cartesianChart = new CartesianChartPanel("Cartesian");
+				window.TabControl["Overview"].AddCumulativePanel(cartesianChart, 2, 2, gui.GetLegendInfo("Net"));
+
 
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
+				window.IsInitializing = false;
 			});
 
+
+			//AddComplex(gui);
+
 			sigma.Prepare();
+
+
 
 			//IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
@@ -73,11 +91,17 @@ namespace Sigma.Tests.Internals.WPF
 			//}
 
 			Random rand = new Random();
-			for (int i = 0; i < 30; i++)
+			for (int i = 0; i < 1000; i++)
 			{
 				Thread.Sleep(1000);
-
-				gui.WindowDispatcher(window => lineChart.Add(rand.Next(7) + 3));
+				try
+				{
+					gui.WindowDispatcher(window => cartesianChart.ChartValues.Add(rand.NextDouble() * 10));
+				}
+				catch (Exception)
+				{
+					return;
+				}
 			}
 		}
 
@@ -91,6 +115,80 @@ namespace Sigma.Tests.Internals.WPF
 
 				Console.WriteLine($"[{name}]=\n" + blockString);
 			}
+		}
+
+		private class TestData
+		{
+			public string Name { get; set; }
+			public int Epoch { get; set; }
+		}
+
+		private class ComplexTestData
+		{
+			public ImageSource Picture { get; set; }
+			public string SomeText { get; set; }
+			public string SomeOtherText { get; set; }
+			public int SomeInt { get; set; }
+		}
+
+
+		private static void AddComplex(WPFMonitor guiMonitor)
+		{
+			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.Blue));
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net", MaterialColour.Red));
+			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Pink));
+
+			guiMonitor.WindowDispatcher(window =>
+			{
+				window.IsInitializing = true;
+				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
+				TabUI tab = window.TabControl["Overview"];
+
+				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
+
+				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
+
+				panel.Items.Add(new TestData { Name = "SomeOptimizer", Epoch = 14 });
+				panel.Items.Add(new TestData { Name = "OtherOptimizer", Epoch = 1337 });
+
+				tab.AddCumulativePanel(panel, legend: blueLegend);
+
+
+				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
+				ComplexTestData data = new ComplexTestData
+				{
+					//Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
+					SomeInt = 12,
+					SomeOtherText = "other",
+					SomeText = "text"
+				};
+
+				panel2.Content.Items.Add(data);
+
+				tab.AddCumulativePanel(panel2, 1, 3, guiMonitor.GetLegendInfo("Net test 1"));
+
+				CreateDefaultCards(window.TabControl["Tests"]);
+
+				tab.AddCumulativePanel(new ControlPanel("Control panel"), 2);
+				window.IsInitializing = false;
+			});
+		}
+
+		private static void CreateDefaultCards(TabUI tab)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				tab.AddCumulativePanel(new EmptyPanel($"Card No. {i}"));
+			}
+
+			tab.AddCumulativePanel(new EmptyPanel("Big card"), 3);
+			tab.AddCumulativePanel(new EmptyPanel("Tall card"), 2);
+			for (int i = 0; i < 2; i++)
+			{
+				tab.AddCumulativePanel(new EmptyPanel("Small card"));
+			}
+
+			tab.AddCumulativePanel(new EmptyPanel("Wide card"), 1, 2);
 		}
 	}
 }
