@@ -18,6 +18,10 @@ The never ending list of nice-to-have things by project. These lists are not mea
   * on top of TCP monitor
   * as a website (maybe webhost) to easily remotely monitor and do fancy stuff
 
+* Android / iOS monitor
+ * on top of HTTP / TCP monitor
+ * monitor only (no learning on phone)
+
 ## Sigma.Core.Monitors.WPF Roadmap
 
 * Language change within the GUI having to restart _everything_
