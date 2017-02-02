@@ -38,6 +38,22 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
+			//IComputationHandler handler = new CpuFloat32Handler();
+			//uint traceTag = handler.BeginTrace();
+			//INDArray a = handler.Trace(handler.NDArray(ArrayUtils.Range(1, 6), 2, 3), traceTag), originalA = a;
+			//INDArray b = handler.Trace(handler.NDArray(ArrayUtils.Range(1, 3), 1, 3), traceTag), originalB = b;
+			//INumber numA = handler.Number(2.0f);
+
+			//a = handler.Multiply(a, numA);
+			//a = handler.RowWise(a, r => handler.Add(r, b));
+			////a = handler.SoftMax(a);
+
+			//INumber costA = handler.Sum(a);
+
+			//handler.ComputeDerivativesTo(costA);
+			//Console.WriteLine("a = " + a);
+			//Console.WriteLine("deriv a to cost = " + handler.GetDerivative(originalA));
+
 			SampleTrainerOperatorWorker();
 
 			Console.ReadKey();
@@ -50,7 +66,7 @@ namespace Sigma.Tests.Internals.Backend
 			IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
 
 			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] {0L, 0L}, new[] {28L, 28L}).Preprocess(new NormalisingPreprocessor(0, 255));
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
 			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
 			IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
@@ -118,8 +134,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4) + FullyConnectedLayer.Construct(3) + OutputLayer.Construct(3) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.05);
+			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset); // TODO fix IndexOutOfBounds in DiffSharp.dll when minibatch size > 2
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));

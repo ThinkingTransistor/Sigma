@@ -28,8 +28,8 @@ namespace Sigma.Core.Layers.Cost
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
 			// TODO fix trace / gradients for rowwise operation, still difference to direct handler.SoftMax operation
-			//predictions = handler.RowWise(predictions, handler.SoftMax);
-			predictions = handler.SoftMax(predictions);
+			predictions = handler.RowWise(predictions, handler.SoftMax);
+			//predictions = handler.SoftMax(predictions);
 
 			INDArray logPredictions = handler.Log(predictions);
 			INDArray a = handler.Multiply(targets, logPredictions);
@@ -51,4 +51,3 @@ namespace Sigma.Core.Layers.Cost
 		}
 	}
 }
-

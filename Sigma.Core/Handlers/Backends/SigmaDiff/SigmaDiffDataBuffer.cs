@@ -88,7 +88,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
-				System.Array.Copy(Data, Offset, values.Data, m * totalCols + colStart, colLength);
+				long sourceIndex = Offset + m * totalCols + colStart;
+				long destinationIndex = m * (totalCols - 1 - colStart - colFinish) + colStart;
+
+				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
 			}
 
 			return values;
