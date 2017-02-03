@@ -78,6 +78,9 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, Operator.Handler);
 
 			_totalEpochCost += (float) LocalOptimiser.Registry.Get<INumber>("total_cost").Value;
+
+			//_logger.Debug($"Worker {this} done with iteration {LocalIterationNumber} in epoch {LocalEpochNumber} at cost:\t{LocalOptimiser.Registry.Get<INumber>("total_cost").Value}");
+
 			LocalIterationNumber++;
 
 			// push progress for this iteration

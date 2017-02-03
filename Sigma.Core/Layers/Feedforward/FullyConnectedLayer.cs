@@ -26,17 +26,17 @@ namespace Sigma.Core.Layers.Feedforward
 			parameters["weights"] = handler.NDArray(inputSize, size);
 			parameters["biases"] = handler.NDArray(size);
 
-			TrainableParameters = new[] { "weights" };
+			TrainableParameters = new[] { "weights", "biases" };
 		}
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
 			INDArray activations = handler.FlattenTimeAndFeatures(buffer.Inputs["default"].Get<INDArray>("activations"));
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
-			//INDArray biases = buffer.Parameters.Get<INDArray>("biases");
-			// TODO add add_mv operation with vector-to-matrix broadcasting for ndarrays (e.g. for biases in this case)
+			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 
 			activations = handler.Dot(activations, weights);
+			activations = handler.RowWise(activations, row => handler.Add(row, biases));
 			activations = handler.Activation(buffer.Parameters.Get<string>("activation"), activations);
 
 			buffer.Outputs["default"]["activations"] = activations;

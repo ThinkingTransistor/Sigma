@@ -142,7 +142,7 @@ namespace Sigma.Core.Data.Readers
 
 			if (numberRecordsRead == 0)
 			{
-				_logger.Info($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
+				_logger.Debug($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
 
 				return null;
 			}
