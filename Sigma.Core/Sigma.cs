@@ -281,13 +281,13 @@ namespace Sigma.Core
 
 				if (_hooksToAttach.TryDequeue(out hookPair))
 				{
-					if (hookPair.Key is ActiveHook)
+					if (hookPair.Key is BaseActiveHook)
 					{
-						hookPair.Value.AttachHook((ActiveHook) hookPair.Key);
+						hookPair.Value.AttachHook((BaseActiveHook) hookPair.Key);
 					}
-					else if (hookPair.Key is PassiveHook)
+					else if (hookPair.Key is BasePassiveHook)
 					{
-						hookPair.Value.AttachHook((PassiveHook) hookPair.Key);
+						hookPair.Value.AttachHook((BasePassiveHook) hookPair.Key);
 					}
 					else
 					{

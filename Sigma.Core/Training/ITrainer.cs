@@ -109,7 +109,7 @@ namespace Sigma.Core.Training
 		void AddNamedDataIterator(string name, IDataIterator iterator);
 
 		/// <summary>
-		/// Add an active hook to this trainer, which will be executed during runtime directly in the operator. 
+		/// Add an active hook to this trainer, which will be executed during runtime directly in each worker. 
 		/// </summary>
 		/// <param name="hook">The active hook to add to this trainer.</param>
 		void AddActiveHook(IActiveHook hook);

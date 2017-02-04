@@ -14,7 +14,7 @@ namespace Sigma.Core.Training.Hooks
 {
 
 	/// <summary>
-	/// The default implementation of the <see cref="IHook"/> interface.
+	/// The base implementation of the <see cref="IHook"/> interface.
 	/// Represents a hook which can be used to "hook" into operations and execute custom code at a certain time step. 
 	/// The required parameters from the callers registry must be denoted before Execute is first called (so that the operator can fetch the requested parameters).
 	/// </summary>
@@ -29,12 +29,6 @@ namespace Sigma.Core.Training.Hooks
 		/// The global registry entries required for the execution of this hook.
 		/// </summary>
 		public ISet<string> RequiredRegistryEntries { get; }
-
-		/// <summary>
-		/// Invoke this hook with a certain parameter registry.
-		/// </summary>
-		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		public abstract void Invoke(IRegistry registry);
 
 		/// <summary>
 		/// Create a hook with a certain time step and a set of required global registry entries. 
@@ -65,20 +59,26 @@ namespace Sigma.Core.Training.Hooks
 			TimeStep = timestep;
 			RequiredRegistryEntries = requiredRegistryEntries;
 		}
+
+		/// <summary>
+		/// Invoke this hook with a certain parameter registry.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+		public abstract void Invoke(IRegistry registry);
 	}
 
 	/// <summary>
-	/// The default implementation of the <see cref="IActiveHook"/> interface.
+	/// The base implementation of the <see cref="IActiveHook"/> interface.
 	/// Represents an active hook that actively influences the calling operator by modifying the given parameters.
 	/// </summary>
-	public abstract class ActiveHook : Hook, IActiveHook
+	public abstract class BaseActiveHook : Hook, IActiveHook
 	{
 		/// <summary>
 		/// Create an active hook with a certain time step and set of required global registry entries.
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
 		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected ActiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected BaseActiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 
@@ -87,16 +87,16 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
 		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected ActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected BaseActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 	}
 
 	/// <summary>
-	/// The default implementation of the <see cref="IPassiveHook"/> interface.
+	/// The base implementation of the <see cref="IPassiveHook"/> interface.
 	/// A passive hook that passively executes code independent from the operand (without modifying the given parameters or dependency on the operator). 
 	/// </summary>
-	public abstract class PassiveHook : Hook, IPassiveHook
+	public abstract class BasePassiveHook : Hook, IPassiveHook
 	{
 		/// <summary>
 		/// A complete and local copy of the global registry with the parameters required for this hook for asynchronous execution.
@@ -108,7 +108,7 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
 		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected PassiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected BasePassiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 
@@ -117,7 +117,7 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
 		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected PassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
+		protected BasePassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
 		{
 		}
 	}
@@ -125,7 +125,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// An active hook that is only invoked one time on the operator, regardless of TimeStep (though live time should be 1 for consistency).
 	/// </summary>
-	public abstract class Command : ActiveHook, ICommand
+	public abstract class BaseCommand : BaseActiveHook, ICommand
 	{
 		/// <summary>
 		/// The time step for commands (intermediate time scale, interval and live time are 1 for single invocation).
@@ -136,7 +136,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-		protected Command(params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
+		protected BaseCommand(params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
 		{
 		}
 
@@ -144,7 +144,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-		protected Command(ISet<string> requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
+		protected BaseCommand(ISet<string> requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
 		{
 		}
 	}

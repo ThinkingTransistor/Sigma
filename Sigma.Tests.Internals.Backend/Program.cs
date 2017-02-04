@@ -22,6 +22,7 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks.Reporting;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -65,6 +66,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
+			trainer.AddPassiveHook(new ProgressReporterHook(TimeStep.Every(1, TimeScale.Iteration)));
 
 			sigma.Run();
 		}

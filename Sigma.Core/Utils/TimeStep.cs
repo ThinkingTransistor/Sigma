@@ -56,6 +56,12 @@ namespace Sigma.Core.Utils
 		public int LocalInterval { get; set; }
 		public int LocalLiveTime { get; set; }
 
+		/// <summary>
+		/// Create a time step with a certain time step interval, time step unit and live time.
+		/// </summary>
+		/// <param name="interval">The time step interval in <see cref="TimeScale"/> units.</param>
+		/// <param name="timeScale">The time scale unit.</param>
+		/// <param name="liveTime">The live time of the hook (defaults to forever). Use if a hook should only be executed x times.</param>
 		public TimeStep(TimeScale timeScale, int interval, int liveTime = LiveTimeForever)
 		{
 			if (timeScale == null)
@@ -76,6 +82,18 @@ namespace Sigma.Core.Utils
 			TimeScale = timeScale;
 			Interval = interval;
 			LiveTime = liveTime;
+		}
+
+		/// <summary>
+		/// An easily readable version of the <see cref="TimeStep"/> constructor.
+		/// </summary>
+		/// <param name="interval">The time step interval in <see cref="TimeScale"/> units.</param>
+		/// <param name="timeScale">The time scale unit.</param>
+		/// <param name="liveTime">The live time of the hook (defaults to forever). Use if a hook should only be executed x times.</param>
+		/// <returns>A time step with the given properties.</returns>
+		public static TimeStep Every(int interval, TimeScale timeScale, int liveTime = LiveTimeForever)
+		{
+			return new TimeStep(timeScale, interval, liveTime);
 		}
 
 		/// <summary>

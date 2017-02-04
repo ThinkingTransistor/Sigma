@@ -125,7 +125,7 @@ namespace Sigma.Core.Training.Operators
 		void PushProgress(IWorker worker);
 
 		/// <summary>
-		///     Pull the progress of the <see cref="IOperator"/> to the worker (e.g. copy of global network).
+		///     Pull the progress of the <see cref="IOperator"/> to the worker (e.g. copy of global network) if a newer version is available.
 		/// </summary>
 		/// <param name="worker">The worker.</param>
 		void PullProgress(IWorker worker);
