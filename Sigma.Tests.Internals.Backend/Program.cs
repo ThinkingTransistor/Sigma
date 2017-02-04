@@ -38,25 +38,62 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment.EnableLogging();
 
-			//IComputationHandler handler = new CpuFloat32Handler();
-			//uint traceTag = handler.BeginTrace();
-			//INDArray a = handler.Trace(handler.NDArray(ArrayUtils.Range(1, 6), 2, 3), traceTag), originalA = a;
-			//INDArray b = handler.Trace(handler.NDArray(ArrayUtils.Range(1, 3), 1, 3), traceTag), originalB = b;
-			//INumber numA = handler.Number(2.0f);
-
-			//a = handler.Multiply(a, numA);
-			//a = handler.RowWise(a, r => handler.Add(r, b));
-			////a = handler.SoftMax(a);
-
-			//INumber costA = handler.Sum(a);
-
-			//handler.ComputeDerivativesTo(costA);
-			//Console.WriteLine("a = " + a);
-			//Console.WriteLine("deriv a to cost = " + handler.GetDerivative(originalA));
-
-			SampleTrainerOperatorWorker();
+			SampleTrainerOperatorWorkerIris();
 
 			Console.ReadKey();
+		}
+
+		private static void SampleTrainerOperatorWorkerIris()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
+
+			sigma.Prepare();
+
+			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
+			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2), new NormalisingPreprocessor(sectionNames: "inputs", minInputValue: 0, maxInputValue: 6));
+
+			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
+			ITrainer trainer = sigma.CreateTrainer("test");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(4) + 3 * FullyConnectedLayer.Construct(3) +
+											 OutputLayer.Construct(3) + SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
+
+			sigma.Run();
+		}
+
+		private static void SampleTrainerOperatorWorkerMnist()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
+
+			sigma.Prepare();
+
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+
+			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+
+			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			ITrainer trainer = sigma.CreateTrainer("test");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(28, 28) + 2 * FullyConnectedLayer.Construct(28 * 28) + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+
+			sigma.Run();
 		}
 
 		private static void SampleCachedFastIteration()
@@ -111,37 +148,6 @@ namespace Sigma.Tests.Internals.Backend
 			INDArray c = handler.Dot(a, b);
 
 			Console.WriteLine("c = " + ArrayUtils.ToString(c, (ADNDArray<float>.ToStringElement) null, 0, true));
-		}
-
-		private static void SampleTrainerOperatorWorker()
-		{
-			SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
-
-			sigma.Prepare();
-
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
-
-			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
-
-			//var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
-			//IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
-			//irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2), new NormalisingPreprocessor(sectionNames: "inputs", minInputValue: 0, maxInputValue: 6));
-
-			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
-			ITrainer trainer = sigma.CreateTrainer("test");
-
-			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(28, 28) + 2 * FullyConnectedLayer.Construct(28 * 28, activation: "rel") + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset); 
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
-			trainer.Operator = new CpuSinglethreadedOperator();
-
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
-
-			sigma.Run();
 		}
 
 		private static void SampleNetworkMerging()

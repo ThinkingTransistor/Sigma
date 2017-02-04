@@ -110,7 +110,7 @@ namespace Sigma.Core.Training.Providers
 		{
 			if (!_externalInputLinks.ContainsKey(externalInputAlias))
 			{
-				throw new InvalidOperationException($"Cannot provide external input for external input alias {externalInputAlias} for layer {layer}, corresponding external input link is not attached.");
+				throw new InvalidOperationException($"Cannot provide external input for external input alias {externalInputAlias} for layer {layer}, corresponding external input link is not satisfied.");
 			}
 
 			_externalInputLinks[externalInputAlias].Invoke(inputRegistry, layer, currentTrainingBlock);

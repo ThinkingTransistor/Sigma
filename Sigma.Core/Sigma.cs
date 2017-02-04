@@ -38,6 +38,7 @@ namespace Sigma.Core
 		private readonly ISet<IOperator> _runningOperators;
 		private readonly ConcurrentQueue<IPassiveHook> _hooksToExecute;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
+		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
 
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -80,6 +81,7 @@ namespace Sigma.Core
 			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_runningOperators = new HashSet<IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
+			_processQueueEvent = new ManualResetEvent(true);
 		}
 
 		/// <summary>
@@ -170,6 +172,13 @@ namespace Sigma.Core
 
 			while (shouldRun)
 			{
+				_logger.Debug("Waiting for processing queue event to signal state change....");
+
+				_processQueueEvent.WaitOne();
+				_processQueueEvent.Reset();
+
+				_logger.Debug("Received state change signal by processing queue event, processing...");
+
 				ProcessHooksToAttach();
 				ProcessHooksToExecute();
 
@@ -179,6 +188,8 @@ namespace Sigma.Core
 
 					shouldRun = false;
 				}
+
+				_logger.Debug($"Done processing for received state change signal.");
 			}
 
 			StopRunningOperators();
@@ -246,6 +257,7 @@ namespace Sigma.Core
 			_logger.Debug($"Stop signal received in environment \"{Name}\".");
 
 			_requestedStop = true;
+			_processQueueEvent.Set();
 		}
 
 		private void ProcessHooksToExecute()
@@ -318,6 +330,8 @@ namespace Sigma.Core
 		public void RequestAttachHook(IHook hook, IOperator operatorToAttachTo)
 		{
 			_hooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+
+			_processQueueEvent.Set();
 		}
 
 		/// <summary>
@@ -328,6 +342,8 @@ namespace Sigma.Core
 		public void RequestExecuteHookAsync(IPassiveHook hook)
 		{
 			_hooksToExecute.Enqueue(hook);
+
+			_processQueueEvent.Set();
 		}
 
 		/// <summary>
