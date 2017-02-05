@@ -131,12 +131,16 @@ namespace Sigma.Core.Training.Operators
 		private readonly object _stateChangeLock;
 
 		/// <summary>
-		/// The current epoch number, with all networks. 
+		/// The current epoch number, with all networks corresponding to that epoch. 
 		/// </summary>
-		private readonly IDictionary<int, INetwork[]> _pushedNetworks;
+		private readonly IDictionary<int, INetwork[]> _pushedEpochNetworks;
+
+		/// <summary>
+		/// The latest pushed local iteration number indexed by worker indices by epoch number.
+		/// </summary>
+		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
 		private readonly object _networkChangedLock;
-
 		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly ISet<string> _bufferCurrentRequiredHookParameters;
 		private readonly ISet<string> _bufferPreviousRequiredHookParameters;
@@ -145,7 +149,7 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
-		///		TODO update documentation 
+		///		TODO update documentation (?)
 		/// </summary>
 		/// <param name="workerCount">
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
@@ -190,18 +194,64 @@ namespace Sigma.Core.Training.Operators
 			_bufferPreviousRequiredHookParameters = new HashSet<string>();
 			_bufferResolvedRequiredHookParameters = new HashSet<string>();
 
-			_pushedNetworks = new Dictionary<int, INetwork[]>();
+			_pushedEpochNetworks = new Dictionary<int, INetwork[]>();
+			_pushedLocalIterationNumbers = new Dictionary<int, int[]>();
 			_networkChangedLock = new object();
 		}
 
 		public void PushProgress(IWorker worker)
 		{
+			// TODO workers calling this method are assumed to only submit new progress with a different epoch / iteration number, check for that or explicitly state in documentation
 			// first iteration of new epoch complete
 			if (worker.LocalEpochNumber > EpochNumber && worker.LocalIterationNumber == 1)
 			{
-				PushEpochNetwork(worker);
+				if (PushEpochNetwork(worker))
+				{
+					EpochNumber++;
+
+					Logger.Info($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
+
+					MergeWorkerNetworks(EpochNumber);
+
+					lock (_pushedEpochNetworks)
+					{
+						// remove networks of last epoch to free up memory
+						_pushedEpochNetworks[EpochNumber] = null;
+					}
+				}
 			}
 
+			bool allWorkersAtIteration = true;
+			lock (_pushedLocalIterationNumbers)
+			{
+				if (!_pushedLocalIterationNumbers.ContainsKey(worker.LocalEpochNumber))
+				{
+					_pushedLocalIterationNumbers.Add(worker.LocalEpochNumber, new int[WorkerCount]);
+				}
+
+				// check if all workers are at that iteration
+				int[] localIterationNumbers = _pushedLocalIterationNumbers[worker.LocalEpochNumber];
+
+				localIterationNumbers[WorkerIndicesByWorkers[worker]] = worker.LocalIterationNumber;
+
+				for (int i = 0; i < localIterationNumbers.Length; i++)
+				{
+					if (localIterationNumbers[i] != worker.LocalIterationNumber)
+					{
+						allWorkersAtIteration = false;
+
+						break;
+					}
+				}
+			}
+
+			if (allWorkersAtIteration)
+			{
+
+			}
+
+			// TODO add invokeinbackground option to all hooks and respect it when calling in workers (active) and operators (passive) hooks
+			// TODO common functions for copying a list of registry resolve entries
 			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
 		}
 
@@ -227,37 +277,36 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
-		protected virtual void PushEpochNetwork(IWorker worker)
+		protected virtual bool PushEpochNetwork(IWorker worker)
 		{
 			bool allNetworksForEpochPushed;
 
-			lock (_pushedNetworks)
+			lock (_pushedEpochNetworks)
 			{
-				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
+				INetwork[] networks = _pushedEpochNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
 				if (!networks.AddToNextNull(worker.LocalNetwork.DeepCopy()))
 				{
 					throw new InvalidOperationException($"Too many workers trying to push their network, worker {worker} attempted to push his network but {WorkerCount} workers already pushed their network for epoch {worker.LocalEpochNumber}.");
 				}
 
-				allNetworksForEpochPushed = _pushedNetworks[worker.LocalEpochNumber][WorkerCount - 1] != null;
+				allNetworksForEpochPushed = _pushedEpochNetworks[worker.LocalEpochNumber][WorkerCount - 1] != null;
 			}
 
 			Logger.Debug($"Worker {worker.GetType()} pushed its network for the epoch {worker.LocalEpochNumber}.");
 
-			if (allNetworksForEpochPushed)
+			return allNetworksForEpochPushed;
+		}
+
+		private void MergeWorkerNetworks(int epochNumber)
+		{
+			Logger.Debug($"Merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}...");
+
+			lock (_networkChangedLock)
 			{
-				EpochNumber++;
-
-				Logger.Info($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
-				Logger.Debug($"Merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}...");
-
-				lock (_networkChangedLock)
-				{
-					NetworkMerger.Merge(Network, _pushedNetworks[worker.LocalEpochNumber]);
-				}
-
-				Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
+				NetworkMerger.Merge(Network, _pushedEpochNetworks[epochNumber]);
 			}
+
+			Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
 		}
 
 		public void AttachHook(IActiveHook hook)
@@ -351,41 +400,6 @@ namespace Sigma.Core.Training.Operators
 				Logger.Debug($"Detaching hook {hook} in operator {this}, hook is deemed completely dead and can be safely detached.");
 
 				DetachHook(hook);
-			}
-		}
-
-		protected void ResolveAllRequiredRegistryEntries(IRegistryResolver registryResolver, IEnumerable<string> allRequiredRegistryEntries, ISet<string> resultAllResolvedRequiredRegistryEntries)
-		{
-			resultAllResolvedRequiredRegistryEntries.Clear();
-
-			foreach (string registryEntry in allRequiredRegistryEntries)
-			{
-				string[] resolvedEntries;
-
-				registryResolver.ResolveGet<object>(registryEntry, out resolvedEntries, null);
-			}
-		}
-
-		protected void FetchAllRequiredRegistryEntries(IEnumerable<IHook> hooks, ISet<string> bufferAllRequiredRegistryEntries = null)
-		{
-			if (bufferAllRequiredRegistryEntries == null)
-			{
-				bufferAllRequiredRegistryEntries = new HashSet<string>();
-			}
-			else
-			{
-				bufferAllRequiredRegistryEntries.Clear();
-			}
-
-			foreach (IHook hook in hooks)
-			{
-				foreach (string registryEntry in hook.RequiredRegistryEntries)
-				{
-					if (!bufferAllRequiredRegistryEntries.Contains(registryEntry))
-					{
-						bufferAllRequiredRegistryEntries.Add(registryEntry);
-					}
-				}
 			}
 		}
 
@@ -486,10 +500,12 @@ namespace Sigma.Core.Training.Operators
 				workers[i] = CreateWorker();
 				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
 				workers[i].LocalOptimiser = (IOptimiser) Trainer?.Optimiser?.DeepCopy();
+
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
 
 			WorkerIndicesByWorkers = new ReadOnlyDictionary<IWorker, int>(workerIndicesByWorkers);
+			_pushedLocalIterationNumbers = new Dictionary<int, int[]>();
 
 			return workers;
 		}

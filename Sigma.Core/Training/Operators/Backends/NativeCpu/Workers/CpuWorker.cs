@@ -5,6 +5,7 @@ using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Operators.Workers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 {
@@ -59,6 +60,8 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 				Logger.Info($"Completed epoch {LocalEpochNumber + 1} at iteration {LocalIterationNumber} in worker {this}.");
 				Logger.Error($"Total epoch cost of {_totalEpochCost}."); // TODO add proper progress reporting
 
+				InvokeTimeScaleEvent(TimeScale.Epoch);
+
 				LocalEpochNumber++;
 				LocalIterationNumber = 0;
 				_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
@@ -68,7 +71,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 			if (_epochBlockYield.Current == null)
 			{
-				throw new InvalidOperationException($"Unable to do work in worker {this} when current epoch block yield is null.");
+				throw new InvalidOperationException($"Unable to do work in worker {this} because current epoch block yield is null.");
 			}
 
 			Operator.PullProgress(this);
@@ -77,6 +80,8 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, Operator.Handler);
 
 			_totalEpochCost += (float) LocalOptimiser.Registry.Get<INumber>("total_cost").Value;
+
+			InvokeTimeScaleEvent(TimeScale.Iteration);
 
 			//_logger.Debug($"Worker {this} done with iteration {LocalIterationNumber} in epoch {LocalEpochNumber} at cost:\t{LocalOptimiser.Registry.Get<INumber>("total_cost").Value}");
 

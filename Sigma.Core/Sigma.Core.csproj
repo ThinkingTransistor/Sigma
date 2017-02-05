@@ -214,6 +214,7 @@
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
+    <Compile Include="Utils\HookUtils.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />
     <Compile Include="Utils\IDeepCopyable.cs" />
     <Compile Include="Training\Hooks\IHook.cs" />
