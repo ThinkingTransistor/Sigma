@@ -176,11 +176,11 @@ namespace Sigma.Core.Data.Datasets
 
 			if (flushCache)
 			{
-				_logger.Info($"Flushing all caches for dataset \"{Name}\" as flushCache flag was set...");
+				_logger.Debug($"Flushing all caches for dataset \"{Name}\" as flushCache flag was set...");
 
 				InvalidateAndClearCaches();
 
-				_logger.Info($"Done flushing all caches for dataset \"{Name}.\"");
+				_logger.Debug($"Done flushing all caches for dataset \"{Name}.\"");
 			}
 		}
 
@@ -308,7 +308,7 @@ namespace Sigma.Core.Data.Datasets
 
 				if (shouldWaitUntilAvailable)
 				{
-					_logger.Info($"Could not directly load block with index {blockIndex} for handler {handler} and shouldWaitUntilAvailable flag is set to true, waiting for available space...");
+					_logger.Debug($"Could not directly load block with index {blockIndex} for handler {handler} and shouldWaitUntilAvailable flag is set to true, waiting for available space...");
 
 					return FetchBlockWhenAvailable(blockIndex, handler);
 				}

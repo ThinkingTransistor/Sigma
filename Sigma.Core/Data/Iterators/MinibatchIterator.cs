@@ -188,7 +188,7 @@ namespace Sigma.Core.Data.Iterators
 
 				_traversedAllBlocks = true;
 
-				_logger.Info($"Completed traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
+				_logger.Debug($"Completed traversal of blocks until end, last currently available block seems to be {yieldedIndex}.");
 
 				ResetNotTraversedBlockIndices();
 

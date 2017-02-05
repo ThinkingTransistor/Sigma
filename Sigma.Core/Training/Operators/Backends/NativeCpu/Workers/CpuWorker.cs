@@ -15,7 +15,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 		private IEnumerator<IDictionary<string, INDArray>> _epochBlockYield;
 		private double _totalEpochCost;
-		private double _previousTotalEpochCost = Double.PositiveInfinity;
 
 		public CpuWorker(IOperator @operator) : base(@operator)
 		{
@@ -64,7 +63,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 				LocalIterationNumber = 0;
 				_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
 				_epochBlockYield.MoveNext();
-				_previousTotalEpochCost = _totalEpochCost;
 				_totalEpochCost = 0.0;
 			}
 

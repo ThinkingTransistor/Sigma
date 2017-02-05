@@ -76,7 +76,7 @@ namespace Sigma.Core.Data.Sources
 
 			if (!RegisteredUnpackersByExtension.ContainsKey(extension))
 			{
-				Logger.Info($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
+				Logger.Warn($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
 
 				return null;
 			}

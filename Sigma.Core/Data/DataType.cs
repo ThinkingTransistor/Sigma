@@ -80,7 +80,7 @@ namespace Sigma.Core.Data
 			{
 				if (AllowExternalTypeOverwrites)
 				{
-					Logger.Info($"Overwrote internal system type {underlyingType} to now refer to {type} (this may not be what you wanted).");
+					Logger.Warn($"Overwrote internal system type {underlyingType} to now refer to {type} (this may not be what you wanted).");
 				}
 				else
 				{

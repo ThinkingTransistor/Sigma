@@ -51,7 +51,7 @@ namespace Sigma.Core.Data.Iterators
 			// TODO populate registry with relevant parameters
 			if (_unifiedBlock == null)
 			{
-				_logger.Info($"First time yielding from iterator {this}, fetching and unifying all blocks from dataset...");
+				_logger.Debug($"First time yielding from iterator {this}, fetching and unifying all blocks from dataset...");
 
 				_unifiedBlock = FetchAndMergeFromDataset(handler);
 			}

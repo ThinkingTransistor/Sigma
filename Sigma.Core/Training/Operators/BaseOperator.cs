@@ -15,7 +15,6 @@ using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends.SigmaDiff;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
@@ -131,6 +130,13 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private readonly object _stateChangeLock;
 
+		/// <summary>
+		/// The current epoch number, with all networks. 
+		/// </summary>
+		private readonly IDictionary<int, INetwork[]> _pushedNetworks;
+
+		private readonly object _networkChangedLock;
+
 		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly ISet<string> _bufferCurrentRequiredHookParameters;
 		private readonly ISet<string> _bufferPreviousRequiredHookParameters;
@@ -183,6 +189,75 @@ namespace Sigma.Core.Training.Operators
 			_bufferCurrentRequiredHookParameters = new HashSet<string>();
 			_bufferPreviousRequiredHookParameters = new HashSet<string>();
 			_bufferResolvedRequiredHookParameters = new HashSet<string>();
+
+			_pushedNetworks = new Dictionary<int, INetwork[]>();
+			_networkChangedLock = new object();
+		}
+
+		public void PushProgress(IWorker worker)
+		{
+			// first iteration of new epoch complete
+			if (worker.LocalEpochNumber > EpochNumber && worker.LocalIterationNumber == 1)
+			{
+				PushEpochNetwork(worker);
+			}
+
+			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
+		}
+
+		public void PullProgress(IWorker worker)
+		{
+			// before first iteration of new epoch or network has not been initialised yet
+			if (worker.LocalEpochNumber < EpochNumber && worker.LocalIterationNumber == 0 || worker.LocalNetwork == null)
+			{
+				worker.LocalNetwork = PullNetwork();
+			}
+		}
+
+		protected virtual INetwork PullNetwork()
+		{
+			if (Network == null)
+			{
+				throw new InvalidOperationException($"Cannot pull network before assigning a network to operator {this}.");
+			}
+
+			lock (_networkChangedLock)
+			{
+				return (INetwork) Network.DeepCopy();
+			}
+		}
+
+		protected virtual void PushEpochNetwork(IWorker worker)
+		{
+			bool allNetworksForEpochPushed;
+
+			lock (_pushedNetworks)
+			{
+				INetwork[] networks = _pushedNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
+				if (!networks.AddToNextNull(worker.LocalNetwork.DeepCopy()))
+				{
+					throw new InvalidOperationException($"Too many workers trying to push their network, worker {worker} attempted to push his network but {WorkerCount} workers already pushed their network for epoch {worker.LocalEpochNumber}.");
+				}
+
+				allNetworksForEpochPushed = _pushedNetworks[worker.LocalEpochNumber][WorkerCount - 1] != null;
+			}
+
+			Logger.Debug($"Worker {worker.GetType()} pushed its network for the epoch {worker.LocalEpochNumber}.");
+
+			if (allNetworksForEpochPushed)
+			{
+				EpochNumber++;
+
+				Logger.Info($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
+				Logger.Debug($"Merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}...");
+
+				lock (_networkChangedLock)
+				{
+					NetworkMerger.Merge(Network, _pushedNetworks[worker.LocalEpochNumber]);
+				}
+
+				Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
+			}
 		}
 
 		public void AttachHook(IActiveHook hook)
@@ -279,7 +354,7 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
-		protected void ResolveAllRequiredRegistryEntries(IRegistryResolver registryResolver, ISet<string> allRequiredRegistryEntries, ISet<string> resultAllResolvedRequiredRegistryEntries)
+		protected void ResolveAllRequiredRegistryEntries(IRegistryResolver registryResolver, IEnumerable<string> allRequiredRegistryEntries, ISet<string> resultAllResolvedRequiredRegistryEntries)
 		{
 			resultAllResolvedRequiredRegistryEntries.Clear();
 
@@ -355,14 +430,11 @@ namespace Sigma.Core.Training.Operators
 
 				if (localTimeStep.LocalInterval == 0)
 				{
-					// TODO invoke hook / return hooks to invoke somehow? -> add to worker
 					resultHooksToInvoke.Add(hook);
 
 					if (localTimeStep.LocalLiveTime > 0)
 					{
 						localTimeStep.LocalLiveTime--;
-
-						//TODO check if LocalLiveTime == 0 in callee and mark as dead accordingly
 					}
 
 					localTimeStep.LocalInterval = localTimeStep.Interval;
@@ -601,9 +673,6 @@ namespace Sigma.Core.Training.Operators
 			registry["epoch"] = localEpochNumber;
 			registry["iteration"] = localIterationNumber;
 		}
-
-		public abstract void PushProgress(IWorker worker);
-		public abstract void PullProgress(IWorker worker);
 
 		#region AbstractWorkerMethods
 

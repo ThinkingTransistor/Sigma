@@ -114,7 +114,7 @@ namespace Sigma.Core.Architecture
 				throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
 			}
 
-			_logger.Info($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
+			_logger.Debug($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
 
 			_initialisationHandler = handler;
 
@@ -186,7 +186,7 @@ namespace Sigma.Core.Architecture
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			_logger.Info($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
+			_logger.Debug($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
 		protected virtual void UpdateRegistry()
