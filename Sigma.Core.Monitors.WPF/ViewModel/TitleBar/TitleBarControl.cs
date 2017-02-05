@@ -78,6 +78,20 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 		/// <param name="app"></param>
 		public void AddItem(Application app, Window window, TitleBarItem item, Brush foregroundBrush)
 		{
+			AddItem(app, window, item, item.ToString(), foregroundBrush);
+		}
+
+		/// <summary>
+		///     Add a <see cref="TitleBarItem" /> to the <see cref="TitleBarControl" />.
+		///     Do not use <see cref="ItemCollection.Add" /> ore Menu.Items.Add. (Although it will be called internally)
+		/// </summary>
+		/// <param name="window"></param>
+		/// <param name="item">The item to add.</param>
+		/// <param name="key">The key that can later be found in the children</param>
+		/// <param name="foregroundBrush">The foreground colour for the newly created item.</param>
+		/// <param name="app"></param>
+		public void AddItem(Application app, Window window, TitleBarItem item, string key, Brush foregroundBrush)
+		{
 			if (foregroundBrush == null)
 			{
 				throw new ArgumentNullException(nameof(foregroundBrush));
@@ -87,7 +101,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 
 			item.App = app;
 			item.Window = window;
-			_children.Add(item.ToString(), item);
+			_children.Add(key, item);
 
 			item.Content.Foreground = foregroundBrush;
 		}

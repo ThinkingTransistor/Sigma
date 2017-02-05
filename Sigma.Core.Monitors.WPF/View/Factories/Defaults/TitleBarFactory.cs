@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using log4net;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Data.Iterators;

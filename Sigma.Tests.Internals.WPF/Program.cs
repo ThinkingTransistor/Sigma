@@ -41,6 +41,11 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.AddTabs("Overview", "Log", "Tests");
 
+			gui.WindowDispatcher(window =>
+			{
+				TabUI tab = window.TabControl["Overview"];
+			});
+
 			LineChartPanel lineChart = null;
 			CartesianChartPanel cartesianChart = null;
 
