@@ -22,7 +22,7 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks.Reporting;
+using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;

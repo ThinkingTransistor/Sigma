@@ -4,10 +4,11 @@ using System.Threading;
 using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Operators.Workers;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 {
-	public class CpuWorker : BaseCpuWorker
+	public class CpuWorker : BaseWorker
 	{
 		private ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
 		private ILog _logger;

@@ -187,7 +187,7 @@
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
-    <Compile Include="Training\Hooks\Reporting\ProgressReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\ProgressReporterHook.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
@@ -198,7 +198,6 @@
     <Compile Include="Training\Mergers\INetworkMerger.cs" />
     <Compile Include="Training\Mergers\WeightedNetworkMerger.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
-    <Compile Include="Training\Operators\Backends\NativeCpu\Workers\BaseCpuWorker.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
@@ -239,7 +238,8 @@
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
-    <Folder Include="Training\Hooks\Storing\" />
+    <Folder Include="Training\Hooks\Modifiers\" />
+    <Folder Include="Training\Hooks\Saviors\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

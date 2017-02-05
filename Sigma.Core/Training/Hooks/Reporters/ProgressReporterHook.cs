@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Collections.Generic;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Training.Hooks.Reporting
+namespace Sigma.Core.Training.Hooks.Reporters
 {
 	/// <summary>
 	/// A hook that reports the current progress (e.g. cost) to the console.
