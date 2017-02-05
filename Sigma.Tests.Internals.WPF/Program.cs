@@ -38,30 +38,30 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
-			
+
 			gui.AddTabs("Overview", "Log", "Tests");
 
 			LineChartPanel lineChart = null;
 			CartesianChartPanel cartesianChart = null;
 
-			gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
-			gui.WindowDispatcher(window =>
-			{
-				window.IsInitializing = true;
-				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
+			//gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
+			//gui.WindowDispatcher(window =>
+			//{
+			//	window.IsInitializing = true;
+			//	window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
 
-				//lineChart = new LineChartPanel("Example");
-				//window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
-				cartesianChart = new CartesianChartPanel("Cartesian");
-				window.TabControl["Overview"].AddCumulativePanel(cartesianChart, 2, 2, gui.GetLegendInfo("Net"));
-
-
-				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
-				window.IsInitializing = false;
-			});
+			//	//lineChart = new LineChartPanel("Example");
+			//	//window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
+			//	cartesianChart = new CartesianChartPanel("Cartesian");
+			//	window.TabControl["Overview"].AddCumulativePanel(cartesianChart, 2, 2, gui.GetLegendInfo("Net"));
 
 
-			//AddComplex(gui);
+			//	window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
+			//	window.IsInitializing = false;
+			//});
+
+
+			AddComplex(gui);
 
 			sigma.Prepare();
 
@@ -90,19 +90,19 @@ namespace Sigma.Tests.Internals.WPF
 			//	PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
 			//}
 
-			Random rand = new Random();
-			for (int i = 0; i < 1000; i++)
-			{
-				Thread.Sleep(1000);
-				try
-				{
-					gui.WindowDispatcher(window => cartesianChart.ChartValues.Add(rand.NextDouble() * 10));
-				}
-				catch (Exception)
-				{
-					return;
-				}
-			}
+			//Random rand = new Random();
+			//for (int i = 0; i < 1000; i++)
+			//{
+			//	Thread.Sleep(1000);
+			//	try
+			//	{
+			//		gui.WindowDispatcher(window => cartesianChart.ChartValues.Add(rand.NextDouble() * 10));
+			//	}
+			//	catch (Exception)
+			//	{
+			//		return;
+			//	}
+			//}
 		}
 
 		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)

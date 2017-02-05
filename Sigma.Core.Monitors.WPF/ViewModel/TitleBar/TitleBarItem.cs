@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -16,6 +15,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 {
 	public class TitleBarItem
 	{
+		/// <summary>
+		///		A list of all the children of the current <see cref="TitleBarItem"/>, which are also <see cref="TitleBarItem"/>s.
+		/// </summary>
 		public List<TitleBarItem> TitleBarItemChildren;
 
 		/// <summary>
@@ -251,7 +253,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 			}
 
 			item.MouseLeftButtonUp += (sender, args) => action(App, Window, this);
-			item.TouchDown += (sender, args) => action(App, Window, this);
+			item.TouchUp += (sender, args) => action(App, Window, this);
 
 			MenuItem menuItem = item as MenuItem;
 			if (menuItem != null)

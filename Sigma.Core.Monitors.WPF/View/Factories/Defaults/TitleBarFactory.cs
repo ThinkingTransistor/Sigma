@@ -8,12 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using log4net;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Data.Iterators;
@@ -124,6 +121,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
+							// ignore
 						}
 						finally
 						{
@@ -138,6 +136,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
+							// ignore
 						}
 						finally
 						{
@@ -158,6 +157,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
+							// ignore
 						}
 						finally
 						{

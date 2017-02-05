@@ -211,6 +211,12 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"Added {tabs.Length} tabs: {string.Join(", ", tabs)}.");
 		}
 
+		/// <summary>
+		///		Add a <see cref="StatusBarLegendInfo"/> to the UI. It will be (with a normal configuration) 
+		///		displayed in the lower right corner - Panels can be marked with an info.
+		/// </summary>
+		/// <param name="legend">The info that will be added.</param>
+		/// <returns>The passed legend for chaning / storing in a variable. </returns>
 		public StatusBarLegendInfo AddLegend(StatusBarLegendInfo legend)
 		{
 			AddLegends(legend);
