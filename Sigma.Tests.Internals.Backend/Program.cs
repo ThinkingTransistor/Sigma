@@ -66,7 +66,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
-			trainer.AddPassiveHook(new ProgressReporterHook(TimeStep.Every(1, TimeScale.Iteration)));
+
+			trainer.AddActiveHook(new ProgressReporterHook(TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.Run();
 		}

@@ -108,14 +108,22 @@ namespace Sigma.Core.Training.Operators
 		void MarkHookDead(IActiveHook hook, IWorker worker);
 
 		/// <summary>
+		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
+		/// </summary>
+		/// <param name="hooksToInvokeInBackground">The hooks to invoke in the background.</param>
+		/// <param name="localRegistry">The local registry to copy required registry entries from.</param>
+		/// <param name="bufferRegistryEntries">The buffer for fetching required registry entries.</param>
+		/// <param name="bufferResolvedRegistryEntries">The buffer for resolved registry entries.</param>
+		void DispatchBackgroundHooks(ISet<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries);
+
+		/// <summary>
 		/// Invoke hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		/// <param name="worker">The worker to invoke the hook with.</param>
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke"></param>
-		void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke);
+		void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

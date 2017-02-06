@@ -77,15 +77,13 @@ namespace Sigma.Core.Training.Optimisers
 			}
 
 			IRegistry costRegistry = new Registry(Registry, tags: "costs");
-			Registry["costs"] = costRegistry;
+			Registry["cost_partials"] = costRegistry;
 
 			IRegistry gradientRegistry = new Registry(Registry, tags: "gradients");
 			Registry["gradients"] = gradientRegistry;
 
 			INumber cost = GetTotalCost(network, handler, costRegistry);
-			Registry["total_cost"] = cost;
-
-			//_logger.Warn("Total cost for current optimiser run: " + cost);
+			Registry["cost_total"] = cost.GetValueAs<double>();
 
 			handler.ComputeDerivativesTo(cost);
 
@@ -102,8 +100,9 @@ namespace Sigma.Core.Training.Optimisers
 
 					if (asNumber != null)
 					{
-						// boxing the numbers to ndarrays is easier to work with and the performance difference is completely negligible 
+						// boxing the numbers to ndarrays is easier to work with and the performance difference is completely negligible
 						//  (especially considering that ndarrays are far more common as trainable parameters).
+						//  if you think otherwise, implement your own gradient optimiser and do it your way
 						INDArray convertedNumber = handler.AsNDArray(asNumber);
 						INDArray convertedGradient = handler.AsNDArray(handler.GetDerivative(asNumber));
 
@@ -155,14 +154,14 @@ namespace Sigma.Core.Training.Optimisers
 					INumber partialCost = externalCostRegistry.Get<INumber>("cost");
 					double partialImportance = externalCostRegistry.Get<double>("importance");
 
-					costRegistry["partial_" + layerBuffer.Layer.Name] = partialCost;
+					costRegistry["partial_" + layerBuffer.Layer.Name] = partialCost.GetValueAs<double>();
 					costRegistry["partial_" + layerBuffer.Layer.Name + "_importance"] = partialImportance;
 
 					totalCost = handler.Add(totalCost, handler.Multiply(partialCost, partialImportance));
 				}
 			}
 
-			costRegistry["total"] = totalCost;
+			costRegistry["total"] = totalCost.GetValueAs<double>();
 
 			return totalCost;
 		}

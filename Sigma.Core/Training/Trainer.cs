@@ -168,6 +168,17 @@ namespace Sigma.Core.Training
 			Operator.Network = Network;
 			Operator.Trainer = this;
 
+			// attach all given hooks
+			foreach (IPassiveHook passiveHook in _passiveHooks)
+			{
+				Operator.AttachHook(passiveHook);
+			}
+
+			foreach (IActiveHook activeHook in _activeHooks)
+			{
+				Operator.AttachHook(activeHook);
+			}
+
 			UpdateRegistry();
 
 			_initialised = true;

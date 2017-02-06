@@ -35,12 +35,12 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///     All <see cref="IActiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected readonly ICollection<IActiveHook> ActiveHooks;
+		public IReadOnlyCollection<IActiveHook> ActiveHooks { get; protected set; }
 
 		/// <summary>
 		///     All <see cref="IPassiveHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected readonly ICollection<IPassiveHook> PassiveHooks;
+		public IReadOnlyCollection<IPassiveHook> PassiveHooks { get; protected set; }
 
 		/// <summary>
 		///		All active hooks sorted by time scale.
@@ -140,11 +140,15 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
+		private readonly IList<IPassiveHook> _passiveHooks;
+		private readonly IList<IActiveHook> _activeHooks;
+		private readonly ISet<string> _bufferRegistryEntries;
+		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
-		private readonly IRegistryResolver _bufferRegistryResolver;
-		private readonly ISet<string> _bufferCurrentRequiredHookParameters;
-		private readonly ISet<string> _bufferPreviousRequiredHookParameters;
-		private readonly ISet<string> _bufferResolvedRequiredHookParameters;
+		private readonly ISet<IHook> _bufferHooksToInvoke;
+		private readonly ISet<IHook> _bufferHooksInBackgroundToInvoke;
+		private readonly IDictionary<IHook, ITimeStep> _localPassiveHookTimeSteps;
+		private int _highestIterationNumber;
 
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
@@ -179,7 +183,6 @@ namespace Sigma.Core.Training.Operators
 
 			Handler = handler;
 			WorkerCount = workerCount;
-			EpochNumber = -1;
 
 			ActiveHooks = new List<IActiveHook>();
 			PassiveHooks = new List<IPassiveHook>();
@@ -188,15 +191,20 @@ namespace Sigma.Core.Training.Operators
 			AliveHooksByInWorkerStates = new Dictionary<IActiveHook, bool[]>();
 
 			Registry = new Registry(tags: "operator");
-			_bufferRegistryResolver = new RegistryResolver(Registry);
 
-			_bufferCurrentRequiredHookParameters = new HashSet<string>();
-			_bufferPreviousRequiredHookParameters = new HashSet<string>();
-			_bufferResolvedRequiredHookParameters = new HashSet<string>();
-
+			_localPassiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			_pushedEpochNetworks = new Dictionary<int, INetwork[]>();
 			_pushedLocalIterationNumbers = new Dictionary<int, int[]>();
+			_passiveHooks = new List<IPassiveHook>();
+			_activeHooks = new List<IActiveHook>();
+			_bufferRegistryEntries = new HashSet<string>();
+			_bufferResolvedRegistryEntries = new HashSet<string>();
+			_bufferHooksToInvoke = new HashSet<IHook>();
+			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
 			_networkChangedLock = new object();
+
+			PassiveHooks = new ReadOnlyCollection<IPassiveHook>(_passiveHooks);
+			ActiveHooks = new ReadOnlyCollection<IActiveHook>(_activeHooks);
 		}
 
 		public void PushProgress(IWorker worker)
@@ -218,6 +226,8 @@ namespace Sigma.Core.Training.Operators
 						// remove networks of last epoch to free up memory
 						_pushedEpochNetworks[EpochNumber] = null;
 					}
+
+					InvokeTimeScaleEvent(TimeScale.Epoch);
 				}
 			}
 
@@ -234,25 +244,48 @@ namespace Sigma.Core.Training.Operators
 
 				localIterationNumbers[WorkerIndicesByWorkers[worker]] = worker.LocalIterationNumber;
 
-				for (int i = 0; i < localIterationNumbers.Length; i++)
+				if (localIterationNumbers.Any(t => t != worker.LocalIterationNumber))
 				{
-					if (localIterationNumbers[i] != worker.LocalIterationNumber)
-					{
-						allWorkersAtIteration = false;
-
-						break;
-					}
+					allWorkersAtIteration = false;
 				}
 			}
 
 			if (allWorkersAtIteration)
 			{
+				// if worker is at highest current iteration number, update global iteration
+				if (worker.LocalEpochNumber == EpochNumber)
+				{
+					_highestIterationNumber = worker.LocalIterationNumber;
+				}
 
+				InvokeTimeScaleEvent(TimeScale.Iteration);
 			}
 
 			// TODO add invokeinbackground option to all hooks and respect it when calling in workers (active) and operators (passive) hooks
 			// TODO common functions for copying a list of registry resolve entries
 			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
+		}
+
+		protected void InvokeTimeScaleEvent(TimeScale timeScale)
+		{
+			EjectTimeScaleEvent(timeScale, PassiveHooks, _localPassiveHookTimeSteps, _bufferHooksToInvoke);
+
+			UpdateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
+
+			HookUtils.FetchBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
+
+			foreach (IHook hook in _bufferHooksToInvoke)
+			{
+				if (!hook.InvokeInBackground)
+				{
+					hook.Invoke(Registry);
+				}
+			}
+
+			if (_bufferHooksInBackgroundToInvoke.Count > 0)
+			{
+				DispatchBackgroundHooks(_bufferHooksInBackgroundToInvoke, Registry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+			}
 		}
 
 		public void PullProgress(IWorker worker)
@@ -318,7 +351,7 @@ namespace Sigma.Core.Training.Operators
 				return;
 			}
 
-			ActiveHooks.Add(hook);
+			_activeHooks.Add(hook);
 
 			if (!ActiveHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
 			{
@@ -334,7 +367,7 @@ namespace Sigma.Core.Training.Operators
 
 		public void DetachHook(IActiveHook hook)
 		{
-			if (ActiveHooks.Remove(hook))
+			if (_activeHooks.Remove(hook))
 			{
 				ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
 				AliveHooksByInWorkerStates.Remove(hook);
@@ -352,7 +385,7 @@ namespace Sigma.Core.Training.Operators
 				return;
 			}
 
-			PassiveHooks.Add(hook);
+			_passiveHooks.Add(hook);
 
 			if (!PassiveHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
 			{
@@ -366,7 +399,7 @@ namespace Sigma.Core.Training.Operators
 
 		public void DetachHook(IPassiveHook hook)
 		{
-			if (PassiveHooks.Remove(hook))
+			if (_passiveHooks.Remove(hook))
 			{
 				PassiveHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
 
@@ -407,25 +440,21 @@ namespace Sigma.Core.Training.Operators
 		/// Eject a certain time scale event within a certain worker and update the local time steps.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		/// <param name="worker">The worker to invoke the hook with.</param>
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale, IWorker worker, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
+		public void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
 		{
 			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
-			if (worker == null) throw new ArgumentNullException(nameof(worker));
 			if (hooks == null) throw new ArgumentNullException(nameof(hooks));
 			if (localHookTimeSteps == null) throw new ArgumentNullException(nameof(localHookTimeSteps));
 			if (resultHooksToInvoke == null) throw new ArgumentNullException(nameof(resultHooksToInvoke));
-
-			Logger.Debug($"Ejecting time scale event {timeScale} for worker {worker} in operator {this}...");
 
 			resultHooksToInvoke.Clear();
 
 			foreach (IHook hook in hooks)
 			{
-				if (hook.TimeStep.LocalLiveTime == 0)
+				if (hook.TimeStep.TimeScale != timeScale)
 				{
 					continue;
 				}
@@ -436,9 +465,16 @@ namespace Sigma.Core.Training.Operators
 
 					timeStep.LocalLiveTime = timeStep.LiveTime;
 					timeStep.LocalInterval = timeStep.Interval;
+
+					localHookTimeSteps.Add(hook, timeStep);
 				}
 
 				ITimeStep localTimeStep = localHookTimeSteps[hook];
+
+				if (localTimeStep.LocalLiveTime == 0)
+				{
+					continue;
+				}
 
 				localTimeStep.LocalInterval--;
 
@@ -454,8 +490,25 @@ namespace Sigma.Core.Training.Operators
 					localTimeStep.LocalInterval = localTimeStep.Interval;
 				}
 			}
+		}
 
-			Logger.Debug($"Done ejecting time scale event {timeScale} for worker {worker} in operator {this}, total of {resultHooksToInvoke.Count} hooks to invoke.");
+		/// <summary>
+		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
+		/// </summary>
+		/// <param name="hooksToInvokeInBackground">The hooks to invoke in the background.</param>
+		/// <param name="localRegistry">The local registry to copy required registry entries from.</param>
+		/// <param name="bufferRegistryEntries"></param>
+		/// <param name="bufferResolvedRegistryEntries"></param>
+		public void DispatchBackgroundHooks(ISet<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries)
+		{
+			IRegistry copy = HookUtils.GetRegistryCopyForHooks(localRegistry, hooksToInvokeInBackground, bufferRegistryEntries, bufferResolvedRegistryEntries);
+
+			foreach (IHook hook in hooksToInvokeInBackground)
+			{
+				hook.Operator = this;
+
+				System.Threading.Tasks.Task.Factory.StartNew(() => hook.Invoke(copy));
+			}
 		}
 
 		/// <summary>

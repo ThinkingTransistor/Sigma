@@ -36,7 +36,6 @@ namespace Sigma.Core
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
 		private readonly ISet<IOperator> _runningOperators;
-		private readonly ConcurrentQueue<IPassiveHook> _hooksToExecute;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
 		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
@@ -77,7 +76,6 @@ namespace Sigma.Core
 			RegistryResolver = new RegistryResolver(Registry);
 			Random = new Random();
 			_monitors = new HashSet<IMonitor>();
-			_hooksToExecute = new ConcurrentQueue<IPassiveHook>();
 			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_runningOperators = new HashSet<IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
@@ -180,7 +178,6 @@ namespace Sigma.Core
 				_logger.Debug("Received state change signal by processing queue event, processing...");
 
 				ProcessHooksToAttach();
-				ProcessHooksToExecute();
 
 				if (_requestedStop)
 				{
@@ -260,19 +257,6 @@ namespace Sigma.Core
 			_processQueueEvent.Set();
 		}
 
-		private void ProcessHooksToExecute()
-		{
-			while (!_hooksToExecute.IsEmpty)
-			{
-				IPassiveHook hook;
-
-				if (_hooksToExecute.TryDequeue(out hook))
-				{
-					new Task(() => hook.Invoke(hook.RegistryCopy)).Start();
-				}
-			}
-		}
-
 		private void ProcessHooksToAttach()
 		{
 			while (!_hooksToAttach.IsEmpty)
@@ -330,18 +314,6 @@ namespace Sigma.Core
 		public void RequestAttachHook(IHook hook, IOperator operatorToAttachTo)
 		{
 			_hooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
-
-			_processQueueEvent.Set();
-		}
-
-		/// <summary>
-		/// Request the asynchronous execution of a passive hook.
-		/// Note: The required parameter registry must already be set in the given hook.
-		/// </summary>
-		/// <param name="hook">The hook to execute.</param>
-		public void RequestExecuteHookAsync(IPassiveHook hook)
-		{
-			_hooksToExecute.Enqueue(hook);
 
 			_processQueueEvent.Set();
 		}

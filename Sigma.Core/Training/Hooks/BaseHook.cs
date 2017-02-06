@@ -40,12 +40,6 @@ namespace Sigma.Core.Training.Hooks
 		public bool InvokeInBackground { get; } = false;
 
 		/// <summary>
-		/// A complete and local copy of the global registry with the parameters required for this hook for asynchronous execution.
-		/// Note: This field is only populated if <see cref="IHook.InvokeInBackground"/> is set to true.
-		/// </summary>
-		public IRegistry RegistryCopy { get; set; }
-
-		/// <summary>
 		/// The operator that owns this hook and dispatched it for execution. 
 		/// </summary>
 		public IOperator Operator { get; set; }

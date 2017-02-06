@@ -7,15 +7,18 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Collections.Generic;
+using log4net;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
 	/// <summary>
-	/// A hook that reports the current progress (e.g. cost) to the console.
+	/// A hook that reports the current progress of each worker (e.g. cost) to the console.
 	/// </summary>
-	public class ProgressReporterHook : BasePassiveHook
+	public class ProgressReporterHook : BaseActiveHook
 	{
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		/// <summary>
 		/// Create a passive hook with a certain time step and set of required global registry entries.
 		/// </summary>
@@ -40,7 +43,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		public override void Invoke(IRegistry registry)
 		{
-			throw new System.NotImplementedException("Yay, method was called.");
+			_logger.Info($"Cost at epoch {registry["epoch"]} / iteration {registry["iteration"]} = {registry.Get<IRegistry>("optimiser")["cost_total"]}");
 		}
 	}
 }

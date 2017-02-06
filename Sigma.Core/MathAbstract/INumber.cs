@@ -19,5 +19,12 @@ namespace Sigma.Core.MathAbstract
 		/// The underlying value. 
 		/// </summary>
 		object Value { get; set; }
+
+		/// <summary>
+		/// Get the underlying value as another type.
+		/// </summary>
+		/// <typeparam name="TOther">The other type.</typeparam>
+		/// <returns>The value as the other type.</returns>
+		TOther GetValueAs<TOther>();
 	}
 }

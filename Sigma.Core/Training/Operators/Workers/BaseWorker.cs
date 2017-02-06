@@ -42,6 +42,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		protected Thread WorkerThread { get; set; }
 
 		private readonly ISet<IHook> _bufferHooksToInvoke;
+		private readonly ISet<IHook> _bufferHooksInBackgroundToInvoke;
+		private readonly ISet<string> _bufferRegistryEntries;
+		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly IRegistry _bufferRegistry;
 		private readonly object _stateLock;
 
@@ -66,6 +69,9 @@ namespace Sigma.Core.Training.Operators.Workers
 			LocalActiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			ThreadPriority = priority;
 			_bufferHooksToInvoke = new HashSet<IHook>();
+			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
+			_bufferRegistryEntries = new HashSet<string>();
+			_bufferResolvedRegistryEntries = new HashSet<string>();
 			_bufferRegistry = new Registry();
 			_stateLock = new object();
 			_waitForResume = new ManualResetEvent(false);
@@ -241,14 +247,24 @@ namespace Sigma.Core.Training.Operators.Workers
 		{
 			var activeHooks = Operator.Trainer.ActiveHooks;
 
-			Operator.EjectTimeScaleEvent(timeScale, this, activeHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
+			Operator.EjectTimeScaleEvent(timeScale, activeHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
 			MarkDeadHooks(activeHooks, LocalActiveHookTimeSteps);
 
 			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
 
-			foreach (IActiveHook hook in activeHooks)
+			HookUtils.FetchBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
+
+			foreach (IHook hook in _bufferHooksToInvoke)
 			{
-				hook.Invoke(_bufferRegistry);
+				if (!hook.InvokeInBackground)
+				{
+					hook.Invoke(_bufferRegistry);
+				}
+			}
+
+			if (_bufferHooksInBackgroundToInvoke.Count > 0)
+			{
+				Operator.DispatchBackgroundHooks(_bufferHooksInBackgroundToInvoke, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 			}
 		}
 

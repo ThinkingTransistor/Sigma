@@ -89,7 +89,7 @@ namespace Sigma.Core.Utils
 				}
 
 				string lastPart = parts[parts.Length - 1];
-				object copiedValue = Utils.Registry.DeepestCopy(currentRoot[lastPart]);
+				object copiedValue = Registry.DeepestCopy(currentRoot[lastPart]);
 
 				currentRootCopy[lastPart] = copiedValue;
 			}
@@ -139,6 +139,23 @@ namespace Sigma.Core.Utils
 					{
 						resultAllRequiredRegistryEntries.Add(registryEntry);
 					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Fetch all hooks that should be invoke in background from a set of given hooks.
+		/// </summary>
+		/// <param name="hooks">The hooks to fetch from.</param>
+		/// <param name="resultHooks">The resulting set of hooks to invoke in background.</param>
+		public static void FetchBackgroundHooks(IEnumerable<IHook> hooks, ISet<IHook> resultHooks)
+		{
+			resultHooks.Clear();
+			foreach (IHook hook in hooks)
+			{
+				if (hook.InvokeInBackground)
+				{
+					resultHooks.Add(hook);
 				}
 			}
 		}
