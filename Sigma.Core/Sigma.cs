@@ -10,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace Sigma.Core
 
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
-		private readonly ISet<IOperator> _runningOperators;
+		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
 		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
@@ -77,7 +78,7 @@ namespace Sigma.Core
 			Random = new Random();
 			_monitors = new HashSet<IMonitor>();
 			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
-			_runningOperators = new HashSet<IOperator>();
+			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
 			_processQueueEvent = new ManualResetEvent(true);
 		}
@@ -147,7 +148,48 @@ namespace Sigma.Core
 			_trainersByName.Add(trainer.Name, trainer);
 			trainer.Sigma = this;
 
+			_logger.Debug($"Added trainer {trainer} to sigma environment \"{Name}\".");
+
 			return trainer;
+		}
+
+		/// <summary>
+		/// Remove a trainer (and its associated operator) from this environment.
+		/// Note: Warning, this is probably not what you want. Trainer removal may cause inconsistent behaviour during execution.
+		///       If the operator is currently running and cannot be disassociated this method will throw an exception.
+		/// </summary>
+		/// <param name="trainer">The trainer to remove.</param>
+		public void RemoveTrainer(ITrainer trainer)
+		{
+			if (!_trainersByName.Values.Contains(trainer))
+			{
+				throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as it does not exist in this environment.");
+			}
+
+			if (_runningOperatorsByTrainer.ContainsKey(trainer))
+			{
+				if (_runningOperatorsByTrainer[trainer].State == ExecutionState.Running)
+				{
+					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {_runningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
+				}
+
+				IOperator @operator = _runningOperatorsByTrainer[trainer];
+
+				_runningOperatorsByTrainer[trainer].Sigma = null;
+				_runningOperatorsByTrainer.Remove(trainer);
+
+				_logger.Debug($"Removed operator {@operator} from sigma environment \"{Name}\" in association with trainer {trainer}.");
+			}
+
+			if (!_trainersByName.Remove(trainer.Name))
+			{
+				_logger.Warn($"Inconsistent trainer state: Trainer was added to environment \"{Name}\" as \"{trainer.Name}\" but its name now is \"{Name}\". Names should be constant, will attempt continued execution.");
+
+				var existingPair = _trainersByName.First(pair => pair.Value == trainer);
+				_trainersByName.Remove(existingPair.Key);
+			}
+
+			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
 		/// <summary>
@@ -215,7 +257,7 @@ namespace Sigma.Core
 
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
-				_runningOperators.Add(trainer.Operator);
+				_runningOperatorsByTrainer.Add(trainer, trainer.Operator);
 
 				trainer.Operator.Sigma = this;
 			}
@@ -225,7 +267,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Starting operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperators)
+			foreach (IOperator op in _runningOperatorsByTrainer.Values)
 			{
 				op.Start();
 			}
@@ -235,7 +277,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Stopping operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperators)
+			foreach (IOperator op in _runningOperatorsByTrainer.Values)
 			{
 				op.SignalStop();
 			}

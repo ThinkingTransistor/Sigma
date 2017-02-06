@@ -260,10 +260,6 @@ namespace Sigma.Core.Training.Operators
 
 				InvokeTimeScaleEvent(TimeScale.Iteration);
 			}
-
-			// TODO add invokeinbackground option to all hooks and respect it when calling in workers (active) and operators (passive) hooks
-			// TODO common functions for copying a list of registry resolve entries
-			// TODO invoke passive hooks for time steps (pass new epoch / new iteration as params? own methods?)
 		}
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
@@ -714,9 +710,13 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="worker">The worker to fetch local values from.</param>
 		public void PopulateWorkerRegistry(IRegistry registry, IWorker worker)
 		{
-			registry.Clear();
-
+			// TODO create documentation about which registry entries mean what 
 			UpdateRegistry(registry, worker.LocalNetwork, worker.LocalOptimiser, worker.LocalTrainingDataIterator, worker.LocalEpochNumber, worker.LocalIterationNumber);
+
+			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
+			{
+				registry["shared"] = new Registry(parent: registry, tags: "shared");
+			}
 		}
 
 		/// <summary>

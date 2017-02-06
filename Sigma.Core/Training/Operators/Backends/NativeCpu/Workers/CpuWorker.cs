@@ -56,12 +56,13 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			// no more blocks in this yield, therefore epoch is done
 			if (!_epochBlockYield.MoveNext())
 			{
-				Logger.Info($"Completed epoch {LocalEpochNumber + 1} at iteration {LocalIterationNumber} in worker {this}.");
-
 				InvokeTimeScaleEvent(TimeScale.Epoch);
+
+				Logger.Info($"Completed epoch {LocalEpochNumber} at iteration {LocalIterationNumber} in worker {this}.");
 
 				LocalEpochNumber++;
 				LocalIterationNumber = 0;
+
 				_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
 				_epochBlockYield.MoveNext();
 			}
