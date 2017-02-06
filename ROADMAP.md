@@ -7,6 +7,9 @@ The never ending list of nice-to-have things by project. These lists are not mea
 * Automated hyperparameter search across trainers
 * Truly distributed operator across devices
   * Operates on sub-operators for each device
+* Plugin / layer dependency management
+  * Automically load and inject custom layers
+  * Custom code can be stored within the environment / trainer files 
 
 ## Sigma.Core.Monitors General Roadmap
 
@@ -19,8 +22,9 @@ The never ending list of nice-to-have things by project. These lists are not mea
   * as a website (maybe webhost) to easily remotely monitor and do fancy stuff
 
 * Android / iOS monitor
- * on top of HTTP / TCP monitor
- * monitor only (no learning on phone)
+  * on top of HTTP / TCP monitor
+  * monitor only (no learning on phone)
+  * learning on phone
 
 ## Sigma.Core.Monitors.WPF Roadmap
 
