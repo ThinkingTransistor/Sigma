@@ -46,6 +46,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly IRegistry _bufferRegistry;
+		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly object _stateLock;
 
 		/// <summary>
@@ -73,6 +74,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
 			_bufferRegistry = new Registry();
+			_bufferRegistryResolver = new RegistryResolver(_bufferRegistry);
 			_stateLock = new object();
 			_waitForResume = new ManualResetEvent(false);
 		}
@@ -258,7 +260,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			{
 				if (!hook.InvokeInBackground)
 				{
-					hook.Invoke(_bufferRegistry);
+					hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
 				}
 			}
 

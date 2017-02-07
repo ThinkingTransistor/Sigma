@@ -60,25 +60,28 @@ namespace Sigma.Core.Utils
 			}
 
 			Root = root;
-			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>(8);
+			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>();
 			_fullIdentifiersToInvalidate = new HashSet<string>();
 		}
 
 		public void OnChildHierarchyChanged(string identifier, IRegistry previousChild, IRegistry newChild)
 		{
-			foreach (string fullIdentifier in _matchIdentifierCache.Keys)
+			lock (_matchIdentifierCache)
 			{
-				MatchIdentifierRequestCacheEntry entry = _matchIdentifierCache[fullIdentifier];
-
-				if (entry.AllReferredRegistries.Contains<IRegistry>(previousChild))
+				foreach (string fullIdentifier in _matchIdentifierCache.Keys)
 				{
-					_fullIdentifiersToInvalidate.Add(fullIdentifier);
-				}
-			}
+					MatchIdentifierRequestCacheEntry entry = _matchIdentifierCache[fullIdentifier];
 
-			foreach (string fullIdentifier in _fullIdentifiersToInvalidate)
-			{
-				_matchIdentifierCache.Remove(fullIdentifier);
+					if (entry.AllReferredRegistries.Contains<IRegistry>(previousChild))
+					{
+						_fullIdentifiersToInvalidate.Add(fullIdentifier);
+					}
+				}
+
+				foreach (string fullIdentifier in _fullIdentifiersToInvalidate)
+				{
+					_matchIdentifierCache.Remove(fullIdentifier);
+				}
 			}
 
 			RemoveChildHierarchyListener(previousChild);
@@ -208,9 +211,12 @@ namespace Sigma.Core.Utils
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
-			if (_matchIdentifierCache.ContainsKey(matchIdentifier))
+			lock (_matchIdentifierCache)
 			{
-				return _matchIdentifierCache[matchIdentifier];
+				if (_matchIdentifierCache.ContainsKey(matchIdentifier))
+				{
+					return _matchIdentifierCache[matchIdentifier];
+				}
 			}
 
 			string[] matchIdentifierParts = matchIdentifier.Split('.');
@@ -236,9 +242,12 @@ namespace Sigma.Core.Utils
 			int lastLevel = matchIdentifierParts.Length - 1;
 			bool shouldCache = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
 
-			if (shouldCache)
+			lock (_matchIdentifierCache)
 			{
-				_matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
+				if (shouldCache)
+				{
+					_matchIdentifierCache.Add(matchIdentifier, newCacheEntry);
+				}
 			}
 
 			return newCacheEntry;

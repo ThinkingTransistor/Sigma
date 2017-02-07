@@ -41,7 +41,8 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// Invoke this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		public override void Invoke(IRegistry registry)
+		/// <param name="resolver"></param>
+		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			_logger.Info($"Cost at epoch {registry["epoch"]} / iteration {registry["iteration"]} = {registry.Get<IRegistry>("optimiser")["cost_total"]}");
 		}

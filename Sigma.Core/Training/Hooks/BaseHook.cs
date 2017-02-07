@@ -124,7 +124,8 @@ namespace Sigma.Core.Training.Hooks
 		/// Invoke this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		public abstract void Invoke(IRegistry registry);
+		/// <param name="resolver"></param>
+		public abstract void Invoke(IRegistry registry, IRegistryResolver resolver);
 
 		/// <summary>
 		/// Check if this hook's functionality is equal to that of another. 
@@ -184,11 +185,6 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public abstract class BasePassiveHook : BaseHook, IPassiveHook
 	{
-		/// <summary>
-		/// A complete and local copy of the global registry with the parameters required for this hook for asynchronous execution.
-		/// </summary>
-		public IRegistry RegistryCopy { get; set; }
-
 		/// <summary>
 		/// Create a passive hook with a certain time step and set of required global registry entries.
 		/// </summary>

@@ -47,10 +47,11 @@ namespace Sigma.Core.Training.Hooks
 		IOperator Operator { get; set; }
 
 		/// <summary>
-		/// Invoke this hook with a certain parameter registry.
+		/// Invoke this hook with a certain parameter registry (and the corresponding resolver).
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		void Invoke(IRegistry registry);
+		/// <param name="resolver">The to the registry corresponding registry resolver for easier access to nested / tagged / filtered elements.</param>
+		void Invoke(IRegistry registry, IRegistryResolver resolver);
 
 		/// <summary>
 		/// Check if this hook's functionality is equal to that of another. 

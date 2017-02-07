@@ -140,6 +140,7 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
+		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly IList<IPassiveHook> _passiveHooks;
 		private readonly IList<IActiveHook> _activeHooks;
 		private readonly ISet<string> _bufferRegistryEntries;
@@ -197,6 +198,7 @@ namespace Sigma.Core.Training.Operators
 			_pushedLocalIterationNumbers = new Dictionary<int, int[]>();
 			_passiveHooks = new List<IPassiveHook>();
 			_activeHooks = new List<IActiveHook>();
+			_bufferRegistryResolver = new RegistryResolver(Registry);
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
 			_bufferHooksToInvoke = new HashSet<IHook>();
@@ -274,7 +276,7 @@ namespace Sigma.Core.Training.Operators
 			{
 				if (!hook.InvokeInBackground)
 				{
-					hook.Invoke(Registry);
+					hook.Invoke(Registry, _bufferRegistryResolver);
 				}
 			}
 
@@ -497,13 +499,19 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="bufferResolvedRegistryEntries"></param>
 		public void DispatchBackgroundHooks(ISet<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries)
 		{
+			if (hooksToInvokeInBackground.Count <= 0)
+			{
+				return;
+			}
+
 			IRegistry copy = HookUtils.GetRegistryCopyForHooks(localRegistry, hooksToInvokeInBackground, bufferRegistryEntries, bufferResolvedRegistryEntries);
+			IRegistryResolver copyResolver = new RegistryResolver(copy);
 
 			foreach (IHook hook in hooksToInvokeInBackground)
 			{
 				hook.Operator = this;
 
-				System.Threading.Tasks.Task.Factory.StartNew(() => hook.Invoke(copy));
+				System.Threading.Tasks.Task.Factory.StartNew(() => hook.Invoke(copy, copyResolver));
 			}
 		}
 
