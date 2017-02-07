@@ -26,7 +26,14 @@ namespace Sigma.Core.Training.Hooks
 		/// <summary>
 		/// The global registry entries required for the execution of this hook.
 		/// </summary>
-		ISet<string> RequiredRegistryEntries { get; }
+		IReadOnlyCollection<string> RequiredRegistryEntries { get; }
+
+		/// <summary>
+		/// The hooks that are required for this hook (i.e. the hooks this hook depends on).
+		/// Required hooks are prioritised and executed before the dependent hook.
+		/// If multiple required hooks are functionally equivalent, only one will be invoked. 
+		/// </summary>
+		IReadOnlyCollection<IHook> RequiredHooks { get; }
 
 		/// <summary>
 		/// Flag whether this hook should be invoked by the owner (worker/operator) or in a separate background thread.
@@ -43,7 +50,17 @@ namespace Sigma.Core.Training.Hooks
 		/// Invoke this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		void Invoke(IRegistry registry);		
+		void Invoke(IRegistry registry);
+
+		/// <summary>
+		/// Check if this hook's functionality is equal to that of another. 
+		/// Used when deciding which hooks can be omitted (optimised out).
+		/// Note: Different parameters typically infer different functionalities.
+		///		  If your custom hook requires any external parameters that alter its behaviour reflect that in this method.
+		/// </summary>
+		/// <param name="other">The hook to check.</param>
+		/// <returns>A boolean indicating whether or not the other hook does the same that this one does.</returns>
+		bool FunctionallyEquals(IHook other);
 	}
 
 	/// <summary>

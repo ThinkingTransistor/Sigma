@@ -40,6 +40,13 @@ namespace Sigma.Core.Utils
 		/// The local live time, counting down the local time to live.
 		/// </summary>
 		int LocalLiveTime { get; set; }
+
+		/// <summary>
+		/// Check if this time step equals another time steps time step (ignoring local time interval values).
+		/// </summary>
+		/// <param name="other">The other time step.</param>
+		/// <returns>A boolean indicating if this time step equals another time steps time step.</returns>
+		bool StepEquals(ITimeStep other);
 	}
 
 	/// <summary>
@@ -108,6 +115,16 @@ namespace Sigma.Core.Utils
 			copy.LocalLiveTime = LocalLiveTime;
 
 			return copy;
+		}
+
+		/// <summary>
+		/// Check if this time step equals another time steps time step (ignoring local time interval values).
+		/// </summary>
+		/// <param name="other">The other time step.</param>
+		/// <returns>A boolean indicating if this time step equals another time steps time step.</returns>
+		public bool StepEquals(ITimeStep other)
+		{
+			return other != null && TimeScale == other.TimeScale && Interval == other.Interval && LiveTime == other.LiveTime;
 		}
 	}
 

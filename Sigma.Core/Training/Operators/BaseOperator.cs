@@ -244,7 +244,7 @@ namespace Sigma.Core.Training.Operators
 
 				localIterationNumbers[WorkerIndicesByWorkers[worker]] = worker.LocalIterationNumber;
 
-				if (localIterationNumbers.Any(t => t != worker.LocalIterationNumber))
+				if (localIterationNumbers.Any(i => i != worker.LocalIterationNumber))
 				{
 					allWorkersAtIteration = false;
 				}

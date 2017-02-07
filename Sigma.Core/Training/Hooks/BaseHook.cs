@@ -8,6 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
 
@@ -21,6 +23,9 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public abstract class BaseHook : IHook
 	{
+		private readonly IList<IHook> _requiredHooks;
+		private readonly IList<string> _requiredRegistryEntries;
+
 		/// <summary>
 		/// The time step at which to execute this hook.
 		/// </summary>
@@ -29,7 +34,14 @@ namespace Sigma.Core.Training.Hooks
 		/// <summary>
 		/// The global registry entries required for the execution of this hook.
 		/// </summary>
-		public ISet<string> RequiredRegistryEntries { get; }
+		public IReadOnlyCollection<string> RequiredRegistryEntries { get; }
+
+		/// <summary>
+		/// The hooks that are required for this hook (i.e. the hooks this hook depends on).
+		/// Required hooks are prioritised and executed before the dependent hook.
+		/// If multiple required hooks are functionally equivalent, only one will be invoked. 
+		/// </summary>
+		public IReadOnlyCollection<IHook> RequiredHooks { get; }
 
 		/// <summary>
 		/// Flag whether this hook should be invoked by the owner (worker/operator) or in a separate background task.
@@ -71,7 +83,41 @@ namespace Sigma.Core.Training.Hooks
 			}
 
 			TimeStep = timestep;
-			RequiredRegistryEntries = requiredRegistryEntries;
+			_requiredHooks = new List<IHook>();
+			_requiredRegistryEntries = new List<string>(requiredRegistryEntries.ToArray());
+
+			RequiredRegistryEntries = new ReadOnlyCollection<string>(_requiredRegistryEntries);
+			RequiredHooks = new ReadOnlyCollection<IHook>(_requiredHooks);
+		}
+
+		/// <summary>
+		/// Require one or more registry entries (to be added to the required hooks field).
+		/// Note: This is only meant to be used within the constructor, invocation in other areas may lead to illegal / inconsistent state.
+		/// </summary>
+		/// <param name="requiredRegistryEntries">The required registry entries.</param>
+		protected void RequireRegistryEntry(params string[] requiredRegistryEntries)
+		{
+			if (requiredRegistryEntries == null) throw new ArgumentNullException(nameof(requiredRegistryEntries));
+
+			foreach (string entry in requiredRegistryEntries)
+			{
+				_requiredRegistryEntries.Add(entry);
+			}
+		}
+
+		/// <summary>
+		/// Require one or more hooks (to be added to the required hooks field).
+		/// Note: This is only meant to be used within the constructor, invocation in other areas may lead to illegal / inconsistent state.
+		/// </summary>
+		/// <param name="requiredHooks">The required hooks.</param>
+		protected void RequireHook(params IHook[] requiredHooks)
+		{
+			if (requiredHooks == null) throw new ArgumentNullException(nameof(requiredHooks));
+
+			foreach (IHook hook in requiredHooks)
+			{
+				_requiredHooks.Add(hook);
+			}
 		}
 
 		/// <summary>
@@ -79,6 +125,24 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		public abstract void Invoke(IRegistry registry);
+
+		/// <summary>
+		/// Check if this hook's functionality is equal to that of another. 
+		/// Used when deciding which hooks can be omitted (optimised out).
+		/// Note: Different parameters typically infer different functionalities.
+		///		  If your custom hook requires any external parameters that alter its behaviour reflect that in this method.
+		/// </summary>
+		/// <param name="other">The hook to check.</param>
+		/// <returns>A boolean indicating whether or not the other hook does the same that this one does.</returns>
+		public bool FunctionallyEquals(IHook other)
+		{
+			if (other == null)
+			{
+				throw new ArgumentNullException(nameof(other));
+			}
+
+			return GetType() == other.GetType() && TimeStep.StepEquals(other.TimeStep);
+		}
 	}
 
 	/// <summary>
