@@ -26,7 +26,18 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		public IDataSource ActiveSource { get; private set; }
 
-		public string ResourceName => ActiveSource?.ResourceName;
+		public string ResourceName
+		{
+			get
+			{
+				if (ActiveSource == null)
+				{
+					throw new InvalidOperationException($"Cannot get resource name of multi source {this} because no underlying source was active.");
+				}
+
+				return ActiveSource?.ResourceName;
+			}
+		}
 
 		public bool Seekable => ActiveSource?.Seekable ?? false;
 
