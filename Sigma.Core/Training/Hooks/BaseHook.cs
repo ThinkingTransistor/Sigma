@@ -127,7 +127,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Invoke this hook with a certain parameter registry.
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		/// <param name="resolver"></param>
+		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public abstract void Invoke(IRegistry registry, IRegistryResolver resolver);
 
 		/// <summary>
