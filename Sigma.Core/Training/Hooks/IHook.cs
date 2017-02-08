@@ -65,31 +65,10 @@ namespace Sigma.Core.Training.Hooks
 	}
 
 	/// <summary>
-	/// An active hook that is within each worker's frame of reference (per worker).
-	/// Note: The distinction between "active" and "passive" depends on the kind of hook.
-	///		  Active hooks are invoked within each worker on the worker's time scale, passive hooks are invoked by the operator on the operator's time scale (e.g. all worker's are at epoch x, iteration y).
-	///		  For example, a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
-	///		  A hook that stops the training process after a certain epoch or decreases the learning rate every update is active, as it actively influences the operator. 	
+	/// A hook that is only invoked one time on global and local scope(s), regardless of TimeStep (though live time should be 1 for consistency).
+	/// Used for operator-wide parameter changes that should be applied to all local scopes. 
 	/// </summary>
-	public interface IActiveHook : IHook
-	{
-	}
-
-	/// <summary>
-	/// A passive hook that is within the operators frame of reference (shared).
-	/// Note: The distinction between "active" and "passive" depends on the kind of hook.
-	///		  Active hooks are invoked within each worker on the worker's time scale, passive hooks are invoked by the operator on the operator's time scale (e.g. all worker's are at epoch x, iteration y).
-	///		  For example, a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
-	///		  A hook that stops the training process after a certain epoch or decreases the learning rate every update is active, as it actively influences the operator. 	
-	/// </summary>
-	public interface IPassiveHook : IHook
-	{
-	}
-
-	/// <summary>
-	/// An active hook that is only invoked one time on the operator, regardless of TimeStep (though live time should be 1 for consistency).
-	/// </summary>
-	public interface ICommand : IActiveHook
+	public interface ICommand : IHook
 	{
 	}
 }

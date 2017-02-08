@@ -19,7 +19,6 @@ using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
-using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
@@ -35,8 +34,8 @@ namespace Sigma.Core.Training
 	public class Trainer : ITrainer
 	{
 		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-		private readonly IList<IActiveHook> _activeHooks;
-		private readonly IList<IPassiveHook> _passiveHooks;
+		private readonly IList<IHook> _localHooks;
+		private readonly IList<IHook> _globalHooks;
 		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
@@ -53,8 +52,8 @@ namespace Sigma.Core.Training
 		public IDataIterator TrainingDataIterator { get; set; }
 		public IReadOnlyDictionary<string, IDataIterator> AdditionalNameDataIterators { get; }
 		public IReadOnlyCollection<IHook> Hooks { get; }
-		public IReadOnlyCollection<IPassiveHook> PassiveHooks { get; }
-		public IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
+		public IReadOnlyCollection<IHook> GlobalHooks { get; }
+		public IReadOnlyCollection<IHook> LocalHooks { get; }
 		public IRegistry Registry { get; }
 
 		internal Trainer(string name)
@@ -64,14 +63,14 @@ namespace Sigma.Core.Training
 			Name = name;
 
 			_allHooks = new List<IHook>();
-			_activeHooks = new List<IActiveHook>();
-			_passiveHooks = new List<IPassiveHook>();
+			_localHooks = new List<IHook>();
+			_globalHooks = new List<IHook>();
 			_additionalNameDataIterators = new Dictionary<string, IDataIterator>();
 			_initialisers = new Dictionary<string, IInitialiser>();
 
 			Hooks = new ReadOnlyCollection<IHook>(_allHooks);
-			PassiveHooks = new ReadOnlyCollection<IPassiveHook>(_passiveHooks);
-			ActiveHooks = new ReadOnlyCollection<IActiveHook>(_activeHooks);
+			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
+			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
 			AdditionalNameDataIterators = new ReadOnlyDictionary<string, IDataIterator>(_additionalNameDataIterators);
 			Initialisers = new ReadOnlyDictionary<string, IInitialiser>(_initialisers);
 			Registry = new Registry(tags: "trainer");
@@ -100,7 +99,7 @@ namespace Sigma.Core.Training
 			_initialisers.Add(identifier, initialiser);
 		}
 
-		public void AddActiveHook(IActiveHook hook)
+		public void AddGlobalHook(IHook hook)
 		{
 			if (Hooks.Contains(hook))
 			{
@@ -108,10 +107,10 @@ namespace Sigma.Core.Training
 			}
 
 			_allHooks.Add(hook);
-			_activeHooks.Add(hook);
+			_localHooks.Add(hook);
 		}
 
-		public void AddPassiveHook(IPassiveHook hook)
+		public void AddLocalHook(IHook hook)
 		{
 			if (Hooks.Contains(hook))
 			{
@@ -119,7 +118,7 @@ namespace Sigma.Core.Training
 			}
 
 			_allHooks.Add(hook);
-			_passiveHooks.Add(hook);
+			_globalHooks.Add(hook);
 		}
 
 		public void Initialise(IComputationHandler handler)
@@ -169,14 +168,14 @@ namespace Sigma.Core.Training
 			Operator.Trainer = this;
 
 			// attach all given hooks
-			foreach (IPassiveHook passiveHook in _passiveHooks)
+			foreach (IHook hook in _globalHooks)
 			{
-				Operator.AttachHook(passiveHook);
+				Operator.AttachGlobalHook(hook);
 			}
 
-			foreach (IActiveHook activeHook in _activeHooks)
+			foreach (IHook hook in _localHooks)
 			{
-				Operator.AttachHook(activeHook);
+				Operator.AttachLocalHook(hook);
 			}
 
 			UpdateRegistry();

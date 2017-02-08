@@ -11,7 +11,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Accumulators
 {
-	public class NumberAccumulatorHook : BaseActiveHook
+	public class NumberAccumulatorHook : BaseHook
 	{
 		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep) : base(timeStep, registryEntry)
 		{

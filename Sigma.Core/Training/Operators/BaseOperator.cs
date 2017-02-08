@@ -33,29 +33,29 @@ namespace Sigma.Core.Training.Operators
 		public IRegistry Registry { get; }
 
 		/// <summary>
-		///     All <see cref="IActiveHook" />s that are attached to this <see cref="IOperator" />.
+		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		public IReadOnlyCollection<IActiveHook> ActiveHooks { get; protected set; }
+		public IReadOnlyCollection<IHook> LocalHooks { get; protected set; }
 
 		/// <summary>
-		///     All <see cref="IPassiveHook" />s that are attached to this <see cref="IOperator" />.
+		///     All global <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		public IReadOnlyCollection<IPassiveHook> PassiveHooks { get; protected set; }
+		public IReadOnlyCollection<IHook> GlobalHooks { get; protected set; }
 
 		/// <summary>
-		///		All active hooks sorted by time scale.
+		///		All local hooks sorted by time scale.
 		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IActiveHook>> ActiveHooksByTimeScale;
+		protected readonly IDictionary<TimeScale, ISet<IHook>> LocalHooksByTimeScale;
 
 		/// <summary>
-		///		All passive hooks sorted by time scale.
+		///		All global hooks sorted by time scale.
 		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IPassiveHook>> PassiveHooksByTimescale;
+		protected readonly IDictionary<TimeScale, ISet<IHook>> GlobalHooksByTimescale;
 
 		/// <summary>
 		///		The alive hooks by an array of flags of workers keeping it alive.
 		/// </summary>
-		protected readonly IDictionary<IActiveHook, bool[]> AliveHooksByInWorkerStates;
+		protected readonly IDictionary<IHook, bool[]> AliveHooksByInWorkerStates;
 
 		/// <summary>
 		///     All the <see cref="IWorker" />s managed by this operator.
@@ -141,14 +141,14 @@ namespace Sigma.Core.Training.Operators
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
 		private readonly IRegistryResolver _bufferRegistryResolver;
-		private readonly IList<IPassiveHook> _passiveHooks;
-		private readonly IList<IActiveHook> _activeHooks;
+		private readonly IList<IHook> _globalHooks;
+		private readonly IList<IHook> _localHooks;
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
 		private readonly ISet<IHook> _bufferHooksToInvoke;
 		private readonly ISet<IHook> _bufferHooksInBackgroundToInvoke;
-		private readonly IDictionary<IHook, ITimeStep> _localPassiveHookTimeSteps;
+		private readonly IDictionary<IHook, ITimeStep> _localGlobalHookTimeSteps;
 		private int _highestIterationNumber;
 
 		/// <summary>
@@ -185,19 +185,19 @@ namespace Sigma.Core.Training.Operators
 			Handler = handler;
 			WorkerCount = workerCount;
 
-			ActiveHooks = new List<IActiveHook>();
-			PassiveHooks = new List<IPassiveHook>();
-			ActiveHooksByTimeScale = new Dictionary<TimeScale, ISet<IActiveHook>>();
-			PassiveHooksByTimescale = new Dictionary<TimeScale, ISet<IPassiveHook>>();
-			AliveHooksByInWorkerStates = new Dictionary<IActiveHook, bool[]>();
+			LocalHooks = new List<IHook>();
+			GlobalHooks = new List<IHook>();
+			LocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
+			GlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
+			AliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
 
 			Registry = new Registry(tags: "operator");
 
-			_localPassiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
+			_localGlobalHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			_pushedEpochNetworks = new Dictionary<int, INetwork[]>();
 			_pushedLocalIterationNumbers = new Dictionary<int, int[]>();
-			_passiveHooks = new List<IPassiveHook>();
-			_activeHooks = new List<IActiveHook>();
+			_globalHooks = new List<IHook>();
+			_localHooks = new List<IHook>();
 			_bufferRegistryResolver = new RegistryResolver(Registry);
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
@@ -205,8 +205,8 @@ namespace Sigma.Core.Training.Operators
 			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
 			_networkChangedLock = new object();
 
-			PassiveHooks = new ReadOnlyCollection<IPassiveHook>(_passiveHooks);
-			ActiveHooks = new ReadOnlyCollection<IActiveHook>(_activeHooks);
+			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
+			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
 		}
 
 		public void PushProgress(IWorker worker)
@@ -266,7 +266,7 @@ namespace Sigma.Core.Training.Operators
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			EjectTimeScaleEvent(timeScale, PassiveHooks, _localPassiveHookTimeSteps, _bufferHooksToInvoke);
+			EjectTimeScaleEvent(timeScale, GlobalHooks, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
 
 			UpdateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
 
@@ -340,77 +340,77 @@ namespace Sigma.Core.Training.Operators
 			Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
 		}
 
-		public void AttachHook(IActiveHook hook)
+		public void AttachLocalHook(IHook hook)
 		{
-			if (ActiveHooks.Contains(hook))
+			if (LocalHooks.Contains(hook))
 			{
-				Logger.Debug($"Unable to attach active hook {hook} to operator {this}, hook is already attached.");
+				Logger.Debug($"Unable to attach local hook {hook} to operator {this}, hook is already attached.");
 
 				return;
 			}
 
-			_activeHooks.Add(hook);
+			_localHooks.Add(hook);
 
-			if (!ActiveHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
+			if (!LocalHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
 			{
-				ActiveHooksByTimeScale.Add(hook.TimeStep.TimeScale, new HashSet<IActiveHook>());
+				LocalHooksByTimeScale.Add(hook.TimeStep.TimeScale, new HashSet<IHook>());
 			}
 
-			ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Add(hook);
+			LocalHooksByTimeScale[hook.TimeStep.TimeScale].Add(hook);
 
 			AliveHooksByInWorkerStates.Add(hook, new bool[WorkerCount].Populate(true));
 
-			Logger.Debug($"Attached active hook {hook} to operator {this}.");
+			Logger.Debug($"Attached local hook {hook} to operator {this}.");
 		}
 
-		public void DetachHook(IActiveHook hook)
+		public void DetachLocalHook(IHook hook)
 		{
-			if (_activeHooks.Remove(hook))
+			if (_localHooks.Remove(hook))
 			{
-				ActiveHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
+				LocalHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
 				AliveHooksByInWorkerStates.Remove(hook);
 
-				Logger.Debug($"Detached active hook {hook} from operator {this}.");
+				Logger.Debug($"Detached local hook {hook} from operator {this}.");
 			}
 		}
 
-		public void AttachHook(IPassiveHook hook)
+		public void AttachGlobalHook(IHook hook)
 		{
-			if (PassiveHooks.Contains(hook))
+			if (GlobalHooks.Contains(hook))
 			{
-				Logger.Debug($"Unable to attach passive hook {hook} to operator {this}, hook is already attached.");
+				Logger.Debug($"Unable to attach global hook {hook} to operator {this}, hook is already attached.");
 
 				return;
 			}
 
-			_passiveHooks.Add(hook);
+			_globalHooks.Add(hook);
 
-			if (!PassiveHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
+			if (!GlobalHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
 			{
-				PassiveHooksByTimescale.Add(hook.TimeStep.TimeScale, new HashSet<IPassiveHook>());
+				GlobalHooksByTimescale.Add(hook.TimeStep.TimeScale, new HashSet<IHook>());
 			}
 
-			PassiveHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
+			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
 
-			Logger.Debug($"Attached passive hook {hook} to operator {this}.");
+			Logger.Debug($"Attached global hook {hook} to operator {this}.");
 		}
 
-		public void DetachHook(IPassiveHook hook)
+		public void DetachGlobalHook(IHook hook)
 		{
-			if (_passiveHooks.Remove(hook))
+			if (_globalHooks.Remove(hook))
 			{
-				PassiveHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
+				GlobalHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
 
-				Logger.Debug($"Detached passive hook {hook} from operator {this}");
+				Logger.Debug($"Detached global hook {hook} from operator {this}");
 			}
 		}
 
 		/// <summary>
-		/// Mark an active hook as dead in a certain worker.
+		/// Mark a local hook as dead in a certain worker.
 		/// </summary>
 		/// <param name="hook">The hook to mark.</param>
 		/// <param name="worker">The worker in which this hook was deemed dead.</param>
-		public void MarkHookDead(IActiveHook hook, IWorker worker)
+		public void MarkHookDead(IHook hook, IWorker worker)
 		{
 			if (!AliveHooksByInWorkerStates.ContainsKey(hook))
 			{
@@ -430,7 +430,7 @@ namespace Sigma.Core.Training.Operators
 			{
 				Logger.Debug($"Detaching hook {hook} in operator {this}, hook is deemed completely dead and can be safely detached.");
 
-				DetachHook(hook);
+				DetachLocalHook(hook);
 			}
 		}
 

@@ -37,7 +37,8 @@ namespace Sigma.Core
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
 		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
-		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
+		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _globalHooksToAttach;
+		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _localHooksToAttach;
 		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
 
@@ -77,7 +78,8 @@ namespace Sigma.Core
 			RegistryResolver = new RegistryResolver(Registry);
 			Random = new Random();
 			_monitors = new HashSet<IMonitor>();
-			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
+			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
+			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
 			_processQueueEvent = new ManualResetEvent(true);
@@ -301,24 +303,23 @@ namespace Sigma.Core
 
 		private void ProcessHooksToAttach()
 		{
-			while (!_hooksToAttach.IsEmpty)
+			while (!_globalHooksToAttach.IsEmpty)
 			{
 				KeyValuePair<IHook, IOperator> hookPair;
 
-				if (_hooksToAttach.TryDequeue(out hookPair))
+				if (_globalHooksToAttach.TryDequeue(out hookPair))
 				{
-					if (hookPair.Key is BaseActiveHook)
-					{
-						hookPair.Value.AttachHook((BaseActiveHook) hookPair.Key);
-					}
-					else if (hookPair.Key is BasePassiveHook)
-					{
-						hookPair.Value.AttachHook((BasePassiveHook) hookPair.Key);
-					}
-					else
-					{
-						_logger.Warn($"Unable to attach hook {hookPair.Key} to operator {hookPair.Value}, hook is neither active nor passive hook.");
-					}
+					hookPair.Value.AttachGlobalHook(hookPair.Key);
+				}
+			}
+
+			while (!_localHooksToAttach.IsEmpty)
+			{
+				KeyValuePair<IHook, IOperator> hookPair;
+
+				if (_localHooksToAttach.TryDequeue(out hookPair))
+				{
+					hookPair.Value.AttachGlobalHook(hookPair.Key);
 				}
 			}
 		}
@@ -328,14 +329,14 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
-		public void RequestAttachHook(IHook hook, string trainerName)
+		public void RequestAttachGlobalHook(IHook hook, string trainerName)
 		{
 			if (!_trainersByName.ContainsKey((trainerName)))
 			{
 				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
 			}
 
-			RequestAttachHook(hook, _trainersByName[trainerName]);
+			RequestAttachGlobalHook(hook, _trainersByName[trainerName]);
 		}
 
 		/// <summary>
@@ -343,9 +344,11 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="trainer">The trainer whose operator the hook should be attached to.</param>
-		public void RequestAttachHook(IHook hook, ITrainer trainer)
+		public void RequestAttachGlobalHook(IHook hook, ITrainer trainer)
 		{
-			RequestAttachHook(hook, trainer.Operator);
+			if (trainer == null) throw new ArgumentNullException(nameof(trainer));
+
+			RequestAttachGlobalHook(hook, trainer.Operator);
 		}
 
 		/// <summary>
@@ -353,10 +356,53 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="operatorToAttachTo">The operator to attach to.</param>
-		public void RequestAttachHook(IHook hook, IOperator operatorToAttachTo)
+		public void RequestAttachGlobalHook(IHook hook, IOperator operatorToAttachTo)
 		{
-			_hooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+			if (hook == null) throw new ArgumentNullException(nameof(hook));
+			if (operatorToAttachTo == null) throw new ArgumentNullException(nameof(operatorToAttachTo));
 
+			_globalHooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+			_processQueueEvent.Set();
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain trainer's operator (identified by its name).
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
+		public void RequestAttachLocalHook(IHook hook, string trainerName)
+		{
+			if (!_trainersByName.ContainsKey((trainerName)))
+			{
+				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
+			}
+
+			RequestAttachLocalHook(hook, _trainersByName[trainerName]);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain trainer's operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainer">The trainer whose operator the hook should be attached to.</param>
+		public void RequestAttachLocalHook(IHook hook, ITrainer trainer)
+		{
+			if (trainer == null) throw new ArgumentNullException(nameof(trainer));
+
+			RequestAttachLocalHook(hook, trainer.Operator);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="operatorToAttachTo">The operator to attach to.</param>
+		public void RequestAttachLocalHook(IHook hook, IOperator operatorToAttachTo)
+		{
+			if (hook == null) throw new ArgumentNullException(nameof(hook));
+			if (operatorToAttachTo == null) throw new ArgumentNullException(nameof(operatorToAttachTo));
+
+			_localHooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
 			_processQueueEvent.Set();
 		}
 
@@ -411,7 +457,7 @@ namespace Sigma.Core
 
 		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB");
 
-		internal static IRegistry ActiveSigmaEnvironments;
+		internal static readonly IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()

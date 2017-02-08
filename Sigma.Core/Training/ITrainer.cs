@@ -78,14 +78,14 @@ namespace Sigma.Core.Training
 		IReadOnlyCollection<IHook> Hooks { get; }
 
 		/// <summary>
-		/// The active hooks attached to this trainer.
+		/// The global hooks attached to this trainer.
 		/// </summary>
-		IReadOnlyCollection<IPassiveHook> PassiveHooks { get; }
+		IReadOnlyCollection<IHook> GlobalHooks { get; }
 
 		/// <summary>
-		/// The passive hooks attached to this trainer.
+		/// The local hooks attached to this trainer.
 		/// </summary>
-		IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
+		IReadOnlyCollection<IHook> LocalHooks { get; }
 
 		/// <summary>
 		/// A registry containing all relevant sub-registries (e.g. network, layers, operator).
@@ -109,16 +109,16 @@ namespace Sigma.Core.Training
 		void AddNamedDataIterator(string name, IDataIterator iterator);
 
 		/// <summary>
-		/// Add an active hook to this trainer, which will be executed during runtime directly in each worker. 
+		/// Add an global hook to this trainer, which will be executed during runtime directly in each worker. 
 		/// </summary>
-		/// <param name="hook">The active hook to add to this trainer.</param>
-		void AddActiveHook(IActiveHook hook);
+		/// <param name="hook">The global hook to add to this trainer.</param>
+		void AddGlobalHook(IHook hook);
 
 		/// <summary>
-		/// Add a passive hook to this trainer, which will be executed asynchronously or in the owning monitor.
+		/// Add a local hook to this trainer, which will be executed asynchronously or in the owning monitor.
 		/// </summary>
-		/// <param name="hook">The passive hook to add to this trainer.</param>
-		void AddPassiveHook(IPassiveHook hook);
+		/// <param name="hook">The local hook to add to this trainer.</param>
+		void AddLocalHook(IHook hook);
 
 		/// <summary>
 		/// Initialise this trainer and the network to be trained using the set initialisers. Set up all handlers and constructs used to run the trainer. 

@@ -55,9 +55,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		private readonly ManualResetEvent _waitForResume;
 
 		/// <summary>
-		///		The time scale countdowns per passive hook (passive hooks are managed by the operator).
+		///		The time scale countdowns per local hook (global hooks are managed by the operator).
 		/// </summary>
-		protected readonly IDictionary<IHook, ITimeStep> LocalActiveHookTimeSteps;
+		protected readonly IDictionary<IHook, ITimeStep> LocalLocalHookTimeSteps;
 
 		protected BaseWorker(IOperator @operator, ThreadPriority priority = ThreadPriority.Highest) : this(@operator, @operator.Handler, priority)
 		{
@@ -67,7 +67,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		{
 			Operator = @operator;
 			Handler = handler;
-			LocalActiveHookTimeSteps = new Dictionary<IHook, ITimeStep>();
+			LocalLocalHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			ThreadPriority = priority;
 			_bufferHooksToInvoke = new HashSet<IHook>();
 			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
@@ -247,10 +247,10 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			var activeHooks = Operator.Trainer.ActiveHooks;
+			var localHooks = Operator.Trainer.LocalHooks;
 
-			Operator.EjectTimeScaleEvent(timeScale, activeHooks, LocalActiveHookTimeSteps, _bufferHooksToInvoke);
-			MarkDeadHooks(activeHooks, LocalActiveHookTimeSteps);
+			Operator.EjectTimeScaleEvent(timeScale, localHooks, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
+			MarkDeadHooks(localHooks, LocalLocalHookTimeSteps);
 
 			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
 
@@ -270,20 +270,13 @@ namespace Sigma.Core.Training.Operators.Workers
 			}
 		}
 
-		protected void MarkDeadHooks(IEnumerable<IActiveHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
+		protected void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
 		{
 			foreach (IHook hook in _bufferHooksToInvoke)
 			{
-				IActiveHook asActiveHook = hook as IActiveHook;
-
-				if (asActiveHook == null)
+				if (LocalLocalHookTimeSteps[hook].LocalLiveTime == 0)
 				{
-					throw new InvalidOperationException($"Internal error: Buffered hooks to invoke in worker may only contain active hooks but hook {hook} could not be cast accordingly.");
-				}
-
-				if (LocalActiveHookTimeSteps[hook].LocalLiveTime == 0)
-				{
-					Operator.MarkHookDead(asActiveHook, this);
+					Operator.MarkHookDead(hook, this);
 				}
 			}
 		}

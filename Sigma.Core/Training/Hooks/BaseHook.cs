@@ -147,68 +147,10 @@ namespace Sigma.Core.Training.Hooks
 	}
 
 	/// <summary>
-	/// The base implementation of the <see cref="IActiveHook"/> interface.
-	/// An active hook that is within each worker's frame of reference (per worker).
-	/// Note: The distinction between "active" and "passive" depends on the kind of hook.
-	///		  Active hooks are invoked within each worker on the worker's time scale, passive hooks are invoked by the operator on the operator's time scale (e.g. all worker's are at epoch x, iteration y).
-	///		  For example, a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
-	///		  A hook that stops the training process after a certain epoch or decreases the learning rate every update is active, as it actively influences the operator. 	
-	/// </summary>
-	public abstract class BaseActiveHook : BaseHook, IActiveHook
-	{
-		/// <summary>
-		/// Create an active hook with a certain time step and set of required global registry entries.
-		/// </summary>
-		/// <param name="timestep">The time step.</param>
-		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected BaseActiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
-		{
-		}
-
-		/// <summary>
-		/// Create an active hook with a certain time step and set of required global registry entries.
-		/// </summary>
-		/// <param name="timestep">The time step.</param>
-		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected BaseActiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
-		{
-		}
-	}
-
-	/// <summary>
-	/// The base implementation of the <see cref="IPassiveHook"/> interface.
-	/// A passive hook that is within the operators frame of reference (shared).
-	/// Note: The distinction between "active" and "passive" depends on the kind of hook.
-	///		  Active hooks are invoked within each worker on the worker's time scale, passive hooks are invoked by the operator on the operator's time scale (e.g. all worker's are at epoch x, iteration y).
-	///		  For example, a hook that gets a networks weights and visualises them in a monitor is passive, as it does not influence the operator. 
-	///		  A hook that stops the training process after a certain epoch or decreases the learning rate every update is active, as it actively influences the operator. 	
-	/// </summary>
-	public abstract class BasePassiveHook : BaseHook, IPassiveHook
-	{
-		/// <summary>
-		/// Create a passive hook with a certain time step and set of required global registry entries.
-		/// </summary>
-		/// <param name="timestep">The time step.</param>
-		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected BasePassiveHook(ITimeStep timestep, params string[] requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
-		{
-		}
-
-		/// <summary>
-		/// Create a passive hook with a certain time step and set of required global registry entries.
-		/// </summary>
-		/// <param name="timestep">The time step.</param>
-		/// <param name="requiredRegistryEntries">The set of required global registry entries.</param>
-		protected BasePassiveHook(ITimeStep timestep, ISet<string> requiredRegistryEntries) : base(timestep, requiredRegistryEntries)
-		{
-		}
-	}
-
-	/// <summary>
 	/// The base implementation of the <see cref="ICommand"/> interface.
-	/// An active hook that is only invoked one time on the operator, regardless of TimeStep (though live time should be 1 for consistency).
+	/// A local hook that is only invoked one time on global and local scope(s), regardless of TimeStep (though live time should be 1 for consistency).
 	/// </summary>
-	public abstract class BaseCommand : BaseActiveHook, ICommand
+	public abstract class BaseCommand : BaseHook, ICommand
 	{
 		/// <summary>
 		/// The time step for commands (intermediate time scale, interval and live time are 1 for single invocation).

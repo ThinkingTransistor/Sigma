@@ -77,35 +77,35 @@ namespace Sigma.Core.Training.Operators
 		int EpochNumber { get; }
 
 		/// <summary>
-		///     Attach an active hook to this operator.
+		///     Attach a local hook to this operator.
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
-		void AttachHook(IActiveHook hook);
+		void AttachLocalHook(IHook hook);
 
 		/// <summary>
-		///     Attach a passive hook to this operator.
+		///     Attach a global hook to this operator.
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
-		void AttachHook(IPassiveHook hook);
+		void AttachGlobalHook(IHook hook);
 
 		/// <summary>
-		///     Detach a hook from this operator.
+		///     Detach a local hook from this operator.
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
-		void DetachHook(IActiveHook hook);
+		void DetachLocalHook(IHook hook);
 
 		/// <summary>
-		///     Detach a passive from this operator.
+		///     Detach a global from this operator.
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
-		void DetachHook(IPassiveHook hook);
+		void DetachGlobalHook(IHook hook);
 
 		/// <summary>
-		/// Mark a hook as dead in a certain worker.
+		/// Mark a (local) hook as dead in a certain worker.
 		/// </summary>
 		/// <param name="hook">The hook to mark.</param>
 		/// <param name="worker">The worker in which this hook was deemed dead.</param>
-		void MarkHookDead(IActiveHook hook, IWorker worker);
+		void MarkHookDead(IHook hook, IWorker worker);
 
 		/// <summary>
 		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
