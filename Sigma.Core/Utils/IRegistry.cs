@@ -117,6 +117,13 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <returns>An iterator over all values.</returns>
 		IEnumerator GetValueIterator();
+
+		/// <summary>
+		/// Check if this registry's contents equal another registry's contents.
+		/// </summary>
+		/// <param name="other">The other registry.</param>
+		/// <returns>A boolean indicating if this registry's contents equal another registry's contents.</returns>
+		bool RegistryContentEquals(IRegistry other);
 	}
 
 	/// <summary>

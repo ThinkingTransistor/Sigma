@@ -48,6 +48,24 @@ namespace Sigma.Core.Utils
 		T[] ResolveGet<T>(string matchIdentifier, T[] values = null);
 
 		/// <summary>
+		/// Resolve a match identifier and get the first matching value, throw an exception if none is found.
+		/// For the detailed supported syntax <see cref="IRegistryResolver"/>.
+		/// </summary>
+		/// <typeparam name="T">The type to get.</typeparam>
+		/// <param name="matchIdentifier">The match identifier to resolve.</param>
+		/// <returns>The first value of the matched identifier.</returns>
+		T ResolveGetSingle<T>(string matchIdentifier);
+
+		/// <summary>
+		/// Resolve a match identifier and get the first matching value, return a default value if none is found.
+		/// For the detailed supported syntax <see cref="IRegistryResolver"/>.
+		/// </summary>
+		/// <typeparam name="T">The type to get.</typeparam>
+		/// <param name="matchIdentifier">The match identifier to resolve.</param>
+		/// <returns>The first value of the matched identifier.</returns>
+		T ResolveGetSingleWithDefault<T>(string matchIdentifier, T defaultValue);
+
+		/// <summary>
 		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>.
 		/// Note: The individual registries might throw an exception if a type-protected value is set to the wrong type.
 		/// </summary>

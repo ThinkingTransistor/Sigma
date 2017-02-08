@@ -187,6 +187,34 @@ namespace Sigma.Core.Utils
 			return values;
 		}
 
+		public T ResolveGetSingle<T>(string matchIdentifier)
+		{
+			string[] emptyArrayThrowaway;
+
+			T[] result = ResolveGet<T>(matchIdentifier, out emptyArrayThrowaway, null);
+
+			if (result.Length == 0)
+			{
+				throw new InvalidOperationException($"Cannot resolve get single value for match identifier \"{matchIdentifier}\", no values matching that identifier were found in this registry.");
+			}
+
+			return result[0];
+		}
+
+		public T ResolveGetSingleWithDefault<T>(string matchIdentifier, T defaultValue)
+		{
+			string[] emptyArrayThrowaway;
+
+			T[] result = ResolveGet<T>(matchIdentifier, out emptyArrayThrowaway, null);
+
+			if (result.Length == 0)
+			{
+				return defaultValue;
+			}
+
+			return result[0];
+		}
+
 		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);

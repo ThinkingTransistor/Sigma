@@ -30,8 +30,10 @@ namespace Sigma.Core.Training.Hooks
 
 		/// <summary>
 		/// The hooks that are required for this hook (i.e. the hooks this hook depends on).
+		/// Required hooks are automatically instantiated when 
 		/// Required hooks are prioritised and executed before the dependent hook.
-		/// If multiple required hooks are functionally equivalent, only one will be invoked. 
+		/// Note:   If multiple required hooks are functionally equivalent, only one will be invoked. 
+		///			The time step of required hooks must be smaller than or equal to the dependent's time step.
 		/// </summary>
 		IReadOnlyCollection<IHook> RequiredHooks { get; }
 

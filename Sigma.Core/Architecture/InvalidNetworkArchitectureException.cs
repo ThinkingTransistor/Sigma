@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 namespace Sigma.Core.Architecture
 {
 	/// <summary>
-	/// An exception if a networks architecture is invalid. Yup.
+	/// An exception that occurs when a networks architecture is invalid. Yup.
 	/// </summary>
 	public class InvalidNetworkArchitectureException : Exception
 	{

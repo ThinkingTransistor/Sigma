@@ -56,6 +56,8 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		public IOperator Operator { get; set; }
 
+		protected IRegistry ParameterRegistry { get; }
+
 		/// <summary>
 		/// Create a hook with a certain time step and a set of required global registry entries. 
 		/// </summary>
@@ -88,6 +90,7 @@ namespace Sigma.Core.Training.Hooks
 
 			RequiredRegistryEntries = new ReadOnlyCollection<string>(_requiredRegistryEntries);
 			RequiredHooks = new ReadOnlyCollection<IHook>(_requiredHooks);
+			ParameterRegistry = new Registry();
 		}
 
 		/// <summary>
@@ -130,8 +133,8 @@ namespace Sigma.Core.Training.Hooks
 		/// <summary>
 		/// Check if this hook's functionality is equal to that of another. 
 		/// Used when deciding which hooks can be omitted (optimised out).
-		/// Note: Different parameters typically infer different functionalities.
-		///		  If your custom hook requires any external parameters that alter its behaviour reflect that in this method.
+		/// Note: Different parameters typically infer different functionalities, here only the parameters in the <see cref="ParameterRegistry"/> are checked.
+		///		  If your custom hook for any reason requires any additional parameters that alter its behaviour you should add your own checks to this method.
 		/// </summary>
 		/// <param name="other">The hook to check.</param>
 		/// <returns>A boolean indicating whether or not the other hook does the same that this one does.</returns>
@@ -142,7 +145,10 @@ namespace Sigma.Core.Training.Hooks
 				throw new ArgumentNullException(nameof(other));
 			}
 
-			return GetType() == other.GetType() && TimeStep.StepEquals(other.TimeStep);
+			BaseHook otherAsBaseHook = other as BaseHook;
+			bool otherParametersEqual = otherAsBaseHook == null || ParameterRegistry.RegistryContentEquals(otherAsBaseHook.ParameterRegistry);
+
+			return GetType() == other.GetType() && TimeStep.StepEquals(other.TimeStep) && otherParametersEqual;
 		}
 	}
 

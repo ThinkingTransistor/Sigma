@@ -434,6 +434,16 @@ namespace Sigma.Core.Utils
 
 			return copiedValue;
 		}
+
+		/// <summary>
+		/// Check if this registry's contents equal another registry's contents.
+		/// </summary>
+		/// <param name="other">The other registry.</param>
+		/// <returns>A boolean indicating if this registry's contents equal another registry's contents.</returns>
+		public bool RegistryContentEquals(IRegistry other)
+		{
+			return other != null && MappedValues.Count == other.Count && MappedValues.Keys.All(k => other.ContainsKey(k) && Equals(MappedValues[k], other[k]));
+		}
 	}
 
 	/// <summary>
