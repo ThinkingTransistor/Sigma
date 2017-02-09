@@ -112,6 +112,48 @@ namespace Sigma.Core.Training.Operators
 		void MarkHookDead(IHook hook, IWorker worker);
 
 		/// <summary>
+		/// Get the invocation index for a certain local hook. 
+		/// This invocation index represents the index at which this operator should be invoked.
+		/// Used for ordering hooks to satisfy all dependencies upon invocation.
+		/// Note: All hooks with a smaller invocation index and the same invocation target should be invoked before this hook.
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation index of the given local hook.</returns>
+		uint GetLocalHookInvocationIndex(IHook hook);
+
+		/// <summary>
+		/// Get the invocation target for a certain local hook.
+		/// The invocation target represents the thread in which the hook should be invoked.
+		/// Used for putting background hooks with dependencies in the right "invocation bucket" for dependency satisfaction.
+		/// Note:   Only background hooks require invocation targets.
+		///			The invocation target of a foreground hook is implicitly the owning thread. 
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation target for the given local hook.</returns>
+		uint GetLocalHookInvocationTarget(IHook hook);
+
+		/// <summary>
+		/// Get the invocation index for a certain global hook. 
+		/// This invocation index represents the index at which this operator should be invoked.
+		/// Used for ordering hooks to satisfy all dependencies upon invocation.
+		/// Note: All hooks with a smaller invocation index and the same invocation target should be invoked before this hook.
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation index of the given global hook.</returns>
+		uint GetGlobalHookInvocationIndex(IHook hook);
+
+		/// <summary>
+		/// Get the invocation target for a certain global hook.
+		/// The invocation target represents the thread in which the hook should be invoked.
+		/// Used for putting background hooks with dependencies in the right "invocation bucket" for dependency satisfaction.
+		/// Note:   Only background hooks require invocation targets.
+		///			The invocation target of a foreground hook is implicitly the owning thread. 
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation target for the given global hook.</returns>
+		uint GetGlobalHookInvocationTarget(IHook hook);
+
+		/// <summary>
 		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
 		/// </summary>
 		/// <param name="hooksToInvokeInBackground">The hooks to invoke in the background.</param>

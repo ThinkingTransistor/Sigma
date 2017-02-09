@@ -43,31 +43,6 @@ namespace Sigma.Core.Training.Operators
 		public IReadOnlyCollection<IHook> GlobalHooks { get; protected set; }
 
 		/// <summary>
-		///		All local hooks sorted by time scale.
-		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IHook>> LocalHooksByTimeScale;
-
-		/// <summary>
-		///		All global hooks sorted by time scale.
-		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IHook>> GlobalHooksByTimescale;
-
-		/// <summary>
-		///		The alive hooks by an array of flags of workers keeping it alive.
-		/// </summary>
-		protected readonly IDictionary<IHook, bool[]> AliveHooksByInWorkerStates;
-
-		/// <summary>
-		///     All the <see cref="IWorker" />s managed by this operator.
-		/// </summary>
-		protected IEnumerable<IWorker> Workers;
-
-		/// <summary>
-		///		The worker indices by workers for quick access.
-		/// </summary>
-		protected IReadOnlyDictionary<IWorker, int> WorkerIndicesByWorkers;
-
-		/// <summary>
 		///     The <see cref="SigmaEnvironment" /> this operator runs in and communicates with.
 		///     It will be automatically set by the <see cref="ITrainer" />.
 		/// </summary>
@@ -116,14 +91,39 @@ namespace Sigma.Core.Training.Operators
 		public int EpochNumber { get; protected set; }
 
 		/// <summary>
-		/// The logger, it will be initialised in the property so that the class matches.
-		/// </summary>
-		private ILog _logger;
-
-		/// <summary>
-		/// The logger for the inherited class. 
+		/// The logger for the inheriting class. 
 		/// </summary>
 		protected ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
+
+		/// <summary>
+		///		All local hooks sorted by time scale.
+		/// </summary>
+		protected readonly IDictionary<TimeScale, ISet<IHook>> LocalHooksByTimeScale;
+
+		/// <summary>
+		///		All global hooks sorted by time scale.
+		/// </summary>
+		protected readonly IDictionary<TimeScale, ISet<IHook>> GlobalHooksByTimescale;
+
+		/// <summary>
+		///		The alive hooks by an array of flags of workers keeping it alive.
+		/// </summary>
+		protected readonly IDictionary<IHook, bool[]> AliveHooksByInWorkerStates;
+
+		/// <summary>
+		///     All the <see cref="IWorker" />s managed by this operator.
+		/// </summary>
+		protected IEnumerable<IWorker> Workers;
+
+		/// <summary>
+		///		The worker indices by workers for quick access.
+		/// </summary>
+		protected IReadOnlyDictionary<IWorker, int> WorkerIndicesByWorkers;
+
+		/// <summary>
+		/// The logger, which is initialised in the property getter so that the class matches the actual implementation.
+		/// </summary>
+		private ILog _logger;
 
 		/// <summary>
 		/// The lock that will be used to perform asynchronous management of the <see cref="IWorker"/>.
@@ -140,9 +140,17 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
+		// TODO reorder all global / local hook methods, accessors, members and variables to follow local -> global order in declaration---it's annoying
+
+		private readonly IDictionary<IHook, uint> _localHookInvocationIndices;
+		private readonly IDictionary<IHook, uint> _globalHookInvocationIndices;
+
+		private readonly IDictionary<IHook, uint> _localHookInvocationTargets;
+		private readonly IDictionary<IHook, uint> _globalHookInvocationTargets;
+
 		private readonly IRegistryResolver _bufferRegistryResolver;
-		private readonly IList<IHook> _globalHooks;
 		private readonly IList<IHook> _localHooks;
+		private readonly IList<IHook> _globalHooks;
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
@@ -179,17 +187,10 @@ namespace Sigma.Core.Training.Operators
 		protected BaseOperator(IComputationHandler handler, int workerCount)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
-
-			_stateChangeLock = new object();
+			if (workerCount <= 0) throw new ArgumentOutOfRangeException($"{nameof(workerCount)} must be > 0 but was {WorkerCount}.");
 
 			Handler = handler;
 			WorkerCount = workerCount;
-
-			LocalHooks = new List<IHook>();
-			GlobalHooks = new List<IHook>();
-			LocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
-			GlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
-			AliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
 
 			Registry = new Registry(tags: "operator");
 
@@ -203,8 +204,18 @@ namespace Sigma.Core.Training.Operators
 			_bufferResolvedRegistryEntries = new HashSet<string>();
 			_bufferHooksToInvoke = new HashSet<IHook>();
 			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
+			_localHookInvocationIndices = new Dictionary<IHook, uint>();
+			_globalHookInvocationIndices = new Dictionary<IHook, uint>();
+			_localHookInvocationTargets = new Dictionary<IHook, uint>();
+			_globalHookInvocationTargets = new Dictionary<IHook, uint>();
 			_networkChangedLock = new object();
+			_stateChangeLock = new object();
 
+			LocalHooks = new List<IHook>();
+			GlobalHooks = new List<IHook>();
+			LocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
+			GlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
+			AliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
 			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
 			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
 		}
@@ -368,6 +379,8 @@ namespace Sigma.Core.Training.Operators
 
 			AliveHooksByInWorkerStates.Add(hook, new bool[WorkerCount].Populate(true));
 
+			RebuildHookInvocationCache(_localHooks, _localHookInvocationIndices, _localHookInvocationTargets);
+
 			Logger.Debug($"Attached local hook {hook} to operator {this}.");
 
 			return true;
@@ -413,6 +426,8 @@ namespace Sigma.Core.Training.Operators
 
 			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
 
+			RebuildHookInvocationCache(_globalHooks, _globalHookInvocationIndices, _globalHookInvocationTargets);
+
 			Logger.Debug($"Attached global hook {hook} to operator {this}.");
 
 			return true;
@@ -430,6 +445,85 @@ namespace Sigma.Core.Training.Operators
 			Logger.Debug($"Detached global hook {hook} from operator {this}");
 
 			return true;
+		}
+
+		private void RebuildHookInvocationCache(IList<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Get the invocation index for a certain local hook. 
+		/// This invocation index represents the index at which this operator should be invoked.
+		/// Used for ordering hooks to satisfy all dependencies upon invocation.
+		/// Note: All hooks with a smaller invocation index and the same invocation target should be invoked before this hook.
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation index of the given local hook.</returns>
+		public uint GetLocalHookInvocationIndex(IHook hook)
+		{
+			if (!_localHookInvocationIndices.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot get hook invocation index of unknown local hook {hook} from operator {this} (is the hook attached to this operator?).");
+			}
+
+			return _localHookInvocationIndices[hook];
+		}
+
+		/// <summary>
+		/// Get the invocation target for a certain local hook.
+		/// The invocation target represents the thread in which the hook should be invoked.
+		/// Used for putting background hooks with dependencies in the right "invocation bucket" for dependency satisfaction.
+		/// Note:   Only background hooks require invocation targets.
+		///			The invocation target of a foreground hook is implicitly the owning thread. 
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation target for the given local hook.</returns>
+		public uint GetLocalHookInvocationTarget(IHook hook)
+		{
+			if (!_localHookInvocationTargets.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot get hook invocation target of unknown local hook {hook} from operator {this} (is the hook attached to this operator?).");
+			}
+
+			return _localHookInvocationTargets[hook];
+		}
+
+		/// <summary>
+		/// Get the invocation index for a certain global hook. 
+		/// This invocation index represents the index at which this operator should be invoked.
+		/// Used for ordering hooks to satisfy all dependencies upon invocation.
+		/// Note: All hooks with a smaller invocation index and the same invocation target should be invoked before this hook.
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation index of the given global hook.</returns>
+		public uint GetGlobalHookInvocationIndex(IHook hook)
+		{
+			if (!_globalHookInvocationIndices.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot get hook invocation index of unknown global hook {hook} from operator {this} (is the hook attached to this operator?).");
+			}
+
+			return _globalHookInvocationIndices[hook];
+		}
+
+		/// <summary>
+		/// Get the invocation target for a certain global hook.
+		/// The invocation target represents the thread in which the hook should be invoked.
+		/// Used for putting background hooks with dependencies in the right "invocation bucket" for dependency satisfaction.
+		/// Note:   Only background hooks require invocation targets.
+		///			The invocation target of a foreground hook is implicitly the owning thread. 
+		/// </summary>
+		/// <param name="hook">The hook.</param>
+		/// <returns>The invocation target for the given global hook.</returns>
+		public uint GetGlobalHookInvocationTarget(IHook hook)
+		{
+			if (!_globalHookInvocationIndices.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot get hook invocation target of unknown global hook {hook} from operator {this} (is the hook attached to this operator?).");
+			}
+
+			return _globalHookInvocationTargets[hook];
 		}
 
 		/// <summary>
