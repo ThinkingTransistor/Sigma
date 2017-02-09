@@ -16,10 +16,10 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 		{
 		}
 
-		public NumberAccumulatorHook(string registryEntry, string sharedResultKey, TimeStep timeStep) : base(timeStep, registryEntry)
+		public NumberAccumulatorHook(string registryEntry, string resultEntry, TimeStep timeStep) : base(timeStep, registryEntry)
 		{
 			ParameterRegistry["registry_entry"] = registryEntry;
-			ParameterRegistry["shared_result_key"] = "shared." + sharedResultKey;
+			ParameterRegistry["shared_result_entry"] = resultEntry;
 		}
 
 		/// <summary>
@@ -30,12 +30,12 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			string registryEntry = ParameterRegistry.Get<string>("registry_entry");
-			string sharedResultKey = ParameterRegistry.Get<string>("shared_result_key");
+			string resultEntry = ParameterRegistry.Get<string>("shared_result_entry");
 
 			double value = resolver.ResolveGetSingle<double>(registryEntry);
-			double accumulatedValue = resolver.ResolveGetSingleWithDefault<double>(sharedResultKey, 0.0);
+			double accumulatedValue = resolver.ResolveGetSingleWithDefault<double>(resultEntry, 0.0);
 
-			resolver.ResolveSet(sharedResultKey, value + accumulatedValue);
+			resolver.ResolveSet(resultEntry, value + accumulatedValue);
 		}
 	}
 }

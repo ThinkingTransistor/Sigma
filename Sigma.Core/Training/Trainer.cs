@@ -170,12 +170,18 @@ namespace Sigma.Core.Training
 			// attach all given hooks
 			foreach (IHook hook in _globalHooks)
 			{
-				Operator.AttachGlobalHook(hook);
+				if (!Operator.AttachGlobalHook(hook))
+				{
+					_logger.Debug($"Skipped attaching global hook {hook} in trainer \"{Name}\", operator refused to attach it.");
+				}
 			}
 
 			foreach (IHook hook in _localHooks)
 			{
-				Operator.AttachLocalHook(hook);
+				if (!Operator.AttachLocalHook(hook))
+				{
+					_logger.Debug($"Skipped attaching local hook {hook} in trainer \"{Name}\", operator refused to attach it.");
+				}
 			}
 
 			UpdateRegistry();

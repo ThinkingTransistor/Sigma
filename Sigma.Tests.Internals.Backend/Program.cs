@@ -67,7 +67,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
 
-			trainer.AddGlobalHook(new ValueReporterHook(new[] {"optimiser.cost"}, TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddGlobalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.Run();
 		}

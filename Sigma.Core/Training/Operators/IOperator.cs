@@ -77,28 +77,32 @@ namespace Sigma.Core.Training.Operators
 		int EpochNumber { get; }
 
 		/// <summary>
-		///     Attach a local hook to this operator.
+		///     Attach a local hook to this operator (if no functionally equivalent hook is already attached).
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
-		void AttachLocalHook(IHook hook);
+		/// <returns>A boolean indicating if the hook was successfully attached.</returns>
+		bool AttachLocalHook(IHook hook);
 
 		/// <summary>
-		///     Attach a global hook to this operator.
+		///     Attach a global hook to this operator (if no functionally equivalent hook is already attached).
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
-		void AttachGlobalHook(IHook hook);
+		/// <returns>A boolean indicating if the hook was successfully attached.</returns>
+		bool AttachGlobalHook(IHook hook);
 
 		/// <summary>
 		///     Detach a local hook from this operator.
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
-		void DetachLocalHook(IHook hook);
+		/// <returns>A boolean indicating if the hook was successfully detached.</returns>
+		bool DetachLocalHook(IHook hook);
 
 		/// <summary>
 		///     Detach a global from this operator.
 		/// </summary>
 		/// <param name="hook">The hook to detach.</param>
-		void DetachGlobalHook(IHook hook);
+		/// <returns>A boolean indicating if the hook was successfully detached.</returns>
+		bool DetachGlobalHook(IHook hook);
 
 		/// <summary>
 		/// Mark a (local) hook as dead in a certain worker.

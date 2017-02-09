@@ -58,7 +58,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			{
 				InvokeTimeScaleEvent(TimeScale.Epoch);
 
-				Logger.Info($"Completed epoch {LocalEpochNumber} at iteration {LocalIterationNumber} in worker {this}.");
+				Logger.Debug($"Completed epoch {LocalEpochNumber} at iteration {LocalIterationNumber} in worker {this}.");
 
 				LocalEpochNumber++;
 				LocalIterationNumber = 0;

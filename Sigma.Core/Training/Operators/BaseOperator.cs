@@ -219,7 +219,7 @@ namespace Sigma.Core.Training.Operators
 				{
 					EpochNumber++;
 
-					Logger.Info($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
+					Logger.Debug($"All workers (total of {WorkerCount}) are done with epoch {worker.LocalEpochNumber} in operator {this} and have pushed their network progress for this epoch.");
 
 					MergeWorkerNetworks(EpochNumber);
 
@@ -340,13 +340,21 @@ namespace Sigma.Core.Training.Operators
 			Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");
 		}
 
-		public void AttachLocalHook(IHook hook)
+		public bool AttachLocalHook(IHook hook)
 		{
 			if (LocalHooks.Contains(hook))
 			{
+				// TODO check "Unable to" and "Cannot" logger messages and fix them for consistency
 				Logger.Debug($"Unable to attach local hook {hook} to operator {this}, hook is already attached.");
 
-				return;
+				return false;
+			}
+
+			if (LocalHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
+			{
+				Logger.Debug($"Unable to attach local hook {hook} to operator {this}, functionally equivalent hook is already attached.");
+
+				return false;
 			}
 
 			_localHooks.Add(hook);
@@ -361,26 +369,39 @@ namespace Sigma.Core.Training.Operators
 			AliveHooksByInWorkerStates.Add(hook, new bool[WorkerCount].Populate(true));
 
 			Logger.Debug($"Attached local hook {hook} to operator {this}.");
+
+			return true;
 		}
 
-		public void DetachLocalHook(IHook hook)
+		public bool DetachLocalHook(IHook hook)
 		{
-			if (_localHooks.Remove(hook))
+			if (!_localHooks.Remove(hook))
 			{
-				LocalHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
-				AliveHooksByInWorkerStates.Remove(hook);
-
-				Logger.Debug($"Detached local hook {hook} from operator {this}.");
+				return false;
 			}
+
+			LocalHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
+			AliveHooksByInWorkerStates.Remove(hook);
+
+			Logger.Debug($"Detached local hook {hook} from operator {this}.");
+
+			return true;
 		}
 
-		public void AttachGlobalHook(IHook hook)
+		public bool AttachGlobalHook(IHook hook)
 		{
 			if (GlobalHooks.Contains(hook))
 			{
 				Logger.Debug($"Unable to attach global hook {hook} to operator {this}, hook is already attached.");
 
-				return;
+				return false;
+			}
+
+			if (GlobalHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
+			{
+				Logger.Debug($"Unable to attach global hook {hook} to operator {this}, functionally equivalent hook is already attached.");
+
+				return false;
 			}
 
 			_globalHooks.Add(hook);
@@ -393,16 +414,22 @@ namespace Sigma.Core.Training.Operators
 			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
 
 			Logger.Debug($"Attached global hook {hook} to operator {this}.");
+
+			return true;
 		}
 
-		public void DetachGlobalHook(IHook hook)
+		public bool DetachGlobalHook(IHook hook)
 		{
-			if (_globalHooks.Remove(hook))
+			if (!_globalHooks.Remove(hook))
 			{
-				GlobalHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
-
-				Logger.Debug($"Detached global hook {hook} from operator {this}");
+				return false;
 			}
+
+			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
+
+			Logger.Debug($"Detached global hook {hook} from operator {this}");
+
+			return true;
 		}
 
 		/// <summary>
