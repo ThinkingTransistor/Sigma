@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using Dragablz.Dockablz;
 using MahApps.Metro.Controls.Dialogs;
@@ -24,6 +25,11 @@ using Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
 using Sigma.Core.Utils;
+using Application = System.Windows.Application;
+using CharacterCasing = System.Windows.Controls.CharacterCasing;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
+using MenuItem = System.Windows.Forms.MenuItem;
+using Panel = System.Windows.Controls.Panel;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -36,10 +42,21 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
 		public const string LoadingIndicatorFactoryIdentifier = "loading_indicator_factory";
+		public const string NotifyIconFactoryIdentifier = "notifyicon_factory";
 
+		/// <summary>
+		/// The path to the sigma icon.
+		/// 
+		/// This path is baked in for a reason - use our icon if you want to make us happy :)
+		/// </summary>
 		public const string SigmaIconPath = "pack://application:,,,/Sigma.Core.Monitors.WPF;component/Resources/icons/sigma.ico";
 
-		public static bool UseSigmaIcon = true;
+		/// <summary>
+		///		Set a registry entry with false in the root monitor in order to do not set the icon
+		/// </summary>
+		public const string SigmaIconIdentifier = "sigma_icon";
+
+		//public static bool UseSigmaIcon = true;
 
 		#region DependencyProperties
 
@@ -136,15 +153,70 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+
+		/// <summary>
+		///     The <see cref="TitleBarControl" /> for the dropdowns in the title.
+		///     With this property you can access every object of the dropdown.
+		/// </summary>
+		public TitleBarControl TitleBar => _titleBar;
+
+		/// <summary>
+		///     The <see cref="TabControl" /> for the tabs. It allows to access each <see cref="TabUI" />
+		///     and therefore, the <see cref="TabItem" />.
+		/// </summary>
+		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
+
+		/// <summary>
+		///     Determines whether this is the root window.
+		/// </summary>
+		public bool IsRoot => ParentWindow == null;
+
+		/// <summary>
+		///     Determines whether this window is closed or about to close.
+		/// </summary>
+		public bool IsAlive { get; private set; } = true;
+
+		/// <summary>
+		///		The notify icon for the WPF window - if multiple windows are active (tabs teared out), they will all have the same reference. 
+		/// </summary>
+		public NotifyIcon NotifyIcon { get; }
+
+		/// <summary>
+		///		This boolean decides, whether the program runs in background or in foreground. 
+		/// </summary>
+		public bool IsRunningInBackground { get; private set; }
+
+		/// <summary>
+		/// This boolean will be set to true if the application is force closed in order to check for it.
+		/// </summary>
+		private bool _forceClose = false;
+
+		#region Properties
+
+		/// <summary>
+		///     The DefaultGridSize for each newly created <see cref="TabItem" />.
+		///     The default <see cref="DefaultGridSize" /> is 3, 4.
+		/// </summary>
+		public GridSize DefaultGridSize
+		{
+			get { return (GridSize) GetValue(DefaultGridSizeProperty); }
+			set
+			{
+				DefaultGridSize.Rows = value.Rows;
+				DefaultGridSize.Columns = value.Columns;
+				DefaultGridSize.Sealed = value.Sealed;
+			}
+		}
+
+		#endregion Properties
+
 		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
-		/// <param name="app">The <see cref="Application" /> environment.</param>
+		/// <param name="app">The <see cref="System.Windows.Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
-		public SigmaWindow(WPFMonitor monitor, Application app, string title) : this(monitor, app, title, null)
-		{
-		}
+		public SigmaWindow(WPFMonitor monitor, Application app, string title) : this(monitor, app, title, null) { }
 
 		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />. Since <see cref="SigmaWindow" />
@@ -152,7 +224,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		///     Therefore every subclass of <see cref="SigmaWindow" /> must implement exactly this constructor
 		///     - otherwise, the <see cref="Dragablz.IInterTabClient" /> specified in
 		///     <see cref="TabControlUI{TWindow,TTabWrapper}" />
-		///     throws an reflection exception when dragging windows out.
+		///     throws a reflection exception when dragging windows out.
 		/// </summary>
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
 		/// <param name="app">The <see cref="Application" /> environment.</param>
@@ -162,10 +234,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			: base(monitor, app, title)
 		{
 			WindowIndex = _windowCount++;
-			if (UseSigmaIcon)
-			{
-				Icon = new BitmapImage(new Uri(SigmaIconPath));
-			}
+
+			SetIcon(monitor);
 
 			ParentWindow = other;
 			RootWindow = FindRoot(this);
@@ -193,14 +263,20 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			RootElement.Children.Add(DialogHost);
 			RootElement.Children.Add(LoadingIndicatorElement);
 
-			if (other != null)
+			if (other == null)
+			{
+				NotifyIcon = CreateObjectByFactory<NotifyIcon>(NotifyIconFactoryIdentifier);
+			}
+			else
 			{
 				LoadingIndicatorElement.Visibility = Visibility.Hidden;
+				NotifyIcon = other.NotifyIcon;
 			}
 
 			Content = RootElement;
 
 			App.Startup += OnStart;
+			Closing += OnClosing;
 			Closed += OnClosed;
 		}
 
@@ -212,55 +288,62 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+		protected virtual void CustomMinimise()
+		{
+			IsRunningInBackground = true;
+
+			WindowState = WindowState.Minimized;
+			Hide();
+		}
+
+		protected virtual void CustomMaximise()
+		{
+			IsRunningInBackground = false;
+
+			Show();
+			WindowState = WindowState.Normal;
+		}
+
+		private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (!IsRunningInBackground && !_forceClose)
+			{
+				// if all other tabs are closed
+				if (IsRoot && Children.Count == 0)
+				{
+					CustomMinimise();
+
+					e.Cancel = true;
+				}
+			}
+		}
+
 		protected virtual void OnClosed(object sender, EventArgs eventArgs)
 		{
 			App.Startup -= OnStart;
+			Closing -= OnClosing;
 			Closed -= OnClosed;
 
 			IsAlive = false;
 			Dispose();
 		}
 
-		#region Properties
-
-		/// <summary>
-		///     The DefaultGridSize for each newly created <see cref="System.Windows.Controls.TabItem" />.
-		///     The default <see cref="DefaultGridSize" /> is 3, 4.
-		/// </summary>
-		public GridSize DefaultGridSize
+		protected virtual void ForceClose()
 		{
-			get { return (GridSize) GetValue(DefaultGridSizeProperty); }
-			set
-			{
-				DefaultGridSize.Rows = value.Rows;
-				DefaultGridSize.Columns = value.Columns;
-				DefaultGridSize.Sealed = value.Sealed;
-			}
+			_forceClose = true;
+			Close();
 		}
 
-		#endregion Properties
+		protected virtual void SetIcon(WPFMonitor monitor)
+		{
+			bool useIcon;
 
-		/// <summary>
-		///     The <see cref="TitleBarControl" /> for the dropdowns in the title.
-		///     With this property you can access every object of the dropdown.
-		/// </summary>
-		public TitleBarControl TitleBar => _titleBar;
-
-		/// <summary>
-		///     The <see cref="TabControl" /> for the tabs. It allows to access each <see cref="TabUI" />
-		///     and therefore, the <see cref="TabItem" />.
-		/// </summary>
-		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
-
-		/// <summary>
-		///     Determines whether this is the root window.
-		/// </summary>
-		public bool IsRoot => ParentWindow == null;
-
-		/// <summary>
-		///     Determines whether this window is closed or about to close.
-		/// </summary>
-		public bool IsAlive { get; private set; } = true;
+			// if not set or manually set
+			if (!monitor.Registry.TryGetValue(SigmaIconIdentifier, out useIcon) || useIcon)
+			{
+				Icon = new BitmapImage(new Uri(SigmaIconPath));
+			}
+		}
 
 		protected virtual Panel CreateContent(WPFMonitor monitor, SigmaWindow other, out TitleBarControl titleBarControl)
 		{
@@ -388,7 +471,23 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			{
 				registry[LoadingIndicatorFactoryIdentifier] = new LoadingIndicatorFactory();
 			}
+
+			if (!registry.ContainsKey(NotifyIconFactoryIdentifier))
+			{
+				//TODO: correct path required
+				MenuItem[] items = new MenuItem[2];
+
+				//TODO: localise
+				items[0] = new MenuItem("Open") { DefaultItem = true };
+				items[0].Click += (sender, args) => CustomMaximise();
+
+				items[1] = new MenuItem("Exit");
+				items[1].Click += (sender, args) => ForceClose();
+
+				registry[NotifyIconFactoryIdentifier] = new SigmaNotifyIconFactory("Sigma", @"C:\Users\Plainer\Dropbox\!school\5AHIT\Diplomarbeit\Logo\export\sigma.ico", (sender, args) => CustomMaximise(), items);
+			}
 		}
+
 
 		/// <summary>
 		///     Define how the border of the application behaves.
@@ -430,15 +529,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
 			}
 		}
-
-		//public override void SetUiCulture(CultureInfo uiCultureInfo)
-		//{
-		//	PropagateAction(window => window.Dispatcher.Invoke(() =>
-		//	{
-		//		Thread.CurrentThread.CurrentUICulture = uiCultureInfo;
-		//		Debug.WriteLine(Thread.CurrentThread.CurrentUICulture);
-		//	}));
-		//}
 
 		/// <summary>
 		///     Execute an action on every active <see cref="SigmaWindow" />.
@@ -532,7 +622,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Children.Clear();
 
 			ParentWindow = null;
-			RootWindow = null; 
+			RootWindow = null;
 			RootElement = null;
 			RootContentElement = null;
 			LoadingIndicatorElement = null;

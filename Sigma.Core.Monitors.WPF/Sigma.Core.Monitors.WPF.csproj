@@ -98,6 +98,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
@@ -149,10 +151,11 @@
     <Compile Include="View\CustomControls\TitleBar\SigmaAboutBox.cs" />
     <Compile Include="View\Factories\Defaults\AboutFactory.cs" />
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
+    <Compile Include="View\Factories\Defaults\SigmaNotifyIconFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\TaskVisualizerFactory.cs" />
     <Compile Include="View\Factories\Defaults\TabControlFactory.cs" />
-    <Compile Include="View\Factories\LoadingIndicatorFactory.cs" />
+    <Compile Include="View\Factories\Defaults\LoadingIndicatorFactory.cs" />
     <Compile Include="View\Factories\UIFactory.cs" />
     <Compile Include="View\Factories\Defaults\TitleBarFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarFactory.cs" />

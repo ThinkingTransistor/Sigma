@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Media;
 using Sigma.Core;
-using Sigma.Core.Data.Datasets;
-using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
-using Sigma.Core.Data.Preprocessors;
-using Sigma.Core.Data.Readers;
-using Sigma.Core.Data.Sources;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
@@ -20,7 +13,6 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
-using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 using Sigma.Core.Utils;
 
