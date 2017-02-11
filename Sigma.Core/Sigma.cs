@@ -432,17 +432,18 @@ namespace Sigma.Core
 		}
 
 		/// <summary>
-		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>
+		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>.
 		/// Note: The individual registries might throw an exception if a type-protected value is set to the wrong type.
 		/// </summary>
 		/// <typeparam name="T">The type of the value.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier. </param>
-		/// <param name="value"></param>
-		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
+		/// <param name="value">The value to set.</param>
+		/// <param name="addIdentifierIfNotExists">Indicate if the last (local) identifier should be added if it doesn't exist yet.</param>
+		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>). If no associated type is set, the one of the registry will be used (if set). </param>
 		/// <returns>A list of fully qualified matches to the match identifier.</returns>
-		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = false, Type associatedType = null)
 		{
-			return RegistryResolver.ResolveSet(matchIdentifier, value, associatedType);
+			return RegistryResolver.ResolveSet(matchIdentifier, value, addIdentifierIfNotExists, associatedType);
 		}
 
 		// static part of SigmaEnvironment

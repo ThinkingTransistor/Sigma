@@ -62,6 +62,7 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <typeparam name="T">The type to get.</typeparam>
 		/// <param name="matchIdentifier">The match identifier to resolve.</param>
+		/// <param name="defaultValue">The default value to return if no value was found.</param>
 		/// <returns>The first value of the matched identifier.</returns>
 		T ResolveGetSingleWithDefault<T>(string matchIdentifier, T defaultValue);
 
@@ -71,9 +72,10 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <typeparam name="T">The type of the value.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier. </param>
-		/// <param name="value"></param>
+		/// <param name="value">The value to set.</param>
+		/// <param name="addIdentifierIfNotExists">Indicate if the last (local) identifier should be added if it doesn't exist yet.</param>
 		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>). If no associated type is set, the one of the registry will be used (if set). </param>
 		/// <returns>A list of fully qualified matches to the match identifier.</returns>
-		string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null);
+		string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = false, Type associatedType = null);
 	}
 }

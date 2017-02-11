@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using ManagedCuda.NPP;
 using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Utils
@@ -14,7 +15,7 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A time step which defines a time dependency for every <see cref="Interval"/> times that <see cref="TimeScale"/> happens (and all that a total of <see cref="LiveTime"/> times).
 	/// </summary>
-	public interface ITimeStep : IDeepCopyable
+	public interface ITimeStep : IDeepCopyable, IComparable
 	{
 		/// <summary>
 		/// The time scale of this time step, i.e. the base unit (e.g. EPOCH or UPDATE).
@@ -125,6 +126,33 @@ namespace Sigma.Core.Utils
 		public bool StepEquals(ITimeStep other)
 		{
 			return other != null && TimeScale == other.TimeScale && Interval == other.Interval && LiveTime == other.LiveTime;
+		}
+
+		/// <summary>Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.</summary>
+		/// <returns>A value that indicates the relative order of the objects being compared. The return value has these meanings: Value Meaning Less than zero This instance precedes <paramref name="obj" /> in the sort order. Zero This instance occurs in the same position in the sort order as <paramref name="obj" />. Greater than zero This instance follows <paramref name="obj" /> in the sort order. </returns>
+		/// <param name="obj">An object to compare with this instance. </param>
+		/// <exception cref="T:System.ArgumentException">
+		/// <paramref name="obj" /> is not the same type as this instance. </exception>
+		public int CompareTo(object obj)
+		{
+			ITimeStep otherTimeStep = obj as ITimeStep;
+
+			if (otherTimeStep == null)
+			{
+				throw new ArgumentException($"Object to compare with must be of type {typeof(ITimeStep)} but was {obj.GetType()}.");
+			}
+
+			if (otherTimeStep.TimeScale == TimeScale)
+			{
+				return otherTimeStep.Interval - Interval;
+			}
+
+			if (otherTimeStep.TimeScale == TimeScale.Indeterminate || TimeScale == TimeScale.Indeterminate)
+			{
+				throw new InvalidOperationException($"Cannot compare indeterminate with determinate time scale, attempted to compare this {TimeScale} with other {otherTimeStep.TimeScale}.");
+			}
+
+			return TimeScale == TimeScale.Epoch && otherTimeStep.TimeScale == TimeScale.Iteration ? 1 : -1;
 		}
 	}
 

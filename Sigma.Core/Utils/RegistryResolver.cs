@@ -215,7 +215,7 @@ namespace Sigma.Core.Utils
 			return result[0];
 		}
 
-		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = true, Type associatedType = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 
@@ -230,6 +230,18 @@ namespace Sigma.Core.Utils
 				associatedType = associatedType ?? currentRegistry.GetAssociatedType(localIdentifier);
 
 				currentRegistry.Set(localIdentifier, value, associatedType);
+			}
+
+			if (addIdentifierIfNotExists)
+			{
+				foreach (string fullIdentifier in cacheEntry.LastUnmatchedIdentifierRegistries.Keys)
+				{
+					IRegistry currentRegistry = cacheEntry.LastUnmatchedIdentifierRegistries[fullIdentifier];
+
+					associatedType = associatedType ?? currentRegistry.GetAssociatedType(localIdentifier);
+
+					currentRegistry.Set(localIdentifier, value, associatedType);
+				}
 			}
 
 			return cacheEntry.FullMatchedIdentifierArray;
@@ -258,17 +270,33 @@ namespace Sigma.Core.Utils
 
 			Dictionary<string, IRegistry> fullMatchedIdentifierRegistries = new Dictionary<string, IRegistry>();
 
-			MatchIdentifierRequestCacheEntry newCacheEntry = new MatchIdentifierRequestCacheEntry(matchIdentifier, fullMatchedIdentifierRegistries, new Dictionary<string, string>(), null, null);
+			MatchIdentifierRequestCacheEntry newCacheEntry = new MatchIdentifierRequestCacheEntry(matchIdentifier, fullMatchedIdentifierRegistries, new Dictionary<string, string>(), null, null, new Dictionary<string, IRegistry>());
 
 			AddMatchingIdentifiersFromRegistryTree(0, matchIdentifierParts.Length - 1, Root, "", matchIdentifierParts, conditionalTagsPerLevel, newCacheEntry);
 
 			newCacheEntry.FullMatchedIdentifierArray = fullMatchedIdentifierRegistries.Keys.ToArray();
-
 			newCacheEntry.AllReferredRegistries = GetReferredRegistries(newCacheEntry.FullMatchedIdentifierRegistries.Values.ToList());
 
-			//only cache if the last identifier level did not contain a blank unrestricted wildcard (wildcard without conditional tags, meaning we can't cache anything as it could be any value)
+			ISet<string> unmatchedRegistriesToRemove = new HashSet<string>();
+			foreach (var registry in newCacheEntry.LastUnmatchedIdentifierRegistries)
+			{
+				if (newCacheEntry.FullMatchedIdentifierRegistries.ContainsKey(registry.Key))
+				{
+					unmatchedRegistriesToRemove.Add(registry.Key);
+				}
+			}
+
+			foreach (string toRemove in unmatchedRegistriesToRemove)
+			{
+				newCacheEntry.LastUnmatchedIdentifierRegistries.Remove(toRemove);
+			}
+
+			// only cache if we found anything and the last identifier level did not contain a blank unrestricted wildcard
+			//  (wildcard without conditional tags, meaning we can't cache anything as it could be any value)
 			int lastLevel = matchIdentifierParts.Length - 1;
-			bool shouldCache = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
+			bool foundAnything = newCacheEntry.FullMatchedIdentifierArray.Length > 0;
+			bool noUnrestrictedWildcard = !matchIdentifierParts[lastLevel].Contains(".*") || conditionalTagsPerLevel[lastLevel]?.Count > 0;
+			bool shouldCache = foundAnything && noUnrestrictedWildcard;
 
 			lock (_matchIdentifierCache)
 			{
@@ -284,6 +312,8 @@ namespace Sigma.Core.Utils
 		private void AddMatchingIdentifiersFromRegistryTree(int hierarchyLevel, int lastHierarchySearchLevel, IRegistry currentRootAtLevel, string currentFullIdentifier, string[] parsedMatchIdentifierParts, ISet<string>[] conditionalTagsPerLevel, MatchIdentifierRequestCacheEntry newCacheEntry)
 		{
 			Regex regex = new Regex(parsedMatchIdentifierParts[hierarchyLevel]);
+
+			bool noneMatched = true;
 
 			foreach (string identifier in currentRootAtLevel.Keys)
 			{
@@ -314,7 +344,15 @@ namespace Sigma.Core.Utils
 						newCacheEntry.FullMatchedIdentifierRegistries.Add(globalFullIdentifier, currentRootAtLevel);
 						newCacheEntry.FullMatchedIdentifierLocals.Add(globalFullIdentifier, identifier);
 					}
+
+					noneMatched = false;
 				}
+			}
+
+			if (noneMatched && hierarchyLevel == lastHierarchySearchLevel && !newCacheEntry.LastUnmatchedIdentifierRegistries.ContainsKey(currentFullIdentifier))
+			{
+				// keep last unmatched identifiers in case there is a (direct) resolve set
+				newCacheEntry.LastUnmatchedIdentifierRegistries.Add(currentFullIdentifier, currentRootAtLevel);
 			}
 		}
 
@@ -378,17 +416,19 @@ namespace Sigma.Core.Utils
 		{
 			internal string MatchIdentifier;
 			internal readonly Dictionary<string, IRegistry> FullMatchedIdentifierRegistries;
+			internal readonly Dictionary<string, IRegistry> LastUnmatchedIdentifierRegistries;
 			internal readonly Dictionary<string, string> FullMatchedIdentifierLocals;
 			internal string[] FullMatchedIdentifierArray;
 			internal ISet<IRegistry> AllReferredRegistries;
 
-			internal MatchIdentifierRequestCacheEntry(string matchIdentifier, Dictionary<string, IRegistry> fullMatchedIdentifierRegistries, Dictionary<string, string> fullMatchedIdentifierLocals, string[] fullMatchedIdentifierArray, ISet<IRegistry> allReferredRegistries)
+			internal MatchIdentifierRequestCacheEntry(string matchIdentifier, Dictionary<string, IRegistry> fullMatchedIdentifierRegistries, Dictionary<string, string> fullMatchedIdentifierLocals, string[] fullMatchedIdentifierArray, ISet<IRegistry> allReferredRegistries, Dictionary<string, IRegistry> lastUnmatchedIdentifierRegistries)
 			{
 				MatchIdentifier = matchIdentifier;
 				FullMatchedIdentifierRegistries = fullMatchedIdentifierRegistries;
 				FullMatchedIdentifierLocals = fullMatchedIdentifierLocals;
 				FullMatchedIdentifierArray = fullMatchedIdentifierArray;
 				AllReferredRegistries = allReferredRegistries;
+				LastUnmatchedIdentifierRegistries = lastUnmatchedIdentifierRegistries;
 			}
 		}
 	}

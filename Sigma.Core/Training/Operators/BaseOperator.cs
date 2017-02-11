@@ -35,12 +35,12 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		public IReadOnlyCollection<IHook> LocalHooks { get; protected set; }
+		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; protected set; }
 
 		/// <summary>
 		///     All global <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		public IReadOnlyCollection<IHook> GlobalHooks { get; protected set; }
+		public IReadOnlyCollection<IHook> AttachedGlobalHooks { get; protected set; }
 
 		/// <summary>
 		///     The <see cref="SigmaEnvironment" /> this operator runs in and communicates with.
@@ -106,11 +106,6 @@ namespace Sigma.Core.Training.Operators
 		protected readonly IDictionary<TimeScale, ISet<IHook>> GlobalHooksByTimescale;
 
 		/// <summary>
-		///		The alive hooks by an array of flags of workers keeping it alive.
-		/// </summary>
-		protected readonly IDictionary<IHook, bool[]> AliveHooksByInWorkerStates;
-
-		/// <summary>
 		///     All the <see cref="IWorker" />s managed by this operator.
 		/// </summary>
 		protected IEnumerable<IWorker> Workers;
@@ -140,22 +135,26 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
+		/// <summary>
+		///		The alive hooks by an array of flags of workers keeping it alive.
+		/// </summary>
+		private readonly IDictionary<IHook, bool[]> _aliveHooksByInWorkerStates;
+
 		// TODO reorder all global / local hook methods, accessors, members and variables to follow local -> global order in declaration---it's annoying
 
 		private readonly IDictionary<IHook, uint> _localHookInvocationIndices;
 		private readonly IDictionary<IHook, uint> _globalHookInvocationIndices;
-
 		private readonly IDictionary<IHook, uint> _localHookInvocationTargets;
 		private readonly IDictionary<IHook, uint> _globalHookInvocationTargets;
-
+		private readonly IDictionary<IHook, ISet<IHook>> _dependentHooksByRequiredHook;
 		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly IList<IHook> _localHooks;
 		private readonly IList<IHook> _globalHooks;
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
-		private readonly ISet<IHook> _bufferHooksToInvoke;
-		private readonly ISet<IHook> _bufferHooksInBackgroundToInvoke;
+		private readonly List<IHook> _bufferHooksToInvoke;
+		private readonly IList<IHook> _bufferHooksInBackgroundToInvoke;
 		private readonly IDictionary<IHook, ITimeStep> _localGlobalHookTimeSteps;
 		private int _highestIterationNumber;
 
@@ -168,7 +167,7 @@ namespace Sigma.Core.Training.Operators
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
 		///     parallel.
 		/// </param>
-		protected BaseOperator(int workerCount) : this(new CpuFloat32Handler(), workerCount)
+		protected BaseOperator(int workerCount, IReadOnlyCollection<IHook> attachedGlobalHooks, IReadOnlyCollection<IHook> attachedLocalHooks) : this(new CpuFloat32Handler(), workerCount)
 		{
 		}
 
@@ -202,22 +201,21 @@ namespace Sigma.Core.Training.Operators
 			_bufferRegistryResolver = new RegistryResolver(Registry);
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
-			_bufferHooksToInvoke = new HashSet<IHook>();
-			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
+			_bufferHooksToInvoke = new List<IHook>();
+			_bufferHooksInBackgroundToInvoke = new List<IHook>();
 			_localHookInvocationIndices = new Dictionary<IHook, uint>();
 			_globalHookInvocationIndices = new Dictionary<IHook, uint>();
 			_localHookInvocationTargets = new Dictionary<IHook, uint>();
 			_globalHookInvocationTargets = new Dictionary<IHook, uint>();
+			_dependentHooksByRequiredHook = new Dictionary<IHook, ISet<IHook>>();
 			_networkChangedLock = new object();
 			_stateChangeLock = new object();
+			_aliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
 
-			LocalHooks = new List<IHook>();
-			GlobalHooks = new List<IHook>();
 			LocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
 			GlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
-			AliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
-			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
-			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
+			AttachedLocalHooks= new ReadOnlyCollection<IHook>(_localHooks);
+			AttachedGlobalHooks= new ReadOnlyCollection<IHook>(_globalHooks);
 		}
 
 		public void PushProgress(IWorker worker)
@@ -277,11 +275,12 @@ namespace Sigma.Core.Training.Operators
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			EjectTimeScaleEvent(timeScale, GlobalHooks, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
+			EjectTimeScaleEvent(timeScale, AttachedGlobalHooks, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
 
 			UpdateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
 
-			HookUtils.FetchBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
+			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, GetLocalHookInvocationIndex);
+			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
 
 			foreach (IHook hook in _bufferHooksToInvoke)
 			{
@@ -293,7 +292,7 @@ namespace Sigma.Core.Training.Operators
 
 			if (_bufferHooksInBackgroundToInvoke.Count > 0)
 			{
-				DispatchBackgroundHooks(_bufferHooksInBackgroundToInvoke, Registry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				DispatchBackgroundHookInvocation(_bufferHooksInBackgroundToInvoke, Registry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 			}
 		}
 
@@ -353,31 +352,24 @@ namespace Sigma.Core.Training.Operators
 
 		public bool AttachLocalHook(IHook hook)
 		{
-			if (LocalHooks.Contains(hook))
+			HookUtils.ValidateHook(hook, _localHooks);
+
+			if (_localHooks.Contains(hook))
 			{
-				// TODO check "Unable to" and "Cannot" logger messages and fix them for consistency
-				Logger.Debug($"Unable to attach local hook {hook} to operator {this}, hook is already attached.");
+				// TODO check "Cannot" and "Cannot" logger messages and fix them for consistency
+				Logger.Debug($"Cannot attach local hook {hook} to operator {this}, hook is already attached.");
 
 				return false;
 			}
 
-			if (LocalHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
+			if (_localHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
 			{
-				Logger.Debug($"Unable to attach local hook {hook} to operator {this}, functionally equivalent hook is already attached.");
+				Logger.Debug($"Cannot attach local hook {hook} to operator {this}, functionally equivalent hook is already attached.");
 
 				return false;
 			}
 
-			_localHooks.Add(hook);
-
-			if (!LocalHooksByTimeScale.ContainsKey(hook.TimeStep.TimeScale))
-			{
-				LocalHooksByTimeScale.Add(hook.TimeStep.TimeScale, new HashSet<IHook>());
-			}
-
-			LocalHooksByTimeScale[hook.TimeStep.TimeScale].Add(hook);
-
-			AliveHooksByInWorkerStates.Add(hook, new bool[WorkerCount].Populate(true));
+			AttachHook(hook, _localHooks, LocalHooksByTimeScale, AttachLocalHook);
 
 			RebuildHookInvocationCache(_localHooks, _localHookInvocationIndices, _localHookInvocationTargets);
 
@@ -388,13 +380,19 @@ namespace Sigma.Core.Training.Operators
 
 		public bool DetachLocalHook(IHook hook)
 		{
+			if (_dependentHooksByRequiredHook.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot detach local hook {hook} from operator {this} because it's required by dependent hook(s) {_dependentHooksByRequiredHook[hook]}.");
+			}
+
 			if (!_localHooks.Remove(hook))
 			{
 				return false;
 			}
 
-			LocalHooksByTimeScale[hook.TimeStep.TimeScale].Remove(hook);
-			AliveHooksByInWorkerStates.Remove(hook);
+			DetachHook(hook, LocalHooksByTimeScale, DetachLocalHook);
+
+			RebuildHookInvocationCache(_localHooks, _localHookInvocationIndices, _localHookInvocationTargets);
 
 			Logger.Debug($"Detached local hook {hook} from operator {this}.");
 
@@ -403,29 +401,23 @@ namespace Sigma.Core.Training.Operators
 
 		public bool AttachGlobalHook(IHook hook)
 		{
-			if (GlobalHooks.Contains(hook))
+			HookUtils.ValidateHook(hook, _globalHooks);
+
+			if (_globalHooks.Contains(hook))
 			{
-				Logger.Debug($"Unable to attach global hook {hook} to operator {this}, hook is already attached.");
+				Logger.Debug($"Cannot attach global hook {hook} to operator {this}, hook is already attached.");
 
 				return false;
 			}
 
-			if (GlobalHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
+			if (_globalHooks.Any(existingHook => existingHook.FunctionallyEquals(hook)))
 			{
-				Logger.Debug($"Unable to attach global hook {hook} to operator {this}, functionally equivalent hook is already attached.");
+				Logger.Debug($"Cannot attach global hook {hook} to operator {this}, functionally equivalent hook is already attached.");
 
 				return false;
 			}
 
-			_globalHooks.Add(hook);
-
-			if (!GlobalHooksByTimescale.ContainsKey(hook.TimeStep.TimeScale))
-			{
-				GlobalHooksByTimescale.Add(hook.TimeStep.TimeScale, new HashSet<IHook>());
-			}
-
-			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Add(hook);
-
+			AttachHook(hook, _globalHooks, GlobalHooksByTimescale, AttachGlobalHook);
 			RebuildHookInvocationCache(_globalHooks, _globalHookInvocationIndices, _globalHookInvocationTargets);
 
 			Logger.Debug($"Attached global hook {hook} to operator {this}.");
@@ -435,21 +427,89 @@ namespace Sigma.Core.Training.Operators
 
 		public bool DetachGlobalHook(IHook hook)
 		{
+			if (_dependentHooksByRequiredHook.ContainsKey(hook))
+			{
+				throw new InvalidOperationException($"Cannot detach global hook {hook} from operator {this} because it's required by dependent hook(s) {_dependentHooksByRequiredHook[hook]}.");
+			}
+
 			if (!_globalHooks.Remove(hook))
 			{
 				return false;
 			}
 
-			GlobalHooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
+			DetachHook(hook, GlobalHooksByTimescale, DetachGlobalHook);
+
+			RebuildHookInvocationCache(_globalHooks, _globalHookInvocationIndices, _globalHookInvocationTargets);
 
 			Logger.Debug($"Detached global hook {hook} from operator {this}");
 
 			return true;
 		}
 
-		private void RebuildHookInvocationCache(IList<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
+		private void AttachHook(IHook hook, ICollection<IHook> allHooks, IDictionary<TimeScale, ISet<IHook>> hooksByTimescale, Func<IHook, bool> attachFunction)
 		{
-			throw new NotImplementedException();
+			allHooks.Add(hook);
+
+			hooksByTimescale.TryGetValue(hook.TimeStep.TimeScale, () => new HashSet<IHook>()).Add(hook);
+
+			foreach (IHook requiredHook in hook.RequiredHooks)
+			{
+				// use own required hook if successfully attached (=first) or otherwise get first functionally equal hook and set that as required
+				bool attachedOwnRequiredHook = attachFunction.Invoke(requiredHook);
+				IHook usedRequiredHook = attachedOwnRequiredHook ? requiredHook : allHooks.First(existingHook => existingHook.FunctionallyEquals(requiredHook));
+				_dependentHooksByRequiredHook.TryGetValue(usedRequiredHook, () => new HashSet<IHook>()).Add(hook);
+			}
+		}
+
+		private void DetachHook(IHook hook, IDictionary<TimeScale, ISet<IHook>> hooksByTimescale, Func<IHook, bool> detachFunction)
+		{
+			hooksByTimescale[hook.TimeStep.TimeScale].Remove(hook);
+			_aliveHooksByInWorkerStates.Remove(hook);
+
+			foreach (IHook requiredHook in hook.RequiredHooks)
+			{
+				// if the dependent hooks are empty after removing this dependent we can safely detach the child required hook
+				if (_dependentHooksByRequiredHook.RemoveAndClean(requiredHook, hook))
+				{
+					detachFunction.Invoke(requiredHook);
+				}
+			}
+		}
+
+		private static void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
+		{
+			hookInvocationIndices.Clear();
+			hookInvocationTargets.Clear();
+
+			LinkedList<IHook> invocationOrder = new LinkedList<IHook>();
+			ISet<IHook> hooksToTraverse = new HashSet<IHook>(hooks);
+
+			uint invocationTarget = 1;
+			while (hooksToTraverse.Count > 0)
+			{
+				IHook hook = hooksToTraverse.First();
+
+				uint currentInvocationTarget = hook.InvokeInBackground ? invocationTarget++ : 0; // invocation target for foreground is 0
+				_InternalTraverseInvocationOrder(hook, currentInvocationTarget, invocationOrder, hooksToTraverse, hookInvocationTargets);
+			}
+
+			uint invocationIndex = 0;
+			foreach (IHook hook in invocationOrder)
+			{
+				hookInvocationIndices[hook] = invocationIndex++;
+			}
+		}
+
+		private static void _InternalTraverseInvocationOrder(IHook hook, uint invocationTarget, LinkedList<IHook> invocationOrder, ICollection<IHook> toTraverse, IDictionary<IHook, uint> invocationTargets)
+		{
+			foreach (IHook requiredHook in hook.RequiredHooks)
+			{
+				_InternalTraverseInvocationOrder(requiredHook, invocationTarget, invocationOrder, toTraverse, invocationTargets);
+			}
+
+			invocationOrder.AddLast(hook);
+			invocationTargets[hook] = invocationTarget;
+			toTraverse.Remove(hook);
 		}
 
 		/// <summary>
@@ -533,17 +593,17 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="worker">The worker in which this hook was deemed dead.</param>
 		public void MarkHookDead(IHook hook, IWorker worker)
 		{
-			if (!AliveHooksByInWorkerStates.ContainsKey(hook))
+			if (!_aliveHooksByInWorkerStates.ContainsKey(hook))
 			{
-				throw new InvalidOperationException($"Unable to mark hook {hook} as dead in operator {this} for worker {worker}, hook is not registered as alive.");
+				throw new InvalidOperationException($"Cannot mark hook {hook} as dead in operator {this} for worker {worker}, hook is not registered as alive.");
 			}
 
 			if (!WorkerIndicesByWorkers.ContainsKey(worker))
 			{
-				throw new InvalidOperationException($"Unable to mark hook {hook} as dead in operator {this} for worker {worker}, worker does not belong to this operator.");
+				throw new InvalidOperationException($"Cannot mark hook {hook} as dead in operator {this} for worker {worker}, worker does not belong to this operator.");
 			}
 
-			bool[] aliveFlags = AliveHooksByInWorkerStates[hook];
+			bool[] aliveFlags = _aliveHooksByInWorkerStates[hook];
 
 			aliveFlags[WorkerIndicesByWorkers[worker]] = false;
 
@@ -562,7 +622,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke)
+		public void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke)
 		{
 			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
 			if (hooks == null) throw new ArgumentNullException(nameof(hooks));
@@ -612,13 +672,13 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
+		/// Dispatch a list of ordered hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
 		/// </summary>
 		/// <param name="hooksToInvokeInBackground">The hooks to invoke in the background.</param>
 		/// <param name="localRegistry">The local registry to copy required registry entries from.</param>
 		/// <param name="bufferRegistryEntries"></param>
 		/// <param name="bufferResolvedRegistryEntries"></param>
-		public void DispatchBackgroundHooks(ISet<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries)
+		public void DispatchBackgroundHookInvocation(IList<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries)
 		{
 			if (hooksToInvokeInBackground.Count <= 0)
 			{
@@ -632,6 +692,7 @@ namespace Sigma.Core.Training.Operators
 			{
 				hook.Operator = this;
 
+				// TODO add background hook "bucket" invocation for dependent / required hooks
 				System.Threading.Tasks.Task.Factory.StartNew(() => hook.Invoke(copy, copyResolver));
 			}
 		}

@@ -31,15 +31,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			if (pid == PlatformID.Win32NT || pid == PlatformID.Win32S || pid == PlatformID.Win32Windows || pid == PlatformID.WinCE)
 			{
-				clazzLogger.Info("Detected Windows system, using windows libraries (.dll).");
+				clazzLogger.Debug("Detected Windows system, using windows libraries (.dll).");
 			}
 			else if (pid == PlatformID.Unix)
 			{
-				clazzLogger.Info("Detected Unix systemdetected, using linux libraries (.so).");
+				clazzLogger.Debug("Detected Unix systemdetected, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.MacOSX)
 			{
-				clazzLogger.Info("Detected MacOSX system, using linux libraries (.so).");
+				clazzLogger.Debug("Detected MacOSX system, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.Xbox)
 			{

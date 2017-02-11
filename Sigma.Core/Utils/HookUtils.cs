@@ -144,11 +144,11 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
-		/// Fetch all hooks that should be invoke in background from a set of given hooks.
+		/// Fetch all hooks that should be invoke in background from a set of given hooks (given order is retained).
 		/// </summary>
 		/// <param name="hooks">The hooks to fetch from.</param>
 		/// <param name="resultHooks">The resulting set of hooks to invoke in background.</param>
-		public static void FetchBackgroundHooks(IEnumerable<IHook> hooks, ISet<IHook> resultHooks)
+		public static void FetchOrderedBackgroundHooks(IEnumerable<IHook> hooks, IList<IHook> resultHooks)
 		{
 			resultHooks.Clear();
 			foreach (IHook hook in hooks)
@@ -157,6 +157,65 @@ namespace Sigma.Core.Utils
 				{
 					resultHooks.Add(hook);
 				}
+			}
+		}
+
+		/// <summary>
+		/// Validate a hook and its dependencies.
+		/// </summary>
+		/// <param name="hook">The hook to evaluate.</param>
+		/// <param name="otherHooks">The already existing hooks to check for illegal dependencies (optional).</param>
+		public static void ValidateHook(IHook hook, IEnumerable<IHook> otherHooks = null)
+		{
+			if (hook == null) throw new ArgumentNullException(nameof(hook));
+			if (hook.TimeStep == null) throw new ArgumentException($"Hook {hook} has invalid time step: null");
+			if (hook.RequiredHooks == null) throw new ArgumentException($"Hook {hook} has invalid required hooks field: null");
+			if (hook.RequiredRegistryEntries == null) throw new ArgumentException($"Hook {hook} has invalid required registry entries field: null");
+
+			foreach (IHook requiredHook in hook.RequiredHooks)
+			{
+				if (otherHooks != null && otherHooks.Any(existingHook => existingHook.FunctionallyEquals(requiredHook)))
+				{
+					throw new IllegalHookDependencyException($"Hook {hook} has illegal dependencies, detected circular dependency of required hook {requiredHook}.");
+				}
+
+				if (requiredHook.InvokeInBackground != hook.InvokeInBackground)
+				{
+					throw new IllegalHookDependencyException($"Hook {hook} has inconsistent dependencies, {nameof(IHook.InvokeInBackground)} field must be the same for all required hooks, " +
+															 $"but field was {requiredHook.InvokeInBackground} in the required hook and {hook.InvokeInBackground} in the dependent hook.");
+				}
+
+				if (requiredHook.TimeStep.CompareTo(hook.TimeStep) > 0)
+				{
+					throw new IllegalHookDependencyException($"Hook {hook} has illegal dependencies, detected illegal time step dependency with other hook {requiredHook}. " +
+					                                         $"Time step of required hook must be <= than dependent hook time step, but required hook time step was {requiredHook.TimeStep}" +
+					                                         $" and dependent hook time step was {hook.TimeStep}.");
+				}
+			}
+		}
+
+		/// <summary>
+		/// Get the current interval of a certain time scale out of a registry.
+		/// Note: Time scale can only be epoch or iteration.
+		/// </summary>
+		/// <param name="registry">The registry.</param>
+		/// <param name="timeScale">The time scale.</param>
+		/// <returns>The current interval of the given time scale as it is in the given registry.</returns>
+		public static int GetCurrentInterval(IRegistry registry, TimeScale timeScale)
+		{
+			if (registry == null) throw new ArgumentNullException(nameof(registry));
+
+			if (timeScale == TimeScale.Epoch)
+			{
+				return registry.Get<int>("epoch");
+			}
+			else if (timeScale == TimeScale.Iteration)
+			{
+				return registry.Get<int>("iteration");
+			}
+			else
+			{
+				throw new ArgumentException($"Cannot get current interval of time scale {timeScale}, must be either {nameof(TimeScale.Epoch)} or {nameof(TimeScale.Iteration)}.");
 			}
 		}
 	}

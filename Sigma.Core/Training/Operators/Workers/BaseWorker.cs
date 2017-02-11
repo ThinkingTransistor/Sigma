@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -41,8 +42,8 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// </summary>
 		protected Thread WorkerThread { get; set; }
 
-		private readonly ISet<IHook> _bufferHooksToInvoke;
-		private readonly ISet<IHook> _bufferHooksInBackgroundToInvoke;
+		private readonly List<IHook> _bufferHooksToInvoke;
+		private readonly IList<IHook> _bufferHooksToInvokeInBackground;
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly IRegistry _bufferRegistry;
@@ -69,8 +70,8 @@ namespace Sigma.Core.Training.Operators.Workers
 			Handler = handler;
 			LocalLocalHookTimeSteps = new Dictionary<IHook, ITimeStep>();
 			ThreadPriority = priority;
-			_bufferHooksToInvoke = new HashSet<IHook>();
-			_bufferHooksInBackgroundToInvoke = new HashSet<IHook>();
+			_bufferHooksToInvoke = new List<IHook>();
+			_bufferHooksToInvokeInBackground = new List<IHook>();
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
 			_bufferRegistry = new Registry();
@@ -247,14 +248,15 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			var localHooks = Operator.Trainer.LocalHooks;
+			var localHooks = Operator.AttachedLocalHooks;
 
 			Operator.EjectTimeScaleEvent(timeScale, localHooks, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
 			MarkDeadHooks(localHooks, LocalLocalHookTimeSteps);
 
 			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
 
-			HookUtils.FetchBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
+			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
+			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
 
 			foreach (IHook hook in _bufferHooksToInvoke)
 			{
@@ -264,13 +266,13 @@ namespace Sigma.Core.Training.Operators.Workers
 				}
 			}
 
-			if (_bufferHooksInBackgroundToInvoke.Count > 0)
+			if (_bufferHooksToInvokeInBackground.Count > 0)
 			{
-				Operator.DispatchBackgroundHooks(_bufferHooksInBackgroundToInvoke, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 			}
 		}
 
-		protected void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
+		private void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
 		{
 			foreach (IHook hook in _bufferHooksToInvoke)
 			{

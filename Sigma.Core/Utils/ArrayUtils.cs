@@ -359,5 +359,16 @@ namespace Sigma.Core.Utils
 
 			return false;
 		}
+
+		/// <summary>
+		/// Sort a list in place using an index function.
+		/// </summary>
+		/// <typeparam name="T">The type.</typeparam>
+		/// <param name="list">The list to sort.</param>
+		/// <param name="indexFunction">The index function to use to get the index of each element.</param>
+		public static void SortListInPlaceIndexed<T>(List<T> list, Func<T, uint> indexFunction)
+		{
+			list.Sort((self, other) => (int) (indexFunction.Invoke(other) - indexFunction.Invoke(self)));
+		}
 	}
 }

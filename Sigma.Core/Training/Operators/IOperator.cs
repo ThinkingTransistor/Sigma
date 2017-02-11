@@ -66,6 +66,16 @@ namespace Sigma.Core.Training.Operators
 		INetworkMerger NetworkMerger { get; set; }
 
 		/// <summary>
+		///		The global hooks that are attached to this operator.
+		/// </summary>
+		IReadOnlyCollection<IHook> AttachedGlobalHooks { get; }
+
+		/// <summary>
+		///		The local hooks that are attached to this operator.
+		/// </summary>
+		IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+
+		/// <summary>
 		///     The number of <see cref="Workers.IWorker" />s (threads) used in this
 		///     <see cref="IOperator" /> in parallel.
 		/// </summary>
@@ -160,7 +170,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="localRegistry">The local registry to copy required registry entries from.</param>
 		/// <param name="bufferRegistryEntries">The buffer for fetching required registry entries.</param>
 		/// <param name="bufferResolvedRegistryEntries">The buffer for resolved registry entries.</param>
-		void DispatchBackgroundHooks(ISet<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries);
+		void DispatchBackgroundHookInvocation(IList<IHook> hooksToInvokeInBackground, IRegistry localRegistry, ISet<string> bufferRegistryEntries, ISet<string> bufferResolvedRegistryEntries);
 
 		/// <summary>
 		/// Invoke hooks for a certain time scale with a certain worker.
@@ -168,8 +178,8 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="timeScale">The time scale.</param>
 		/// <param name="hooks">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
-		/// <param name="resultHooksToInvoke"></param>
-		void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, ISet<IHook> resultHooksToInvoke);
+		/// <param name="resultHooksToInvoke">The resulting (unordered) hooks to invoke.</param>
+		void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

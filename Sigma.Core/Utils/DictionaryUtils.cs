@@ -62,5 +62,28 @@ namespace Sigma.Core.Utils
 
 			return value;
 		}
+
+		/// <summary>
+		/// Remove a value from a collection within a dictionary and remove the collection from the dictionary if it's empty.
+		/// </summary>
+		/// <typeparam name="K">The key type.</typeparam>
+		/// <typeparam name="V">The value type.</typeparam>
+		/// <param name="dictionary">The dictionary.</param>
+		/// <param name="key">The key.</param>
+		/// <param name="valueToRemove">The value to remove from the collection within the dictionary.</param>
+		/// <returns>A boolean indicating if the collection within the dictionary was removed ("cleaned").</returns>
+		public static bool RemoveAndClean<K, V>(this IDictionary<K, ISet<V>> dictionary, K key, V valueToRemove)
+		{
+			ICollection<V> collection = dictionary[key];
+
+			if (collection == null)
+			{
+				throw new InvalidOperationException($"Cannot remove and clean collection in dictionary for non-existing key {key}.");
+			}
+
+			collection.Remove(valueToRemove);
+
+			return collection.Count == 0 && dictionary.Remove(key);
+		}
 	}
 }
