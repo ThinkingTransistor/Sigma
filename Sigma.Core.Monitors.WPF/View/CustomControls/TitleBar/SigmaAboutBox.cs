@@ -86,7 +86,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.TitleBar
 		/// </summary>
 		public object ButtonContent
 		{
-			get { return (object) GetValue(ButtonContentProperty); }
+			get { return GetValue(ButtonContentProperty); }
 			set { SetValue(ButtonContentProperty, value); }
 		}
 
@@ -137,7 +137,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.TitleBar
 			/// </summary>
 			public SigmaAboutBox Box { get; set; }
 
-			/// <inheritdoc />
+			/// <summary>Occurs when changes occur that affect whether or not the command should execute.</summary>
 			public event EventHandler CanExecuteChanged;
 
 			/// <summary>Defines the method that determines whether the command can execute in its current state.</summary>

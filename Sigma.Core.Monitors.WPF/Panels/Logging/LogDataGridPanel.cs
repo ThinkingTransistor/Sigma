@@ -49,7 +49,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 			//clear the existing sort order
 			dataView.SortDescriptions.Clear();
 			//create a new sort order for the sorting that is done lastly
-			dataView.SortDescriptions.Add(new SortDescription("TimeStamp", ListSortDirection.Descending));
+			dataView.SortDescriptions.Add(new SortDescription(nameof(LogEntry.TimeStamp), ListSortDirection.Descending));
 			//refresh the view which in turn refresh the grid
 			dataView.Refresh();
 
@@ -73,8 +73,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 			//Content.ScrollIntoView(item);
 		}
 
-		public void Close()
-		{
-		}
+		public void Close() { }
 	}
 }

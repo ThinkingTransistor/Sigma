@@ -38,8 +38,8 @@ namespace Sigma.Tests.Internals.WPF
 				TabUI tab = window.TabControl["Overview"];
 			});
 
-			LineChartPanel lineChart = null;
-			CartesianChartPanel cartesianChart = null;
+			//LineChartPanel lineChart = null;
+			//CartesianChartPanel cartesianChart = null;
 
 			//gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
 			//gui.WindowDispatcher(window =>

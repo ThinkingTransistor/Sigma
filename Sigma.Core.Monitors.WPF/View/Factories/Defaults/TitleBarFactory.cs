@@ -8,10 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using log4net;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Data.Iterators;
@@ -170,16 +170,23 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 					  ILog log = LogManager.GetLogger(typeof(TitleBarFactory));
 					  new Thread(() =>
 					  {
-						  for (int i = 1; i <= 100; i++)
+						  for (int i = 1; i <= 1; i++)
 						  {
-							  log.Debug($"Flood {i}");
-							  log.Info($"Flood {i}");
-							  log.Warn($"Flood {i}");
-							  log.Error($"Flood {i}");
-							  log.Fatal($"Flood {i}");
+							  log.Debug($"Flood {i}: debug");
+							  log.Info($"Flood {i}: info");
+							  log.Warn($"Flood {i}: warn");
+							  log.Error($"Flood {i}: error");
+							  log.Fatal($"Flood {i}: fatal");
 						  }
 					  }).Start();
-				  })
+				  }), "Print Hierarchy", (Action) (() =>
+				{
+
+					SigmaWindow root = window;
+					while (!root.IsRoot) root = root.ParentWindow;
+
+					PrintWindow(root);
+				})
 			));
 #endif
 
@@ -206,6 +213,18 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 				return about;
 			});
+		}
+
+		//TODO: remove
+		public void PrintWindow(SigmaWindow window)
+		{
+			Debug.WriteLine("window: " + window + " parent: " + window.ParentWindow + $" children:{window.ChildrenReadOnly.Count}\n================");
+			foreach (SigmaWindow child in window.ChildrenReadOnly)
+			{
+				PrintWindow(child);
+			}
+
+			Debug.WriteLine("================");
 		}
 
 		/// <summary>

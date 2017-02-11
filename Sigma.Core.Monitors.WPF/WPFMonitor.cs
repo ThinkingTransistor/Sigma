@@ -11,9 +11,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Threading;
 using log4net;
+using log4net.Appender;
+using log4net.Core;
+using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
@@ -26,7 +28,7 @@ namespace Sigma.Core.Monitors.WPF
 	///     The <see cref="WPFMonitor" /> is designed to run on Windows.
 	/// </summary>
 	// ReSharper disable once InconsistentNaming
-	public class WPFMonitor : MonitorAdapter
+	public class WPFMonitor : MonitorAdapter, IAppender
 	{
 		/// <summary>
 		///     The logger.
@@ -91,6 +93,12 @@ namespace Sigma.Core.Monitors.WPF
 				}
 			}
 		}
+
+		/// <summary>
+		/// The minimal log level that will be logged.
+		/// Set to <see cref="Level.Off"/>, if no logging should occur. 
+		/// </summary>
+		public Level MinLogLevel { get; set; } = Level.Warn;
 
 		/// <summary>
 		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
@@ -185,6 +193,7 @@ namespace Sigma.Core.Monitors.WPF
 
 				if (Window != null)
 				{
+					//TODO: title propagation
 					Window.Title = _title;
 				}
 			}
@@ -216,7 +225,7 @@ namespace Sigma.Core.Monitors.WPF
 		///		displayed in the lower right corner - Panels can be marked with an info.
 		/// </summary>
 		/// <param name="legend">The info that will be added.</param>
-		/// <returns>The passed legend for chaning / storing in a variable. </returns>
+		/// <returns>The passed legend for chaining / storing in a variable. </returns>
 		public StatusBarLegendInfo AddLegend(StatusBarLegendInfo legend)
 		{
 			AddLegends(legend);
@@ -270,11 +279,11 @@ namespace Sigma.Core.Monitors.WPF
 			_app.Dispatcher.Invoke(() =>
 			{
 				WPFWindow oldWindow = Window;
-				
+
 				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
 				ColourManager.Window = Window;
 
-				_app.Dispatcher.Invoke( () => _app.Run(Window));
+				_app.Dispatcher.Invoke(() => _app.Run(Window));
 
 				oldWindow.Close();
 			});
@@ -288,6 +297,7 @@ namespace Sigma.Core.Monitors.WPF
 				ColourManager.App = _app;
 
 				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, _title);
+				AssignToLog();
 
 				AppDomain.CurrentDomain.UnhandledException += Window.HandleUnhandledException;
 
@@ -385,5 +395,58 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			WindowDispatcher<SigmaWindow>(action, priority);
 		}
+
+		#region Logging
+
+		/// <summary>
+		/// Assign the appender to the log. 
+		/// </summary>
+		protected virtual void AssignToLog()
+		{
+			((Hierarchy) LogManager.GetRepository()).Root.AddAppender(this);
+		}
+
+		/// <summary>Closes the appender and releases resources.</summary>
+		/// <remarks>
+		/// <para>
+		/// Releases any resources allocated within the appender such as file handles,
+		/// network connections, etc.
+		/// </para>
+		/// <para>
+		/// It is a programming error to append to a closed appender.
+		/// </para>
+		/// </remarks>
+		public void Close()
+		{
+
+		}
+
+		/// <summary>Log the logging event in Appender specific way.</summary>
+		/// <param name="loggingEvent">The event to log</param>
+		/// <remarks>
+		/// <para>
+		/// This method is called to log a message into this appender.
+		/// </para>
+		/// </remarks>
+		public void DoAppend(LoggingEvent loggingEvent)
+		{
+			if (loggingEvent.Level.Value >= MinLogLevel.Value)
+			{
+				Window.DoAppend(loggingEvent);
+			}
+		}
+
+		/// <summary>Gets or sets the name of this appender.</summary>
+		/// <value>The name of the appender.</value>
+		/// <remarks>
+		/// <para>The name uniquely identifies the appender.</para>
+		/// </remarks>
+		public string Name
+		{
+			get { return Title; }
+			set { Title = value; }
+		}
+
+		#endregion Logging
 	}
 }

@@ -17,6 +17,11 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 
 namespace Sigma.Core.Monitors.WPF.ViewModel.TitleBar
 {
+	/// <summary>
+	/// The class that manages all <see cref="TitleBarItem"/>s.
+	/// 
+	/// It is the menu in the top next to the application icon. 
+	/// </summary>
 	public class TitleBarControl : WindowCommands, IEnumerable<TitleBarItem>
 	{
 		/// <summary>

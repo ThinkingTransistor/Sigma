@@ -7,8 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Globalization;
 using System.Windows;
+using log4net.Appender;
+using log4net.Core;
 using MahApps.Metro.Controls;
 
 // ReSharper disable VirtualMemberCallInConstructor
@@ -16,7 +17,7 @@ using MahApps.Metro.Controls;
 namespace Sigma.Core.Monitors.WPF.View.Windows
 {
 	// ReSharper disable once InconsistentNaming
-	public abstract class WPFWindow : MetroWindow
+	public abstract class WPFWindow : MetroWindow, IAppender
 	{
 		/// <summary>
 		///     The constructor for the <see cref="WPFWindow" />.
@@ -74,5 +75,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="sender">The sender of the exception.</param>
 		/// <param name="e">The information of the exception.</param>
 		public abstract void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e);
+
+		/// <summary>Log the logging event in Appender specific way. Do not assign to the log, the monitor will pass logs to its set window. </summary>
+		/// <param name="loggingEvent">The event to log</param>
+		/// <remarks>
+		/// <para>
+		/// This method is called to log a message into this appender.
+		/// </para>
+		/// </remarks>
+		public abstract void DoAppend(LoggingEvent loggingEvent);
 	}
 }
