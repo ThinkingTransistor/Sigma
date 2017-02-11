@@ -125,6 +125,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
+		//TODO: fix this case:
+		//overview teared out. overview teared back in. close tab. notifyicon.
 		/// <summary>
 		///	The notify icon for the WPF window - if multiple windows are active (tabs teared out), they will all have the same reference. 
 		/// </summary>
@@ -440,7 +442,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				items[1].Click += (sender, args) => ExecuteOnRoot(monitor, window => window.PropagateAction(win => win.ForceClose()));
 
 				//TODO: HACK: path not dynamic
-				registry[NotifyIconFactoryIdentifier] = new SigmaNotifyIconFactory("Sigma", @"C:\Users\Plainer\Dropbox\!school\5AHIT\Diplomarbeit\Logo\export\sigma.ico", (sender, args) => ExecuteOnRoot(monitor, window => window.CustomMaximise()), items);
+				registry[NotifyIconFactoryIdentifier] = new SigmaNotifyIconFactory("Sigma", SigmaIconPath, (sender, args) => ExecuteOnRoot(monitor, window => window.CustomMaximise()), items);
 			}
 		}
 
@@ -688,6 +690,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		#region IDisposable
+
 		public void Dispose()
 		{
 			if (ParentWindow == null)
@@ -705,6 +708,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 					}
 
 					App.MainWindow = newRoot;
+				}
+				// its the last window
+				else
+				{
+					NotifyIcon.Dispose();
 				}
 			}
 			else
