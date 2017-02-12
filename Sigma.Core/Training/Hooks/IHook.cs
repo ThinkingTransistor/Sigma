@@ -49,6 +49,11 @@ namespace Sigma.Core.Training.Hooks
 		IOperator Operator { get; set; }
 
 		/// <summary>
+		/// The preferred target mode of this hook (i.e. where to invoke it if not explicitly specified).
+		/// </summary>
+		TargetMode DefaultTargetMode { get; }
+
+		/// <summary>
 		/// Invoke this hook with a certain parameter registry (and the corresponding resolver).
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>

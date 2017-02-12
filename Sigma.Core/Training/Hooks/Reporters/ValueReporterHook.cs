@@ -30,6 +30,8 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		{
 			if (valueIdentifiers.Length == 0) throw new ArgumentException($"Value identifiers cannot be empty (it's the whole point of this hook).");
 
+			DefaultTargetMode = TargetMode.Local;
+
 			string[] accumulatedIdentifiers = new string[valueIdentifiers.Length];
 			Dictionary<string, object> valueBuffer = new Dictionary<string, object>(valueIdentifiers.Length);
 

@@ -93,13 +93,32 @@ namespace Sigma.Core.Training
 
 			if (_initialisers.ContainsKey(identifier))
 			{
-				throw new InvalidOperationException($"Cannot add duplicate identifier {identifier} for initialiser {initialiser}, identifier is already bound to initialiser {_initialisers[identifier]}");
+				throw new InvalidOperationException($"Cannot add duplicate identifier {identifier} for initialiser {initialiser}," +
+				                                    $" identifier is already bound to initialiser {_initialisers[identifier]}");
 			}
 
 			_initialisers.Add(identifier, initialiser);
 		}
 
-		public void AddGlobalHook(IHook hook)
+		public void AddHook(IHook hook)
+		{
+			if (hook.DefaultTargetMode == TargetMode.Local)
+			{
+				AddLocalHook(hook);
+			}
+			else if (hook.DefaultTargetMode == TargetMode.Global)
+			{
+				AddGlobalHook(hook);
+			}
+			else
+			{
+				throw new InvalidOperationException($"Ambiguous add hook call for hook {hook} with target mode {hook.DefaultTargetMode}. " +
+				                                    $"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
+				                                    $" (unable to determine where to add this hook).");
+			}
+		}
+
+		public void AddLocalHook(IHook hook)
 		{
 			if (Hooks.Contains(hook))
 			{
@@ -110,7 +129,7 @@ namespace Sigma.Core.Training
 			_localHooks.Add(hook);
 		}
 
-		public void AddLocalHook(IHook hook)
+		public void AddGlobalHook(IHook hook)
 		{
 			if (Hooks.Contains(hook))
 			{

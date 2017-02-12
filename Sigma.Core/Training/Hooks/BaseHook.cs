@@ -56,6 +56,11 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		public IOperator Operator { get; set; }
 
+		/// <summary>
+		/// The default target mode of this hook (i.e. where to invoke it if not explicitly specified).
+		/// </summary>
+		public TargetMode DefaultTargetMode { get; protected set; } = TargetMode.Any;
+
 		protected IRegistry ParameterRegistry { get; }
 
 		/// <summary>

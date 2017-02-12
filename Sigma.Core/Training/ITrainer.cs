@@ -109,6 +109,14 @@ namespace Sigma.Core.Training
 		void AddNamedDataIterator(string name, IDataIterator iterator);
 
 		/// <summary>
+		/// Add a hook to this trainer and attempt to implicitly add it where its <see cref="TargetMode"/> wants it.
+		/// Note:   This is the implicit version of the explicit <see cref="AddLocalHook"/> and <see cref="AddGlobalHook"/>.
+		///			Adding a hook implicitly only works if the hook is not marked with <see cref="TargetMode.Any"/>.
+		/// </summary>
+		/// <param name="hook">The hook to implicitly add to this trainer.</param>
+		void AddHook(IHook hook);
+
+		/// <summary>
 		/// Add an global hook to this trainer, which will be executed during runtime directly in each worker. 
 		/// </summary>
 		/// <param name="hook">The global hook to add to this trainer.</param>
