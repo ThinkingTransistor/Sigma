@@ -433,7 +433,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return a.DeepCopy();
 			}
 
-			b = b.DeepCopy();
+			a = a.DeepCopy();
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
@@ -441,10 +441,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				int inca = 1, incb = 1;
 				float alpha = -1.0f;
 
-				BlasBackend.Saxpy(&len, &alpha, aref, &inca, bref, &incb);
+				BlasBackend.Saxpy(&len, &alpha, bref, &incb, aref, &inca);
 			}
 
-			return b;
+			return a;
 		}
 
 		public override ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)

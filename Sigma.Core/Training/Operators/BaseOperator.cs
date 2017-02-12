@@ -167,7 +167,7 @@ namespace Sigma.Core.Training.Operators
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
 		///     parallel.
 		/// </param>
-		protected BaseOperator(int workerCount, IReadOnlyCollection<IHook> attachedGlobalHooks, IReadOnlyCollection<IHook> attachedLocalHooks) : this(new CpuFloat32Handler(), workerCount)
+		protected BaseOperator(int workerCount) : this(new CpuFloat32Handler(), workerCount)
 		{
 		}
 
@@ -277,15 +277,16 @@ namespace Sigma.Core.Training.Operators
 		{
 			EjectTimeScaleEvent(timeScale, AttachedGlobalHooks, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
 
-			UpdateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
+			PopulateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
 
-			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, GetLocalHookInvocationIndex);
+			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, GetGlobalHookInvocationIndex);
 			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
 
 			foreach (IHook hook in _bufferHooksToInvoke)
 			{
 				if (!hook.InvokeInBackground)
 				{
+					hook.Operator = this;
 					hook.Invoke(Registry, _bufferRegistryResolver);
 				}
 			}
@@ -901,12 +902,7 @@ namespace Sigma.Core.Training.Operators
 		public void PopulateWorkerRegistry(IRegistry registry, IWorker worker)
 		{
 			// TODO create documentation about which registry entries mean what 
-			UpdateRegistry(registry, worker.LocalNetwork, worker.LocalOptimiser, worker.LocalTrainingDataIterator, worker.LocalEpochNumber, worker.LocalIterationNumber);
-
-			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
-			{
-				registry["shared"] = new Registry(parent: registry, tags: "shared");
-			}
+			PopulateRegistry(registry, worker.LocalNetwork, worker.LocalOptimiser, worker.LocalTrainingDataIterator, worker.LocalEpochNumber, worker.LocalIterationNumber);
 		}
 
 		/// <summary>
@@ -918,7 +914,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="localIterator">The local data iterator.</param>
 		/// <param name="localEpochNumber">The local epoch number.</param>
 		/// <param name="localIterationNumber">The local iteration number.</param>
-		protected void UpdateRegistry(IRegistry registry, INetwork localNetwork, IOptimiser localOptimiser, IDataIterator localIterator,
+		protected void PopulateRegistry(IRegistry registry, INetwork localNetwork, IOptimiser localOptimiser, IDataIterator localIterator,
 			int localEpochNumber, int localIterationNumber)
 		{
 			if (registry == null) throw new ArgumentNullException(nameof(registry));
@@ -929,8 +925,14 @@ namespace Sigma.Core.Training.Operators
 			registry["network"] = localNetwork.Registry;
 			registry["optimiser"] = localOptimiser.Registry;
 			registry["iterator"] = localIterator.Registry;
+			registry["trainer"] = Trainer.Registry;
 			registry["epoch"] = localEpochNumber;
 			registry["iteration"] = localIterationNumber;
+
+			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
+			{
+				registry["shared"] = new Registry(parent: registry, tags: "shared");
+			}
 		}
 
 		#region AbstractWorkerMethods

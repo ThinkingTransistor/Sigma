@@ -142,6 +142,7 @@
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
@@ -164,8 +165,9 @@
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
-    <Compile Include="Layers\Cost\CostLayer.cs" />
+    <Compile Include="Layers\Cost\BaseCostLayer.cs" />
     <Compile Include="Layers\Cost\SoftMaxCrossEntropyCostLayer.cs" />
+    <Compile Include="Layers\Cost\SquaredCostLayer.cs" />
     <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
     <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
@@ -189,7 +191,10 @@
     <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
     <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
+    <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
     <Compile Include="Training\Hooks\TargetMode.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />

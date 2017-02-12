@@ -61,7 +61,10 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		public TargetMode DefaultTargetMode { get; protected set; } = TargetMode.Any;
 
-		protected IRegistry ParameterRegistry { get; }
+		/// <summary>
+		/// The internal parameter registry of this hook.
+		/// </summary>
+		public IRegistry ParameterRegistry { get; }
 
 		/// <summary>
 		/// Create a hook with a certain time step and a set of required global registry entries. 

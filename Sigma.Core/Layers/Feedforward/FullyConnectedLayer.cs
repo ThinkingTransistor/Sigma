@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -42,7 +43,7 @@ namespace Sigma.Core.Layers.Feedforward
 			buffer.Outputs["default"]["activations"] = activations;
 		}
 
-		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")
+		public static LayerConstruct Construct(int size, string activation = "rel", string name = "#-fullyconnected")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(FullyConnectedLayer));
 

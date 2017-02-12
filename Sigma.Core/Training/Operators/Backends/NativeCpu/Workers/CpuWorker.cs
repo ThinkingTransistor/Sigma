@@ -74,8 +74,9 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 			Operator.PullProgress(this);
 
-			Operator.Trainer.ProvideExternalData(LocalNetwork, _epochBlockYield.Current);
+			Operator.Trainer.ProvideExternalInputData(LocalNetwork, _epochBlockYield.Current);
 			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, Operator.Handler);
+			Operator.Trainer.ProvideExternalOutputData(LocalNetwork, _epochBlockYield.Current);
 
 			InvokeTimeScaleEvent(TimeScale.Iteration);
 

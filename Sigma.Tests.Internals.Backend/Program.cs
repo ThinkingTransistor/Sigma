@@ -23,6 +23,7 @@ using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Scorers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -52,22 +53,30 @@ namespace Sigma.Tests.Internals.Backend
 
 			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
 			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
-			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2), new NormalisingPreprocessor(sectionNames: "inputs", minInputValue: 0, maxInputValue: 6));
+			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2));
+			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
 
 			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
+			IDataset trainingDataset = dataset;
+			IDataset validationDataset = dataset;
+
 			ITrainer trainer = sigma.CreateTrainer("test");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(4) + 3 * FullyConnectedLayer.Construct(3) +
-											 OutputLayer.Construct(3) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+			trainer.Network.Architecture = InputLayer.Construct(4)
+											+ FullyConnectedLayer.Construct(3)
+											+ OutputLayer.Construct(3) 
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.02);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.Run();
 		}

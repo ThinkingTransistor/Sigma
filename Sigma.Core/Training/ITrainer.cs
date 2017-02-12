@@ -153,6 +153,13 @@ namespace Sigma.Core.Training
 		/// </summary>
 		/// <param name="localNetwork">The network to provide the data with.</param>
 		/// <param name="currentBlock">The current record block.</param>
-		void ProvideExternalData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
+		void ProvideExternalInputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
+
+		/// <summary>
+		/// Provide the external output data from network to the data provider.
+		/// </summary>
+		/// <param name="localNetwork">The network to get the data from.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
 	}
 }

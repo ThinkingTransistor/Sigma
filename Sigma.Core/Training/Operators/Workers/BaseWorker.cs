@@ -262,6 +262,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			{
 				if (!hook.InvokeInBackground)
 				{
+					hook.Operator = Operator;
 					hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
 				}
 			}

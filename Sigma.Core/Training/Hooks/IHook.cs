@@ -44,7 +44,7 @@ namespace Sigma.Core.Training.Hooks
 		bool InvokeInBackground { get; }
 
 		/// <summary>
-		/// The operator that owns this hook and dispatched it for execution. 
+		/// The operator that owns this hook.
 		/// </summary>
 		IOperator Operator { get; set; }
 

@@ -26,8 +26,6 @@ namespace Sigma.Core.Data.Preprocessors
 
 		private readonly double _outputScale;
 
-		//TODO add per index normalising, perhaps to separate preprocessor 
-
 		/// <summary>
 		/// Create a normalising preprocessor with a certain input and an output range of [0, 1] and optionally specify for which sections this processor should be applied.
 		/// </summary>

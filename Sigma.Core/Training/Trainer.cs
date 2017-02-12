@@ -74,6 +74,7 @@ namespace Sigma.Core.Training
 			AdditionalNameDataIterators = new ReadOnlyDictionary<string, IDataIterator>(_additionalNameDataIterators);
 			Initialisers = new ReadOnlyDictionary<string, IInitialiser>(_initialisers);
 			Registry = new Registry(tags: "trainer");
+			Registry["self"] = this;
 		}
 
 		public void AddNamedDataIterator(string name, IDataIterator iterator)
@@ -289,7 +290,7 @@ namespace Sigma.Core.Training
 		/// </summary>
 		/// <param name="localNetwork">The network to provide the data with.</param>
 		/// <param name="currentBlock">The current record block.</param>
-		public void ProvideExternalData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
+		public void ProvideExternalInputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
 		{
 			CheckInitialised();
 
@@ -300,7 +301,15 @@ namespace Sigma.Core.Training
 					DataProvider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
 				}
 			}
+		}
 
+		/// <summary>
+		/// Provide the external output data from network to the data provider.
+		/// </summary>
+		/// <param name="localNetwork">The network to get the data from.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		public void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
+		{
 			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalOutputsLayerBuffers())
 			{
 				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)

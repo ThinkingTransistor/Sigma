@@ -215,7 +215,7 @@ namespace Sigma.Core.Utils
 			return result[0];
 		}
 
-		public string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = true, Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = false, Type associatedType = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
 

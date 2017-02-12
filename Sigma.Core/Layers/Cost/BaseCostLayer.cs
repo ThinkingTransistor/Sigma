@@ -14,7 +14,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Cost
 {
-	public abstract class CostLayer : BaseLayer
+	public abstract class BaseCostLayer : BaseLayer
 	{
 		/// <summary>
 		/// Create a base layer with a certain unique name.
@@ -22,7 +22,7 @@ namespace Sigma.Core.Layers.Cost
 		/// <param name="name">The unique name of this layer.</param>
 		/// <param name="parameters">The parameters to this layer.</param>
 		/// <param name="handler">The handler to use for ndarray parameter creation.</param>
-		protected CostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
+		protected BaseCostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
 			ExpectedInputs = new[] { parameters.Get<string>("external_targets_alias"), "default" };
 			ExpectedOutputs = new[] { parameters.Get<string>("external_cost_alias") };
@@ -46,7 +46,7 @@ namespace Sigma.Core.Layers.Cost
 
 		protected abstract INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler);
 
-		protected static LayerConstruct InitialiseConstruct(LayerConstruct construct, double costImportance, string externalTargetsAlias, string externalCostAlias)
+		protected static LayerConstruct InitialiseBaseConstruct(LayerConstruct construct, double costImportance, string externalTargetsAlias, string externalCostAlias)
 		{
 			construct.ExternalInputs = new[] { externalTargetsAlias };
 			construct.ExternalOutputs = new[] { externalCostAlias };

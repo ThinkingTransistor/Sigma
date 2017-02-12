@@ -123,7 +123,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
 		{
-			throw new NotImplementedException();
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			INDArray[] rows = SliceRowWise(array, internalArray);
+			TOther[] transformedRows = new TOther[rows.Length];
+
+			for (int i = 0; i < rows.Length; i++)
+			{
+				transformedRows[i] = transformFunction.Invoke(rows[i]);
+			}
+
+			return transformedRows;
 		}
 
 		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
@@ -414,11 +423,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MaxIndex(internalArray._adArrayHandle))));
 		}
 
+		public int MaxIndex(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return DNDArray.MaxIndex(internalArray._adArrayHandle);
+		}
+
 		public INumber Min(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MinIndex(internalArray._adArrayHandle))));
+		}
+
+		public int MinIndex(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return DNDArray.MinIndex(internalArray._adArrayHandle);
 		}
 
 		public INDArray Sqrt(INDArray array)

@@ -464,11 +464,25 @@ namespace Sigma.Core.Handlers
 		INumber Max(INDArray array);
 
 		/// <summary>
+		/// The index of the maximum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The index of the maximum value of the given ndarray.</returns>
+		int MaxIndex(INDArray array);
+
+		/// <summary>
 		/// The minimum value of an ndarray. 
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The minimum value of the given ndarray.</returns>
 		INumber Min(INDArray array);
+
+		/// <summary>
+		/// The index of the minimum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The index of the minimum value of the given ndarray.</returns>
+		int MinIndex(INDArray array);
 
 		/// <summary>
 		/// The square root of an ndarray.

@@ -193,6 +193,7 @@ namespace Sigma.Core.Architecture
 		{
 			Registry.Clear();
 
+			Registry["self"] = this;
 			Registry["name"] = Name;
 			Registry["architecture"] = Architecture?.Registry;
 

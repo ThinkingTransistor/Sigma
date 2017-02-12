@@ -48,7 +48,7 @@ namespace Sigma.Core.Data
 	/// <summary>
 	/// A collection of common data type constants and a common type registry, used by the internal data handling implementations.
 	/// </summary>
-	public class DataTypes
+	public static class DataTypes
 	{
 		private static readonly Dictionary<Type, IDataType> RegisteredTypes = new Dictionary<Type, IDataType>();
 		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

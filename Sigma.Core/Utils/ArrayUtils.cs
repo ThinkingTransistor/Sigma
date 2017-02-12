@@ -368,7 +368,7 @@ namespace Sigma.Core.Utils
 		/// <param name="indexFunction">The index function to use to get the index of each element.</param>
 		public static void SortListInPlaceIndexed<T>(List<T> list, Func<T, uint> indexFunction)
 		{
-			list.Sort((self, other) => (int) (indexFunction.Invoke(other) - indexFunction.Invoke(self)));
+			list.Sort((self, other) => (int) (indexFunction.Invoke(self) - indexFunction.Invoke(other)));
 		}
 	}
 }

@@ -13,7 +13,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Cost
 {
-	public class SoftMaxCrossEntropyCostLayer : CostLayer
+	public class SoftMaxCrossEntropyCostLayer : BaseCostLayer
 	{
 		/// <summary>
 		/// Create a base layer with a certain unique name.
@@ -41,11 +41,11 @@ namespace Sigma.Core.Layers.Cost
 			return cost;
 		}
 
-		public static LayerConstruct Construct(string name = "#-softmaxce", double importance = 1.0, string externalTargetsAlias = "external_targets", string externalCostAlias = "external_cost")
+		public static LayerConstruct Construct(string name = "#-softmaxcecost", double importance = 1.0, string externalTargetsAlias = "external_targets", string externalCostAlias = "external_cost")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(SoftMaxCrossEntropyCostLayer));
 
-			return InitialiseConstruct(construct, importance, externalTargetsAlias, externalCostAlias);
+			return InitialiseBaseConstruct(construct, importance, externalTargetsAlias, externalCostAlias);
 		}
 	}
 }
