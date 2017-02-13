@@ -36,14 +36,15 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
 			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 
-			activations = handler.Dot(activations, weights);
-			activations = handler.RowWise(activations, row => handler.Add(row, biases));
-			activations = handler.Activation(buffer.Parameters.Get<string>("activation"), activations);
+			INDArray output = handler.Dot(activations, weights);
 
-			buffer.Outputs["default"]["activations"] = activations;
+			output = handler.RowWise(output, row => handler.Add(row, biases));
+			output = handler.Activation(buffer.Parameters.Get<string>("activation"), output);
+
+			buffer.Outputs["default"]["activations"] = output;
 		}
 
-		public static LayerConstruct Construct(int size, string activation = "rel", string name = "#-fullyconnected")
+		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(FullyConnectedLayer));
 

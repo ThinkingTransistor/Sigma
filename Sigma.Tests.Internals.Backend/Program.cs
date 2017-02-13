@@ -64,16 +64,16 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
-											+ FullyConnectedLayer.Construct(3)
+											+ 5 * FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3) 
-											+ SoftMaxCrossEntropyCostLayer.Construct();
+											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.02);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.03));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));

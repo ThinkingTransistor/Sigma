@@ -13,9 +13,12 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Cost
 {
-	public class SquaredCostLayer : BaseCostLayer
+	/// <summary>
+	/// A cost layer that calculates the squared difference between predictions and targets.
+	/// </summary>
+	public class SquaredDifferenceCostLayer : BaseCostLayer
 	{
-		public SquaredCostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
+		public SquaredDifferenceCostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
 		}
 
@@ -29,7 +32,7 @@ namespace Sigma.Core.Layers.Cost
 
 		public static LayerConstruct Construct(string name = "#-squaredcost", double importance = 1.0, string externalTargetsAlias = "external_targets", string externalCostAlias = "external_cost")
 		{
-			LayerConstruct construct = new LayerConstruct(name, typeof(SquaredCostLayer));
+			LayerConstruct construct = new LayerConstruct(name, typeof(SquaredDifferenceCostLayer));
 
 			return InitialiseBaseConstruct(construct, importance, externalTargetsAlias, externalCostAlias);
 		}

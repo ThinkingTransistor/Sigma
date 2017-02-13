@@ -20,6 +20,10 @@ namespace Sigma.Core.Training.Mergers
 	/// </summary>
 	public class AverageNetworkMerger : BaseNetworkMerger
 	{
+		public AverageNetworkMerger(params string[] matchIdentifiers) : base(matchIdentifiers)
+		{
+		}
+
 		protected override object MergeDefault(object[] objects, IComputationHandler handler)
 		{
 			throw new InvalidOperationException($"Cannot merge {objects} because they are probably of type {objects[0].GetType()} which is not supported (or maybe because the passed objects have different types).");

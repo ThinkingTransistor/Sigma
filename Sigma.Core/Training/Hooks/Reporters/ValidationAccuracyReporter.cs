@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		{
 			double score = resolver.ResolveGetSingle<double>("shared.validation_accuracy_top1");
 
-			_logger.Info($"Validation accuracy: {score}");
+			_logger.Info($"Validation accuracy: top1={score:0.#####}");
 		}
 	}
 }

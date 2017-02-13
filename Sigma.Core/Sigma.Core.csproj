@@ -167,7 +167,7 @@
     <Compile Include="Layers\BaseLayer.cs" />
     <Compile Include="Layers\Cost\BaseCostLayer.cs" />
     <Compile Include="Layers\Cost\SoftMaxCrossEntropyCostLayer.cs" />
-    <Compile Include="Layers\Cost\SquaredCostLayer.cs" />
+    <Compile Include="Layers\Cost\SquaredDifferenceCostLayer.cs" />
     <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
     <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
@@ -249,6 +249,7 @@
     <Folder Include="Persistence\" />
     <Folder Include="Training\Hooks\Modifiers\" />
     <Folder Include="Training\Hooks\Saviors\" />
+    <Folder Include="Training\Hooks\Stoppers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

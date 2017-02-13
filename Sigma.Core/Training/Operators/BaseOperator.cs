@@ -77,7 +77,7 @@ namespace Sigma.Core.Training.Operators
 		///		This merger is used to merge multiple networks after they get
 		///		reported to the <see cref="IOperator"/>. Defaults to <see cref="AverageNetworkMerger"/>.
 		/// </summary>
-		public INetworkMerger NetworkMerger { get; set; } = new AverageNetworkMerger();
+		public INetworkMerger NetworkMerger { get; set; } = new AverageNetworkMerger("layers.*.*"); // merge everything from all layers by default
 
 		/// <summary>
 		///     The number of <see cref="IWorker" />s (threads) used in this
@@ -300,7 +300,8 @@ namespace Sigma.Core.Training.Operators
 		public void PullProgress(IWorker worker)
 		{
 			// before first iteration of new epoch or network has not been initialised yet
-			if (worker.LocalEpochNumber < EpochNumber && worker.LocalIterationNumber == 0 || worker.LocalNetwork == null)
+			// also only pull if there is more than one worker, otherwise it's pointless
+			if (worker.LocalIterationNumber == 0 && WorkerCount > 1 || worker.LocalNetwork == null)
 			{
 				worker.LocalNetwork = PullNetwork();
 			}
@@ -345,7 +346,7 @@ namespace Sigma.Core.Training.Operators
 
 			lock (_networkChangedLock)
 			{
-				NetworkMerger.Merge(Network, _pushedEpochNetworks[epochNumber]);
+				NetworkMerger.Merge(Network, _pushedEpochNetworks[epochNumber], Handler);
 			}
 
 			Logger.Debug($"Done merging local pushed networks from all workers (total of {WorkerCount}) into global network of operator {this}.");

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
@@ -31,9 +32,9 @@ namespace Sigma.Core.Training.Mergers
 		private ILog _log;
 		protected ILog Log => _log ?? (_log = LogManager.GetLogger(GetType()));
 
-		protected BaseNetworkMerger()
+		protected BaseNetworkMerger(params string[] matchIdentifiers)
 		{
-			MatchIdentifier = new List<string>();
+			MatchIdentifier = new List<string>(matchIdentifiers);
 		}
 
 		/// <summary>
@@ -58,8 +59,14 @@ namespace Sigma.Core.Training.Mergers
 			IRegistryResolver rootResolver = new RegistryResolver(root.Registry);
 			string[] mergeKeys = CopyMatchIdentifiers();
 
-			// mapping of mergeEnetry and all data
-			IDictionary<string, IList<object[]>> dataDictionary = new Dictionary<string, IList<object[]>>(mergeKeys.Length);
+			if (mergeKeys.Length == 0)
+			{
+				Log.Warn($"Attempted merge network {root} with networks {networks} using handler {handler} but no merge keys were set so nothing will happen. This is probably not intended.");
+			}
+
+			// mapping of resolved mergeEnetry and all data
+			IDictionary<string, IList<object>> resolvedDataArrays = new Dictionary<string, IList<object>>(mergeKeys.Length);
+			int numNetworks = 0;
 
 			// fill the mapping of all values
 			foreach (INetwork network in networks)
@@ -68,31 +75,59 @@ namespace Sigma.Core.Training.Mergers
 
 				foreach (string mergeKey in mergeKeys)
 				{
-					IList<object[]> data = dataDictionary.TryGetValue(mergeKey, () => new List<object[]>());
-					data.Add(resolver.ResolveGet<object>(mergeKey));
-				}
-			}
+					string[] fullyResolvedIdentifiers;
+					object[] values = resolver.ResolveGet<object>(mergeKey, out fullyResolvedIdentifiers);
 
-			foreach (KeyValuePair<string, IList<object[]>> keyDataPair in dataDictionary)
-			{
-				int baseObjectLength = keyDataPair.Value[0].Length;
-				// for every element of the object[] 
-				for (int i = 0; i < baseObjectLength; i++)
-				{
-					// get from all objects, the i-th object
-					// e.g. 3 passed networks => object[] with length = 3
-					object[] objects = GetAllObjectsWithIndex(keyDataPair.Value, i);
+					Debug.Assert(fullyResolvedIdentifiers.Length == values.Length);
 
-					if (objects == null)
+					for (int i = 0; i < values.Length; i++)
 					{
-						Log.Warn($"Resolving the key: {keyDataPair.Key} resulted in a different amount of objects. Index {i} and following will be skipped. ");
-						break;
-					}
+						IList<object> allValuesAtKey = resolvedDataArrays.TryGetValue(fullyResolvedIdentifiers[i], () => new List<object>());
 
-					object merged = Merge(objects, handler);
-					rootResolver.ResolveSet(keyDataPair.Key, merged);
+						allValuesAtKey.Add(values[i]);
+					}
 				}
+
+				numNetworks++;
 			}
+
+			foreach (KeyValuePair<string, IList<object>> keyDataPair in resolvedDataArrays)
+			{
+				int numObjects = keyDataPair.Value.Count;
+
+				if (numObjects != numNetworks)
+				{
+					_log.Warn($"Inconsistent network states for identifier \"{keyDataPair.Key}\", only {keyDataPair.Value.Count} have it but there are {numNetworks} networks.");
+				}
+
+				object merged = Merge(keyDataPair.Value.ToArray(), handler);
+				rootResolver.ResolveSet(keyDataPair.Key, merged);
+			}
+		}
+
+		/// <summary>
+		///     Returns from a list, from every object[], the ith index.
+		///     e.g. 3 passed objects[] => get index 2, returns an object[] with a length of 3
+		///     and from everyone the second index.
+		/// </summary>
+		/// <param name="list">The list the action will be performed on. (Normally amount of networks).</param>
+		/// <param name="index">The index we are looking for.</param>
+		/// <returns>The object[] specified previously how it is generated.</returns>
+		private object[] GetAllObjectsWithIndex(IList<object[]> list, int index)
+		{
+			object[] objectsWithIndex = new object[list.Count];
+
+			for (int i = 0; i < objectsWithIndex.Length; i++)
+			{
+				if (index >= list[i].Length)
+				{
+					return null;
+				}
+
+				objectsWithIndex[i] = list[i][index];
+			}
+
+			return objectsWithIndex;
 		}
 
 		/// <summary>
@@ -143,7 +178,11 @@ namespace Sigma.Core.Training.Mergers
 		/// <param name="objects">The objects.</param>
 		/// <param name="handler">The handler (may be null). </param>
 		/// <returns></returns>
-		protected abstract object MergeDefault(object[] objects, IComputationHandler handler);
+		protected virtual object MergeDefault(object[] objects, IComputationHandler handler)
+		{
+			// default policy is just return first value if not mergeable
+			return objects[0];
+		}
 
 		/// <summary>
 		///     This method is used to merge doubles.
@@ -271,7 +310,8 @@ namespace Sigma.Core.Training.Mergers
 				return merged;
 			}
 
-			return MergeDefault(objects, handler);
+			return objects[0]; // TODO fix default behavior for merging non-mergeable objects... I suggest just ignoring
+			//return MergeDefault(objects, handler);
 		}
 
 		/// <summary>
@@ -318,31 +358,6 @@ namespace Sigma.Core.Training.Mergers
 			mergedObject = calculate(castedObjects);
 
 			return true;
-		}
-
-		/// <summary>
-		///     Returns from a list, from every object[], the ith index.
-		///     e.g. 3 passed objects[] => get index 2, returns an object[] with a length of 3
-		///     and from everyone the second index.
-		/// </summary>
-		/// <param name="list">The list the action will be performed on. (Normally amount of networks).</param>
-		/// <param name="index">The index we are looking for.</param>
-		/// <returns>The object[] specified previously how it is generated.</returns>
-		private object[] GetAllObjectsWithIndex(IList<object[]> list, int index)
-		{
-			object[] objectsWithIndex = new object[list.Count];
-
-			for (int i = 0; i < objectsWithIndex.Length; i++)
-			{
-				if (index >= list[i].Length)
-				{
-					return null;
-				}
-
-				objectsWithIndex[i] = list[i][index];
-			}
-
-			return objectsWithIndex;
 		}
 	}
 }

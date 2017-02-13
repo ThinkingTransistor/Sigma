@@ -39,6 +39,7 @@ namespace Sigma.Core.Handlers
 			MapActivation("sigmoid", new LambdaActivationHandle((n, h) => h.Sigmoid(n), (a, h) => h.Sigmoid(a)));
 			MapActivation("tanh", new LambdaActivationHandle((n, h) => h.Tanh(n), (a, h) => h.Tanh(a)));
 			MapActivation("softplus", new LambdaActivationHandle((n, h) => h.SoftPlus(n), (a, h) => h.SoftPlus(a)));
+			// TODO add leakyrelu and other activations
 		}
 
 		/// <summary>
