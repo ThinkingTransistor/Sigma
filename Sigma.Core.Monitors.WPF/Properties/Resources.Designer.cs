@@ -145,6 +145,15 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exit.
+        /// </summary>
+        public static string CloseApp {
+            get {
+                return ResourceManager.GetString("CloseApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to About Sigma.
         /// </summary>
         public static string MenuButtonAbout {
@@ -204,6 +213,15 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         public static string MenuButtonToggleDark {
             get {
                 return ResourceManager.GetString("MenuButtonToggleDark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string OpenApp {
+            get {
+                return ResourceManager.GetString("OpenApp", resourceCulture);
             }
         }
     }

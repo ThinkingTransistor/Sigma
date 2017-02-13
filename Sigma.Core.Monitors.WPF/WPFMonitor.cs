@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,6 +75,8 @@ namespace Sigma.Core.Monitors.WPF
 		/// The UI culture info for all windows. 
 		/// </summary>
 		private CultureInfo _uiCultureInfo;
+
+		private WPFWindow _window;
 
 		/// <summary>
 		/// The UI culture info for all windows. 
@@ -175,11 +178,20 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
 
+
 		/// <summary>
 		///     This property returns the current window.
 		///     <see cref="Window" /> is <see langword="null" /> until <see cref="SigmaEnvironment.Prepare" /> has been called.
 		/// </summary>
-		public WPFWindow Window { get; internal set; }
+		public WPFWindow Window
+		{
+			get { return _window; }
+			set
+			{
+				Debug.WriteLine($"OldWindow: {_window?.Title}, newWindow: {value?.Title}");
+				_window = value;
+			}
+		}
 
 		/// <summary>
 		///     Property for the title of the window.

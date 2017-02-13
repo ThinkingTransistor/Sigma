@@ -150,6 +150,7 @@
     <Compile Include="ViewModel\StatusBar\TaskVisualizationManager.cs" />
     <Compile Include="View\CustomControls\TitleBar\SigmaAboutBox.cs" />
     <Compile Include="View\Factories\Defaults\AboutFactory.cs" />
+    <Compile Include="View\Factories\Defaults\DefaultSigmaNotifyIconFactory.cs" />
     <Compile Include="View\Factories\Defaults\RootPanelFactory.cs" />
     <Compile Include="View\Factories\Defaults\SigmaNotifyIconFactory.cs" />
     <Compile Include="View\Factories\Defaults\StatusBar\StatusBarLegendFactory.cs" />

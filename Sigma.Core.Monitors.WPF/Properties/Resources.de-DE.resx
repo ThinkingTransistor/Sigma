@@ -147,6 +147,9 @@ Frei für jeden zu verwenden (MIT Lizenz).</value>
   <data name="ButtonSettings" xml:space="preserve">
     <value>Einstellungen</value>
   </data>
+  <data name="CloseApp" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
   <data name="MenuButtonAbout" xml:space="preserve">
     <value>Über Sigma</value>
   </data>
@@ -167,5 +170,8 @@ Frei für jeden zu verwenden (MIT Lizenz).</value>
   </data>
   <data name="MenuButtonToggleDark" xml:space="preserve">
     <value>Dunkles Design wechseln</value>
+  </data>
+  <data name="OpenApp" xml:space="preserve">
+    <value>Öffnen</value>
   </data>
 </root>

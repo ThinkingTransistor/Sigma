@@ -33,8 +33,26 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 		/// </summary>
 		private MenuItem[] _items;
 
+		protected SigmaNotifyIconFactory() { }
 
 		public SigmaNotifyIconFactory(string title, string iconResource, EventHandler doubleClick, MenuItem[] items)
+		{
+			Init(title, iconResource, doubleClick, items);
+		}
+
+		public SigmaNotifyIconFactory(string title, Icon icon, EventHandler doubleClick, MenuItem[] items)
+		{
+			Init(title, icon, doubleClick, items);
+		}
+
+		/// <summary>
+		/// Initialise the passed values. (Simply set the correct fields of the class).
+		/// </summary>
+		/// <param name="title"><see cref="_title"/></param>
+		/// <param name="iconResource"><see cref="_icon"/></param>
+		/// <param name="doubleClick"><see cref="_doubleClick"/></param>
+		/// <param name="items"><see cref="_items"/></param>
+		protected virtual void Init(string title, string iconResource, EventHandler doubleClick, MenuItem[] items)
 		{
 			StreamResourceInfo streamResourceInfo = Application.GetResourceStream(new Uri(iconResource));
 			if (streamResourceInfo == null)
@@ -47,11 +65,6 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			{
 				Init(title, new Icon(iconStream), doubleClick, items);
 			}
-		}
-
-		public SigmaNotifyIconFactory(string title, Icon icon, EventHandler doubleClick, MenuItem[] items)
-		{
-			Init(title, icon, doubleClick, items);
 		}
 
 		/// <summary>

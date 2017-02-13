@@ -8,14 +8,12 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using Dragablz.Dockablz;
-using log4net.Appender;
 using log4net.Core;
 using MahApps.Metro.Controls.Dialogs;
 using MaterialDesignThemes.Wpf;
@@ -30,7 +28,6 @@ using Sigma.Core.Utils;
 using Application = System.Windows.Application;
 using CharacterCasing = System.Windows.Controls.CharacterCasing;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using MenuItem = System.Windows.Forms.MenuItem;
 using Panel = System.Windows.Controls.Panel;
 
 // ReSharper disable VirtualMemberCallInConstructor
@@ -50,7 +47,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	/// 
 	///	* background running
 	/// </summary>
-	public class SigmaWindow : WPFWindow, IAppender, IDisposable
+	public class SigmaWindow : WPFWindow, IDisposable
 	{
 		public const string RootPanelFactoryIdentifier = "rootpanel_factory";
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
@@ -125,8 +122,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public TabControlUI<SigmaWindow, TabUI> TabControl { get; set; }
 
-		//TODO: fix this case:
-		//overview teared out. overview teared back in. close tab. notifyicon.
 		/// <summary>
 		///	The notify icon for the WPF window - if multiple windows are active (tabs teared out), they will all have the same reference. 
 		/// </summary>
@@ -269,10 +264,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			{
 				AssignFactories(monitor.Registry, app, monitor);
 			}
-			else
-			{
-				SetParent(other);
-			}
+
+			SetParent(other);
 
 			InitialiseDefaultValues();
 
@@ -339,7 +332,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				// if all other tabs are closed
 				if (IsRoot && Children.Count == 0)
 				{
-					Debug.WriteLine("Minimising");
 					CustomMinimise();
 
 					e.Cancel = true;
@@ -431,18 +423,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (!registry.ContainsKey(NotifyIconFactoryIdentifier))
 			{
-				MenuItem[] items = new MenuItem[2];
-
-				//TODO: localise
-				//TODO: find correct place in code for this part
-				items[0] = new MenuItem("Open") { DefaultItem = true };
-				items[0].Click += (sender, args) => ExecuteOnRoot(monitor, window => window.CustomMaximise());
-
-				items[1] = new MenuItem("Exit");
-				items[1].Click += (sender, args) => ExecuteOnRoot(monitor, window => window.PropagateAction(win => win.ForceClose()));
-
-				//TODO: HACK: path not dynamic
-				registry[NotifyIconFactoryIdentifier] = new SigmaNotifyIconFactory("Sigma", SigmaIconPath, (sender, args) => ExecuteOnRoot(monitor, window => window.CustomMaximise()), items);
+				registry[NotifyIconFactoryIdentifier] = new DefaultSigmaNotifyIconFactory(SigmaIconPath, () => ExecuteOnRoot(Monitor, win => win.CustomMaximise()), () => ExecuteOnRoot(Monitor, win => win.PropagateAction(child => child.ForceClose())));
 			}
 		}
 
@@ -657,11 +638,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
 		}
 
-		/// <summary>
-		///		Set this window to be a child of another window.
-		/// </summary>
-		/// <param name="parent"></param>
-		protected virtual void SetParent(SigmaWindow parent)
+		///  <summary>
+		/// 		Set this window to be a child of another window.
+		///  </summary>
+		///  <param name="parent"></param>
+		/// <param name="canBecomeRoot">The boolean determines if the newly set window could become the new parent. Obviously,
+		/// this is true in most cases but when destroying the application you may want to <see cref="SetParent"/> to <c>null</c>
+		/// and don't let it become the new root window.</param>
+		protected virtual void SetParent(SigmaWindow parent, bool canBecomeRoot = true)
 		{
 			if (ReferenceEquals(ParentWindow, parent)) return;
 
@@ -673,8 +657,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (parent == null)
 			{
-				App.MainWindow = this;
-				Monitor.Window = this;
+				if (canBecomeRoot)
+				{
+					App.MainWindow = this;
+					Monitor.Window = this;
+				}
 			}
 			else
 			{
@@ -706,13 +693,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 					{
 						Children[i].SetParent(newRoot);
 					}
-
-					App.MainWindow = newRoot;
 				}
 				// its the last window
 				else
 				{
-					NotifyIcon.Dispose();
+					NotifyIcon.Visible = false;
 				}
 			}
 			else
@@ -723,7 +708,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				}
 			}
 
-			SetParent(null);
+			SetParent(null, false);
 
 			ParentWindow = null;
 			RootElement = null;
