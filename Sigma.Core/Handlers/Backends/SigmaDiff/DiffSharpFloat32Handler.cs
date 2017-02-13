@@ -137,7 +137,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
 		{
+			// no need to slice if there's only one row
+			if (array.Shape[0] == 1)
+			{
+				return function.Invoke(array);
+			}
+
 			ADNDFloat32Array internalArray = InternaliseArray(array);
+
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)
@@ -156,6 +163,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		private static INDArray[] SliceRowWise(INDArray array, ADNDFloat32Array internalArray)
 		{
+			// no need to slice if there's only one row
+			if (array.Shape[0] == 1)
+			{
+				return new[] { array };
+			}
+
 			INDArray[] rows = new INDArray[array.Shape[0]];
 
 			var colStart = FSharpOption<int>.Some(0);

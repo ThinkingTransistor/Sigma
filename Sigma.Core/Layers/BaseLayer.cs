@@ -25,6 +25,7 @@ namespace Sigma.Core.Layers
 
 		/// <summary>
 		/// Create a base layer with a certain unique name.
+		/// Note: Do NOT change the signature of this constructor, it's used to dynamically instantiate layers.
 		/// </summary>
 		/// <param name="name">The unique name of this layer.</param>
 		/// <param name="parameters">The parameters to this layer.</param>

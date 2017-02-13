@@ -15,6 +15,7 @@ using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers;
 using Sigma.Core.Layers.Cost;
+using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;

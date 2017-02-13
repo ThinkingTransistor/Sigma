@@ -172,9 +172,10 @@
     <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
-    <Compile Include="Layers\OutputLayer.cs" />
-    <Compile Include="Layers\InputLayer.cs" />
+    <Compile Include="Layers\External\OutputLayer.cs" />
+    <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />

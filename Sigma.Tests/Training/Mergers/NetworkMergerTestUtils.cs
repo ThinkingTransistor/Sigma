@@ -2,6 +2,7 @@
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers;
+using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Initialisers;
