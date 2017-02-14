@@ -44,7 +44,7 @@
 								<Button.Triggers>
 									<EventTrigger RoutedEvent="Button.Click">
 										<BeginStoryboard>
-											<Storyboard>
+											<Storyboard SpeedRatio="1.5">
 												<DoubleAnimation Storyboard.TargetName="ReplayIcon"
 																 Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
 																 From="0" To="-360"
@@ -74,7 +74,7 @@
 									<EventTrigger RoutedEvent="ToggleButton.Checked">
 										<EventTrigger.Actions>
 											<BeginStoryboard>
-												<Storyboard>
+												<Storyboard SpeedRatio="2">
 													<Storyboard>
 														<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
 															<EasingDoubleKeyFrame KeyTime="0" Value="45">
@@ -169,7 +169,7 @@
 									<EventTrigger RoutedEvent="ToggleButton.Unchecked">
 										<EventTrigger.Actions>
 											<BeginStoryboard>
-												<Storyboard>
+												<Storyboard SpeedRatio="2">
 													<Storyboard>
 														<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)" Storyboard.TargetName="Line1">
 															<EasingDoubleKeyFrame KeyTime="0" Value="45">
@@ -347,7 +347,7 @@
 								<Button.Triggers>
 									<EventTrigger RoutedEvent="Button.Click">
 										<BeginStoryboard>
-											<Storyboard>
+											<Storyboard SpeedRatio="2.5">
 												<!-- to the left-->
 												<DoubleAnimation Storyboard.TargetName="NextIcon"
 																 Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
