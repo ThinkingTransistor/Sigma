@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -52,7 +52,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 				_tabControl = new TabablzControl();
 
 				if (InitialTabablzControl == null)
+				{
 					InitialTabablzControl = _tabControl;
+				}
 			}
 
 			//TODO: Change with style?
@@ -152,8 +154,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 			/// <returns></returns>
 			public INewTabHost<Window> GetNewHost(IInterTabClient interTabClient, object partition, TabablzControl source)
 			{
-				TWindow window = Construct(new[] { typeof(WPFMonitor), typeof(Application), typeof(string), typeof(TWindow) },
-					new object[] { _monitor, _app, _title, _monitor.Window });
+				TWindow window = Construct(new[] {typeof(WPFMonitor), typeof(Application), typeof(string), typeof(TWindow)},
+					new object[] {_monitor, _app, _title, _monitor.Window});
 				return new NewTabHost<WPFWindow>(window, window.TabControl.InitialTabablzControl);
 			}
 

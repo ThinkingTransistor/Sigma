@@ -1,3 +1,13 @@
+/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -6,16 +16,98 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 {
 	/// <summary>
-	/// This <see cref="Control"/> provides and easy way to visualise tasks.
-	/// A task can be set for this <see cref="TaskVisualizer"/>, and then the 
-	/// progress will be automatically updated. 
-	/// 
-	/// A <see cref="TaskVisualizer"/> is visible until a <see cref="ITaskObserver"/>
-	/// has been set. If the <see cref="ITaskObserver"/> is set to <c>null</c>, the <see cref="TaskVisualizer"/>
-	/// will be invisible again. 
+	///     This <see cref="Control" /> provides and easy way to visualise tasks.
+	///     A task can be set for this <see cref="TaskVisualizer" />, and then the
+	///     progress will be automatically updated.
+	///     A <see cref="TaskVisualizer" /> is visible until a <see cref="ITaskObserver" />
+	///     has been set. If the <see cref="ITaskObserver" /> is set to <c>null</c>, the <see cref="TaskVisualizer" />
+	///     will be invisible again.
 	/// </summary>
-	public class TaskVisualizer : Control
+	public class TaskVisualizer : Control, IDisposable
 	{
+		static TaskVisualizer()
+		{
+			DefaultStyleKeyProperty.OverrideMetadata(typeof(TaskVisualizer),
+				new FrameworkPropertyMetadata(typeof(TaskVisualizer)));
+
+			//TODO: fix margin
+			//MarginProperty.OverrideMetadata();
+		}
+
+		/// <summary>
+		///     Create a new <see cref="TaskVisualizer" /> without an active <see cref="ITaskObserver" />.
+		/// </summary>
+		public TaskVisualizer()
+		{
+			SetActive(null);
+		}
+
+		/// <summary>
+		///     The currently active <see cref="ITaskObserver" />.
+		/// </summary>
+		public ITaskObserver ActiveTask { get; private set; }
+
+		public Window window { get; set; }
+
+		/// <summary>
+		///     Set the active <see cref="ITaskObserver" />.
+		///     The <see cref="TaskVisualizer" /> is <see cref="Visibility.Hidden" />
+		///     if the <see cref="ITaskObserver" /> is null, <see cref="Visibility.Visible" />
+		///     otherwise.
+		/// </summary>
+		/// <param name="task">The <see cref="ITaskObserver" /> that the visualizer will be locked to.</param>
+		public void SetActive(ITaskObserver task)
+		{
+			RemoveActiveTask();
+
+
+			if (task != null)
+			{
+				Visibility = Visibility.Visible;
+
+				Progress = 0;
+
+				task.ProgressChanged += UpdatedTask;
+
+				ActiveExpressedType = task.Type.ExpressedType;
+				ActiveTaskDescription = task.Description;
+			}
+			else
+			{
+				Visibility = Visibility.Hidden;
+			}
+
+			ActiveTask = task;
+		}
+
+		private void RemoveActiveTask()
+		{
+			if (ActiveTask != null)
+			{
+				ActiveTask.ProgressChanged -= UpdatedTask;
+			}
+		}
+
+
+		/// <summary>
+		///     This method is meant to be called from a non-UI thread, it will be called
+		///     when a <see cref="ITaskObserver.ProgressChanged" /> is raised.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void UpdatedTask(object sender, TaskProgressEventArgs args)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				Progress = args.NewValue * 100;
+
+				if (Progress < 0)
+				{
+					Progress = 0;
+				}
+			});
+		}
+
 		#region DependencyProperties
 
 		public static readonly DependencyProperty ProgressColorBrushProperty =
@@ -37,15 +129,16 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 				typeof(string), typeof(TaskVisualizer), new PropertyMetadata(null));
 
 
-		public static readonly DependencyProperty ActiveExpressedTypeProperty = DependencyProperty.Register(nameof(ActiveExpressedType),
-			typeof(string), typeof(TaskVisualizer), new PropertyMetadata(null));
+		public static readonly DependencyProperty ActiveExpressedTypeProperty =
+			DependencyProperty.Register(nameof(ActiveExpressedType),
+				typeof(string), typeof(TaskVisualizer), new PropertyMetadata(null));
 
 		#endregion DependencyProperties
 
 		#region Properties
 
 		/// <summary>
-		/// The brush that will be used for the <see cref="ProgressBar"/>.
+		///     The brush that will be used for the <see cref="ProgressBar" />.
 		/// </summary>
 		public Brush ProgressColorBrush
 		{
@@ -54,8 +147,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		/// <summary>
-		/// The brush that will be used for the text (i.e. <see cref="Label"/>) 
-		/// displaying the <see cref="ITaskObserver.Type"/>. 
+		///     The brush that will be used for the text (i.e. <see cref="Label" />)
+		///     displaying the <see cref="ITaskObserver.Type" />.
 		/// </summary>
 		public Brush TextColorBrush
 		{
@@ -64,7 +157,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		/// <summary>
-		/// Determines whether the given task is indeterminate or not. 
+		///     Determines whether the given task is indeterminate or not.
 		/// </summary>
 		public bool IsIndeterminate
 		{
@@ -73,7 +166,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		/// <summary>
-		/// The current progress of the task. This value is between 0 and 100.
+		///     The current progress of the task. This value is between 0 and 100.
 		/// </summary>
 		public double Progress
 		{
@@ -82,7 +175,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		/// <summary>
-		/// This is the <see cref="ITaskObserver.Description"/> of the active task. 
+		///     This is the <see cref="ITaskObserver.Description" /> of the active task.
 		/// </summary>
 		public string ActiveTaskDescription
 		{
@@ -91,7 +184,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 		}
 
 		/// <summary>
-		/// This is the <see cref="ITaskObserver.Type"/> of the active task.
+		///     This is the <see cref="ITaskObserver.Type" /> of the active task.
 		/// </summary>
 		public string ActiveExpressedType
 		{
@@ -101,78 +194,9 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar
 
 		#endregion Properties
 
-		/// <summary>
-		/// The currently active <see cref="ITaskObserver"/>. 
-		/// </summary>
-		public ITaskObserver ActiveTask { get; private set; }
-
-		static TaskVisualizer()
+		public void Dispose()
 		{
-			DefaultStyleKeyProperty.OverrideMetadata(typeof(TaskVisualizer),
-				new FrameworkPropertyMetadata(typeof(TaskVisualizer)));
-
-			//TODO: fix margin
-			//MarginProperty.OverrideMetadata();
-		}
-
-		/// <summary>
-		/// Create a new <see cref="TaskVisualizer"/> without an active <see cref="ITaskObserver"/>. 
-		/// </summary>
-		public TaskVisualizer()
-		{
-			SetActive(null);
-		}
-
-		/// <summary>
-		/// Set the active <see cref="ITaskObserver"/>.
-		/// The <see cref="TaskVisualizer"/> is <see cref="Visibility.Hidden"/>
-		/// if the <see cref="ITaskObserver"/> is null, <see cref="Visibility.Visible"/>
-		/// otherwise. 
-		/// </summary>
-		/// <param name="task">The <see cref="ITaskObserver"/> that the visualizer will be locked to.</param>
-		public void SetActive(ITaskObserver task)
-		{
-			if (ActiveTask != null)
-			{
-				ActiveTask.ProgressChanged -= UpdatedTask;
-			}
-
-			if (task != null)
-			{
-				Visibility = Visibility.Visible;
-
-				Progress = 0;
-
-				task.ProgressChanged += UpdatedTask;
-
-				ActiveExpressedType = task.Type.ExpressedType;
-				ActiveTaskDescription = task.Description;
-			}
-			else
-			{
-				Visibility = Visibility.Hidden;
-			}
-
-			ActiveTask = task;
-		}
-
-		/// <summary>
-		/// This method is meant to be called from a non-UI thread, it will be called
-		/// when a <see cref="ITaskObserver.ProgressChanged"/> is raised. 
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void UpdatedTask(object sender, TaskProgressEventArgs args)
-		{
-			Dispatcher.Invoke(() =>
-			{
-				Progress = args.NewValue * 100;
-
-				if (Progress < 0)
-				{
-					Progress = 0;
-				}
-			});
+			RemoveActiveTask();
 		}
 	}
 }

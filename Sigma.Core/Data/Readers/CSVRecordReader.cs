@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -99,7 +99,7 @@ namespace Sigma.Core.Data.Readers
 				throw new ArgumentException($"Number of records to read must be > 0 but was {numberOfRecords}.");
 			}
 
-			_logger.Info($"Reading requested {numberOfRecords} records from source {Source}...");
+			_logger.Debug($"Reading requested {numberOfRecords} records from source {Source}...");
 
 			List<string[]> records = new List<string[]>();
 			int numberRecordsRead = 0;
@@ -142,12 +142,12 @@ namespace Sigma.Core.Data.Readers
 
 			if (numberRecordsRead == 0)
 			{
-				_logger.Info($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
+				_logger.Debug($"No more records could be read (requested: {numberOfRecords} records), end of stream most likely reached.");
 
 				return null;
 			}
 
-			_logger.Info($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");
+			_logger.Debug($"Done reading records, read a total of {numberRecordsRead} records (requested: {numberOfRecords} records).");
 
 			return records.ToArray<string[]>();
 		}

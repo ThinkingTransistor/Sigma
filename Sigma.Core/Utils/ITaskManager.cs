@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -28,7 +28,7 @@ namespace Sigma.Core.Utils
 	/// A default implementation of the <see cref="ITaskManager"/> interface. 
 	/// Represents a task manager, that manages a set of task observers. 
 	/// </summary>
-	public class TaskManager : ITaskManager
+	public sealed class TaskManager : ITaskManager
 	{
 		public event EventHandler<TaskModifiedEventArgs> TaskCreated;
 		public event EventHandler<TaskModifiedEventArgs> TaskCanceled;
@@ -62,17 +62,17 @@ namespace Sigma.Core.Utils
 			return observer;
 		}
 
-		protected virtual void OnTaskCreated(ITaskObserver task, object sender = null)
+		private void OnTaskCreated(ITaskObserver task, object sender = null)
 		{
 			TaskCreated?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Running));
 		}
 
-		protected virtual void OnTaskCanceled(ITaskObserver task, object sender = null)
+		private void OnTaskCanceled(ITaskObserver task, object sender = null)
 		{
 			TaskCanceled?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Canceled));
 		}
 
-		protected virtual void OnTaskEnded(ITaskObserver task, object sender = null)
+		private void OnTaskEnded(ITaskObserver task, object sender = null)
 		{
 			TaskEnded?.Invoke(sender ?? this, new TaskModifiedEventArgs(task, TaskObserveStatus.Ended));
 		}
@@ -209,7 +209,7 @@ namespace Sigma.Core.Utils
 		public static readonly ITaskType Download = new TaskType("Download", "Downloading");
 		public static readonly ITaskType Load = new TaskType("Load", "Loading");
 		public static readonly ITaskType Save = new TaskType("Save", "Saving");
-		public static readonly ITaskType Unpack = new TaskType("Unpack", "Extracting");
+		public static readonly ITaskType Unpack = new TaskType("Unpack", "Unpacking");
 		public static readonly ITaskType Extract = new TaskType("Extract", "Extracting");
 		public static readonly ITaskType Preprocess = new TaskType("Preprocess", "Preprocessing");
 		public static readonly ITaskType Prepare = new TaskType("Prepare", "Preparing");

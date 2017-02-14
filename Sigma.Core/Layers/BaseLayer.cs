@@ -1,4 +1,12 @@
-﻿using Sigma.Core.Handlers;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 using System;
 
@@ -17,6 +25,7 @@ namespace Sigma.Core.Layers
 
 		/// <summary>
 		/// Create a base layer with a certain unique name.
+		/// Note: Do NOT change the signature of this constructor, it's used to dynamically instantiate layers.
 		/// </summary>
 		/// <param name="name">The unique name of this layer.</param>
 		/// <param name="parameters">The parameters to this layer.</param>

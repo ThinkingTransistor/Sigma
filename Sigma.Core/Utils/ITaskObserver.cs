@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -133,8 +133,6 @@ namespace Sigma.Core.Utils
 			}
 
 			Progress = value / 100.0f;
-
-			//Console.WriteLine($"{Type.ExpressedType} {Description} ({Progress * 100:00.0}%)");
 		}
 
 		private void OnProgressChanged(TaskProgressEventArgs args)

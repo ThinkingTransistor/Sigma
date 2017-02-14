@@ -1,11 +1,14 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -14,15 +17,12 @@ using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Data.Iterators
 {
-	public class TestMinibatchIterator
+	public class TestMinibatchIterator : BaseLocaleTest
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -94,7 +94,7 @@ namespace Sigma.Tests.Data.Iterators
 					break;
 				}
 
-				Assert.Contains(block["inputs"].GetValue<float>(0, 0, 0), new float[] {5.1f, 4.9f, 4.7f});
+				Assert.Contains(block["inputs"].GetValue<float>(0, 0, 0), new float[] { 5.1f, 4.9f, 4.7f });
 			}
 
 			dataset.Dispose();

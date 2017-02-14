@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -12,11 +12,11 @@ using Sigma.Core.Layers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
-{
+{ 
 	/// <summary>
 	/// A neural network consisting of interconnected neural layers and a network architecture.
 	/// </summary>
-	public interface INetwork
+	public interface INetwork : IDeepCopyable
 	{
 		/// <summary>
 		/// The architecture of this network.
@@ -44,6 +44,13 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		/// <param name="handler"></param>
 		void Initialise(IComputationHandler handler);
+
+		/// <summary>
+		/// Run this network (forward pass). All external inputs and outputs must already be supplied and linked. 
+		/// </summary>
+		/// <param name="handler">The computation handler to use.</param>
+		/// <param name="trainingPass">Indicate if this run is part of a training pass.</param>
+		void Run(IComputationHandler handler, bool trainingPass);
 
 		/// <summary>
 		/// Get the layers of this network in the order they should be processed. 

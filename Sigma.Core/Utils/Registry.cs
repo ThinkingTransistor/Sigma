@@ -1,7 +1,7 @@
 /* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -108,12 +108,14 @@ namespace Sigma.Core.Utils
 					{
 						if (!ExceptionOnCopyNonDeepCopyable)
 						{
-							copiedValue = value;
-
 							ICloneable cloneableValue = value as ICloneable;
 							if (cloneableValue != null)
 							{
 								copiedValue = cloneableValue.Clone();
+							}
+							else
+							{
+								copiedValue = value;
 							}
 						}
 						else
@@ -209,6 +211,11 @@ namespace Sigma.Core.Utils
 			}
 		}
 
+		public void SetTyped<T>(string identifier, T value)
+		{
+			Set(identifier, value, typeof(T));
+		}
+
 		public virtual void Add(string key, object value)
 		{
 			MappedValues.Add(key, value);
@@ -234,6 +241,11 @@ namespace Sigma.Core.Utils
 
 		public object Get(string identifier)
 		{
+			if (!MappedValues.ContainsKey(identifier))
+			{
+				throw new KeyNotFoundException($"The given identifier {identifier} does not exist in this registry.");
+			}
+
 			return MappedValues[identifier];
 		}
 
@@ -276,6 +288,17 @@ namespace Sigma.Core.Utils
 		public bool TryGetValue(string key, out object value)
 		{
 			return MappedValues.TryGetValue(key, out value);
+		}
+
+		public Type GetAssociatedType(string identifier)
+		{
+			Type type;
+
+			if (AssociatedTypes.TryGetValue(identifier, out type))
+			{
+				return type;
+			}
+			return null;
 		}
 
 		public T Remove<T>(string identifier)
@@ -379,6 +402,47 @@ namespace Sigma.Core.Utils
 			}
 
 			return str.ToString();
+		}
+
+		/// <summary>
+		/// Get the deepest copy of a given value (order: <see cref="IDeepCopyable.DeepCopy"/> => <see cref="ICloneable.Clone"/>).
+		/// If the value cannot be copied, the original value is returned.
+		/// </summary>
+		/// <param name="value">The value.</param>
+		/// <returns>The deepest available copy of the given value.</returns>
+		public static object DeepestCopy(object value)
+		{
+			object copiedValue;
+			IDeepCopyable deepCopyableValue = value as IDeepCopyable;
+
+			if (deepCopyableValue == null)
+			{
+				ICloneable cloneableValue = value as ICloneable;
+				if (cloneableValue != null)
+				{
+					copiedValue = cloneableValue.Clone();
+				}
+				else
+				{
+					copiedValue = value;
+				}
+			}
+			else
+			{
+				copiedValue = deepCopyableValue.DeepCopy();
+			}
+
+			return copiedValue;
+		}
+
+		/// <summary>
+		/// Check if this registry's contents equal another registry's contents.
+		/// </summary>
+		/// <param name="other">The other registry.</param>
+		/// <returns>A boolean indicating if this registry's contents equal another registry's contents.</returns>
+		public bool RegistryContentEquals(IRegistry other)
+		{
+			return other != null && MappedValues.Count == other.Count && MappedValues.Keys.All(k => other.ContainsKey(k) && Equals(MappedValues[k], other[k]));
 		}
 	}
 

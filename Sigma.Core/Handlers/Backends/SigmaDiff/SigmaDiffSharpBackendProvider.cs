@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -63,6 +63,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			else if (obj is Util.ShapedDataBufferView<T>)
 			{
 				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<T>) ((Util.ShapedDataBufferView<T>) obj).DataBuffer).BackendTag];
+			}
+			else if (obj is SigmaDiffDataBuffer<T>)
+			{
+				return (BackendConfig<T>) _registeredBackendConfigs[((SigmaDiffDataBuffer<T>) obj).BackendTag];
 			}
 
 			throw new InvalidOperationException($"Cannot get backend for unknown object {obj} of type {obj.GetType()}, object is neither a known type nor a backend mapped type.");

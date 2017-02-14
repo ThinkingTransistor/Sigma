@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -25,11 +25,47 @@ namespace Sigma.Core.Utils
 		/// <returns>The product of the given array.</returns>
 		public static long Product(params long[] array)
 		{
+			return Product(0, array.Length, array);
+		}
+
+		/// <summary>
+		/// The product of an integer array (i.e. all values multiplied with each other).
+		/// </summary>
+		/// <param name="offset">The start offset of the array.</param>
+		/// <param name="length">The length of the section.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The product of the given array.</returns>
+		public static long Product(int offset, long[] array)
+		{
+			return Product(offset, array.Length - offset, array);
+		}
+
+		/// <summary>
+		/// The product of an integer array (i.e. all values multiplied with each other).
+		/// </summary>
+		/// <param name="offset">The start offset of the array.</param>
+		/// <param name="length">The length of the section.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The product of the given array.</returns>
+		public static long Product(int offset, int length, long[] array)
+		{
+			if (offset < 0)
+			{
+				throw new ArgumentOutOfRangeException($"Offset must be >= 0 but was {nameof(offset)}.");
+			}
+
+			if (offset + length > array.Length)
+			{
+				throw new ArgumentOutOfRangeException($"Offset + length must be < array.Length, but offset {offset} + length {length} was {offset + length} and array.Length {array.Length}.");
+			}
+
 			long product = 1L;
 
-			foreach (long element in array)
+			length += offset;
+
+			for (int i = offset; i < length; i++)
 			{
-				product *= element;
+				product = checked(product * array[i]);
 			}
 
 			return product;
@@ -269,6 +305,23 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Populate an array with a certain fixed.
+		/// </summary>
+		/// <typeparam name="T">The type of the array and value.</typeparam>
+		/// <param name="array">The array.</param>
+		/// <param name="value">The value to populate with.</param>
+		/// <returns>The array (for convenience).</returns>
+		public static T[] Populate<T>(this T[] array, T value)
+		{
+			for (int i = 0; i < array.Length; i++)
+			{
+				array[i] = value;
+			}
+
+			return array;
+		}
+
+		/// <summary>
 		/// Extended ToString method for two-dimensional arrays of any type.
 		/// </summary>
 		/// <typeparam name="T">The type.</typeparam>
@@ -284,6 +337,38 @@ namespace Sigma.Core.Utils
 			}
 
 			return "[" + string.Join(",\n", subarrays) + "]";
+		}
+
+		/// <summary>
+		/// Add an element to the next "free" (null) spot in a given array.
+		/// </summary>
+		/// <typeparam name="T">The type of the array.</typeparam>
+		/// <param name="arr">The array to add the item.</param>
+		/// <param name="value">The item that will be added.</param>
+		/// <returns><c>True</c> if there was a null entry in the array, <c>false</c> otherwise. </returns>
+		public static bool AddToNextNull<T>(this T[] arr, T value)
+		{
+			for (int i = 0; i < arr.Length; i++)
+			{
+				if (arr[i] == null)
+				{
+					arr[i] = value;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Sort a list in place using an index function.
+		/// </summary>
+		/// <typeparam name="T">The type.</typeparam>
+		/// <param name="list">The list to sort.</param>
+		/// <param name="indexFunction">The index function to use to get the index of each element.</param>
+		public static void SortListInPlaceIndexed<T>(List<T> list, Func<T, uint> indexFunction)
+		{
+			list.Sort((self, other) => (int) (indexFunction.Invoke(self) - indexFunction.Invoke(other)));
 		}
 	}
 }

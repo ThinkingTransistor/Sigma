@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -36,10 +36,11 @@ namespace Sigma.Core.MathAbstract
 		}
 
 		/// <summary>
-		/// Check a shape for logical correctness (i.e. all values must be > 0, total length must be > 0). If incorrect, this method throws an appropriate argument exception.
+		/// Get a checked shape for logical correctness (i.e. all values must be > 0, total length must be > 0). 
+		/// If incorrect, this method throws an appropriate argument exception. If one-dimensional, change to row-vector.
 		/// </summary>
 		/// <param name="shape">The shape array to check.</param>
-		/// <returns>The same shape array (for convenience).</returns>
+		/// <returns>The checked shape array (not guaranteed to be the same reference).</returns>
 		public static long[] CheckShape(params long[] shape)
 		{
 			if (shape == null)
@@ -54,10 +55,16 @@ namespace Sigma.Core.MathAbstract
 
 			for (int i = 0; i < shape.Length; i++)
 			{
-				if (shape[i] <= 0)
+				if (shape[i] < 0)
 				{
-					throw new ArgumentException($"Invalid shape: all shape dimensions must be > 0, but dimension {i} was {shape[i]}.");
+					throw new ArgumentException($"Invalid shape: all shape dimensions must be >= 0, but dimension {i} was {shape[i]}.");
 				}
+			}
+
+			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
+			if (shape.Length == 1 && shape[0] > 1)
+			{
+				shape = new[] { 1, shape[0] };
 			}
 
 			return shape;
@@ -136,19 +143,20 @@ namespace Sigma.Core.MathAbstract
 		/// <param name="shape">The shape of the ndarray to be sliced.</param>
 		/// <param name="copyResultShape">Indicate whether the resulting shape should be a copy from the passed shape or the original (modified).</param>
 		/// <param name="sliceEndIndex">Indicate whether the slice indices should be calculated as a begin index (all except significant 0) or end index (all except significant shape limit).</param>
+		/// <exception cref="ArgumentException"></exception>
 		/// <returns>The resulting slice indices, with the given index value at the significant dimension and 0 or shape limit in the others (depending on <see cref="sliceEndIndex"/>).</returns>
 		public static long[] GetSliceIndicesAlongDimension(int dimensionIndex, long index, long[] shape, bool copyResultShape = true, bool sliceEndIndex = false)
 		{
 			if (shape == null) throw new ArgumentNullException(nameof(shape));
 
-			if (index < 0 || index > shape.Length)
-			{
-				throw new ArgumentException($"Index must be >= 0 and < shape.Length (ndarray rank), but index was {index} and shape.Length {shape.Length}.");
-			}
-
-			if (dimensionIndex < 0 || dimensionIndex > shape.Length)
+			if (dimensionIndex < 0 || dimensionIndex >= shape.Length)
 			{
 				throw new ArgumentException($"Dimension index must be >= 0 and < shape.Length (ndarray rank), but dimension index was {index} and shape.Length {shape.Length}.");
+			}
+
+			if (index < 0 || index > shape[dimensionIndex])
+			{
+				throw new ArgumentException($"Index must be >= 0 and <= shape[dimensionIndex] (ndarray rank), but index was {index} and shape[{dimensionIndex}] was {shape[dimensionIndex]}.");
 			}
 
 			long[] result = copyResultShape ? new long[shape.Length] : shape;

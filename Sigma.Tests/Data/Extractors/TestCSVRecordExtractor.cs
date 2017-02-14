@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -17,7 +17,7 @@ using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Extractors
 {
-	public class TestCsvRecordExtractor
+	public class TestCsvRecordExtractor : BaseLocaleTest
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -56,7 +56,7 @@ namespace Sigma.Tests.Data.Extractors
 			CreateCsvTempFile(filename);
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
-			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, IList<int>>() { ["inputs"] = new[] { 0, 1, 2 } }));
+			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, IList<int>> { ["inputs"] = new[] { 0, 1, 2 } }));
 
 			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(3, new CpuFloat32Handler()));
 

@@ -1,17 +1,18 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
 using Sigma.Core.Utils;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 {
@@ -24,11 +25,11 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 	{
 		public DNDArray _adArrayHandle;
 
-		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), shape))
+		public ADNDFloat32Array(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), NDArrayUtils.CheckShape(shape)))
 		{
 		}
 
-		public ADNDFloat32Array(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), shape))
+		public ADNDFloat32Array(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), NDArrayUtils.CheckShape(shape)))
 		{
 		}
 
@@ -37,6 +38,11 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
 			_adArrayHandle = adArrayHandle;
+			_adArrayHandle.Buffer.Shape = Shape; 
+		}
+
+		public ADNDFloat32Array(long backendTag, IDataBuffer<float> buffer, long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(buffer, 0, buffer.Length, backendTag), NDArrayUtils.CheckShape(shape)))
+		{
 		}
 
 		protected override void Reinitialise(long[] shape, long[] strides)
@@ -45,8 +51,28 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 
 			base.Reinitialise(shape, strides);
 
-			Array.Copy(shape, _adArrayHandle.Buffer.Shape, shape.Length);
+			_adArrayHandle.Buffer.Shape = shape;
 		}
+
+		/// <summary>
+		/// Get a slice of this ndarray of a certain region as a new ndarray with the same underlying data.
+		/// </summary>
+		/// <param name="beginIndices">The begin indices (inclusively, where the slice should begin).</param>
+		/// <param name="endIndices">The end indices (exclusively, where the slice should end).</param>
+		/// <returns></returns>
+		public override INDArray Slice(long[] beginIndices, long[] endIndices)
+		{
+			long[] slicedShape = GetSlicedShape(beginIndices, endIndices);
+
+			//we want the end indices to be inclusive for easier handling
+			endIndices = endIndices.Select(i => i - 1).ToArray();
+
+			long absoluteBeginOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, beginIndices);
+			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);
+			long length = absoluteEndOffset - absoluteBeginOffset + 1;
+
+			return new ADNDFloat32Array(new DNDArray(new SigmaDiffDataBuffer<float>(Data, absoluteBeginOffset, length, backendTag: ((SigmaDiffDataBuffer<float>) Data).BackendTag), slicedShape));
+	}
 
 		public override INDArray Reshape(params long[] newShape)
 		{
@@ -56,7 +82,8 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 			}
 
 			DNDArray adArrayHandleCopy = _adArrayHandle.ShallowCopy();
-			Array.Copy(newShape, adArrayHandleCopy.Buffer.Shape, newShape.Length);
+
+			adArrayHandleCopy.Buffer.Shape = newShape;
 
 			return new ADNDFloat32Array(adArrayHandleCopy);
 		}

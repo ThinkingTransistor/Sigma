@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -86,7 +86,7 @@ namespace Sigma.Core.Architecture.Linear
 			DesolveAllNames();
 		}
 
-		protected virtual LinearNetworkArchitecture Copy()
+		public virtual object DeepCopy()
 		{
 			Dictionary<LayerConstruct, LayerConstruct> mappedConstructCopies = new Dictionary<LayerConstruct, LayerConstruct>();
 			List<LayerConstruct> copiedConstructs = _layerConstructs.ConvertAll(construct =>
@@ -141,7 +141,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			foreach (LayerConstruct construct in YieldLayerConstructsOrdered())
 			{
-				// TODO internal / external alias check
+				construct.Validate();
 
 				foreach (string externalInput in construct.ExternalInputs)
 				{
@@ -287,7 +287,7 @@ namespace Sigma.Core.Architecture.Linear
 
 			for (int i = 0; i < multiplier; i++)
 			{
-				LinearNetworkArchitecture copy = self.Copy();
+				LinearNetworkArchitecture copy = (LinearNetworkArchitecture) self.DeepCopy();
 
 				multipliedSelf.AppendEnd(copy);
 			}

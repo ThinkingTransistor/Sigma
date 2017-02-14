@@ -1,13 +1,15 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
 using System;
+using System.Linq;
 using Microsoft.FSharp.Core;
+using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
@@ -34,6 +36,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override float L1Norm_V(ISigmaDiffDataBuffer<float> value)
 		{
+			if (value.Length == 0)
+			{
+				return 0.0f;
+			}
+
 			fixed (float* aref = &value.Data[value.Offset])
 			{
 				int len = value.Length;
@@ -45,6 +52,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override float L2Norm_V(ISigmaDiffDataBuffer<float> value)
 		{
+			if (value.Length == 0)
+			{
+				return 0.0f;
+			}
+
 			fixed (float* aref = &value.Data[value.Offset])
 			{
 				int len = value.Length;
@@ -56,6 +68,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override float SupNorm_V(ISigmaDiffDataBuffer<float> value)
 		{
+			if (value.Length == 0)
+			{
+				return 0.0f;
+			}
+
 			fixed (float* aref = &value.Data[value.Offset])
 			{
 				int len = value.Length;
@@ -69,6 +86,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override float Sum_V(ISigmaDiffDataBuffer<float> value)
 		{
+			if (value.Length == 0)
+			{
+				return 0.0f;
+			}
+
 			float sum = 0.0f;
 
 			int upper = value.Offset + value.Length;
@@ -87,6 +109,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Add_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return b.DeepCopy();
+			}
+			if (b.Length == 0)
+			{
+				return a.DeepCopy();
+			}
+
 			b = b.DeepCopy();
 			fixed (float* aref = &a.Data[a.Offset])
 			fixed (float* bref = &b.Data[b.Offset])
@@ -103,6 +134,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Add_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			b = b.DeepCopy();
 			fixed (float* bref = &b.Data[b.Offset])
 			{
@@ -118,6 +154,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Sub_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return b.DeepCopy();
+			}
+			if (b.Length == 0)
+			{
+				return a.DeepCopy();
+			}
+
 			b = b.DeepCopy();
 			fixed (float* aref = &a.Data[a.Offset])
 			fixed (float* bref = &b.Data[b.Offset])
@@ -134,6 +179,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Sub_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			b = b.DeepCopy();
 			fixed (float* bref = &b.Data[b.Offset])
 			{
@@ -149,6 +199,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Sub_V_S(ISigmaDiffDataBuffer<float> a, float b)
 		{
+			if (a.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			a = a.DeepCopy();
 			fixed (float* aref = &a.Data[a.Offset])
 			{
@@ -164,6 +219,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Mul_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			b = b.DeepCopy();
 			fixed (float* bref = &b.Data[b.Offset])
 			{
@@ -178,6 +238,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Mul_M_V(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (a.Length * b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Rows]);
 
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
@@ -207,6 +272,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Mul_V_M(ISigmaDiffDataBuffer<float> a, ShapedDataBufferView<float> b)
 		{
+			if (a.Length * b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[b.Rows]);
 
 			fixed (float* aref = &a.Data[a.Offset])
@@ -241,6 +311,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Map_F_V(FSharpFunc<float, float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
 			b = b.DeepCopy();
 
 			int upper = b.Offset + b.Length;
@@ -254,6 +329,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Map2_F_V_V(FSharpFunc<float, FSharpFunc<float, float>> f, ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return Map2_F_V_V(f, CreateDataBuffer(new float[b.Length]), b);
+			}
+			if (b.Length == 0)
+			{
+				return Map2_F_V_V(f, a, CreateDataBuffer(new float[a.Length]));
+			}
+
 			b = b.DeepCopy();
 
 			for (int i = 0; i < a.Length; i++)
@@ -266,6 +350,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Mul_Out_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
+			if (a.Length * b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Length * b.Length]);
 			int m = b.Length, n = a.Length;
 
@@ -285,6 +374,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Add_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return b.DeepCopy();
+			}
+			if (b.Length == 0)
+			{
+				return a.DeepCopy();
+			}
+
 			b = b.DeepCopy();
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
@@ -301,6 +399,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Add_S_M(float a, ShapedDataBufferView<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			b = b.DeepCopy();
 			fixed (float* aref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
@@ -321,7 +424,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Sub_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
-			b = b.DeepCopy();
+			if (a.Length == 0)
+			{
+				return b.DeepCopy();
+			}
+			if (b.Length == 0)
+			{
+				return a.DeepCopy();
+			}
+
+			a = a.DeepCopy();
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
@@ -329,14 +441,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				int inca = 1, incb = 1;
 				float alpha = -1.0f;
 
-				BlasBackend.Saxpy(&len, &alpha, aref, &inca, bref, &incb);
+				BlasBackend.Saxpy(&len, &alpha, bref, &incb, aref, &inca);
 			}
 
-			return b;
+			return a;
 		}
 
 		public override ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)
 		{
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			a = a.DeepCopy();
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			{
@@ -352,21 +469,42 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Sub_S_M(float a, ShapedDataBufferView<float> b)
 		{
-			b = b.DeepCopy();
-			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			if (b.Length == 0)
 			{
-				int len = b.Length;
-				int inca = 0, incb = 1;
-				float alpha = -1.0f;
-
-				BlasBackend.Saxpy(&len, &alpha, &a, &inca, bref, &incb);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
+			b = b.DeepCopy();
+			// note: doesn't work like this with blas since result inc cannot be 0
+			//fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			//{
+			//	int len = b.Length;
+			//	int inca = 0, incb = 1;
+			//	float alpha = -1.0f;
+
+			//	BlasBackend.Saxpy(&len, &alpha, bref, &incb, &a, &inca);
+			//}
+
+			// TODO update with blas implementation if applicable
+			float[] data = b.DataBuffer.Data;
+			int offset = b.DataBuffer.Offset;
+			int len = b.DataBuffer.Length + offset;
+
+			for (int i = offset; i < len; i++)
+			{
+				data[i] = a - data[i];
+			}
+			 
 			return b;
 		}
 
 		public override ShapedDataBufferView<float> Mul_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
+			if (a.Length * b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Rows * b.Cols]);
 
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
@@ -376,8 +514,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				char transa = 'N', transb = 'N';
 				float alpha = 1.0f, beta = 0.0f;
 				int m = a.Rows, n = b.Cols, k = b.Rows;
-
-				BlasBackend.Sgemm(&transa, &transb, &n, &m, &k, &alpha, aref, &n, bref, &k, &beta, zref, &n);
+				
+				BlasBackend.Sgemm(&transa, &transb, &n, &m, &k, &alpha, bref, &n, aref, &k, &beta, zref, &n);
 			}
 
 			return new ShapedDataBufferView<float>(z, a.Rows, b.Cols);
@@ -385,6 +523,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Mul_S_M(float a, ShapedDataBufferView<float> b)
 		{
+			if (b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			b = b.DeepCopy();
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
@@ -404,6 +547,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[b.Length]), b.Shape);
+			}
+			if (b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[a.Length]), a.Shape);
+			}
+
 			//TODO update with BLAS hadamard implementation
 			b = b.DeepCopy();
 			int len = Math.Min(a.Length, b.Length);
@@ -460,11 +612,28 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Transpose_M(ShapedDataBufferView<float> a)
 		{
-			throw new NotSupportedException("Data buffer transpose not supported. Use ndarray.transpose instead.");
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			ShapedDataBufferView<float> transposed = a.DeepCopy();
+
+			for (var i = 0; i < transposed.Shape.Length; i++)
+			{
+				transposed.Shape[i] = a.Shape[a.Shape.Length - 1 - i];
+			}
+
+			return transposed;
 		}
 
 		public override ShapedDataBufferView<float> Map_F_M(FSharpFunc<float, float> f, ShapedDataBufferView<float> a)
 		{
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			a = a.DeepCopy();
 
 			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
@@ -478,6 +647,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ShapedDataBufferView<float> Map2_F_M_M(FSharpFunc<float, FSharpFunc<float, float>> f, ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
 			b = b.DeepCopy();
 
 			for (int i = 0; i < a.Length; i++)
@@ -490,12 +664,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> ReshapeCopy_MRows_V(ShapedDataBufferView<float> value)
 		{
-			throw new NotImplementedException();
+			if (value.Length == 0)
+			{
+				return CreateDataBuffer(new float[0]);
+			}
+
+			return value.DataBuffer.DeepCopy();
 		}
 
 		public override ShapedDataBufferView<float> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)
 		{
-			throw new NotImplementedException();
+			if (value.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			int n = value.Length / rows;
+
+			return new ShapedDataBufferView<float>(value.DeepCopy(), rows, n);
 		}
 
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)

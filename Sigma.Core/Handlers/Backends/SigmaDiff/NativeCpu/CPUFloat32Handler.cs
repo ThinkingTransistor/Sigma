@@ -1,16 +1,17 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
+using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
+using System;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
@@ -53,6 +54,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			return new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
 		}
 
+		public override INDArray AsNDArray(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return AssignTag(new ADNDFloat32Array(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
+		}
+
+		public override INumber AsNumber(INDArray array, params long[] indices)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
+
+			return new ADFloat32Number(DNDArray.ToDNumber(internalArray._adArrayHandle, (int) flatIndex));
+		}
+
 		public override void InitAfterDeserialisation(INDArray array)
 		{
 			// nothing to do here for this handler, all relevant components are serialised automatically, 
@@ -90,7 +106,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 		public override INDArray Convert(INDArray array, IComputationHandler otherHandler)
 		{
-			return new ADNDArray<float>(array.GetDataAs<float>(), array.Shape);
+			return ConvertInternal(array);
 		}
 
 		public override void Fill(INDArray filler, INDArray arrayToFill)
@@ -98,7 +114,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> arrayToFillData = ((ADNDArray<float>) arrayToFill).Data;
 			IDataBuffer<float> fillerData = ((ADNDArray<float>) filler).Data;
 
-			arrayToFillData.SetValues(fillerData.Data, 0, 0, Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, arrayToFillData.Offset, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		public override void Fill<TOther>(TOther value, INDArray arrayToFill)

@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -10,10 +10,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using log4net.Config;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
@@ -34,9 +36,10 @@ namespace Sigma.Core
 
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
-		private readonly ISet<IOperator> _runningOperators;
-		private readonly ConcurrentQueue<IPassiveHook> _hooksToExecute;
-		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _hooksToAttach;
+		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
+		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _globalHooksToAttach;
+		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _localHooksToAttach;
+		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
 
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -75,10 +78,11 @@ namespace Sigma.Core
 			RegistryResolver = new RegistryResolver(Registry);
 			Random = new Random();
 			_monitors = new HashSet<IMonitor>();
-			_hooksToExecute = new ConcurrentQueue<IPassiveHook>();
-			_hooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
-			_runningOperators = new HashSet<IOperator>();
+			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
+			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
+			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
+			_processQueueEvent = new ManualResetEvent(true);
 		}
 
 		/// <summary>
@@ -103,6 +107,8 @@ namespace Sigma.Core
 
 			monitor.Initialise();
 			_monitors.Add(monitor);
+
+			_logger.Debug($"Added monitor {monitor} to sigma environment \"{Name}\".");
 
 			return monitor;
 		}
@@ -138,13 +144,54 @@ namespace Sigma.Core
 		{
 			if (_trainersByName.ContainsKey(trainer.Name))
 			{
-				throw new InvalidOperationException($"Trainer with name {trainer.Name} is already registered in this environment ({Name}).");
+				throw new InvalidOperationException($"Trainer with name \"{trainer.Name}\" is already registered in this environment (\"{Name}\").");
 			}
 
 			_trainersByName.Add(trainer.Name, trainer);
 			trainer.Sigma = this;
 
+			_logger.Debug($"Added trainer {trainer} to sigma environment \"{Name}\".");
+
 			return trainer;
+		}
+
+		/// <summary>
+		/// Remove a trainer (and its associated operator) from this environment.
+		/// Note: Warning, this is probably not what you want. Trainer removal may cause inconsistent behaviour during execution.
+		///       If the operator is currently running and cannot be disassociated this method will throw an exception.
+		/// </summary>
+		/// <param name="trainer">The trainer to remove.</param>
+		public void RemoveTrainer(ITrainer trainer)
+		{
+			if (!_trainersByName.Values.Contains(trainer))
+			{
+				throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as it does not exist in this environment.");
+			}
+
+			if (_runningOperatorsByTrainer.ContainsKey(trainer))
+			{
+				if (_runningOperatorsByTrainer[trainer].State == ExecutionState.Running)
+				{
+					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {_runningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
+				}
+
+				IOperator @operator = _runningOperatorsByTrainer[trainer];
+
+				_runningOperatorsByTrainer[trainer].Sigma = null;
+				_runningOperatorsByTrainer.Remove(trainer);
+
+				_logger.Debug($"Removed operator {@operator} from sigma environment \"{Name}\" in association with trainer {trainer}.");
+			}
+
+			if (!_trainersByName.Remove(trainer.Name))
+			{
+				_logger.Warn($"Inconsistent trainer state: Trainer was added to environment \"{Name}\" as \"{trainer.Name}\" but its name now is \"{Name}\". Names should be constant, will attempt continued execution.");
+
+				var existingPair = _trainersByName.First(pair => pair.Value == trainer);
+				_trainersByName.Remove(existingPair.Key);
+			}
+
+			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
 		/// <summary>
@@ -153,33 +200,52 @@ namespace Sigma.Core
 		/// </summary>
 		public void Run()
 		{
-			_logger.Info($"Starting sigma environment {Name}...");
+			_logger.Info($"Starting sigma environment \"{Name}\"...");
 
 			bool shouldRun = true;
 
 			Running = true;
 
+			InitialiseTrainers();
 			FetchRunningOperators();
 			StartRunningOperators();
 
+			_logger.Info($"Started sigma environment \"{Name}\".");
+
 			while (shouldRun)
 			{
+				_logger.Debug("Waiting for processing queue event to signal state change....");
+
+				_processQueueEvent.WaitOne();
+				_processQueueEvent.Reset();
+
+				_logger.Debug("Received state change signal by processing queue event, processing...");
+
 				ProcessHooksToAttach();
-				ProcessHooksToExecute();
 
 				if (_requestedStop)
 				{
-					_logger.Info($"Stopping sigma environment {Name} as request stop flag was set...");
+					_logger.Info($"Stopping sigma environment \"{Name}\" as request stop flag was set...");
 
 					shouldRun = false;
 				}
+
+				_logger.Debug($"Done processing for received state change signal.");
 			}
 
 			StopRunningOperators();
 
 			Running = false;
 
-			_logger.Info($"Stopped sigma environment {Name}.");
+			_logger.Info($"Stopped sigma environment \"{Name}\".");
+		}
+
+		private void InitialiseTrainers()
+		{
+			foreach (ITrainer trainer in _trainersByName.Values)
+			{
+				trainer.Initialise(trainer.Operator.Handler);
+			}
 		}
 
 		protected void FetchRunningOperators()
@@ -189,9 +255,11 @@ namespace Sigma.Core
 				_logger.Info($"No trainers attached to this environment ({Name}).");
 			}
 
+			_logger.Debug($"Fetching operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
-				_runningOperators.Add(trainer.Operator);
+				_runningOperatorsByTrainer.Add(trainer, trainer.Operator);
 
 				trainer.Operator.Sigma = this;
 			}
@@ -199,7 +267,9 @@ namespace Sigma.Core
 
 		private void StartRunningOperators()
 		{
-			foreach (IOperator op in _runningOperators)
+			_logger.Debug($"Starting operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
+			foreach (IOperator op in _runningOperatorsByTrainer.Values)
 			{
 				op.Start();
 			}
@@ -207,7 +277,9 @@ namespace Sigma.Core
 
 		private void StopRunningOperators()
 		{
-			foreach (IOperator op in _runningOperators)
+			_logger.Debug($"Stopping operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
+
+			foreach (IOperator op in _runningOperatorsByTrainer.Values)
 			{
 				op.SignalStop();
 			}
@@ -223,31 +295,31 @@ namespace Sigma.Core
 				return;
 			}
 
+			_logger.Debug($"Stop signal received in environment \"{Name}\".");
+
 			_requestedStop = true;
-		}
-
-		private void ProcessHooksToExecute()
-		{
-			while (!_hooksToExecute.IsEmpty)
-			{
-				IPassiveHook hook;
-
-				if (_hooksToExecute.TryDequeue(out hook))
-				{
-					new Task(() => hook.Execute(hook.RegistryCopy)).Start();
-				}
-			}
+			_processQueueEvent.Set();
 		}
 
 		private void ProcessHooksToAttach()
 		{
-			while (!_hooksToAttach.IsEmpty)
+			while (!_globalHooksToAttach.IsEmpty)
 			{
 				KeyValuePair<IHook, IOperator> hookPair;
 
-				if (_hooksToAttach.TryDequeue(out hookPair))
+				if (_globalHooksToAttach.TryDequeue(out hookPair))
 				{
-					hookPair.Value.AttachHook(hookPair.Key);
+					hookPair.Value.AttachGlobalHook(hookPair.Key);
+				}
+			}
+
+			while (!_localHooksToAttach.IsEmpty)
+			{
+				KeyValuePair<IHook, IOperator> hookPair;
+
+				if (_localHooksToAttach.TryDequeue(out hookPair))
+				{
+					hookPair.Value.AttachGlobalHook(hookPair.Key);
 				}
 			}
 		}
@@ -257,14 +329,14 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
-		public void RequestAttachHook(IHook hook, string trainerName)
+		public void RequestAttachGlobalHook(IHook hook, string trainerName)
 		{
 			if (!_trainersByName.ContainsKey((trainerName)))
 			{
 				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
 			}
 
-			RequestAttachHook(hook, _trainersByName[trainerName]);
+			RequestAttachGlobalHook(hook, _trainersByName[trainerName]);
 		}
 
 		/// <summary>
@@ -272,9 +344,11 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="trainer">The trainer whose operator the hook should be attached to.</param>
-		public void RequestAttachHook(IHook hook, ITrainer trainer)
+		public void RequestAttachGlobalHook(IHook hook, ITrainer trainer)
 		{
-			RequestAttachHook(hook, trainer.Operator);
+			if (trainer == null) throw new ArgumentNullException(nameof(trainer));
+
+			RequestAttachGlobalHook(hook, trainer.Operator);
 		}
 
 		/// <summary>
@@ -282,19 +356,54 @@ namespace Sigma.Core
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>
 		/// <param name="operatorToAttachTo">The operator to attach to.</param>
-		public void RequestAttachHook(IHook hook, IOperator operatorToAttachTo)
+		public void RequestAttachGlobalHook(IHook hook, IOperator operatorToAttachTo)
 		{
-			_hooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+			if (hook == null) throw new ArgumentNullException(nameof(hook));
+			if (operatorToAttachTo == null) throw new ArgumentNullException(nameof(operatorToAttachTo));
+
+			_globalHooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+			_processQueueEvent.Set();
 		}
 
 		/// <summary>
-		/// Request the asynchronous execution of a passive hook.
-		/// Note: The required parameter registry must already be set in the given hook.
+		/// Request for a hook to be attached to a certain trainer's operator (identified by its name).
 		/// </summary>
-		/// <param name="hook">The hook to execute.</param>
-		public void RequestExecuteHookAsync(IPassiveHook hook)
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
+		public void RequestAttachLocalHook(IHook hook, string trainerName)
 		{
-			_hooksToExecute.Enqueue(hook);
+			if (!_trainersByName.ContainsKey((trainerName)))
+			{
+				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
+			}
+
+			RequestAttachLocalHook(hook, _trainersByName[trainerName]);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain trainer's operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="trainer">The trainer whose operator the hook should be attached to.</param>
+		public void RequestAttachLocalHook(IHook hook, ITrainer trainer)
+		{
+			if (trainer == null) throw new ArgumentNullException(nameof(trainer));
+
+			RequestAttachLocalHook(hook, trainer.Operator);
+		}
+
+		/// <summary>
+		/// Request for a hook to be attached to a certain operator.
+		/// </summary>
+		/// <param name="hook">The hook to attach.</param>
+		/// <param name="operatorToAttachTo">The operator to attach to.</param>
+		public void RequestAttachLocalHook(IHook hook, IOperator operatorToAttachTo)
+		{
+			if (hook == null) throw new ArgumentNullException(nameof(hook));
+			if (operatorToAttachTo == null) throw new ArgumentNullException(nameof(operatorToAttachTo));
+
+			_localHooksToAttach.Enqueue(new KeyValuePair<IHook, IOperator>(hook, operatorToAttachTo));
+			_processQueueEvent.Set();
 		}
 
 		/// <summary>
@@ -323,17 +432,18 @@ namespace Sigma.Core
 		}
 
 		/// <summary>
-		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>
+		/// Set a single given value of a certain type to all matching identifiers. For the detailed supported syntax <see cref="IRegistryResolver"/>.
 		/// Note: The individual registries might throw an exception if a type-protected value is set to the wrong type.
 		/// </summary>
 		/// <typeparam name="T">The type of the value.</typeparam>
 		/// <param name="matchIdentifier">The full match identifier. </param>
-		/// <param name="value"></param>
-		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>)</param>
+		/// <param name="value">The value to set.</param>
+		/// <param name="addIdentifierIfNotExists">Indicate if the last (local) identifier should be added if it doesn't exist yet.</param>
+		/// <param name="associatedType">Optionally set the associated type (<see cref="IRegistry"/>). If no associated type is set, the one of the registry will be used (if set). </param>
 		/// <returns>A list of fully qualified matches to the match identifier.</returns>
-		public string[] ResolveSet<T>(string matchIdentifier, T value, Type associatedType = null)
+		public string[] ResolveSet<T>(string matchIdentifier, T value, bool addIdentifierIfNotExists = false, Type associatedType = null)
 		{
-			return RegistryResolver.ResolveSet(matchIdentifier, value, associatedType);
+			return RegistryResolver.ResolveSet(matchIdentifier, value, addIdentifierIfNotExists, associatedType);
 		}
 
 		// static part of SigmaEnvironment
@@ -347,13 +457,14 @@ namespace Sigma.Core
 		}
 
 		internal static readonly CultureInfo DefaultCultureInfo = new CultureInfo("en-GB");
-		internal static IRegistry ActiveSigmaEnvironments;
+
+		internal static readonly IRegistry ActiveSigmaEnvironments;
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		static SigmaEnvironment()
 		{
-			CultureInfo.DefaultThreadCurrentCulture = DefaultCultureInfo;
-			Thread.CurrentThread.CurrentCulture = DefaultCultureInfo;
+			// logging not initialised
+			SetDefaultCulture(DefaultCultureInfo);
 
 			ActiveSigmaEnvironments = new Registry();
 			TaskManager = new TaskManager();
@@ -361,6 +472,18 @@ namespace Sigma.Core
 			Globals = new Registry();
 			RegisterGlobals();
 		}
+
+		/// <summary>
+		/// This method sets the default culture. 
+		/// </summary>
+		/// <param name="culture">The culture that will be the new default. </param>
+		// This method also exists in BaseLocaleTest.
+		private static void SetDefaultCulture(CultureInfo culture)
+		{
+			Thread.CurrentThread.CurrentCulture = culture;
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+		}
+
 
 		/// <summary>
 		/// A global variable pool for globally relevant constants (e.g. workspace path).
@@ -376,6 +499,14 @@ namespace Sigma.Core
 			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
 			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
 			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
+		}
+
+		/// <summary>
+		/// Loads the log4net configuration from the corresponding xml file. See log4net for more details.
+		/// </summary>
+		public static void EnableLogging()
+		{
+			XmlConfigurator.Configure();
 		}
 
 		/// <summary>

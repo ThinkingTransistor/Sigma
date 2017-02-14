@@ -1,27 +1,27 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
-using Sigma.Core.MathAbstract;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.MathAbstract;
 
 namespace Sigma.Tests.Data.Datasets
 {
-	public class TestDataset
+	public class TestDataset : BaseLocaleTest
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
@@ -84,7 +84,7 @@ namespace Sigma.Tests.Data.Datasets
 			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
 			CpuFloat32Handler handler = new CpuFloat32Handler();
 
-			Dictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler, false);
+			IDictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler, false);
 
 			Assert.AreEqual(new[] { 3.5f, 1.4f }, namedArrays["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));
 
@@ -132,9 +132,9 @@ namespace Sigma.Tests.Data.Datasets
 			//mock a free block request to freak out the dataset controller
 			dataset.FreeBlock(1, handler);
 
-			Dictionary<string, INDArray> namedArrays0 = await block0;
-			Dictionary<string, INDArray> namedArrays1 = await block1;
-			Dictionary<string, INDArray> namedArrays2 = await block2;
+			IDictionary<string, INDArray> namedArrays0 = await block0;
+			IDictionary<string, INDArray> namedArrays1 = await block1;
+			IDictionary<string, INDArray> namedArrays2 = await block2;
 
 			Assert.IsNotNull(namedArrays1);
 			Assert.AreEqual(new[] { 3.0f, 1.4f }, namedArrays1["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 2));

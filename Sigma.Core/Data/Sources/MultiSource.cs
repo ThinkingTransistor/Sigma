@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -26,7 +26,18 @@ namespace Sigma.Core.Data.Sources
 		/// </summary>
 		public IDataSource ActiveSource { get; private set; }
 
-		public string ResourceName => ActiveSource?.ResourceName;
+		public string ResourceName
+		{
+			get
+			{
+				if (ActiveSource == null)
+				{
+					throw new InvalidOperationException($"Cannot get resource name of multi source {this} because no underlying source was active.");
+				}
+
+				return ActiveSource?.ResourceName;
+			}
+		}
 
 		public bool Seekable => ActiveSource?.Seekable ?? false;
 
@@ -76,7 +87,7 @@ namespace Sigma.Core.Data.Sources
 				{
 					ActiveSource = source;
 
-					_logger.Info($"Found existing underlying source {source}, set as active source and forwarding its output.");
+					_logger.Debug($"Found existing underlying source {source}, set as active source and forwarding its output.");
 
 					break;
 				}

@@ -1,13 +1,14 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using System;
 
 namespace Sigma.Core.Handlers
 {
@@ -47,6 +48,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create an ndarray of a certain shape.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
 		/// <returns>An ndarray with the given shape.</returns>
@@ -54,6 +56,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create an ndarray of a certain shape with an initial set of values.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
 		/// <param name="values">The values to fill the ndarray with.</param>
@@ -62,6 +65,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Create a single value (i.e. number) with a certain initial value.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="value">The value to wrap in a single value wrapper.</param>
 		/// <returns>A single value wrapper with the given value for computation.</returns>
@@ -76,7 +80,23 @@ namespace Sigma.Core.Handlers
 		IDataBuffer<T> DataBuffer<T>(T[] values);
 
 		/// <summary>
+		/// Get a certain given number as an ndarray (with continuous tracing).
+		/// </summary>
+		/// <param name="number">The number-</param>
+		/// <returns>The number as an 1x1 ndarray.</returns>
+		INDArray AsNDArray(INumber number);
+
+		/// <summary>
+		/// Get a certain index of an ndarray as a number (with continuous tracing).
+		/// </summary>
+		/// <param name="array">The ndarray to get the number from.</param>
+		/// <param name="indices">The indices.</param>
+		/// <returns>The item in the given ndarray at the specified index as a number.</returns>
+		INumber AsNumber(INDArray array, params long[] indices);
+
+		/// <summary>
 		/// Merge a number of ndarrays of the same TF shape along the Batch dimension (BTF format).
+		///	This is not a traceable operation. 
 		/// </summary>
 		/// <param name="arrays">The ndarrays to merge (must be of same shape).</param>
 		/// <returns>The merged ndarray consisting of the given ndarrays contents.</returns>
@@ -92,6 +112,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Converts a certain ndarray from another handler to this handler's format and returns a COPY of its contents in this handler's format.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="array">The array for which a copy in this handler's format should be created.</param>
 		/// <param name="otherHandler">The other handler which created the array.</param>
@@ -100,6 +121,7 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Fill an ndarray with the contents of another ndarray.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="filler">The filler ndarray (from which the values will be copied).</param>
 		/// <param name="arrayToFill">The ndarray to fill.</param>
@@ -107,11 +129,63 @@ namespace Sigma.Core.Handlers
 
 		/// <summary>
 		/// Fill an ndarray with a single value.
+		/// This is not a traceable operation. 
 		/// </summary>
 		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="value">The value to set all elements of the ndarray to</param>
 		/// <param name="arrayToFill">The ndarray to fill.</param>
 		void Fill<TOther>(TOther value, INDArray arrayToFill);
+
+		#endregion
+
+		#region INDArray dimension management (BatchTimeFeatures)
+
+		/// <summary>
+		/// Get an ndarray with flattened time dimension.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenTime(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with flattened feature dimensions.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenFeatures(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with flattened time and feature dimensions.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenTimeAndFeatures(INDArray array);
+
+		/// <summary>
+		/// Get an ndarray with all flattened dimensions but the last.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A flattened version of the given ndarray.</returns>
+		INDArray FlattenAllButLast(INDArray array);
+
+		/// <summary>
+		/// Transform an ndarray row-wise to another type (may also be ndarray).
+		/// This is not required to be a traceable operation (and typically isn't).
+		/// Note: Traceability should be consistent independent of type of <see cref="TOther"/>.  
+		/// </summary>
+		/// <typeparam name="TOther">The other type.</typeparam>
+		/// <param name="array">The array to split row-wise and then transform.</param>
+		/// <param name="transformFunction">The transform function to transform each row with.</param>
+		/// <returns>An array of values as given by the transform function when applied to each row individually.</returns>
+		TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction);
+
+		/// <summary>
+		/// Apply a function along the second (column) dimension of an ndarray.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <param name="function">The function to apply.</param>
+		/// <returns>An ndarray with the given function applied column-wise to the given ndarray.</returns>
+		INDArray RowWise(INDArray array, Func<INDArray, INDArray> function);
 
 		#endregion
 
@@ -346,6 +420,17 @@ namespace Sigma.Core.Handlers
 		/// <returns>The result of the power of the number a to the constant b.</returns>
 		INumber Pow<TOther>(INumber a, TOther b);
 
+		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		INumber Activation(string activation, INumber number);
+
+
+		INDArray Activation(string activation, INDArray array);
+
 		#endregion
 
 		#region Primitive unary mathematical operations
@@ -379,11 +464,25 @@ namespace Sigma.Core.Handlers
 		INumber Max(INDArray array);
 
 		/// <summary>
+		/// The index of the maximum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The index of the maximum value of the given ndarray.</returns>
+		int MaxIndex(INDArray array);
+
+		/// <summary>
 		/// The minimum value of an ndarray. 
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The minimum value of the given ndarray.</returns>
 		INumber Min(INDArray array);
+
+		/// <summary>
+		/// The index of the minimum value of an ndarray. 
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The index of the minimum value of the given ndarray.</returns>
+		int MinIndex(INDArray array);
 
 		/// <summary>
 		/// The square root of an ndarray.
@@ -506,11 +605,25 @@ namespace Sigma.Core.Handlers
 		/// <returns></returns>
 		INumber Atan(INumber number);
 
-		#endregion
+		/// <summary>
+		/// Apply the tangent hyperbolic function to an ndarray element-wise. 
+		/// </summary>
+		/// <param name="array">The ndarray to apply the function to.</param>
+		/// <returns></returns>
+		INDArray Tanh(INDArray array);
+
+		/// <summary>
+		/// Apply the tangent hyperbolic function to a traceable number. 
+		/// </summary>
+		/// <param name="number">The traceable number to apply the function to.</param>
+		/// <returns></returns>
+		INumber Tanh(INumber number);
 
 		#endregion
 
-		#region Complex unary mathematical operations (e.g. activation functions)
+		#endregion
+
+		#region Complex mathematical operations (e.g. activation functions)
 
 		#region Activation functions
 
@@ -524,7 +637,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply the rectified linear function to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the rectified linear function applied.</returns>
 		INumber ReL(INumber number);
 
@@ -538,23 +651,30 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply the sigmoid to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the sigmoid applied.</returns>
 		INumber Sigmoid(INumber number);
 
 		/// <summary>
-		/// Apply the sigmoid function to an ndarray.
+		/// Apply the soft plus function to an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
-		/// <returns>The ndarray with the sigmoid function applied element-wise.</returns>
+		/// <returns>The ndarray with the soft plus function applied element-wise.</returns>
 		INDArray SoftPlus(INDArray array);
 
 		/// <summary>
 		/// Apply the soft plus function to a traceable number.
 		/// </summary>
-		/// <param name="array">The traceable number.</param>
+		/// <param name="number">The traceable number.</param>
 		/// <returns>The traceable number with the soft plus function applied.</returns>
 		INumber SoftPlus(INumber number);
+
+		/// <summary>
+		/// Apply the soft max function to an ndarray.
+		/// </summary>
+		/// <param name="array">The ndarray.</param>
+		/// <returns>The ndarray with the soft plus function applied element-wise.</returns>
+		INDArray SoftMax(INDArray array);
 
 		#endregion
 
@@ -571,6 +691,15 @@ namespace Sigma.Core.Handlers
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The variance of the given ndarray.</returns>
 		INumber Variance(INDArray array);
+
+		/// <summary>
+		/// Clip the contents of an ndarray to a certain range.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="minValue">The min value.</param>
+		/// <param name="maxValue">The max value.</param>
+		/// <returns>A clipped version of the given ndarray using the given range.</returns>
+		INDArray Clip(INDArray array, INumber minValue, INumber maxValue);
 
 		#endregion
 
@@ -595,9 +724,9 @@ namespace Sigma.Core.Handlers
 		/// Clear a traceable's (ndarray, number) trace.
 		/// </summary>
 		/// <typeparam name="TTraceable">The type of the traceable to trace.</typeparam>
-		/// <param name="traceableRoot">The traceable to clear.</param>
+		/// <param name="traceable">The traceable to clear.</param>
 		/// <returns>The cleared traceable without a trace.</returns>
-		TTraceable ClearTrace<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable;
+		TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
 
 		/// <summary>
 		/// Compute the derivatives (adjoints) with respect to a certain traceable member (ndarray, number), starting the evaluation tree at the given traceable. 
@@ -611,6 +740,38 @@ namespace Sigma.Core.Handlers
 		/// <param name="traceable">The traceable.</param>
 		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivativesTo"/> operation, or null if no derivatives were computed.</returns>
 		TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
+
+		#endregion
+
+		#region Debugging helpers
+
+		/// <summary>
+		/// Check if an ndarray contains any NaN values.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating if the given ndarray contains any NaN values.</returns>
+		bool IsNaN(INDArray array);
+
+		/// <summary>
+		/// Check if an ndarray contains any infinite values.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating if the given ndarray contains any infinite values.</returns>
+		bool IsNotFinite(INDArray array);
+
+		/// <summary>
+		/// Check if a number is NaN.
+		/// </summary>
+		/// <param name="number">The number.</param>
+		/// <returns>A boolean indicating if a number is NaN.</returns>
+		bool IsNaN(INumber number);
+
+		/// <summary>
+		/// Check if a number is infinite.
+		/// </summary>
+		/// <param name="number">The number.</param>
+		/// <returns>A boolean indicating if a number is infinite.</returns>
+		bool IsNotFinite(INumber number);
 
 		#endregion
 	}

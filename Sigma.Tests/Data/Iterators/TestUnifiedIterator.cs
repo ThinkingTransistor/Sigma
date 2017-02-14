@@ -1,11 +1,14 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Data.Datasets;
@@ -14,15 +17,12 @@ using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Data.Iterators
 {
-	public class TestUnifiedIterator
+	public class TestUnifiedIterator : BaseLocaleTest
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -47,8 +47,8 @@ namespace Sigma.Tests.Data.Iterators
 			string filename = ".unittestfile" + nameof(TestUnifiedIteratorYield);
 
 			CreateCsvTempFile(filename);
-
 			SigmaEnvironment.Clear();
+
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
@@ -59,7 +59,7 @@ namespace Sigma.Tests.Data.Iterators
 
 			foreach (var block in iterator.Yield(handler, sigma))
 			{
-				Assert.AreEqual(new float[] {5.1f, 4.9f, 4.7f}, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 3));
+				Assert.AreEqual(new[] { 5.1f, 4.9f, 4.7f }, block["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 3));
 			}
 
 			dataset.Dispose();

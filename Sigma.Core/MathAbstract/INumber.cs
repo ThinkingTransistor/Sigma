@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -19,5 +19,12 @@ namespace Sigma.Core.MathAbstract
 		/// The underlying value. 
 		/// </summary>
 		object Value { get; set; }
+
+		/// <summary>
+		/// Get the underlying value as another type.
+		/// </summary>
+		/// <typeparam name="TOther">The other type.</typeparam>
+		/// <returns>The value as the other type.</returns>
+		TOther GetValueAs<TOther>();
 	}
 }

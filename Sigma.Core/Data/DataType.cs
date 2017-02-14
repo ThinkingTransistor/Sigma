@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -48,7 +48,7 @@ namespace Sigma.Core.Data
 	/// <summary>
 	/// A collection of common data type constants and a common type registry, used by the internal data handling implementations.
 	/// </summary>
-	public class DataTypes
+	public static class DataTypes
 	{
 		private static readonly Dictionary<Type, IDataType> RegisteredTypes = new Dictionary<Type, IDataType>();
 		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -80,7 +80,7 @@ namespace Sigma.Core.Data
 			{
 				if (AllowExternalTypeOverwrites)
 				{
-					Logger.Info($"Overwrote internal system type {underlyingType} to now refer to {type} (this may not be what you wanted).");
+					Logger.Warn($"Overwrote internal system type {underlyingType} to now refer to {type} (this may not be what you wanted).");
 				}
 				else
 				{

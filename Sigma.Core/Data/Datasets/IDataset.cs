@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -138,7 +138,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="handler">The handler for which the block should be requested (specifies the block format).</param>
 		/// <param name="shouldWaitUntilAvailable">Indicate if this method should wait for the specified block to become available or return null if it is not immediately available when called.</param>
 		/// <returns>A block record representing the named blocks at the given block index in the format required by the given handler or null if shouldWaitUntilAvailable is set to false and the specified block is unavailable.</returns>
-		Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
+		IDictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
 
 		/// <summary>
 		/// Fetch a record block with a certain index for a certain computation handler asynchronously. 
@@ -151,7 +151,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="handler">The handler for which the block should be requested (specifies the block format).</param>
 		/// <param name="shouldWaitUntilAvailable">Indicate if this method should wait for the specified block to become available or return null if it is not immediately available when called.</param>
 		/// <returns>A block record representing the block at the given block index in the format required by the given handler or null if shouldWaitUntilAvailable is set to false and the specified block is unavailable.</returns>
-		Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
+		Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true);
 
 		/// <summary>
 		/// Frees a record block with a certain index associated with the given handler.

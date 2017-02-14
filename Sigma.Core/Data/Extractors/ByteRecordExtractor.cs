@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -60,7 +60,7 @@ namespace Sigma.Core.Data.Extractors
 
 			int numberOfRecordsToExtract = Math.Min(rawRecords.Length, numberOfRecords);
 
-			_logger.Info($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
+			_logger.Debug($"Extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords})...");
 
 			Dictionary<string, INDArray> namedArrays = new Dictionary<string, INDArray>();
 
@@ -127,7 +127,7 @@ namespace Sigma.Core.Data.Extractors
 				namedArrays.Add(name, array);
 			}
 
-			_logger.Info($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
+			_logger.Debug($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
 		}

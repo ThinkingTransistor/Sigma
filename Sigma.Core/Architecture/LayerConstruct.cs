@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -59,6 +59,18 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		public string[] ExternalOutputs { get; internal set; }
 
+		/// <summary>
+		/// Update parameters of this construct before instantiation. 
+		/// Used for parameters influenced by surrounding constructs which cannot be known at initial creation of LayerConstruct.
+		/// </summary>
+		public event EventHandler<LayerConstructEventArgs> UpdateBeforeInstantiationEvent;
+
+		/// <summary>
+		/// Validate parameters of this construct.
+		/// Used for parameters influenced by surrounding constructs which cannot be known at initial creation of LayerConstruct.
+		/// </summary>
+		public event EventHandler<LayerConstructEventArgs> ValidateEvent;
+
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Type _layerInterfaceType = typeof(ILayer);
@@ -112,16 +124,25 @@ namespace Sigma.Core.Architecture
 		{
 			LayerConstruct copy = new LayerConstruct(Name, _layerClassType)
 			{
-				Parameters = Parameters,
+				Parameters = (IRegistry) Parameters.DeepCopy(),
 				ExternalInputs = (string[]) ExternalInputs.Clone(),
 				ExternalOutputs = (string[]) ExternalOutputs.Clone(),
+				UpdateBeforeInstantiationEvent = UpdateBeforeInstantiationEvent,
+				ValidateEvent = ValidateEvent
 			};
 
 			return copy;
 		}
 
+		public virtual void Validate()
+		{
+			ValidateEvent?.Invoke(this, new LayerConstructEventArgs(this));
+		}
+
 		public virtual ILayer InstantiateLayer(IComputationHandler handler)
 		{
+			UpdateBeforeInstantiationEvent?.Invoke(this, new LayerConstructEventArgs(this));
+
 			try
 			{
 				return (ILayer) Activator.CreateInstance(_layerClassType, Name, Parameters, handler);
@@ -190,6 +211,16 @@ namespace Sigma.Core.Architecture
 			}
 
 			return multiplier * new LinearNetworkArchitecture(self);
+		}
+	}
+
+	public class LayerConstructEventArgs : EventArgs
+	{
+		public readonly LayerConstruct Self;
+
+		internal LayerConstructEventArgs(LayerConstruct self)
+		{
+			Self = self;
 		}
 	}
 }

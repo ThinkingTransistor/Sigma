@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using Sigma.Core.Handlers;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp
@@ -34,6 +42,16 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 		{
 			get { return _value; }
 			set { SetValue((T) Convert.ChangeType(value, typeof(T))); }
+		}
+
+		/// <summary>
+		/// Get the underlying value as another type.
+		/// </summary>
+		/// <typeparam name="TOther">The other type.</typeparam>
+		/// <returns>The value as the other type.</returns>
+		public TOther GetValueAs<TOther>()
+		{
+			return (TOther) System.Convert.ChangeType(_value, typeof(TOther));
 		}
 
 		internal virtual void SetValue(T value)

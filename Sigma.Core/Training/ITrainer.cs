@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -14,6 +14,9 @@ using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Optimisers;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
@@ -24,7 +27,7 @@ namespace Sigma.Core.Training
 	public interface ITrainer
 	{
 		/// <summary>
-		/// The unique name of this trainer. 
+		/// The unique name of this trainer.
 		/// </summary>
 		string Name { get; }
 
@@ -45,7 +48,7 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 
 		/// <summary>
-		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum).
+		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum - one instance per trainer).
 		/// </summary>
 		IOptimiser Optimiser { get; set; }
 
@@ -53,6 +56,11 @@ namespace Sigma.Core.Training
 		/// The operator which controls the training process and effectively operates this trainer at runtime. 
 		/// </summary>
 		IOperator Operator { get; set; }
+
+		/// <summary>
+		/// The data provider which links external input and outputs.
+		/// </summary>
+		IDataProvider DataProvider { get; set; }
 
 		/// <summary>
 		/// The primary training data iterator, used to yield training data for the network to train on.
@@ -70,14 +78,14 @@ namespace Sigma.Core.Training
 		IReadOnlyCollection<IHook> Hooks { get; }
 
 		/// <summary>
-		/// The active hooks attached to this trainer.
+		/// The global hooks attached to this trainer.
 		/// </summary>
-		IReadOnlyCollection<IPassiveHook> PassiveHooks { get; }
+		IReadOnlyCollection<IHook> GlobalHooks { get; }
 
 		/// <summary>
-		/// The passive hooks attached to this trainer.
+		/// The local hooks attached to this trainer.
 		/// </summary>
-		IReadOnlyCollection<IActiveHook> ActiveHooks { get; }
+		IReadOnlyCollection<IHook> LocalHooks { get; }
 
 		/// <summary>
 		/// A registry containing all relevant sub-registries (e.g. network, layers, operator).
@@ -101,21 +109,57 @@ namespace Sigma.Core.Training
 		void AddNamedDataIterator(string name, IDataIterator iterator);
 
 		/// <summary>
-		/// Add an active hook to this trainer, which will be executed during runtime directly in the operator. 
+		/// Add a hook to this trainer and attempt to implicitly add it where its <see cref="TargetMode"/> wants it.
+		/// Note:   This is the implicit version of the explicit <see cref="AddLocalHook"/> and <see cref="AddGlobalHook"/>.
+		///			Adding a hook implicitly only works if the hook is not marked with <see cref="TargetMode.Any"/>.
 		/// </summary>
-		/// <param name="hook">The active hook to add to this trainer.</param>
-		void AddActiveHook(IActiveHook hook);
+		/// <param name="hook">The hook to implicitly add to this trainer.</param>
+		void AddHook(IHook hook);
 
 		/// <summary>
-		/// Add a passive hook to this trainer, which will be executed asynchronously or in the owning monitor.
+		/// Add an global hook to this trainer, which will be executed during runtime directly in each worker. 
 		/// </summary>
-		/// <param name="hook">The passive hook to add to this trainer.</param>
-		void AddPassiveHook(IPassiveHook hook);
+		/// <param name="hook">The global hook to add to this trainer.</param>
+		void AddGlobalHook(IHook hook);
+
+		/// <summary>
+		/// Add a local hook to this trainer, which will be executed asynchronously or in the owning monitor.
+		/// </summary>
+		/// <param name="hook">The local hook to add to this trainer.</param>
+		void AddLocalHook(IHook hook);
 
 		/// <summary>
 		/// Initialise this trainer and the network to be trained using the set initialisers. Set up all handlers and constructs used to run the trainer. 
 		/// </summary>
 		/// <param name="handler">The computation handler to initialise for (must be the interchangeable with the one used for running the network).</param>
 		void Initialise(IComputationHandler handler);
+
+		/// <summary>
+		/// Start the trainer in the current configuration (e.g. using the set network, operator, optimiser, hooks).
+		/// </summary>
+		void Start();
+
+		/// <summary>
+		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).
+		/// Note: The network's external data inputs and outputs must already be linked and supplied. 
+		/// </summary>
+		/// <param name="localNetwork">The network to train.</param>
+		/// <param name="localOptimiser">The local optimiser to use.</param>
+		/// <param name="handler">The computation handler to use.</param>
+		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler);
+
+		/// <summary>
+		/// Provide the external data to a network given the current record block (typically as given by the training data iterator).
+		/// </summary>
+		/// <param name="localNetwork">The network to provide the data with.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		void ProvideExternalInputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
+
+		/// <summary>
+		/// Provide the external output data from network to the data provider.
+		/// </summary>
+		/// <param name="localNetwork">The network to get the data from.</param>
+		/// <param name="currentBlock">The current record block.</param>
+		void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock);
 	}
 }

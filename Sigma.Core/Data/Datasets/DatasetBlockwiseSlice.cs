@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -138,12 +138,12 @@ namespace Sigma.Core.Data.Datasets
 			return UnderlyingDataset.CanFetchBlocksAfter(MapToUnderlyingIndex(blockIndex));
 		}
 
-		public Dictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public IDictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			return UnderlyingDataset.FetchBlock(MapToUnderlyingIndex(blockIndex), handler, shouldWaitUntilAvailable);
 		}
 
-		public Task<Dictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+		public Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
 		{
 			return UnderlyingDataset.FetchBlockAsync(MapToUnderlyingIndex(blockIndex), handler, shouldWaitUntilAvailable);
 		}

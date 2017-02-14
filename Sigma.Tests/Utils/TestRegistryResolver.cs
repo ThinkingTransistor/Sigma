@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -29,8 +29,8 @@ namespace Sigma.Tests.Utils
 			trainer1["accuracy"] = 0.0f;
 			trainer2["accuracy"] = 0.0f;
 
-			resolver.ResolveSet("trainer1.accuracy", 1.0f, typeof(float));
-			resolver.ResolveSet("trainer2.accuracy", 2.0f, typeof(float));
+			resolver.ResolveSet("trainer1.accuracy", 1.0f, false, typeof(float));
+			resolver.ResolveSet("trainer2.accuracy", 2.0f, false, typeof(float));
 
 			Assert.AreEqual(1.0f, resolver.ResolveGet<float>("trainer1.accuracy")[0]);
 			Assert.AreEqual(2.0f, resolver.ResolveGet<float>("trainer2.accuracy")[0]);
@@ -63,9 +63,9 @@ namespace Sigma.Tests.Utils
 			trainer1["accuracy"] = 0.0f;
 			trainer2["accuracy"] = 0.0f;
 
-			resolver.ResolveSet("trainer*.accuracy", 1.0f, typeof(float));
+			resolver.ResolveSet("trainer*.accuracy", 1.0f, false, typeof(float));
 
-			resolver.ResolveSet("*<trainer>.*<architecture>.complexity", 9, typeof(int));
+			resolver.ResolveSet("*<trainer>.*<architecture>.complexity", 9, false, typeof(int));
 
 			string[] resolved = null;
 
@@ -105,7 +105,7 @@ namespace Sigma.Tests.Utils
 			trainer1["architecture"] = differentTrainer1Architecture;
 			differentTrainer1Architecture["complexity"] = 5;
 
-			resolver.ResolveSet("*.architecture.complexity", 11, typeof(int));
+			resolver.ResolveSet("*.architecture.complexity", 11, false, typeof(int));
 
 			Assert.AreEqual(new[] { 11, 11 }, resolver.ResolveGet<int>("*.architecture.complexity"));
 		}

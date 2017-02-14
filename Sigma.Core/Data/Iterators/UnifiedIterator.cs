@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -24,7 +24,7 @@ namespace Sigma.Core.Data.Iterators
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Dictionary<string, INDArray> _unifiedBlock;
+		private IDictionary<string, INDArray> _unifiedBlock;
 
 		/// <summary>
 		/// Create an unified data iterator for a certain dataset.
@@ -34,23 +34,34 @@ namespace Sigma.Core.Data.Iterators
 		{
 		}
 
+		/// <summary>
+		/// Create a shallow copy of this data iterator (copy relevant properties, keep dataset).
+		/// Typically used to provide workers with independent sets of data iterators for the same underlying data.
+		/// </summary>
+		/// <returns>A shallow copy of this data iterator.</returns>
+		public override IDataIterator ShallowCopy()
+		{
+			return new UnifiedIterator(dataset: UnderlyingDataset);
+		}
+
 		public override IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment)
 		{
 			CheckNotNull(handler, environment);
 
+			// TODO populate registry with relevant parameters
 			if (_unifiedBlock == null)
 			{
-				_logger.Info("First time yielding from this iterator, fetching and unifying all blocks from dataset...");
+				_logger.Debug($"First time yielding from iterator {this}, fetching and unifying all blocks from dataset...");
 
 				_unifiedBlock = FetchAndMergeFromDataset(handler);
 			}
 
-			_logger.Info($"Yielding unified block for handler {handler} consisting of {_unifiedBlock.First().Value.Shape[0]} records.");
+			_logger.Debug($"Yielding unified block for handler {handler} consisting of {_unifiedBlock.First().Value.Shape[0]} records.");
 
 			yield return _unifiedBlock;
 		}
 
-		private Dictionary<string, INDArray> FetchAndMergeFromDataset(IComputationHandler handler)
+		private IDictionary<string, INDArray> FetchAndMergeFromDataset(IComputationHandler handler)
 		{
 			Dictionary<string, INDArray> unifiedBlock = new Dictionary<string, INDArray>();
 
@@ -59,7 +70,7 @@ namespace Sigma.Core.Data.Iterators
 			int currentBlockIndex = 0;
 			while (true)
 			{
-				Dictionary<string, INDArray> currentBlock = UnderlyingDataset.FetchBlock(currentBlockIndex, handler);
+				IDictionary<string, INDArray> currentBlock = UnderlyingDataset.FetchBlock(currentBlockIndex, handler);
 
 				if (currentBlock != null)
 				{

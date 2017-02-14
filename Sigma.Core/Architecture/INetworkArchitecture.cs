@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -14,7 +14,7 @@ namespace Sigma.Core.Architecture
 	/// <summary>
 	/// A network architecture from which an actual network can be constructed.
 	/// </summary>
-	public interface INetworkArchitecture
+	public interface INetworkArchitecture : IDeepCopyable
 	{
 		/// <summary>
 		/// The total number of layers in this architecture.

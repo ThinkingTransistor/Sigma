@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -78,6 +78,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.GetValues(int startIndex, int length)
 		{
 			return (ISigmaDiffDataBuffer<T>) GetValues(startIndex, length);
+		}
+
+		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		{
+			int newSize = (rowFinish - rowStart + 1) * (colFinish - colStart + 1);
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
+			int colLength = colFinish - colStart + 1;
+
+			for (int m = rowStart; m <= rowFinish; m++)
+			{
+				long sourceIndex = Offset + m * totalCols + colStart;
+				long destinationIndex = m * (totalCols - 1 - colStart - colFinish) + colStart;
+
+				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
+			}
+
+			return values;
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()

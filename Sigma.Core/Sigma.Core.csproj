@@ -89,8 +89,8 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=2.0.7.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.7\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ManagedCuda, Version=8.0.13.0, Culture=neutral, PublicKeyToken=242d898828717aa0, processorArchitecture=MSIL">
@@ -142,6 +142,7 @@
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
@@ -151,6 +152,9 @@
     <Compile Include="Data\Sources\MultiSource.cs" />
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
+    <Compile Include="Handlers\ActivationManager.cs" />
+    <Compile Include="Handlers\Backends\Debugging\DebugHandler.cs" />
+    <Compile Include="Handlers\Backends\Debugging\DebugReportException.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpBackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
@@ -163,12 +167,17 @@
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
     <Compile Include="Layers\BaseLayer.cs" />
+    <Compile Include="Layers\Cost\BaseCostLayer.cs" />
+    <Compile Include="Layers\Cost\SoftMaxCrossEntropyCostLayer.cs" />
+    <Compile Include="Layers\Cost\SquaredDifferenceCostLayer.cs" />
     <Compile Include="Layers\Feedforward\ElementwiseLayer.cs" />
+    <Compile Include="Layers\Feedforward\FullyConnectedLayer.cs" />
     <Compile Include="Layers\ILayer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32Handler.cs" />
-    <Compile Include="Layers\OutputLayer.cs" />
-    <Compile Include="Layers\InputLayer.cs" />
+    <Compile Include="Layers\External\OutputLayer.cs" />
+    <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
     <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
@@ -182,22 +191,45 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />
+    <Compile Include="Training\Hooks\BaseHook.cs" />
+    <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
+    <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\TargetMode.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Mergers\AverageNetworkMerger.cs" />
+    <Compile Include="Training\Mergers\BaseNetworkMerger.cs" />
+    <Compile Include="Training\Mergers\INetworkMerger.cs" />
+    <Compile Include="Training\Mergers\WeightedNetworkMerger.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
+    <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
+    <Compile Include="Training\Operators\ExecutionState.cs" />
+    <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
+    <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Providers\DefaultDataProvider.cs" />
+    <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
+    <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
+    <Compile Include="Utils\HookUtils.cs" />
     <Compile Include="Utils\ICacheProvider.cs" />
     <Compile Include="Utils\IDeepCopyable.cs" />
     <Compile Include="Training\Hooks\IHook.cs" />
+    <Compile Include="Utils\IEnumerableExtensions.cs" />
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
@@ -208,14 +240,19 @@
     <Compile Include="Utils\Registry.cs" />
     <Compile Include="Utils\RegistryResolver.cs" />
     <Compile Include="Utils\ITaskManager.cs" />
+    <Compile Include="Utils\ThreadUtils.cs" />
     <Compile Include="Utils\TimeStep.cs" />
+    <Compile Include="Utils\WeakList.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Layers\Convolutional\" />
+    <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
-    <Folder Include="Training\Operators\Backends\NativeCpu\Workers\" />
+    <Folder Include="Training\Hooks\Modifiers\" />
+    <Folder Include="Training\Hooks\Saviors\" />
+    <Folder Include="Training\Hooks\Stoppers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

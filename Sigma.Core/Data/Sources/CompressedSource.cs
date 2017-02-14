@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using log4net;
 using System;
 using System.IO;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Sources
 {
@@ -111,6 +112,8 @@ namespace Sigma.Core.Data.Sources
 
 				Stream sourceStream = UnderlyingSource.Retrieve();
 
+				ITaskObserver task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Unpack, $"unpacking from {UnderlyingSource} to {_localUnpackPath}");
+
 				_logger.Info($"Unpacking source stream using unpacker {Unpacker} to local unpack path \"{_localUnpackPath}\"...");
 
 				Stream unpackedStream = Unpacker.Unpack(sourceStream);
@@ -122,6 +125,8 @@ namespace Sigma.Core.Data.Sources
 				_logger.Info($"Done unpacking source stream using unpacker {Unpacker} to local unpack path \"{_localUnpackPath}\" (unpacked size {decompressedFileStream.Length / 1024L}kB).");
 
 				decompressedFileStream.Close();
+
+				SigmaEnvironment.TaskManager.EndTask(task);
 
 				_fileStream = new FileStream(_localUnpackPath, FileMode.Open);
 

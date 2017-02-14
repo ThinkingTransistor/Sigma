@@ -1,20 +1,21 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using DiffSharp;
 using DiffSharp.Config;
 using DiffSharp.Interop.Float32;
 using log4net;
+using Microsoft.FSharp.Core;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
@@ -83,10 +84,108 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract INDArray NDArray<TOther>(TOther[] values, params long[] shape);
 		public abstract INumber Number(object value);
 		public abstract IDataBuffer<T> DataBuffer<T>(T[] values);
+		public abstract INDArray AsNDArray(INumber number);
+		public abstract INumber AsNumber(INDArray array, params long[] indices);
 		public abstract bool CanConvert(INDArray array, IComputationHandler otherHandler);
 		public abstract INDArray Convert(INDArray array, IComputationHandler otherHandler);
 		public abstract void Fill(INDArray filler, INDArray arrayToFill);
 		public abstract void Fill<TOther>(TOther value, INDArray arrayToFill);
+
+		protected ADNDFloat32Array ConvertInternal(INDArray array)
+		{
+			return new ADNDFloat32Array(_backendTag, array.GetDataAs<float>(), array.Shape);
+		}
+
+		public INDArray FlattenFeatures(INDArray array)
+		{
+			return array.Reshape(array.Shape[0], array.Shape[1], ArrayUtils.Product(2, array.Shape));
+		}
+
+		public INDArray FlattenTime(INDArray array)
+		{
+			long[] newShape = new long[array.Shape.Length - 1];
+			newShape[0] = checked(array.Shape[0] * array.Shape[1]);
+
+			for (var i = 0; i < newShape.Length; i++)
+			{
+				newShape[i] = array.Shape[i + 1];
+			}
+
+			return array.Reshape(newShape);
+		}
+
+		public INDArray FlattenTimeAndFeatures(INDArray array)
+		{
+			return array.Reshape(array.Shape[0], ArrayUtils.Product(1, array.Shape));
+		}
+
+		public INDArray FlattenAllButLast(INDArray array)
+		{
+			return array.Reshape(ArrayUtils.Product(0, array.Rank - 1, array.Shape), array.Shape[array.Rank - 1]);
+		}
+
+		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			INDArray[] rows = SliceRowWise(array, internalArray);
+			TOther[] transformedRows = new TOther[rows.Length];
+
+			for (int i = 0; i < rows.Length; i++)
+			{
+				transformedRows[i] = transformFunction.Invoke(rows[i]);
+			}
+
+			return transformedRows;
+		}
+
+		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
+		{
+			// no need to slice if there's only one row
+			if (array.Shape[0] == 1)
+			{
+				return function.Invoke(array);
+			}
+
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			INDArray[] rows = SliceRowWise(array, internalArray);
+
+			for (int i = 0; i < rows.Length; i++)
+			{
+				rows[i] = function.Invoke(rows[i]);
+			}
+
+			DNDArray[] internalRowHandles = new DNDArray[rows.Length];
+			for (int i = 0; i < rows.Length; i++)
+			{
+				internalRowHandles[i] = InternaliseArray(rows[i])._adArrayHandle;
+			}
+
+			return new ADNDFloat32Array(new DNDArray(DNDArray.OfRows(internalRowHandles, DiffsharpBackendHandle)));
+		}
+
+		private static INDArray[] SliceRowWise(INDArray array, ADNDFloat32Array internalArray)
+		{
+			// no need to slice if there's only one row
+			if (array.Shape[0] == 1)
+			{
+				return new[] { array };
+			}
+
+			INDArray[] rows = new INDArray[array.Shape[0]];
+
+			var colStart = FSharpOption<int>.Some(0);
+			var colFinish = FSharpOption<int>.Some(checked((int) array.Shape[1] - 1));
+
+			for (var i = 0; i < rows.Length; i++)
+			{
+				var row = FSharpOption<int>.Some(i);
+
+				rows[i] = new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(row, row, colStart, colFinish));
+			}
+
+			return rows;
+		}
 
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
@@ -340,11 +439,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MaxIndex(internalArray._adArrayHandle))));
 		}
 
+		public int MaxIndex(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return DNDArray.MaxIndex(internalArray._adArrayHandle);
+		}
+
 		public INumber Min(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MinIndex(internalArray._adArrayHandle))));
+		}
+
+		public int MinIndex(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return DNDArray.MinIndex(internalArray._adArrayHandle);
 		}
 
 		public INDArray Sqrt(INDArray array)
@@ -508,6 +621,37 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADFloat32Number(DNumber.SoftPlus(internalValue._adNumberHandle));
 		}
 
+		public INDArray SoftMax(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.SoftMax(internalArray._adArrayHandle));
+		}
+
+		public INDArray Tanh(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			return new ADNDFloat32Array(DNDArray.Tanh(internalArray._adArrayHandle));
+		}
+
+		public INumber Tanh(INumber number)
+		{
+			ADFloat32Number internalValue = InternaliseNumber(number);
+
+			return new ADFloat32Number(DNumber.Tanh(internalValue._adNumberHandle));
+		}
+
+		public INumber Activation(string activation, INumber number)
+		{
+			return ActivationManager.ApplyActivation(activation, number, this);
+		}
+
+		public INDArray Activation(string activation, INDArray array)
+		{
+			return ActivationManager.ApplyActivation(activation, array, this);
+		}
+
 		public INumber StandardDeviation(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -520,6 +664,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.Variance(internalArray._adArrayHandle));
+		}
+
+		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
+		{
+			throw new NotImplementedException($"Clipping is currently not supported in this handler ({this}).");
+
+			/*
+						ADNDFloat32Array internalArray = InternaliseArray(array);
+						ADFloat32Number internalMinValue = InternaliseNumber(minValue);
+						ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
+
+						DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
+
+						DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
+
+						return new ADNDFloat32Array(clipped);
+			*/
 		}
 
 		public uint BeginTrace()
@@ -547,23 +708,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		public TTraceable ClearTrace<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable
+		public TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
-			if (traceableRoot is ADFloat32Number)
+			if (traceable is ADFloat32Number)
 			{
-				ADFloat32Number internalNumber = traceableRoot as ADFloat32Number;
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
 
 				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.P));
 			}
-			else if (traceableRoot is ADNDFloat32Array)
+			else if (traceable is ADNDFloat32Array)
 			{
-				ADNDFloat32Array internalArray = traceableRoot as ADNDFloat32Array;
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
 
 				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.P));
 			}
 			else
 			{
-				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceableRoot} not compatible with this handler).");
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
 			}
 		}
 
@@ -634,6 +795,54 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			return merged;
+		}
+
+		public bool IsNaN(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+
+			for (int i = begin; i < end; i++)
+			{
+				if (float.IsNaN(data[i]))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsNotFinite(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+
+			for (int i = begin; i < end; i++)
+			{
+				if (float.IsInfinity(data[i]))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsNaN(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return float.IsNaN(internalNumber._adNumberHandle.Value);
+		}
+
+		public bool IsNotFinite(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return float.IsInfinity(internalNumber._adNumberHandle.Value);
 		}
 
 		static DiffSharpFloat32Handler()

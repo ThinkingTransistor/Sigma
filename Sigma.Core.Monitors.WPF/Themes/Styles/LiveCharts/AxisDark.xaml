@@ -1,12 +1,28 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-					xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf">
 
 	<Style TargetType="lvc:Axis">
 		<Setter Property="Foreground" Value="{StaticResource PrimaryHueDarkForegroundBrush}" />
 	</Style>
-	
-	<!--<Style TargetType="lvc:Separator">
-		<Setter Property="Stroke" Value="Red"></Setter>
-	</Style>-->
+
+	<Style TargetType="lvc:Separator">
+		<Setter Property="StrokeThickness" Value="1.3"/>
+		
+		<Setter Property="StrokeDashArray">
+			<Setter.Value>
+				<DoubleCollection>5</DoubleCollection>
+			</Setter.Value>
+		</Setter>
+		
+		<Setter Property="Stroke" Value="DarkGray"/>
+		
+		<!-- Trigger disables X-axis -->
+		<Style.Triggers>
+			<Trigger Property="AxisOrientation" Value="X">
+				<Setter Property="IsEnabled" Value="False"/>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+
 </ResourceDictionary>

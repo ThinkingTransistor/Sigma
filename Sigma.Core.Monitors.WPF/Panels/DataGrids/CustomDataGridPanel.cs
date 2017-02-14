@@ -1,3 +1,11 @@
+/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,20 +32,31 @@ namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 		{
 			AddColumn(header3, type3, propertyName3);
 
-			if (columns.Length%3 != 0) throw new ArgumentException(nameof(columns));
+			if (columns.Length%3 != 0)
+			{
+				throw new ArgumentException(nameof(columns));
+			}
 
 			for (int i = 0; i < columns.Length; i++)
+			{
 				AddColumn(columns[i], (Type) columns[++i], (string) columns[++i]);
+			}
 		}
 
 		public bool AddColumn(object header, Type type, string propertyName)
 		{
 			if ((type == typeof(string)) || (type == typeof(Label)))
+			{
 				AddTextColumn(header, propertyName);
+			}
 			else if (type == typeof(Image))
+			{
 				AddImageColumn(header, propertyName);
+			}
 			else
+			{
 				return false;
+			}
 
 			return true;
 		}

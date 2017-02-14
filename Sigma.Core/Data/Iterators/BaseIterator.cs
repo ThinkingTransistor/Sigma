@@ -1,7 +1,7 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
@@ -13,6 +13,7 @@ using Sigma.Core.MathAbstract;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Iterators
 {
@@ -26,13 +27,18 @@ namespace Sigma.Core.Data.Iterators
 		/// </summary>
 		public IDataset UnderlyingDataset { get; }
 
+		/// <summary>
+		/// A registry containing relevant parameters of this data iterator.
+		/// </summary>
+		public IRegistry Registry { get; }
+
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The completely fetched blocks by block index.
 		/// </summary>
-		protected readonly Dictionary<int, Dictionary<string, INDArray>> _fetchedBlocks;
-		private readonly Dictionary<int, Task<Dictionary<string, INDArray>>> _pendingFetchBlockTasks;
+		protected readonly Dictionary<int, IDictionary<string, INDArray>> _fetchedBlocks;
+		private readonly Dictionary<int, Task<IDictionary<string, INDArray>>> _pendingFetchBlockTasks;
 
 		/// <summary>
 		/// Create a base iterator for a certain dataset.
@@ -46,12 +52,14 @@ namespace Sigma.Core.Data.Iterators
 			}
 
 			UnderlyingDataset = dataset;
+			Registry = new Registry(tags: "iterator");
 
-			_fetchedBlocks = new Dictionary<int, Dictionary<string, INDArray>>();
-			_pendingFetchBlockTasks = new Dictionary<int, Task<Dictionary<string, INDArray>>>();
+			_fetchedBlocks = new Dictionary<int, IDictionary<string, INDArray>>();
+			_pendingFetchBlockTasks = new Dictionary<int, Task<IDictionary<string, INDArray>>>();
 		}
 
 		public abstract IEnumerable<IDictionary<string, INDArray>> Yield(IComputationHandler handler, SigmaEnvironment environment);
+		public abstract IDataIterator ShallowCopy();
 
 		protected void CheckNotNull(IComputationHandler handler, SigmaEnvironment environment)
 		{
@@ -66,6 +74,23 @@ namespace Sigma.Core.Data.Iterators
 			}
 		}
 
+		protected void FreeBlocks(IComputationHandler handler, params int[] indices)
+		{
+			foreach (int index in indices)
+			{
+				if (!_fetchedBlocks.ContainsKey(index))
+				{
+					continue;
+				}
+
+				var block = _fetchedBlocks[index];
+
+				UnderlyingDataset.FreeBlock(index, handler);
+
+				_fetchedBlocks.Remove(index);
+			}
+		}
+
 		protected void RequireBlocks(IComputationHandler handler, params int[] indices)
 		{
 			foreach (int index in indices)
@@ -77,25 +102,25 @@ namespace Sigma.Core.Data.Iterators
 
 				if (_pendingFetchBlockTasks.ContainsKey(index))
 				{
-					_logger.Info($"Waiting for already running asynchronous block fetch for index {index} to complete as it is now required...");
+					_logger.Debug($"Waiting for already running asynchronous block fetch for index {index} to complete as it is now required...");
 
 					_pendingFetchBlockTasks[index].Wait();
 
-					Dictionary<string, INDArray> block = _pendingFetchBlockTasks[index].Result;
+					IDictionary<string, INDArray> block = _pendingFetchBlockTasks[index].Result;
 
 					_pendingFetchBlockTasks.Remove(index);
 
 					_fetchedBlocks.Add(index, block);
 
-					_logger.Info($"Done waiting for asynchronous block fetch for index {index} to complete, fetch completed.");
+					_logger.Debug($"Done waiting for asynchronous block fetch for index {index} to complete, fetch completed.");
 				}
 				else
 				{
-					_logger.Info($"Fetching required block with index {index}...");
+					_logger.Debug($"Fetching required block with index {index}...");
 
 					_fetchedBlocks.Add(index, UnderlyingDataset.FetchBlock(index, handler));
 
-					_logger.Info($"Done fetching required block with index {index}.");
+					_logger.Debug($"Done fetching required block with index {index}.");
 				}
 			}
 		}
@@ -104,16 +129,26 @@ namespace Sigma.Core.Data.Iterators
 		{
 			foreach (int index in indices)
 			{
-				_pendingFetchBlockTasks.Add(index, Task.Run(() =>
+				if (!_pendingFetchBlockTasks.ContainsKey(index) && !_fetchedBlocks.ContainsKey(index))
 				{
-					_logger.Info($"Started asynchronous background preparation of block with index {index}.");
+					_pendingFetchBlockTasks.Add(index, Task.Run(() =>
+					{
+						_logger.Debug($"Started asynchronous background preparation of block with index {index}.");
 
-					var block = UnderlyingDataset.FetchBlock(index, handler);
+						var block = UnderlyingDataset.FetchBlock(index, handler);
 
-					_logger.Info($"Done with asynchronous background preparation of block with index {index}.");
+						if (block == null)
+						{
+							_logger.Debug($"Unable to asynchronously prepare block with index {index}, block appears to be empty (null).");
+						}
+						else
+						{
+							_logger.Debug($"Done with asynchronous background preparation of block with index {index}.");
+						}
 
-					return block;
-				}));
+						return block;
+					}));
+				}
 			}
 		}
 	}

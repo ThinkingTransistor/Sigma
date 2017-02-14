@@ -1,17 +1,18 @@
 ﻿/* 
 MIT License
 
-Copyright (c) 2016 Florian Cäsar, Michael Plainer
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 {
@@ -135,13 +136,6 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 		private void Initialise(long[] shape, long[] strides)
 		{
-			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
-			if (shape.Length == 1 && shape[0] > 1)
-			{
-				shape = new[] { 1, shape[0] };
-				strides = NDArrayUtils.GetStrides(shape);
-			}
-
 			Shape = shape;
 			Strides = strides;
 			Length = ArrayUtils.Product(shape);
@@ -173,7 +167,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 			Data.SetValue((T) Convert.ChangeType(value, Data.Type.UnderlyingType), NDArrayUtils.GetFlatIndex(Shape, Strides, indices));
 		}
 
-		public INDArray Slice(long[] beginIndices, long[] endIndices)
+		protected long[] GetSlicedShape(long[] beginIndices, long[] endIndices)
 		{
 			if (beginIndices.Length != endIndices.Length)
 			{
@@ -190,10 +184,17 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 				{
 					throw new ArgumentException($"Begin indices must be smaller than end indices, but begin indices at [{i}] was {beginIndices[i]} and end indices at [{i}] {endIndices[i]}");
 				}
-
-				//we want the end indices to be inclusive for easier handling
-				endIndices[i]--;
 			}
+
+			return slicedShape;
+		}
+
+		public virtual INDArray Slice(long[] beginIndices, long[] endIndices)
+		{
+			long[] slicedShape = GetSlicedShape(beginIndices, endIndices);
+
+			//we want the end indices to be inclusive for easier handling
+			endIndices = endIndices.Select(i => i - 1).ToArray();
 
 			long absoluteBeginOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, beginIndices);
 			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);

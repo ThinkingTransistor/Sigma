@@ -1,9 +1,19 @@
+/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using log4net;
+using MaterialDesignThemes.Wpf;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
@@ -14,22 +24,47 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 {
 	public class TitleBarFactory : IUIFactory<TitleBarControl>
 	{
-		public Thickness Margin { get; }
-		public Thickness Padding { get; }
+		public const string RegistryIdentifier = "titlebar_registry";
+
+		public const string AboutFactoryIdentifier = "about_factory";
 
 		public readonly List<Func<Application, Window, TitleBarItem>> TitleBarFuncs;
 
-		public TitleBarFactory() : this(new Thickness(0), new Thickness(0))
+		/// <summary>
+		/// The <see cref="IRegistry"/> where all required factories are contained. 
+		/// </summary>
+		public IRegistry Registry { get; set; }
+
+		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0))
 		{
 		}
 
-		public TitleBarFactory(Thickness margin, Thickness padding)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parentRegistry">The parent registry. If it not already contains a registry with the key <see cref="RegistryIdentifier"/>,
+		/// a new <see cref="IRegistry"/> will be created and added to the given registry. </param>		/// <param name="margin"></param>
+		/// <param name="padding"></param>
+		public TitleBarFactory(IRegistry parentRegistry, Thickness margin, Thickness padding)
 		{
+			if (parentRegistry == null || !parentRegistry.ContainsKey(RegistryIdentifier))
+			{
+				Registry = new Registry(parentRegistry);
+				parentRegistry?.Add(RegistryIdentifier, Registry);
+			}
+			else
+			{
+				Registry = (IRegistry) parentRegistry[RegistryIdentifier];
+			}
+
 			Margin = margin;
 			Padding = padding;
 
 			TitleBarFuncs = new List<Func<Application, Window, TitleBarItem>>();
 		}
+
+		public Thickness Margin { get; }
+		public Thickness Padding { get; }
 
 		public TitleBarControl CreateElement(Application app, Window window, params object[] parameters)
 		{
@@ -39,6 +74,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				Padding = Padding
 			};
 
+			//TODO: hack
 			if (TitleBarFuncs.Count == 0)
 			{
 				InitialiseDefaultTabs();
@@ -57,18 +93,17 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 		{
 			TitleBarFuncs.Add(
 				(app, window) =>
-					new TitleBarItem("Environment", "Load", "Store",
+					new TitleBarItem(Properties.Resources.ButtonEnvironment, Properties.Resources.MenuButtonLoad, Properties.Resources.MenuButtonSave,
 						new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 
 #if DEBUG
-			AddSigmaFunction((app, window) => new TitleBarItem("Debug", "Download mnist", (Action) (() =>
+			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonDebug, "Download mnist", (Action) (() =>
 				{
 					BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
 					IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
 					SigmaEnvironment environment = window.Monitor.Registry["environment"] as SigmaEnvironment;
 
 					new Thread(() => iterator?.Yield(handler, environment).First()).Start();
-
 				}), "10 second long task", (Action) (() =>
 				{
 					new Thread(() =>
@@ -87,7 +122,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
-
+							// ignore
 						}
 						finally
 						{
@@ -99,17 +134,15 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						{
 							task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
 							Thread.Sleep(1000);
-
 						}
 						catch (Exception)
 						{
-
+							// ignore
 						}
 						finally
 						{
 							SigmaEnvironment.TaskManager.EndTask(task2);
 						}
-
 					}).Start();
 				}),
 				"5 second indeterminate task",
@@ -125,29 +158,83 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 						}
 						catch (Exception)
 						{
-
+							// ignore
 						}
 						finally
 						{
 							SigmaEnvironment.TaskManager.EndTask(task);
 						}
 					}).Start();
-				})
+				}), "Flood", (Action) (() =>
+				  {
+					  ILog log = LogManager.GetLogger(typeof(TitleBarFactory));
+					  new Thread(() =>
+					  {
+						  for (int i = 1; i <= 1; i++)
+						  {
+							  log.Debug($"Flood {i}: debug");
+							  log.Info($"Flood {i}: info");
+							  log.Warn($"Flood {i}: warn");
+							  log.Error($"Flood {i}: error");
+							  log.Fatal($"Flood {i}: fatal");
+						  }
+					  }).Start();
+				  }), "Print Hierarchy", (Action) (() =>
+				{
 
+					SigmaWindow root = window;
+					while (!root.IsRoot) root = root.ParentWindow;
+
+					PrintWindow(root);
+				})
 			));
 #endif
 
-			AddSigmaFunction((app, window) => new TitleBarItem("Settings", "Toggle Dark",
-				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark), "Toggle Alternate",
-				(Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)));
-			TitleBarFuncs.Add((app, window) => new TitleBarItem("About", "Sigma"));
+			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonSettings, new TitleBarItem(Properties.Resources.MenuButtonStyle, Properties.Resources.MenuButtonToggleDark,
+				(Action) (() => window.Monitor.ColourManager.Dark = !window.Monitor.ColourManager.Dark),
+				Properties.Resources.MenuButtonToggleAlternate, (Action) (() => window.Monitor.ColourManager.Alternate = !window.Monitor.ColourManager.Alternate)/*,
+				Properties.Resources.MenuButtonLanguage, (Action< Application, Window, TitleBarItem>) ((application, genericWindow, item) =>
+				{
+					WPFMonitor monitor = window.Monitor;
+					monitor.UiCultureInfo = CultureInfo.GetCultureInfo("de-DE");
+					monitor.Reload();
+				})*/)));
+
+			AddSigmaFunction((app, window) =>
+			{
+				IUIFactory<UIElement> aboutFactory = (IUIFactory<UIElement>) Registry.TryGetValue(AboutFactoryIdentifier, () => new AboutFactory(window.DialogHost));
+				object aboutContent = aboutFactory.CreateElement(app, window);
+
+				TitleBarItem about = new TitleBarItem(Properties.Resources.ButtonHelp, new TitleBarItem(Properties.Resources.MenuButtonAbout, (Action) (async () =>
+				{
+					window.DialogHost.IsOpen = false;
+					await DialogHost.Show(aboutContent, window.DialogHostIdentifier);
+				})));
+
+				return about;
+			});
+		}
+
+		//TODO: remove
+		public void PrintWindow(SigmaWindow window)
+		{
+			Debug.WriteLine("window: " + window + " parent: " + window.ParentWindow + $" children:{window.ChildrenReadOnly.Count}\n================");
+			foreach (SigmaWindow child in window.ChildrenReadOnly)
+			{
+				PrintWindow(child);
+			}
+
+			Debug.WriteLine("================");
 		}
 
 		/// <summary>
-		/// This method ensures that the passed window is a <see cref="SigmaWindow"/>.
+		///     This method ensures that the passed window is a <see cref="SigmaWindow" />.
 		/// </summary>
-		/// <param name="function">The function that will be executed, when a <see cref="TitleBarItem"/> is clicked. </param>
-		/// <exception cref="ArgumentException">If the passed window is not a <see cref="SigmaWindow"/>, an exception will be thrown. </exception>
+		/// <param name="function">The function that will be executed, when a <see cref="TitleBarItem" /> is clicked. </param>
+		/// <exception cref="ArgumentException">
+		///     If the passed window is not a <see cref="SigmaWindow" />, an exception will be
+		///     thrown.
+		/// </exception>
 		protected void AddSigmaFunction(Func<Application, SigmaWindow, TitleBarItem> function)
 		{
 			TitleBarFuncs.Add((app, window) =>
@@ -155,7 +242,10 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 				SigmaWindow sigmaWindow = window as SigmaWindow;
 
 				if (sigmaWindow == null)
-					throw new ArgumentException($@"Unfortunately, the default {nameof(TitleBarFactory)} only works with a {nameof(SigmaWindow)}.", nameof(window));
+				{
+					throw new ArgumentException(
+						$@"Unfortunately, the default {nameof(TitleBarFactory)} only works with a {nameof(SigmaWindow)}.", nameof(window));
+				}
 
 				return function(app, sigmaWindow);
 			});

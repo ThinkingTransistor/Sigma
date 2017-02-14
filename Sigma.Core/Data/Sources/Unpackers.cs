@@ -1,4 +1,12 @@
-﻿using ICSharpCode.SharpZipLib.BZip2;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using ICSharpCode.SharpZipLib.BZip2;
 using ICSharpCode.SharpZipLib.LZW;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
@@ -68,7 +76,7 @@ namespace Sigma.Core.Data.Sources
 
 			if (!RegisteredUnpackersByExtension.ContainsKey(extension))
 			{
-				Logger.Info($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
+				Logger.Warn($"There is no extension-unpacker mapping for {extension} in the internal extension-unpacker registry.");
 
 				return null;
 			}
