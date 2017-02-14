@@ -12,19 +12,24 @@ The never ending list of nice-to-have things by project. These lists are not mea
 * Plugin / layer dependency management
   * Automically load and inject custom layers
   * Custom code can be stored within the environment / trainer files 
+* Improved preprocessor pipeline with extra step before extraction
+  * Use extra step to detect values for preprocessing (e.g. for auto-normalisation)
 
 ## Sigma.Core.Monitors General Roadmap
 
 * TCP monitor
-  * allow TCP connections to receive and send hooks (just like any monitor)
-  * remote monitoring and interaction from other devices
+  * Allow TCP connections to receive and send hooks (just like any monitor)
+  * Remote monitoring and interaction from other devices
 * HTTP monitor
-  * on top of TCP monitor
-  * as a website (maybe webhost) to easily remotely monitor and do fancy stuff
+  * On top of TCP monitor
+  * As a website (maybe webhost) to easily remotely monitor and do fancy stuff
 * Android / iOS monitor
-  * on top of HTTP / TCP monitor
-  * monitor only (no learning on phone)
-  * learning on phone
+  * On top of HTTP / TCP monitor
+  * Monitor only (no learning on phone)
+  * Learning (visualisation) on phone
+* [Smonity](https://smonity.github.io/) monitor
+  * Monitor RAM
+  * Receive notifications
 
 ## Sigma.Core.Monitors.WPF Roadmap
 
