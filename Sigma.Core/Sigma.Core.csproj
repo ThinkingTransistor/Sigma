@@ -153,8 +153,8 @@
     <Compile Include="Data\Sources\Unpackers.cs" />
     <Compile Include="Data\Sources\URLSource.cs" />
     <Compile Include="Handlers\ActivationManager.cs" />
-    <Compile Include="Handlers\Backends\Debug\DebugHandler.cs" />
-    <Compile Include="Handlers\Backends\Debug\DebugReportException.cs" />
+    <Compile Include="Handlers\Backends\Debugging\DebugHandler.cs" />
+    <Compile Include="Handlers\Backends\Debugging\DebugReportException.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpBackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />

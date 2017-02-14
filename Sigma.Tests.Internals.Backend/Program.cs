@@ -7,7 +7,7 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
-using Sigma.Core.Handlers.Backends.Debug;
+using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
