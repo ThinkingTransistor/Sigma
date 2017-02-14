@@ -701,6 +701,15 @@ namespace Sigma.Core.Handlers
 		/// <returns>A clipped version of the given ndarray using the given range.</returns>
 		INDArray Clip(INDArray array, INumber minValue, INumber maxValue);
 
+		/// <summary>
+		/// Fill an ndarray with a probability mask (0 or 1, with a <see cref="probability"/> chance of it being 1).
+		/// This is not a traceable operation. 
+		/// Note: This method does not return anything as not to be confused with the traceable operations that do return something.
+		/// </summary>
+		/// <param name="array">The array to fill.</param>
+		/// <param name="probability">The probability that a number will be 1.</param>
+		void FillWithProbabilityMask(INDArray array, double probability);
+
 		#endregion
 
 		#region Automatic differentiation and tracing operations

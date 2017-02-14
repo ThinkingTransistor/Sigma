@@ -36,7 +36,7 @@ namespace Sigma.Core.Layers.Regularisation
 			}
 			else
 			{
-				buffer.Outputs["default"] = buffer.Inputs["default"];
+				buffer.Outputs["default"]["activations"] = buffer.Inputs["default"]["activations"];
 			}
 		}
 

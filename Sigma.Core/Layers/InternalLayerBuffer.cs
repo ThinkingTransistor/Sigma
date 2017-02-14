@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers
@@ -21,8 +22,8 @@ namespace Sigma.Core.Layers
 		public IRegistry Parameters { get; }
 		public string[] ExternalInputs { get; }
 		public string[] ExternalOutputs { get; }
-		public IDictionary<string, IRegistry> Inputs { get; }
-		public IDictionary<string, IRegistry> Outputs { get; }
+		public IReadOnlyDictionary<string, IRegistry> Inputs { get; }
+		public IReadOnlyDictionary<string, IRegistry> Outputs { get; }
 
 		/// <summary>
 		/// Create a layer buffer for a certain layer, parameters, inputs, and outputs.
@@ -44,8 +45,8 @@ namespace Sigma.Core.Layers
 			if (externalOutputs == null) throw new ArgumentNullException(nameof(externalOutputs));
 
 			Parameters = parameters;
-			Inputs = inputs;
-			Outputs = outputs;
+			Inputs = new ReadOnlyDictionary<string, IRegistry>(inputs);
+			Outputs = new ReadOnlyDictionary<string, IRegistry>(outputs);
 			Layer = layer;
 			ExternalInputs = externalInputs;
 			ExternalOutputs = externalOutputs;

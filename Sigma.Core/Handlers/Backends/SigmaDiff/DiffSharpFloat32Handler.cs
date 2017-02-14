@@ -683,6 +683,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			*/
 		}
 
+		public void FillWithProbabilityMask(INDArray array, double probability)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+
+			for (int i = begin; i < end; i++)
+			{
+				throw new NotImplementedException($"to be continued");
+			}
+		}
+
 		public uint BeginTrace()
 		{
 			return Util.GlobalTagger.Next;

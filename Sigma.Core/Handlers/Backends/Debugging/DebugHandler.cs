@@ -672,6 +672,17 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.Clip(CheckNice(array), CheckNice(minValue), CheckNice(maxValue)));
 		}
 
+		public void FillWithProbabilityMask(INDArray array, double probability)
+		{
+			if (Enabled && (probability < 0.0 || probability > 1.0))
+			{
+				Report($"probability for fill with probability mask should be 0.0 <= p <= 1.0 (was {probability}).");
+			}
+
+			UnderlyingHandler.FillWithProbabilityMask(CheckNice(array), probability);
+			CheckNice(array);
+		}
+
 		public uint BeginTrace()
 		{
 			return UnderlyingHandler.BeginTrace();
