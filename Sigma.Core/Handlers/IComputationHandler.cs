@@ -6,9 +6,9 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using System;
 
 namespace Sigma.Core.Handlers
 {
@@ -724,9 +724,9 @@ namespace Sigma.Core.Handlers
 		/// Clear a traceable's (ndarray, number) trace.
 		/// </summary>
 		/// <typeparam name="TTraceable">The type of the traceable to trace.</typeparam>
-		/// <param name="traceableRoot">The traceable to clear.</param>
+		/// <param name="traceable">The traceable to clear.</param>
 		/// <returns>The cleared traceable without a trace.</returns>
-		TTraceable ClearTrace<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable;
+		TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
 
 		/// <summary>
 		/// Compute the derivatives (adjoints) with respect to a certain traceable member (ndarray, number), starting the evaluation tree at the given traceable. 
@@ -740,6 +740,38 @@ namespace Sigma.Core.Handlers
 		/// <param name="traceable">The traceable.</param>
 		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivativesTo"/> operation, or null if no derivatives were computed.</returns>
 		TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
+
+		#endregion
+
+		#region Debugging helpers
+
+		/// <summary>
+		/// Check if an ndarray contains any NaN values.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating if the given ndarray contains any NaN values.</returns>
+		bool IsNaN(INDArray array);
+
+		/// <summary>
+		/// Check if an ndarray contains any infinite values.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating if the given ndarray contains any infinite values.</returns>
+		bool IsNotFinite(INDArray array);
+
+		/// <summary>
+		/// Check if a number is NaN.
+		/// </summary>
+		/// <param name="number">The number.</param>
+		/// <returns>A boolean indicating if a number is NaN.</returns>
+		bool IsNaN(INumber number);
+
+		/// <summary>
+		/// Check if a number is infinite.
+		/// </summary>
+		/// <param name="number">The number.</param>
+		/// <returns>A boolean indicating if a number is infinite.</returns>
+		bool IsNotFinite(INumber number);
 
 		#endregion
 	}

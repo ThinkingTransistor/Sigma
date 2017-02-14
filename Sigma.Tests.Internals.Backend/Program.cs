@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using Sigma.Core;
+﻿using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
@@ -12,6 +7,7 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.Debug;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
@@ -25,6 +21,11 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -67,7 +68,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));

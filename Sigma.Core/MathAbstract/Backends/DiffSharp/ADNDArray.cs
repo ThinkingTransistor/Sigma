@@ -6,13 +6,13 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Data;
+using Sigma.Core.Handlers;
+using Sigma.Core.Utils;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Sigma.Core.Data;
-using Sigma.Core.Handlers;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 {

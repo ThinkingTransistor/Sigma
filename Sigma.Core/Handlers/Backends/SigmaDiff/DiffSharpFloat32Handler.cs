@@ -6,18 +6,16 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using DiffSharp;
-using DiffSharp.AD;
 using DiffSharp.Config;
 using DiffSharp.Interop.Float32;
 using log4net;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
@@ -92,6 +90,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract INDArray Convert(INDArray array, IComputationHandler otherHandler);
 		public abstract void Fill(INDArray filler, INDArray arrayToFill);
 		public abstract void Fill<TOther>(TOther value, INDArray arrayToFill);
+
+		protected ADNDFloat32Array ConvertInternal(INDArray array)
+		{
+			return new ADNDFloat32Array(_backendTag, array.GetDataAs<float>(), array.Shape);
+		}
 
 		public INDArray FlattenFeatures(INDArray array)
 		{
@@ -705,23 +708,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		public TTraceable ClearTrace<TTraceable>(TTraceable traceableRoot) where TTraceable : ITraceable
+		public TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
-			if (traceableRoot is ADFloat32Number)
+			if (traceable is ADFloat32Number)
 			{
-				ADFloat32Number internalNumber = traceableRoot as ADFloat32Number;
+				ADFloat32Number internalNumber = traceable as ADFloat32Number;
 
 				return (TTraceable) ((object) new ADFloat32Number(internalNumber._adNumberHandle.P));
 			}
-			else if (traceableRoot is ADNDFloat32Array)
+			else if (traceable is ADNDFloat32Array)
 			{
-				ADNDFloat32Array internalArray = traceableRoot as ADNDFloat32Array;
+				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
 
 				return (TTraceable) ((object) new ADNDFloat32Array(internalArray._adArrayHandle.P));
 			}
 			else
 			{
-				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceableRoot} not compatible with this handler).");
+				throw new InvalidOperationException($"Cannot get derivative for traceable of unknown type (type of object {traceable} not compatible with this handler).");
 			}
 		}
 
@@ -792,6 +795,54 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			return merged;
+		}
+
+		public bool IsNaN(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+
+			for (int i = begin; i < end; i++)
+			{
+				if (float.IsNaN(data[i]))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsNotFinite(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+
+			for (int i = begin; i < end; i++)
+			{
+				if (float.IsInfinity(data[i]))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool IsNaN(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return float.IsNaN(internalNumber._adNumberHandle.Value);
+		}
+
+		public bool IsNotFinite(INumber number)
+		{
+			ADFloat32Number internalNumber = InternaliseNumber(number);
+
+			return float.IsInfinity(internalNumber._adNumberHandle.Value);
 		}
 
 		static DiffSharpFloat32Handler()

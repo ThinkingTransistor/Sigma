@@ -6,11 +6,11 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Threading;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
 using Sigma.Core.Training.Operators.Workers;
+using System.Threading;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 {
@@ -39,7 +39,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		///     <see cref="IComputationHandler" />
 		/// </param>
 		/// <param name="priority">The <see cref="ThreadPriority" /> with which the newly created Thread will be started. </param>
-		protected CpuSinglethreadedOperator(IComputationHandler handler, ThreadPriority priority) : base(handler, 1, priority)
+		public CpuSinglethreadedOperator(IComputationHandler handler, ThreadPriority priority = ThreadPriority.Highest) : base(handler, 1, priority)
 		{
 		}
 	}

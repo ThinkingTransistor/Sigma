@@ -6,12 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
+using System;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
@@ -106,7 +106,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 		public override INDArray Convert(INDArray array, IComputationHandler otherHandler)
 		{
-			return new ADNDArray<float>(array.GetDataAs<float>(), array.Shape);
+			return ConvertInternal(array);
 		}
 
 		public override void Fill(INDArray filler, INDArray arrayToFill)

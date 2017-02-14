@@ -6,13 +6,13 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
 using Sigma.Core.Utils;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 {
@@ -39,6 +39,10 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
 
 			_adArrayHandle = adArrayHandle;
 			_adArrayHandle.Buffer.Shape = Shape; 
+		}
+
+		public ADNDFloat32Array(long backendTag, IDataBuffer<float> buffer, long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(buffer, 0, buffer.Length, backendTag), NDArrayUtils.CheckShape(shape)))
+		{
 		}
 
 		protected override void Reinitialise(long[] shape, long[] strides)
