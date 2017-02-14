@@ -98,10 +98,11 @@ namespace Sigma.Core.Monitors.WPF
 		/// <summary>
 		///	Every new log entry has to pass through this filter - if it passes the filter,
 		/// it will get through to the root window (<see cref="Window"/>), otherwsie it will get discarded.
+		/// The default is a <see cref="LevelRangeFilter"/> wth a <see cref="LevelRangeFilter.LevelMin"/> of <see cref="Level.Info"/>.
 		/// 
 		/// If set to <c>null</c>, all messages will get passed.
 		/// </summary>
-		public IFilter LogFilter { get; set; } = new LevelRangeFilter {LevelMin =  Level.Info};
+		public IFilter LogFilter { get; set; } = new LevelRangeFilter {LevelMin = Level.Info};
 
 		/// <summary>
 		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
@@ -195,11 +196,8 @@ namespace Sigma.Core.Monitors.WPF
 			{
 				_title = value;
 
-				if (Window != null)
-				{
-					//TODO: title propagation
-					Window.Title = _title;
-				}
+				//TODO: title propagation
+				Window?.Dispatcher.Invoke(() => Window.Title = _title);
 			}
 		}
 
@@ -216,7 +214,6 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		public IColourManager ColourManager { get; }
 
-		//HACK: decide what Tabs is
 		public void AddTabs(params string[] tabs)
 		{
 			Tabs.AddRange(tabs);

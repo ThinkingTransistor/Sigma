@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -206,6 +207,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		private bool _forceClose;
 
+		/// <summary>
+		/// If set to <c>true</c> the title will be equal on all windows (i.e. onTitleChanged -> Update all other windows)
+		/// </summary>
+		protected bool SyncTitle = true;
+
 		#region DependencyProperties
 
 		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize",
@@ -252,8 +258,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
 		/// <param name="other"><code>null</code> if there is no previous window - otherwise the previous window.</param>
-		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other) : base(monitor, app, title)
+		protected SigmaWindow(WPFMonitor monitor, Application app, string title, SigmaWindow other) : base(monitor, app)
 		{
+			// if the title should be synced, immediately set it
+			Title = SyncTitle && other != null ? other.Title : title;
 			WindowIndex = _windowCount++;
 
 			SetIcon(monitor);
@@ -294,6 +302,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			App.Startup += OnStart;
 			Closing += OnClosing;
+
+			DependencyPropertyDescriptor.FromProperty(TitleProperty, typeof(Window)).AddValueChanged(this, OnTitleChanged);
+
 			Closed += OnClosed;
 		}
 
@@ -325,7 +336,16 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
-		private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+		protected virtual void OnTitleChanged(object sender, EventArgs args)
+		{
+			// if the title should be sync, update all child titles. 
+			if (SyncTitle && IsRoot)
+			{
+				foreach (SigmaWindow child in Children) { child.Title = Title; }
+			}
+		}
+
+		private void OnClosing(object sender, CancelEventArgs e)
 		{
 			if (!_forceClose && !IsRunningInBackground)
 			{
@@ -343,6 +363,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			App.Startup -= OnStart;
 			Closing -= OnClosing;
+
+			DependencyPropertyDescriptor.FromProperty(TitleProperty, typeof(Window)).RemoveValueChanged(this, OnTitleChanged);
+
 			Closed -= OnClosed;
 
 			IsAlive = false;
@@ -755,5 +778,14 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		#endregion
+
+
+		//TODO: remove
+		//private int _count;
+		//public new string Title
+		//{
+		//	get { return base.Title; }
+		//	set { base.Title = $"well, no {_count++}"; }
+		//}
 	}
 }

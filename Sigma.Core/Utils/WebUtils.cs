@@ -6,18 +6,58 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using log4net;
 
 namespace Sigma.Core.Utils
 {
 	public class WebUtils
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		/// <summary>
+		/// Get the proxy from the parameters (without credentials) - this may be easier than <see cref="GetProxyFromFileOrDefault"/>.
+		/// </summary>
+		/// <param name="address">The address of the proxy server.</param>
+		/// <param name="port">The port of the proxy server.</param>
+		/// <returns>A <see cref="IWebProxy"/> based on the given parameters.</returns>
+		public static IWebProxy GetProxy(string address, int port = 8080)
+		{
+			return GetProxy(address, port, null, null);
+		}
+
+		/// <summary>
+		/// Get the proxy from the parameters - this may be easier than <see cref="GetProxyFromFileOrDefault"/>.
+		/// </summary>
+		/// <param name="address">The address of the proxy server.</param>
+		/// <param name="port">The port of the proxy server.</param>
+		/// <param name="username">The username - this can be null (password is also ignored).</param>
+		/// <param name="password">The password - this can be null (username is also ignored).</param>
+		/// <returns>A <see cref="IWebProxy"/> based on the given parameters.</returns>
+		public static IWebProxy GetProxy(string address, int port, string username, string password)
+		{
+			if (string.IsNullOrEmpty(address))
+			{
+				throw new ArgumentNullException(nameof(address));
+			}
+
+			if (port <= 0 || port >= 65536)
+			{
+				throw new ArgumentOutOfRangeException(nameof(port));
+			}
+
+			WebProxy proxy = new WebProxy(address, port);
+			if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+			{
+				proxy.Credentials = new NetworkCredential(username, password);
+			}
+
+			return proxy;
+		}
 
 		/// <summary>
 		/// Reads a proxy configuration from a file and returns a custom proxy if file exists and is valid, get a default proxy otherwise.

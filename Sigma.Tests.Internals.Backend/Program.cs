@@ -13,18 +13,13 @@ using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.Layers;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
-using Sigma.Core.Monitors.WPF;
-using Sigma.Core.Monitors.WPF.Panels.Control;
-using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
-using Sigma.Core.Training.Hooks.Scorers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -40,6 +35,7 @@ namespace Sigma.Tests.Internals.Backend
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging();
+			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SampleTrainerOperatorWorkerIris();
 

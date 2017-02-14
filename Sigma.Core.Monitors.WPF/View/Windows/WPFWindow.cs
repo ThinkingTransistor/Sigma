@@ -25,7 +25,17 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		/// <param name="title">The <see cref="Window.Title" /> of the window.</param>
-		protected WPFWindow(WPFMonitor monitor, Application app, string title)
+		protected WPFWindow(WPFMonitor monitor, Application app, string title) : this(monitor, app)
+		{
+			Title = title;
+		}
+
+		/// <summary>
+		///     The constructor for the <see cref="WPFWindow" />.
+		/// </summary>
+		/// <param name="monitor">The root <see cref="IMonitor" />.</param>
+		/// <param name="app">The <see cref="Application" /> environment.</param>
+		protected WPFWindow(WPFMonitor monitor, Application app)
 		{
 			if (monitor == null)
 			{
@@ -38,12 +48,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			Monitor = monitor;
 			App = app;
-			Title = title;
 
 			InitialiseComponents();
 		}
-
-		//public abstract void SetUiCulture(CultureInfo uiCultureInfo);
 
 		/// <summary>
 		///     The corresponding WPFMonitor
