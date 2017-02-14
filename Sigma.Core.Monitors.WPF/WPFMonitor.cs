@@ -6,13 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
@@ -21,6 +14,13 @@ using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Sigma.Core.Monitors.WPF
 {
