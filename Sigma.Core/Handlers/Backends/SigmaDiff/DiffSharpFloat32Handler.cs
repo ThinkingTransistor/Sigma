@@ -116,7 +116,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray FlattenTimeAndFeatures(INDArray array)
 		{
-			return array.Reshape(array.Shape[0], ArrayUtils.Product(1, array.Shape));
+			return array.Reshape(array.Shape[0] * array.Shape[1], ArrayUtils.Product(2, array.Shape));
 		}
 
 		public INDArray FlattenAllButLast(INDArray array)

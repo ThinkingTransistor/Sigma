@@ -47,7 +47,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		/// <param name="handler">The computation handler.</param>
 		protected override void ScoreIntermediate(INDArray predictions, INDArray targets, IComputationHandler handler)
 		{
-			predictions = handler.RowWise(predictions, handler.SoftMax);
+			predictions = handler.RowWise(handler.FlattenTimeAndFeatures(predictions), handler.SoftMax);
 			targets = handler.FlattenTimeAndFeatures(targets); // TODO add safeguard against calling RowWise on non-flattened ndarrays
 
 			int[] predictedIndices = handler.RowWiseTransform(predictions, handler.MaxIndex);

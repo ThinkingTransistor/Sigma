@@ -271,11 +271,21 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public INDArray FlattenTime(INDArray array)
 		{
+			if (Enabled && array.Rank < 2) // two or three? technically 2 is enough ([BT]F) but 3 makes more sense
+			{
+				Report($"ndarray needs to have a rank of 2 or higher (was {array.Rank}) for {nameof(FlattenTime)} operation", array);
+			}
+
 			return CheckNice(UnderlyingHandler.FlattenTime(CheckNice(array)));
 		}
 
 		public INDArray FlattenFeatures(INDArray array)
 		{
+			if (Enabled && array.Rank < 3)
+			{
+				Report($"ndarray needs to have a rank of 3 or higher (was {array.Rank}) for {nameof(FlattenFeatures)} operation", array);
+			}
+
 			return CheckNice(UnderlyingHandler.FlattenFeatures(CheckNice(array)));
 		}
 
@@ -283,9 +293,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 		{
 			if (Enabled && array.Rank < 3)
 			{
-				// TODO urgent fix layers throwing time dimension away and causing unshaped / inproperly shaped data
-				//  (doesn't cause any issues right now but will for recurrent data)
-				//Report($"ndarray needs to have a rank of 3 or higher for flattentimeandfeatures operation", array);
+				Report($"ndarray needs to have a rank of 3 or higher (was {array.Rank}) for {nameof(FlattenTimeAndFeatures)} operation", array);
 			}
 
 			return CheckNice(UnderlyingHandler.FlattenTimeAndFeatures(CheckNice(array)));

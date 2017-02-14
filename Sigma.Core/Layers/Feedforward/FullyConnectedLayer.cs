@@ -31,7 +31,8 @@ namespace Sigma.Core.Layers.Feedforward
 
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			INDArray activations = handler.FlattenTimeAndFeatures(buffer.Inputs["default"].Get<INDArray>("activations"));
+			INDArray input = buffer.Inputs["default"].Get<INDArray>("activations");
+			INDArray activations = handler.FlattenTimeAndFeatures(input);
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
 			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 
@@ -40,7 +41,7 @@ namespace Sigma.Core.Layers.Feedforward
 			output = handler.RowWise(output, row => handler.Add(row, biases));
 			output = handler.Activation(buffer.Parameters.Get<string>("activation"), output);
 
-			buffer.Outputs["default"]["activations"] = output;
+			buffer.Outputs["default"]["activations"] = output.Reshape(input.Shape[0], input.Shape[1], Parameters.Get<int>("size"));
 		}
 
 		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")
