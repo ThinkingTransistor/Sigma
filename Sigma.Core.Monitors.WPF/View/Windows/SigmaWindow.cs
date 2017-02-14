@@ -738,16 +738,20 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			ToolTipIcon toolTip = ToolTipIcon.Info;
 
-			if (loggingEvent.Level.Value < Level.Warn.Value)
+			if (loggingEvent.Level.Value > Level.Warn.Value)
 			{
 				toolTip = ToolTipIcon.Error;
 			}
-			else if (loggingEvent.Level.Value < Level.Info.Value)
+			else if (loggingEvent.Level.Value > Level.Info.Value)
 			{
 				toolTip = ToolTipIcon.Warning;
 			}
 
-			NotifyIcon.ShowBalloonTip(2000, "Warning", loggingEvent.MessageObject.ToString(), toolTip);
+			string logger = loggingEvent.LoggerName;
+			int lastIndex = logger.LastIndexOf(".", StringComparison.Ordinal) + 1;
+			logger = logger.Substring(lastIndex, logger.Length - lastIndex);
+
+			NotifyIcon.ShowBalloonTip(2000, logger, loggingEvent.MessageObject.ToString(), toolTip);
 		}
 
 		#endregion

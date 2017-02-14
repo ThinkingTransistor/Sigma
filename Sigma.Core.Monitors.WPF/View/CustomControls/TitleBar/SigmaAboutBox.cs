@@ -138,7 +138,13 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.TitleBar
 			public SigmaAboutBox Box { get; set; }
 
 			/// <summary>Occurs when changes occur that affect whether or not the command should execute.</summary>
-			public event EventHandler CanExecuteChanged;
+#pragma warning disable 67
+			public event EventHandler CanExecuteChanged
+			{
+				add { throw new NotSupportedException(); }
+				remove { }
+			}
+#pragma warning restore 67
 
 			/// <summary>Defines the method that determines whether the command can execute in its current state.</summary>
 			/// <returns>true if this command can be executed; otherwise, false.</returns>

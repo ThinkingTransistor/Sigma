@@ -6,21 +6,21 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
+using log4net.Filter;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace Sigma.Core.Monitors.WPF
 {
@@ -76,8 +76,6 @@ namespace Sigma.Core.Monitors.WPF
 		/// </summary>
 		private CultureInfo _uiCultureInfo;
 
-		private WPFWindow _window;
-
 		/// <summary>
 		/// The UI culture info for all windows. 
 		/// </summary>
@@ -98,10 +96,12 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
-		/// The minimal log level that will be logged.
-		/// Set to <see cref="Level.Off"/>, if no logging should occur. 
+		///	Every new log entry has to pass through this filter - if it passes the filter,
+		/// it will get through to the root window (<see cref="Window"/>), otherwsie it will get discarded.
+		/// 
+		/// If set to <c>null</c>, all messages will get passed.
 		/// </summary>
-		public Level MinLogLevel { get; set; } = Level.Warn;
+		public IFilter LogFilter { get; set; } = new LevelRangeFilter {LevelMin =  Level.Info};
 
 		/// <summary>
 		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
@@ -183,15 +183,7 @@ namespace Sigma.Core.Monitors.WPF
 		///     This property returns the current window.
 		///     <see cref="Window" /> is <see langword="null" /> until <see cref="SigmaEnvironment.Prepare" /> has been called.
 		/// </summary>
-		public WPFWindow Window
-		{
-			get { return _window; }
-			set
-			{
-				Debug.WriteLine($"OldWindow: {_window?.Title}, newWindow: {value?.Title}");
-				_window = value;
-			}
-		}
+		public WPFWindow Window { get; set; }
 
 		/// <summary>
 		///     Property for the title of the window.
@@ -340,7 +332,7 @@ namespace Sigma.Core.Monitors.WPF
 				}
 				catch (Exception e)
 				{
-					_log.Error("Uncaught exception in Sigma UI has been thrown. Sigma core will continue execution...", e);
+					_log.Fatal("Uncaught exception in Sigma UI has been thrown. Sigma core will continue execution...", e);
 #if DEBUG
 					throw;
 #endif
@@ -433,7 +425,8 @@ namespace Sigma.Core.Monitors.WPF
 
 		}
 
-		/// <summary>Log the logging event in Appender specific way.</summary>
+		/// <summary>Log the logging event to the root window (see <see cref="Window"/>). Requires an 
+		/// <see cref="FilterDecision.Accept"/> from <see cref="LogFilter"/> (or unset <see cref="LogFilter"/>).</summary>
 		/// <param name="loggingEvent">The event to log</param>
 		/// <remarks>
 		/// <para>
@@ -442,7 +435,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// </remarks>
 		public void DoAppend(LoggingEvent loggingEvent)
 		{
-			if (loggingEvent.Level.Value >= MinLogLevel.Value)
+			if (LogFilter == null || LogFilter.Decide(loggingEvent) == FilterDecision.Accept)
 			{
 				Window.DoAppend(loggingEvent);
 			}
