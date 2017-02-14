@@ -122,6 +122,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Panels\Charts\CartesianChartPanel.cs" />
+    <Compile Include="Panels\Charts\CostPanel.cs" />
     <Compile Include="Panels\Charts\Definitions\IPointVisualiser.cs" />
     <Compile Include="Panels\Control\ControlPanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />

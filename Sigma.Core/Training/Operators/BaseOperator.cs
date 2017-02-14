@@ -765,7 +765,7 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///		Start all workers once (for one iteration) with <see cref="RunWorkerOnce"/>. 
 		/// </summary>
-		protected virtual void StartWorkersOnce()
+		protected virtual void RunWorkersOnce()
 		{
 			foreach (IWorker worker in Workers)
 			{
@@ -783,7 +783,7 @@ namespace Sigma.Core.Training.Operators
 				{
 					PrepareWorkers();
 
-					StartWorkersOnce();
+					RunWorkersOnce();
 
 					State = ExecutionState.Running;
 				}).Start();

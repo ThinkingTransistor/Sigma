@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Sigma.Core.Training;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
@@ -21,6 +22,15 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(SigmaPlaybackControl), new FrameworkPropertyMetadata(typeof(SigmaPlaybackControl)));
 		}
+
+		public ITrainer Trainer
+		{
+			get { return (ITrainer) GetValue(TrainerProperty); }
+			set { SetValue(TrainerProperty, value); }
+		}
+
+		public static readonly DependencyProperty TrainerProperty =
+			DependencyProperty.Register("Trainer", typeof(ITrainer), typeof(SigmaPlaybackControl), new PropertyMetadata(null));
 
 		public bool Running
 		{

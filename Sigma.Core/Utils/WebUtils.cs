@@ -134,7 +134,7 @@ namespace Sigma.Core.Utils
 				customProxy.Credentials = new NetworkCredential(username, password);
 			}
 
-			Logger.Info($"Using custom proxy ({defaultProxy})" + (credentialsProvided ? "with" : "without") + "credentials");
+			Logger.Info($"Using custom proxy ({defaultProxy}) " + (credentialsProvided ? "with" : "without") + "credentials");
 
 			return customProxy;
 		}

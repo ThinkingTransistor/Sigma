@@ -1,19 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Threading;
-using System.Windows.Media;
 using Sigma.Core;
+using Sigma.Core.Architecture;
+using Sigma.Core.Data.Datasets;
+using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
-using Sigma.Core.MathAbstract;
+using Sigma.Core.Data.Preprocessors;
+using Sigma.Core.Data.Readers;
+using Sigma.Core.Data.Sources;
+using Sigma.Core.Layers.Cost;
+using Sigma.Core.Layers.External;
+using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Monitors.WPF;
-using Sigma.Core.Monitors.WPF.Model.UI.Resources;
-using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
-using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
-using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
-using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Initialisers;
+using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF
@@ -31,159 +36,58 @@ namespace Sigma.Tests.Internals.WPF
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
 
-			gui.AddTabs("Overview", "Log", "Tests");
+			gui.AddTabs("Overview", "Log");
+
+			ControlPanel control = null;
 
 			gui.WindowDispatcher(window =>
 			{
-				TabUI tab = window.TabControl["Overview"];
+				control = new ControlPanel("Control");
+				window.TabControl["Overview"].AddCumulativePanel(control, 2);
+
+				window.TabControl["Log"].GridSize = new[] { 1, 1 };
+				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
 			});
-
-			//LineChartPanel lineChart = null;
-			//CartesianChartPanel cartesianChart = null;
-
-			//gui.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.LightBlue));
-			//gui.WindowDispatcher(window =>
-			//{
-			//	window.IsInitializing = true;
-			//	window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control"), 2, 1);
-
-			//	//lineChart = new LineChartPanel("Example");
-			//	//window.TabControl["Overview"].AddCumulativePanel(lineChart, 2, 2, gui.GetLegendInfo("Net"));
-			//	cartesianChart = new CartesianChartPanel("Cartesian");
-			//	window.TabControl["Overview"].AddCumulativePanel(cartesianChart, 2, 2, gui.GetLegendInfo("Net"));
-
-
-			//	window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
-			//	window.IsInitializing = false;
-			//});
-
-
-			AddComplex(gui);
 
 			sigma.Prepare();
 
-			//IDataSource dataSource = new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz")));
+			ITrainer trainer = CreateIrisTrainer(sigma);
 
-			//ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
-			//IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
-
-			//IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
-			//IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
-			//IDataset trainingData = slices[0];
-
-			//IDataIterator iterator = new MinibatchIterator(10, trainingData);
-			//foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
-			//{
-			//	//PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
-			//}
-
-			//Console.WriteLine("+=+ Iterating over dataset again +=+");
-			//Thread.Sleep(3000);
-
-			//foreach (var block in iterator.Yield(new CpuFloat32Handler(), sigma))
-			//{
-			//	PrintFormattedBlock(block, PrintUtils.AsciiGreyscalePalette);
-			//}
-
-			//Random rand = new Random();
-			//for (int i = 0; i < 1000; i++)
-			//{
-			//	Thread.Sleep(1000);
-			//	try
-			//	{
-			//		gui.WindowDispatcher(window => cartesianChart.ChartValues.Add(rand.NextDouble() * 10));
-			//	}
-			//	catch (Exception)
-			//	{
-			//		return;
-			//	}
-			//}
-		}
-
-		private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)
-		{
-			foreach (string name in block.Keys)
+			gui.WindowDispatcher(window =>
 			{
-				string blockString = name == "inputs"
-					? ArrayUtils.ToString<float>(block[name], e => palette[(int) (e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
-					: block[name].ToString();
-
-				Console.WriteLine($"[{name}]=\n" + blockString);
-			}
-		}
-
-		private class TestData
-		{
-			public string Name { get; set; }
-			public int Epoch { get; set; }
-		}
-
-		private class ComplexTestData
-		{
-			public ImageSource Picture { get; set; }
-			public string SomeText { get; set; }
-			public string SomeOtherText { get; set; }
-			public int SomeInt { get; set; }
-		}
-
-
-		private static void AddComplex(WPFMonitor guiMonitor)
-		{
-			StatusBarLegendInfo blueLegend = guiMonitor.AddLegend(new StatusBarLegendInfo("Net", MaterialColour.Blue));
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Third net", MaterialColour.Red));
-			guiMonitor.AddLegend(new StatusBarLegendInfo("Net test 1", MaterialColour.Pink));
-
-			guiMonitor.WindowDispatcher(window =>
-			{
-				window.IsInitializing = true;
-				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"), 3, 4);
-				TabUI tab = window.TabControl["Overview"];
-
-				tab.AddCumulativePanel(new LineChartPanel("Control"), 2, 3, guiMonitor.GetLegendInfo("Third net"));
-
-				SimpleDataGridPanel<TestData> panel = new SimpleDataGridPanel<TestData>("Data");
-
-				panel.Items.Add(new TestData { Name = "SomeOptimizer", Epoch = 14 });
-				panel.Items.Add(new TestData { Name = "OtherOptimizer", Epoch = 1337 });
-
-				tab.AddCumulativePanel(panel, legend: blueLegend);
-
-
-				CustomDataGridPanel panel2 = new CustomDataGridPanel("compleX", "Picture", typeof(Image), nameof(ComplexTestData.Picture), "Text1", typeof(string), nameof(ComplexTestData.SomeText), "Text2", typeof(string), nameof(ComplexTestData.SomeOtherText), "Number", typeof(string), nameof(ComplexTestData.SomeInt));
-				ComplexTestData data = new ComplexTestData
-				{
-					//Picture = new BitmapImage(new Uri(@"C:\Users\Flo\Dropbox\Diplomarbeit\Logo\export\128x128.png")),
-					SomeInt = 12,
-					SomeOtherText = "other",
-					SomeText = "text"
-				};
-
-				panel2.Content.Items.Add(data);
-
-				tab.AddCumulativePanel(panel2, 1, 3, guiMonitor.GetLegendInfo("Net test 1"));
-
-				CreateDefaultCards(window.TabControl["Tests"]);
-
-				tab.AddCumulativePanel(new ControlPanel("Control panel"), 2);
-				window.IsInitializing = false;
+				control.Trainer = trainer;
 			});
 		}
 
-		private static void CreateDefaultCards(TabUI tab)
+		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
 		{
-			for (int i = 0; i < 3; i++)
-			{
-				tab.AddCumulativePanel(new EmptyPanel($"Card No. {i}"));
-			}
+			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
+			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2));
+			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
 
-			tab.AddCumulativePanel(new EmptyPanel("Big card"), 3);
-			tab.AddCumulativePanel(new EmptyPanel("Tall card"), 2);
-			for (int i = 0; i < 2; i++)
-			{
-				tab.AddCumulativePanel(new EmptyPanel("Small card"));
-			}
+			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
+			IDataset trainingDataset = dataset;
+			IDataset validationDataset = dataset;
 
-			tab.AddCumulativePanel(new EmptyPanel("Wide card"), 1, 2);
+			ITrainer trainer = sigma.CreateTrainer("test");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(4)
+										   + 5 * FullyConnectedLayer.Construct(3)
+										   + OutputLayer.Construct(3)
+										   + SquaredDifferenceCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
+
+			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+			return trainer;
 		}
 	}
 }

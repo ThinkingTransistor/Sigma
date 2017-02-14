@@ -9,15 +9,36 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using System.Windows.Controls;
 using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
+using Sigma.Core.Training;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Control
 {
-	public class ControlPanel : SigmaPanel
+	/// <summary>
+	/// This <see cref="SigmaPanel"/> allows to control the training progress for a trainer and
+	/// visualises most important data. 
+	/// </summary>
+	public class ControlPanel : GenericPanel<StackPanel>
 	{
-		public new StackPanel Content { get; }
+		private readonly SigmaPlaybackControl _playbackControl;
 
-		public ControlPanel(string title, object content = null) : base(title, content)
+		private ITrainer _trainer;
+
+		public ITrainer Trainer
 		{
+			get { return _trainer; }
+			set
+			{
+				_trainer = value;
+				_playbackControl.Trainer = value;
+			}
+		}
+
+		public ControlPanel(string title, object content = null) : this(title, null, content) { }
+
+		public ControlPanel(string title, ITrainer trainer, object content = null) : base(title, content)
+		{
+			_trainer = trainer;
+
 			Content = new StackPanel
 			{
 				Orientation = Orientation.Vertical,
@@ -25,9 +46,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Control
 				Margin = new Thickness(0, 20, 0, 0)
 			};
 
-			Content.Children.Add(new SigmaPlaybackControl());
+			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer };
 
-			base.Content = Content;
+			Content.Children.Add(_playbackControl);
 		}
 	}
 }

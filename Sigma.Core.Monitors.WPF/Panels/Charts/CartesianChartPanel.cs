@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using LiveCharts;
-using LiveCharts.Defaults;
 using LiveCharts.Wpf;
-using Sigma.Core.Monitors.WPF.Panels.Charts.Definitions;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
 	public class CartesianChartPanel : GenericPanel<CartesianChart>
 	{
-		public SeriesCollection SeriesCollection { get; set; }
+		public SeriesCollection SeriesCollection { get; }
 
-		public LineSeries LineSeries { get; set; }
+		public LineSeries LineSeries { get; }
 
-		public ChartValues<double> ChartValues { get; set; }
-
+		public ChartValues<double> ChartValues { get; }
 
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -27,9 +22,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// the title will be used.</param>
 		public CartesianChartPanel(string title, object headerContent = null) : base(title, headerContent)
 		{
-			Content = new CartesianChart();
-			Content.Zoom = ZoomingOptions.Xy;
-			Content.ScrollMode = ScrollMode.XY; 
+			Content = new CartesianChart
+			{
+				Zoom = ZoomingOptions.Xy,
+				ScrollMode = ScrollMode.XY
+			};
 
 			//using a gradient brush.
 			LinearGradientBrush gradientBrush = new LinearGradientBrush
@@ -57,7 +54,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 			Content.Series = SeriesCollection;
 
-			Content.AxisY.Add(new Axis {MinValue = 0, MaxValue = 10});
+			Content.AxisY.Add(new Axis { MinValue = 0, MaxValue = 10 });
 		}
 	}
 }
