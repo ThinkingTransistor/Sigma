@@ -65,7 +65,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 
 			predictions = handler.RowWise(handler.FlattenTimeAndFeatures(predictions), handler.SoftMax);
 			var perRowTopPredictions = handler.RowWiseTransform(predictions, 
-				row => row.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderBy(x => x.Key).Select(p => p.Value).ToArray()).ToList();
+				row => row.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).Select(p => p.Value).ToArray()).ToList();
 
 			int[] targetIndices = handler.RowWiseTransform(handler.FlattenTimeAndFeatures(targets), handler.MaxIndex);
 

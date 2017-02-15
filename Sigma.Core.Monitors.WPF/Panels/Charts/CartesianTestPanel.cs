@@ -41,13 +41,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// Execute the report for every given top. 
 			/// </summary>
 			/// <param name="data">The mapping between the tops specified in the constructor and the score of the top.</param>
-			public override void Report(IDictionary<int, double> data)
+			protected override void Report(IDictionary<int, double> data)
 			{
 				base.Report(data);
 				_panel.Dispatcher.InvokeAsync(() => _panel.ChartValues.Add(data[1]));
 			}
-
-
 		}
 	}
 }
