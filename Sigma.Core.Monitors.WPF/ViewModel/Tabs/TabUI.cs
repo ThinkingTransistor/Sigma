@@ -71,7 +71,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		}
 
 		/// <summary>
-		///     The grid that holds the actual content.
+		///     The grid that contains the actual content.
 		///     Use this value with caution - only for
 		///     layout modification at runtime!
 		/// </summary>

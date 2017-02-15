@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -39,32 +40,39 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.AddTabs("Overview", "Log");
 
-			//gui.WindowDispatcher(window =>
-			//{
-			//	window.IsInitializing = true;
-			//});
+			gui.WindowDispatcher(window =>
+			{
+				window.IsInitializing = true;
+			});
 
 			sigma.Prepare();
 
 			ITrainer trainer = CreateIrisTrainer(sigma);
 
-			gui.WindowDispatcher(window =>
+			gui.WindowDispatcherAsync(window =>
 			{
 				ControlPanel control = new ControlPanel("Control", trainer);
 				window.TabControl["Overview"].AddCumulativePanel(control, 2);
-				window.TabControl["Overview"].AddCumulativePanel(new CartesianTestPanel("Top", trainer), 2, 2);
+
+				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				costChart.Series.PointGeometrySize = 0;
+				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
+
+				CartesianTestPanel chart = new CartesianTestPanel("Top accuracy of epoch", trainer);
+				chart.AxisY.MinValue = 0;
+				chart.AxisY.MaxValue = 1;
+				chart.Series.PointGeometrySize = 0;
+
+				window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
+
+				window.IsInitializing = false;
 			});
 
 			sigma.StartOperatorsOnRun = false;
-			sigma.RunAsync();
-
-			//gui.WindowDispatcher(window =>
-			//{
-			//	window.IsInitializing = false;
-			//});
+			sigma.Run();
 		}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
@@ -90,11 +98,11 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.4));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 
 			return trainer;
 		}

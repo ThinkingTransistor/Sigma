@@ -22,20 +22,28 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep) : this(new[] { valueIdentifier }, timestep)
-		{
-		}
+		/// <summary>
+		///	Create a hook that fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
+		/// </summary>
+		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
+		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
+		public ValueReporterHook(string valueIdentifier, ITimeStep timestep) : this(new[] { valueIdentifier }, timestep) { }
 
+		/// <summary>
+		///	Create a hook that fetches a given amount of values (i.e. registry identifiers) at a given <see cref="ITimeStep"/>.
+		/// </summary>
+		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
+		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		public ValueReporterHook(string[] valueIdentifiers, ITimeStep timestep) : base(timestep, valueIdentifiers)
 		{
-			if (valueIdentifiers.Length == 0) throw new ArgumentException($"Value identifiers cannot be empty (it's the whole point of this hook).");
+			if (valueIdentifiers.Length == 0) throw new ArgumentException("Value identifiers cannot be empty (it's the whole point of this hook).");
 
 			DefaultTargetMode = TargetMode.Local;
 
 			string[] accumulatedIdentifiers = new string[valueIdentifiers.Length];
 			Dictionary<string, object> valueBuffer = new Dictionary<string, object>(valueIdentifiers.Length);
 
-			for (var i = 0; i < valueIdentifiers.Length; i++)
+			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
 				string value = valueIdentifiers[i];
 
@@ -64,7 +72,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 
 			IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
 
-			for (var i = 0; i < valueIdentifiers.Length; i++)
+			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
 				// TODO let callee decide if it's a number (double) / something else
 				object value = resolver.ResolveGetSingle<double>(accumulatedIdentifiers[i]);
@@ -79,8 +87,6 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// Report the values for a certain epoch / iteration.
 		/// Note: By default, this method writes to the logger. If you want to report to anywhere else, overwrite this method.
 		/// </summary>
-		/// <param name="epoch">The current epoch.</param>
-		/// <param name="iteration">The current iteration.</param>
 		/// <param name="valuesByIdentifier">The values by their identifier.</param>
 		protected virtual void ReportValues(IDictionary<string, object> valuesByIdentifier)
 		{

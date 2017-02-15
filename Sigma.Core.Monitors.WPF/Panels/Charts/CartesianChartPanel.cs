@@ -1,60 +1,16 @@
-﻿using System.Windows;
-using System.Windows.Media;
-using LiveCharts;
-using LiveCharts.Wpf;
+﻿using LiveCharts.Wpf;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	public class CartesianChartPanel : GenericPanel<CartesianChart>
+	public class CartesianChartPanel : ChartPanel<CartesianChart, LineSeries, double>
 	{
-		public SeriesCollection SeriesCollection { get; }
-
-		public LineSeries LineSeries { get; }
-
-		public ChartValues<double> ChartValues { get; }
-
 		/// <summary>
-		///     Create a SigmaPanel with a given title.
+		///     Create a ChartPanel with a given title.
 		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		/// </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public CartesianChartPanel(string title, object headerContent = null) : base(title, headerContent)
-		{
-			Content = new CartesianChart
-			{
-				Zoom = ZoomingOptions.Xy,
-				ScrollMode = ScrollMode.XY
-			};
-
-			//using a gradient brush.
-			LinearGradientBrush gradientBrush = new LinearGradientBrush
-			{
-				StartPoint = new Point(0, 0),
-				EndPoint = new Point(0, 1)
-			};
-			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(33, 148, 241), 0));
-			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
-
-			ChartValues = new ChartValues<double>();
-
-			LineSeries = new LineSeries
-			{
-				Values = ChartValues,
-				Fill = gradientBrush,
-				StrokeThickness = 1,
-				PointGeometrySize = 0
-			};
-
-			SeriesCollection = new SeriesCollection
-			{
-				LineSeries
-			};
-
-			Content.Series = SeriesCollection;
-
-			Content.AxisY.Add(new Axis { MinValue = 0, MaxValue = 10 });
-		}
+		public CartesianChartPanel(string title, object headerContent = null) : base(title, headerContent) { }
 	}
 }

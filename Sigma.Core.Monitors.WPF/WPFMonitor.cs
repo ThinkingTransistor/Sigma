@@ -102,7 +102,7 @@ namespace Sigma.Core.Monitors.WPF
 		/// 
 		/// If set to <c>null</c>, all messages will get passed.
 		/// </summary>
-		public IFilter LogFilter { get; set; } = new LevelRangeFilter {LevelMin = Level.Warn};
+		public IFilter LogFilter { get; set; } = new LevelRangeFilter { LevelMin = Level.Warn };
 
 		/// <summary>
 		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
@@ -196,7 +196,6 @@ namespace Sigma.Core.Monitors.WPF
 			{
 				_title = value;
 
-				//TODO: title propagation
 				Window?.Dispatcher.Invoke(() => Window.Title = _title);
 			}
 		}
@@ -257,13 +256,15 @@ namespace Sigma.Core.Monitors.WPF
 			return Legends.Values;
 		}
 
-		private static void AddLegends(IDictionary<string, StatusBarLegendInfo> legends, StatusBarLegendInfo[] legendInfo)
+		private static void AddLegends(IDictionary<string, StatusBarLegendInfo> legends, IEnumerable<StatusBarLegendInfo> legendInfo)
 		{
 			foreach (StatusBarLegendInfo statusBarLegendInfo in legendInfo)
 			{
 				legends.Add(statusBarLegendInfo.Name, statusBarLegendInfo);
 			}
 		}
+
+		#region Lifecycle
 
 		public override void Initialise()
 		{
@@ -275,20 +276,21 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been initialised.");
 		}
 
-		public void Reload()
-		{
-			_app.Dispatcher.Invoke(() =>
-			{
-				WPFWindow oldWindow = Window;
+		//TODO: implement
+		//public void Reload()
+		//{
+		//	_app.Dispatcher.Invoke(() =>
+		//	{
+		//		WPFWindow oldWindow = Window;
 
-				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
-				ColourManager.Window = Window;
+		//		Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
+		//		ColourManager.Window = Window;
 
-				_app.Dispatcher.Invoke(() => _app.Run(Window));
+		//		_app.Dispatcher.Invoke(() => _app.Run(Window));
 
-				oldWindow.Close();
-			});
-		}
+		//		oldWindow.Close();
+		//	});
+		//}
 
 		public override void Start()
 		{
@@ -349,17 +351,32 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been started. The window {_windowType.Name} should now be visible. ");
 		}
 
-		/// <summary>
-		///     This method allows to access the <see cref="WPFWindow" />.
-		///     All commands will be executed in the thread of the window!
-		///     If the environment has note been prepared, the function will be executed
-		///     in OnStartup function of the window.
-		/// 
-		///		The method will block until fully executed (if the window has already been started).
-		/// </summary>
-		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		#endregion
+
+		#region WindowDispatch
+
+		private void InvokeWindowDispatcherAsync<T>(Action<T> action, DispatcherPriority priority) where T : WPFWindow
+		{
+			Window.Dispatcher.InvokeAsync(() => action((T) Window), priority);
+		}
+
+		private void InvokeWindowDispatcher<T>(Action<T> action, DispatcherPriority priority) where T : WPFWindow
+		{
+			Window.Dispatcher.Invoke(() => action((T) Window), priority);
+		}
+
+		///  <summary>
+		///      This method allows to access the <see cref="WPFWindow" />.
+		///      All commands will be executed in the thread of the window!
+		///      If the environment has note been prepared, the function will be executed
+		///      in OnStartup function of the window.
+		///  
+		/// 		The method will block until fully executed (if the window has already been started).
+		///  </summary>
+		///  <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="invokeWindowDispatcher">The action that executes the window dispatchment (either synchronous or asynchronous).</param>
 		/// <param name="priority">The priority of the execution.</param>
-		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		private void WindowDispatcher<T>(Action<T> action, Action<Action<T>, DispatcherPriority> invokeWindowDispatcher, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
 		{
 			if (typeof(T) != _windowType)
 			{
@@ -374,7 +391,7 @@ namespace Sigma.Core.Monitors.WPF
 			{
 				try
 				{
-					Window.Dispatcher.Invoke(() => action((T) Window), priority);
+					invokeWindowDispatcher(action, priority);
 				}
 				catch (TaskCanceledException e)
 				{
@@ -384,11 +401,28 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
-		/// <summary>
+		///  <summary>
 		///     This method allows to access the <see cref="WPFWindow" />.
-		///     All commands will be executed in the thread of the window!
+		///     All commands will be executed in the thread of the window! (i.e. blocking until finished, use <see cref="WindowDispatcherAsync{T}(Action{T},DispatcherPriority)"/> otherwise)
 		///     If the environment has note been prepared, the function will be executed
 		///     in OnStartup function of the window.
+		///  
+		///     The method will block until fully executed (if the window has already been started).
+		///  </summary>
+		///  <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		{
+			WindowDispatcher(action, InvokeWindowDispatcher, priority);
+		}
+
+		/// <summary>
+		///     This method allows to access the <see cref="WPFWindow" />.
+		///     All commands will be executed in the thread of the window! (i.e. blocking until finished, use <see cref="WindowDispatcherAsync{T}(Action{T},DispatcherPriority)"/> otherwise)
+		///     If the environment has note been prepared, the function will be executed
+		///     in OnStartup function of the window.
+		/// 
+		///     The method will block until fully executed (if the window has already been started).
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
@@ -396,6 +430,38 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			WindowDispatcher<SigmaWindow>(action, priority);
 		}
+
+		///  <summary>
+		///      This method allows to access the <see cref="WPFWindow" />.
+		///     All commands will be executed asynchronously! (i.e. use <see cref="WindowDispatcher{T}(Action{T},DispatcherPriority)"/> otherwise)
+		///      If the environment has note been prepared, the function will be executed
+		///      in OnStartup function of the window.
+		/// 
+		///     The method will return immediately.
+		///  </summary>
+		///  <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcherAsync<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		{
+			WindowDispatcher(action, InvokeWindowDispatcherAsync, priority);
+		}
+
+		/// <summary>
+		///     This method allows to access the <see cref="WPFWindow" />.
+		///     All commands will be executed asynchronously! (i.e. use <see cref="WindowDispatcher{T}(Action{T},DispatcherPriority)"/> otherwise)
+		///     If the environment has note been prepared, the function will be executed
+		///     in OnStartup function of the window.
+		/// 
+		///     The method will return immediately.
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcherAsync(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal)
+		{
+			WindowDispatcherAsync<SigmaWindow>(action, priority);
+		}
+
+		#endregion WindowDispatch
 
 		#region Logging
 
