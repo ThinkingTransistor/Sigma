@@ -360,7 +360,7 @@ namespace Sigma.Core.Training.Operators
 
 		public bool AttachLocalHook(IHook hook)
 		{
-			HookUtils.ValidateHook(hook, _localHooks);
+			HookUtils.ValidateHook(hook);
 
 			if (_localHooks.Contains(hook))
 			{
@@ -409,7 +409,7 @@ namespace Sigma.Core.Training.Operators
 
 		public bool AttachGlobalHook(IHook hook)
 		{
-			HookUtils.ValidateHook(hook, _globalHooks);
+			HookUtils.ValidateHook(hook);
 
 			if (_globalHooks.Contains(hook))
 			{
