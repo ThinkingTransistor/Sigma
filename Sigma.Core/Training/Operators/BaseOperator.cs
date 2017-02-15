@@ -815,6 +815,8 @@ namespace Sigma.Core.Training.Operators
 					StartWorkers();
 
 					State = ExecutionState.Running;
+
+					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
 			else
@@ -836,6 +838,8 @@ namespace Sigma.Core.Training.Operators
 					foreach (IWorker worker in Workers) { PauseWorker(worker); }
 
 					State = ExecutionState.Paused;
+
+					InvokeTimeScaleEvent(TimeScale.Pause);
 				}).Start();
 			}
 			else
@@ -857,6 +861,8 @@ namespace Sigma.Core.Training.Operators
 					 foreach (IWorker worker in Workers) { ResumeWorker(worker); }
 
 					 State = ExecutionState.Running;
+
+					 InvokeTimeScaleEvent(TimeScale.Resume);
 				 }).Start();
 			}
 			else
@@ -882,6 +888,8 @@ namespace Sigma.Core.Training.Operators
 					 }
 
 					 State = ExecutionState.Stopped;
+
+					 InvokeTimeScaleEvent(TimeScale.Stop);
 				 }).Start();
 			}
 			else
