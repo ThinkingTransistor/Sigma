@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -31,12 +30,12 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
-			Console.WriteLine(Thread.CurrentThread.CurrentUICulture);
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
+			gui.Priority = ThreadPriority.Highest;
 
 			gui.AddTabs("Overview", "Log");
 
@@ -56,6 +55,9 @@ namespace Sigma.Tests.Internals.WPF
 
 				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				costChart.Series.PointGeometrySize = 0;
+				costChart.Content.Hoverable = false;
+				costChart.Content.DataTooltip = null;
+
 				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
 
 				CartesianTestPanel chart = new CartesianTestPanel("Top accuracy of epoch", trainer);
@@ -63,7 +65,7 @@ namespace Sigma.Tests.Internals.WPF
 				chart.AxisY.MaxValue = 1;
 				chart.Series.PointGeometrySize = 0;
 
-				window.TabControl["Overview"].AddCumulativePanel(chart);
+				//window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
