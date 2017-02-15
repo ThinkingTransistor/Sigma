@@ -14,7 +14,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 	{
 		public ObservableCollection<T> Items { get; }
 
-		public SimpleDataGridPanel(string title) : base(title)
+		public SimpleDataGridPanel(string title, object content = null) : base(title, content)
 		{
 			Items = new ObservableCollection<T>();
 

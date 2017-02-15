@@ -12,7 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Sigma.Core.Training;
-using Sigma.Core.Utils;
+using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
@@ -121,44 +121,42 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			public event EventHandler CanExecuteChanged;
 		}
 
-#if DEBUG
-		internal ITaskObserver Task;
-#endif
-
 		private class DefaultTogglePlay : DefaultCommand
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Toggle play clicked");
-#if DEBUG
-				if (Control.Running)
+				ITrainer trainer = Control.Trainer;
+				IOperator @operator = trainer.Operator;
+
+				if (@operator.State == ExecutionState.Running)
 				{
-					Control.Task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Train, "Well, now I'm training");
+					@operator.SignalPause();
 				}
-				else
+				else if (@operator.State == ExecutionState.Paused)
 				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+					@operator.SignalResume();
 				}
-#endif
+				else if (@operator.State == ExecutionState.None)
+				{
+					@operator.Start();
+				}
 			}
 
-			public DefaultTogglePlay(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultTogglePlay(SigmaPlaybackControl control) : base(control) { }
 		}
 
 		private class DefaultRewind : DefaultCommand
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Rewind!");
-				Control.Running = false;
-#if DEBUG
-				if (Control.Task != null)
-				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				}
-#endif
+				//Debug.WriteLine("Rewind!");
+				//Control.Running = false;
+//#if DEBUG
+//				if (Control.Task != null)
+//				{
+//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+//				}
+//#endif
 			}
 
 			public DefaultRewind(SigmaPlaybackControl control) : base(control)
@@ -174,12 +172,12 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 				Control.Running = false;
 
-#if DEBUG
-				if (Control.Task != null)
-				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				}
-#endif
+//#if DEBUG
+//				if (Control.Task != null)
+//				{
+//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+//				}
+//#endif
 			}
 
 			public DefaultStep(SigmaPlaybackControl control) : base(control)

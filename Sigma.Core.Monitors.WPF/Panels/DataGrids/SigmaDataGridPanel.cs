@@ -14,7 +14,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 	{
 		public new DataGrid Content { get; }
 
-		protected SigmaDataGridPanel(string title) : base(title)
+		protected SigmaDataGridPanel(string title, object content = null) : base(title, content)
 		{
 			Content = new DataGrid
 			{

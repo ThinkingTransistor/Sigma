@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using log4net;
 using log4net.Appender;
 using log4net.Core;
+using log4net.Filter;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 
@@ -42,8 +43,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 
 	public class LogDataGridPanel : SimpleDataGridPanel<LogEntry>, IAppender
 	{
-		public LogDataGridPanel(string title) : base(title)
+		private readonly IFilter _logfilter;
+
+		public LogDataGridPanel(string title, IFilter logfilter = null, object content = null) : base(title, content)
 		{
+			_logfilter = logfilter;
+
 			// Sort after 
 			ICollectionView dataView = CollectionViewSource.GetDefaultView(Content.ItemsSource);
 			//clear the existing sort order
@@ -64,7 +69,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 
 		public void DoAppend(LoggingEvent loggingEvent)
 		{
-			Dispatcher.Invoke(DispatcherPriority.Background, new ParameterizedThreadStart(AddItem), new LogEntry(loggingEvent));
+			if (_logfilter == null || _logfilter.Decide(loggingEvent) == FilterDecision.Accept)
+			{
+				Dispatcher.Invoke(DispatcherPriority.Background, new ParameterizedThreadStart(AddItem), new LogEntry(loggingEvent));
+			}
 		}
 
 		private void AddItem(object item)
