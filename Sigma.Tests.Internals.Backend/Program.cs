@@ -15,7 +15,7 @@ using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -73,13 +73,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
 
-			trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Start), (r, re) => Console.WriteLine("start")));
-			trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Stop), (r, re) => Console.WriteLine("stop")));
-			trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Pause), (r, re) => Console.WriteLine("pause")));
-			trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Resume), (r, re) => Console.WriteLine("resume")));
-
-			//trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.Run();
 		}

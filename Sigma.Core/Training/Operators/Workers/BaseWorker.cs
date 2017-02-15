@@ -100,9 +100,8 @@ namespace Sigma.Core.Training.Operators.Workers
 					State = ExecutionState.Running;
 
 					WorkerThread = CreateThread(Update);
-					WorkerThread.Start();
 
-					InvokeTimeScaleEvent(TimeScale.Start);
+					WorkerThread.Start();
 				}
 			}
 			else if (State != ExecutionState.Running)
@@ -120,8 +119,6 @@ namespace Sigma.Core.Training.Operators.Workers
 					OnPause();
 
 					State = ExecutionState.Paused;
-
-					InvokeTimeScaleEvent(TimeScale.Pause);
 				}
 			}
 			else if (State != ExecutionState.Paused)
@@ -141,8 +138,6 @@ namespace Sigma.Core.Training.Operators.Workers
 					State = ExecutionState.Running;
 
 					_waitForResume.Set();
-
-					InvokeTimeScaleEvent(TimeScale.Resume);
 				}
 			}
 			else if (State != ExecutionState.Running)
@@ -168,8 +163,6 @@ namespace Sigma.Core.Training.Operators.Workers
 
 					State = ExecutionState.Stopped;
 					_waitForResume.Set();
-
-					InvokeTimeScaleEvent(TimeScale.Stop);
 				}
 			}
 		}
