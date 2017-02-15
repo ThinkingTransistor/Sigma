@@ -6,13 +6,13 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Utils;
+using System.Collections.Generic;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -66,14 +66,24 @@ namespace Sigma.Core.Training.Operators
 		INetworkMerger NetworkMerger { get; set; }
 
 		/// <summary>
+		///		The local hooks that are attached to this operator.
+		/// </summary>
+		IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+
+		/// <summary>
 		///		The global hooks that are attached to this operator.
 		/// </summary>
 		IReadOnlyCollection<IHook> AttachedGlobalHooks { get; }
 
 		/// <summary>
-		///		The local hooks that are attached to this operator.
+		///		All local hooks sorted by time scale.
 		/// </summary>
-		IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+		IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedLocalHooksByTimeScale { get; }
+
+		/// <summary>
+		///		All global hooks sorted by time scale.
+		/// </summary>
+		IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedGlobalHooksByTimescale { get; }
 
 		/// <summary>
 		///     The number of <see cref="Workers.IWorker" />s (threads) used in this
@@ -176,10 +186,10 @@ namespace Sigma.Core.Training.Operators
 		/// Invoke hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		/// <param name="hooks">The hooks to check and invoke.</param>
+		/// <param name="hooksByTimescale">The hooks to check and invoke (by timescale).</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting (unordered) hooks to invoke.</param>
-		void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke);
+		void EjectTimeScaleEvent(TimeScale timeScale, IReadOnlyDictionary<TimeScale, ISet<IHook>> hooksByTimescale, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 

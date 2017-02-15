@@ -6,16 +6,15 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Sigma.Core.Training.Operators.Workers
 {
@@ -248,10 +247,8 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			var localHooks = Operator.AttachedLocalHooks;
-
-			Operator.EjectTimeScaleEvent(timeScale, localHooks, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
-			MarkDeadHooks(localHooks, LocalLocalHookTimeSteps);
+			Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
+			MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
 
 			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
 

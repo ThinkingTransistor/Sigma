@@ -64,10 +64,10 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network.Architecture = InputLayer.Construct(4)
 											+ 5 * FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3) 
-											+ SoftMaxCrossEntropyCostLayer.Construct();
+											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.003);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));

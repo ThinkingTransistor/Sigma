@@ -6,12 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using log4net;
-using static Sigma.Core.Utils.ThreadUtils;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
@@ -21,6 +16,11 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -31,16 +31,6 @@ namespace Sigma.Core.Training.Operators
 		///		A registry containing relevant parameters of this operator.
 		/// </summary>
 		public IRegistry Registry { get; }
-
-		/// <summary>
-		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
-		/// </summary>
-		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; protected set; }
-
-		/// <summary>
-		///     All global <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
-		/// </summary>
-		public IReadOnlyCollection<IHook> AttachedGlobalHooks { get; protected set; }
 
 		/// <summary>
 		///     The <see cref="SigmaEnvironment" /> this operator runs in and communicates with.
@@ -90,20 +80,31 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		public int EpochNumber { get; protected set; }
 
+
 		/// <summary>
-		/// The logger for the inheriting class. 
+		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
-		protected ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
+		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+
+		/// <summary>
+		///     All global <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
+		/// </summary>
+		public IReadOnlyCollection<IHook> AttachedGlobalHooks { get; }
 
 		/// <summary>
 		///		All local hooks sorted by time scale.
 		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IHook>> LocalHooksByTimeScale;
+		public IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedLocalHooksByTimeScale { get; }
 
 		/// <summary>
 		///		All global hooks sorted by time scale.
 		/// </summary>
-		protected readonly IDictionary<TimeScale, ISet<IHook>> GlobalHooksByTimescale;
+		public IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedGlobalHooksByTimescale { get; }
+
+		/// <summary>
+		/// The logger for the inheriting class. 
+		/// </summary>
+		protected ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
 
 		/// <summary>
 		///     All the <see cref="IWorker" />s managed by this operator.
@@ -157,6 +158,8 @@ namespace Sigma.Core.Training.Operators
 		private readonly IList<IHook> _bufferHooksInBackgroundToInvoke;
 		private readonly IDictionary<IHook, ITimeStep> _localGlobalHookTimeSteps;
 		private int _highestIterationNumber;
+		private IDictionary<TimeScale, ISet<IHook>> _attachedLocalHooksByTimeScale;
+		private readonly IDictionary<TimeScale, ISet<IHook>> _attachedGlobalHooksByTimescale;
 
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
@@ -211,9 +214,12 @@ namespace Sigma.Core.Training.Operators
 			_networkChangedLock = new object();
 			_stateChangeLock = new object();
 			_aliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
+			_attachedLocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
+			_attachedGlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
 
-			LocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
-			GlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
+			AttachedLocalHooksByTimeScale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedLocalHooksByTimeScale);
+			AttachedGlobalHooksByTimescale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedGlobalHooksByTimescale);
+
 			AttachedLocalHooks= new ReadOnlyCollection<IHook>(_localHooks);
 			AttachedGlobalHooks= new ReadOnlyCollection<IHook>(_globalHooks);
 		}
@@ -275,7 +281,7 @@ namespace Sigma.Core.Training.Operators
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			EjectTimeScaleEvent(timeScale, AttachedGlobalHooks, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
+			EjectTimeScaleEvent(timeScale, AttachedGlobalHooksByTimescale, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
 
 			PopulateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
 
@@ -371,7 +377,7 @@ namespace Sigma.Core.Training.Operators
 				return false;
 			}
 
-			AttachHook(hook, _localHooks, LocalHooksByTimeScale, AttachLocalHook);
+			AttachHook(hook, _localHooks, _attachedLocalHooksByTimeScale, AttachLocalHook);
 
 			RebuildHookInvocationCache(_localHooks, _localHookInvocationIndices, _localHookInvocationTargets);
 
@@ -392,7 +398,7 @@ namespace Sigma.Core.Training.Operators
 				return false;
 			}
 
-			DetachHook(hook, LocalHooksByTimeScale, DetachLocalHook);
+			DetachHook(hook, _attachedLocalHooksByTimeScale, DetachLocalHook);
 
 			RebuildHookInvocationCache(_localHooks, _localHookInvocationIndices, _localHookInvocationTargets);
 
@@ -419,7 +425,7 @@ namespace Sigma.Core.Training.Operators
 				return false;
 			}
 
-			AttachHook(hook, _globalHooks, GlobalHooksByTimescale, AttachGlobalHook);
+			AttachHook(hook, _globalHooks, _attachedGlobalHooksByTimescale, AttachGlobalHook);
 			RebuildHookInvocationCache(_globalHooks, _globalHookInvocationIndices, _globalHookInvocationTargets);
 
 			Logger.Debug($"Attached global hook {hook} to operator {this}.");
@@ -439,7 +445,7 @@ namespace Sigma.Core.Training.Operators
 				return false;
 			}
 
-			DetachHook(hook, GlobalHooksByTimescale, DetachGlobalHook);
+			DetachHook(hook, _attachedGlobalHooksByTimescale, DetachGlobalHook);
 
 			RebuildHookInvocationCache(_globalHooks, _globalHookInvocationIndices, _globalHookInvocationTargets);
 
@@ -621,25 +627,25 @@ namespace Sigma.Core.Training.Operators
 		/// Eject a certain time scale event within a certain worker and update the local time steps.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		/// <param name="hooks">The hooks to check and invoke.</param>
+		/// <param name="hooksByTimescale">The hooks to check and invoke.</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
-		public void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke)
+		public void EjectTimeScaleEvent(TimeScale timeScale, IReadOnlyDictionary<TimeScale, ISet<IHook>> hooksByTimescale, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke)
 		{
 			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
-			if (hooks == null) throw new ArgumentNullException(nameof(hooks));
+			if (hooksByTimescale == null) throw new ArgumentNullException(nameof(hooksByTimescale));
 			if (localHookTimeSteps == null) throw new ArgumentNullException(nameof(localHookTimeSteps));
 			if (resultHooksToInvoke == null) throw new ArgumentNullException(nameof(resultHooksToInvoke));
 
 			resultHooksToInvoke.Clear();
 
-			foreach (IHook hook in hooks)
+			if (!hooksByTimescale.ContainsKey(timeScale))
 			{
-				if (hook.TimeStep.TimeScale != timeScale)
-				{
-					continue;
-				}
+				return;
+			}
 
+			foreach (IHook hook in hooksByTimescale[timeScale])
+			{
 				if (!localHookTimeSteps.ContainsKey(hook))
 				{
 					TimeStep timeStep = (TimeStep) hook.TimeStep.DeepCopy();
