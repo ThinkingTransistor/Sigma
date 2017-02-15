@@ -44,12 +44,20 @@ namespace Sigma.Core.Training.Hooks
 		public IReadOnlyCollection<IHook> RequiredHooks { get; }
 
 		/// <summary>
+		/// The invoke priority of this hook (i.e. invoke as first or last hook).
+		/// An invoke priority of 0 is the default, smaller than 0 means invoke earlier, larger than 0 means invoke later.
+		/// Note:	The <see cref="IHook.RequiredHooks"/> take precedence over invoke priority.
+		///			Invoke priorities are only a recommendation and cannot be guaranteed. 
+		/// </summary>
+		public int InvokePriority { get; protected set; } = 0;
+
+		/// <summary>
 		/// Flag whether this hook should be invoked by the owner (worker/operator) or in a separate background task.
 		/// By default this is set to false (no background execution). Hooks that are not invoked in the background should execute as fast as possible. Otherwise...
 		/// Set this to true if performance intensive operations (e.g. storing to disk, processing large arrays) are used in this hook.
 		/// Note: When invoked in background, hooks received a complete copy of all required registry entries and can therefore not directly modify the parameters of a worker/operator.
 		/// </summary>
-		public bool InvokeInBackground { get; } = false;
+		public bool InvokeInBackground { get; protected set; } = false;
 
 		/// <summary>
 		/// The operator that owns this hook and dispatched it for execution. 

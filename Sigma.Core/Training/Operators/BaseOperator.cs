@@ -148,6 +148,7 @@ namespace Sigma.Core.Training.Operators
 		private readonly IDictionary<IHook, uint> _localHookInvocationTargets;
 		private readonly IDictionary<IHook, uint> _globalHookInvocationTargets;
 		private readonly IDictionary<IHook, ISet<IHook>> _dependentHooksByRequiredHook;
+		private readonly IDictionary<IHook, IHook> _usedHookByRequiredHook;
 		private readonly IRegistryResolver _bufferRegistryResolver;
 		private readonly IList<IHook> _localHooks;
 		private readonly IList<IHook> _globalHooks;
@@ -155,9 +156,9 @@ namespace Sigma.Core.Training.Operators
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
 		private readonly IDictionary<IHook, ITimeStep> _localGlobalHookTimeSteps;
-		private int _highestIterationNumber;
-		private IDictionary<TimeScale, ISet<IHook>> _attachedLocalHooksByTimeScale;
+		private readonly IDictionary<TimeScale, ISet<IHook>> _attachedLocalHooksByTimeScale;
 		private readonly IDictionary<TimeScale, ISet<IHook>> _attachedGlobalHooksByTimescale;
+		private int _highestIterationNumber;
 
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
@@ -207,6 +208,7 @@ namespace Sigma.Core.Training.Operators
 			_localHookInvocationTargets = new Dictionary<IHook, uint>();
 			_globalHookInvocationTargets = new Dictionary<IHook, uint>();
 			_dependentHooksByRequiredHook = new Dictionary<IHook, ISet<IHook>>();
+			_usedHookByRequiredHook = new Dictionary<IHook, IHook>();
 			_networkChangedLock = new object();
 			_stateChangeLock = new object();
 			_aliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
@@ -464,6 +466,7 @@ namespace Sigma.Core.Training.Operators
 				bool attachedOwnRequiredHook = attachFunction.Invoke(requiredHook);
 				IHook usedRequiredHook = attachedOwnRequiredHook ? requiredHook : allHooks.First(existingHook => existingHook.FunctionallyEquals(requiredHook));
 				_dependentHooksByRequiredHook.TryGetValue(usedRequiredHook, () => new HashSet<IHook>()).Add(hook);
+				_usedHookByRequiredHook.Add(requiredHook, usedRequiredHook);
 			}
 		}
 
@@ -479,23 +482,41 @@ namespace Sigma.Core.Training.Operators
 				{
 					detachFunction.Invoke(requiredHook);
 				}
+
+				_usedHookByRequiredHook.Remove(requiredHook);
 			}
 		}
 
-		private static void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
+		private void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
 		{
 			hookInvocationIndices.Clear();
 			hookInvocationTargets.Clear();
 
 			LinkedList<IHook> invocationOrder = new LinkedList<IHook>();
-			ISet<IHook> hooksToTraverse = new HashSet<IHook>(hooks);
+			List<IHook> hooksToTraverse = new List<IHook>(hooks);
+			hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority); // sort in inverse invoke priority (it's reversed again when adding the hooks to invocation order)
+			ISet<IHook> alreadyAddedRequiredHooks = new HashSet<IHook>();
 
 			uint invocationTarget = 1;
 			while (hooksToTraverse.Count > 0)
 			{
 				IHook hook = hooksToTraverse.First();
 
-				uint currentInvocationTarget = hook.InvokeInBackground ? invocationTarget++ : 0; // invocation target for foreground is 0
+				// check if any sub required hook was already added to the order, if so, remove and readd them to queue so the ordering works
+				if (hook.RequiredHooks.Count > 0)
+				{
+					alreadyAddedRequiredHooks.Clear();
+					_InternalGetAddedRequiredHooks(hook, invocationOrder, alreadyAddedRequiredHooks);
+					foreach (IHook toRemove in alreadyAddedRequiredHooks)
+					{
+						invocationOrder.Remove(toRemove);
+						hookInvocationIndices.Remove(toRemove);
+						hookInvocationTargets.Remove(toRemove);
+						hooksToTraverse.Add(toRemove);
+					}
+				}
+
+				uint currentInvocationTarget = hook.InvokeInBackground ? invocationTarget++ : 0; // invocation target for foreground is 0				
 				_InternalTraverseInvocationOrder(hook, currentInvocationTarget, invocationOrder, hooksToTraverse, hookInvocationTargets);
 			}
 
@@ -506,16 +527,57 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
-		private static void _InternalTraverseInvocationOrder(IHook hook, uint invocationTarget, LinkedList<IHook> invocationOrder, ICollection<IHook> toTraverse, IDictionary<IHook, uint> invocationTargets)
+		private void _InternalGetAddedRequiredHooks(IHook hook, ICollection<IHook> invocationOrder, ISet<IHook> hooksToRemove)
 		{
-			foreach (IHook requiredHook in hook.RequiredHooks)
+			foreach (IHook requiredHook in _InternalGetUsedRequiredHooks(hook))
 			{
-				_InternalTraverseInvocationOrder(requiredHook, invocationTarget, invocationOrder, toTraverse, invocationTargets);
+				if (invocationOrder.Contains(requiredHook))
+				{
+					hooksToRemove.Add(requiredHook);
+				}
+
+				if (hook.RequiredHooks.Count > 0)
+				{
+					_InternalGetAddedRequiredHooks(requiredHook, invocationOrder, hooksToRemove);
+				}
+			}
+		}
+
+		private void _InternalTraverseInvocationOrder(IHook hook, uint invocationTarget, LinkedList<IHook> invocationOrder, ICollection<IHook> toTraverse, IDictionary<IHook, uint> invocationTargets)
+		{
+			if (hook.RequiredHooks.Count > 0)
+			{
+				var usedRequiredHooks = _InternalGetUsedRequiredHooks(hook);
+
+				usedRequiredHooks.Sort((s, o) => s.InvokePriority - o.InvokePriority);
+
+				foreach (IHook requiredHook in usedRequiredHooks)
+				{
+					if (toTraverse.Contains(requiredHook))
+					{
+						_InternalTraverseInvocationOrder(requiredHook, invocationTarget, invocationOrder, toTraverse, invocationTargets);
+					}
+				}
 			}
 
 			invocationOrder.AddLast(hook);
 			invocationTargets[hook] = invocationTarget;
 			toTraverse.Remove(hook);
+		}
+
+		private List<IHook> _InternalGetUsedRequiredHooks(IHook hook)
+		{
+			List<IHook> usedRequiredHooks = new List<IHook>();
+
+			foreach (IHook requiredHook in hook.RequiredHooks)
+			{
+				if (_usedHookByRequiredHook.Any(p => ReferenceEquals(p.Value, requiredHook)))
+				{
+					usedRequiredHooks.Add(requiredHook);
+				}
+			}
+
+			return usedRequiredHooks;
 		}
 
 		/// <summary>

@@ -72,7 +72,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 				valuesByIdentifier[valueIdentifiers[i]] = value;
 			}
 
-			ReportValues(registry.Get<int>("epoch"), registry.Get<int>("iteration"), valuesByIdentifier);
+			ReportValues(valuesByIdentifier);
 		}
 
 		/// <summary>
@@ -82,9 +82,9 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="epoch">The current epoch.</param>
 		/// <param name="iteration">The current iteration.</param>
 		/// <param name="valuesByIdentifier">The values by their identifier.</param>
-		protected virtual void ReportValues(int epoch, int iteration, IDictionary<string, object> valuesByIdentifier)
+		protected virtual void ReportValues(IDictionary<string, object> valuesByIdentifier)
 		{
-			_logger.Info($"Epoch {epoch} / iteration {iteration}: " + string.Join(", ", valuesByIdentifier.Select(pair => $"{pair.Key} = {pair.Value}")));
+			_logger.Info(string.Join(", ", valuesByIdentifier.Select(pair => $"{pair.Key} = {pair.Value}")));
 		}
 	}
 }
