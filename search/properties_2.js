@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['canexecutechanged',['CanExecuteChanged',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_1_1_custom_controls_1_1_title_bar_1_1_sigma_about_box_1_1_close_command.html#a9cf1ea43ac1279846f39722fb8e4c9af',1,'Sigma::Core::Monitors::WPF::View::CustomControls::TitleBar::SigmaAboutBox::CloseCommand']]],
+  ['children',['Children',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_model_1_1_title_bar_1_1_title_bar_item.html#a732024663de931b26d4ff7e87214d939',1,'Sigma::Core::Monitors::WPF::ViewModel::TitleBar::TitleBarItem']]],
+  ['close',['Close',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_1_1_custom_controls_1_1_title_bar_1_1_sigma_about_box.html#a0a99f657b9667461f4cc384d02fa9ad8',1,'Sigma::Core::Monitors::WPF::View::CustomControls::TitleBar::SigmaAboutBox']]],
+  ['closeapp',['CloseApp',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#abb4c0a0fdb9214329ee7b6c80291e0d0',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['colourmanager',['ColourManager',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_w_p_f_monitor.html#a78e66c5c20a32db6830cd823c60ca4a2',1,'Sigma::Core::Monitors::WPF::WPFMonitor']]],
+  ['columns',['Columns',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_model_1_1_u_i_1_1_windows_1_1_grid_size.html#a8e3806f3ad974d8d66efe3492c41e8fa',1,'Sigma::Core::Monitors::WPF::Model::UI::Windows::GridSize']]],
+  ['constantvalue',['ConstantValue',['../class_sigma_1_1_core_1_1_training_1_1_initialisers_1_1_constant_value_initialiser.html#aa511fc1bace4709abb48a86c14248303',1,'Sigma::Core::Training::Initialisers::ConstantValueInitialiser']]],
+  ['content',['Content',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_panels_1_1_generic_panel.html#a4193bada30a21a97c8616ed84f24d469',1,'Sigma.Core.Monitors.WPF.Panels.GenericPanel.Content()'],['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_panels_1_1_sigma_panel.html#a65e93c8054d0b50ba5b7354153f5a396',1,'Sigma.Core.Monitors.WPF.Panels.SigmaPanel.Content()'],['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_model_1_1_title_bar_1_1_title_bar_item.html#a17d58f79427dca588de01c9742feae4e',1,'Sigma.Core.Monitors.WPF.ViewModel.TitleBar.TitleBarItem.Content()']]],
+  ['culture',['Culture',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#a416e512b1dd6c71f194ab6deefdbde09',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['customdarkpath',['CustomDarkPath',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_1_1_themes_1_1_colour_manager.html#af4df820e0b19132870495d780e770375',1,'Sigma::Core::Monitors::WPF::View::Themes::ColourManager']]],
+  ['customlightpath',['CustomLightPath',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_1_1_themes_1_1_colour_manager.html#a30d116ca0bc4e9336a1f289627227190',1,'Sigma::Core::Monitors::WPF::View::Themes::ColourManager']]]
+];

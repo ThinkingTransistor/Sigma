@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['margin',['Margin',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_panels_1_1_sigma_panel.html#ac37dc5b86f7356947b84885869ba637c',1,'Sigma::Core::Monitors::WPF::Panels::SigmaPanel']]],
+  ['maxblocksincache',['MaxBlocksInCache',['../interface_sigma_1_1_core_1_1_data_1_1_datasets_1_1_i_dataset.html#ab19e86c464cebb60f2bc83c4961beaaa',1,'Sigma::Core::Data::Datasets::IDataset']]],
+  ['maxbytesincache',['MaxBytesInCache',['../interface_sigma_1_1_core_1_1_data_1_1_datasets_1_1_i_dataset.html#aef69f54df7d1d84d99ebb9d97602f135',1,'Sigma::Core::Data::Datasets::IDataset']]],
+  ['maxconcurrentactiveblocks',['MaxConcurrentActiveBlocks',['../interface_sigma_1_1_core_1_1_data_1_1_datasets_1_1_i_dataset.html#a7fadf9aedcf24c2f45b9e73e63ccf97e',1,'Sigma::Core::Data::Datasets::IDataset']]],
+  ['maxtotalactiveblocksizebytes',['MaxTotalActiveBlockSizeBytes',['../interface_sigma_1_1_core_1_1_data_1_1_datasets_1_1_i_dataset.html#ad41b6b52f00ddbe6d8666d343a4e0531',1,'Sigma::Core::Data::Datasets::IDataset']]],
+  ['mean',['Mean',['../class_sigma_1_1_core_1_1_training_1_1_initialisers_1_1_gaussian_initialiser.html#a17bcd10f5c4877753a001a4ff38462d9',1,'Sigma::Core::Training::Initialisers::GaussianInitialiser']]],
+  ['menubuttonabout',['MenuButtonAbout',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#abf964b8f0cd3e7d7926f0e3d738693bd',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttonlanguage',['MenuButtonLanguage',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#a08704240681b371bedda73b7547e2a2e',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttonload',['MenuButtonLoad',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#a7d687791e200ea2889fc1c9f3a0a10ee',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttonsave',['MenuButtonSave',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#acb0f41cd0cc681deba65b4cce752d98d',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttonstyle',['MenuButtonStyle',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#aac747fe25df36a027492e22b47f13c00',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttontogglealternate',['MenuButtonToggleAlternate',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#ac3f4063b375b3a9e5fdc4c31368c5f33',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['menubuttontoggledark',['MenuButtonToggleDark',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_properties_1_1_resources.html#a84da0c27196e3d6c43d188fbc96ff4e9',1,'Sigma::Core::Monitors::WPF::Properties::Resources']]],
+  ['minibatchsize',['MinibatchSize',['../class_sigma_1_1_core_1_1_data_1_1_iterators_1_1_minibatch_iterator.html#a05ac03c4e1783abcf6f1ca05a8618539',1,'Sigma::Core::Data::Iterators::MinibatchIterator']]],
+  ['monitor',['Monitor',['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_1_1_windows_1_1_w_p_f_window.html#a19475c60cd52dfde8abe2533493714f1',1,'Sigma::Core::Monitors::WPF::View::Windows::WPFWindow']]],
+  ['moretasksindicator',['MoreTasksIndicator',['../interface_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_model_1_1_status_bar_1_1_i_wpf_task_visualization_manager.html#a032025bfefefda12d1b6e4dae4b33339',1,'Sigma.Core.Monitors.WPF.ViewModel.StatusBar.IWpfTaskVisualizationManager.MoreTasksIndicator()'],['../class_sigma_1_1_core_1_1_monitors_1_1_w_p_f_1_1_view_model_1_1_status_bar_1_1_task_visualization_manager.html#a290f536719614011e6719017c1735d43',1,'Sigma.Core.Monitors.WPF.ViewModel.StatusBar.TaskVisualizationManager.MoreTasksIndicator()']]]
+];
