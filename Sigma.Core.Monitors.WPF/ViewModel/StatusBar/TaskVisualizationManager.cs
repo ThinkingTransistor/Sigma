@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
@@ -253,7 +252,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 				for (int i = 0; i < TaskVisualizers.Length; i++)
 				{
 					int currentTask = i;
-					TaskVisualizers[i].Dispatcher.Invoke(() => TaskVisualizers[currentTask].SetActive(ActiveTasks[currentTask]));
+					TaskVisualizers[i]?.Dispatcher.Invoke(() => TaskVisualizers[currentTask]?.SetActive(ActiveTasks?[currentTask]));
 				}
 			}
 		}

@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows.Data;
 using System.Windows.Threading;
 using log4net;
@@ -71,7 +70,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		{
 			if (_logfilter == null || _logfilter.Decide(loggingEvent) == FilterDecision.Accept)
 			{
-				Dispatcher.Invoke(DispatcherPriority.Background, new ParameterizedThreadStart(AddItem), new LogEntry(loggingEvent));
+				Dispatcher.InvokeAsync(() => AddItem(new LogEntry(loggingEvent)));
+				//Dispatcher.Invoke(DispatcherPriority.Background, new ParameterizedThreadStart(AddItem), new LogEntry(loggingEvent));
 			}
 		}
 

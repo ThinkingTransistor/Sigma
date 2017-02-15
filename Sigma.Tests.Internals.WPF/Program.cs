@@ -1,5 +1,7 @@
 ﻿using System.Threading;
 using LiveCharts.Wpf;
+using log4net.Core;
+using log4net.Filter;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -68,7 +70,7 @@ namespace Sigma.Tests.Internals.WPF
 				//window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
-				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
+				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));
 
 				window.IsInitializing = false;
 			});
@@ -105,6 +107,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
 			return trainer;
 		}

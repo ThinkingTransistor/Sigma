@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5C4ED7EC-24D7-43BA-9424-CADA167A3541}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sigma.Tests.Internals.WPF</RootNamespace>
     <AssemblyName>Sigma.Tests.Internals.WPF</AssemblyName>
