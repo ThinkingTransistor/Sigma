@@ -12,6 +12,7 @@ using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Training;
@@ -38,16 +39,10 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.AddTabs("Overview", "Log");
 
-			ControlPanel control = null;
-
-			gui.WindowDispatcher(window =>
-			{
-				control = new ControlPanel("Control");
-				window.TabControl["Overview"].AddCumulativePanel(control, 2);
-
-				window.TabControl["Log"].GridSize = new[] { 1, 1 };
-				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
-			});
+			//gui.WindowDispatcher(window =>
+			//{
+			//	window.IsInitializing = true;
+			//});
 
 			sigma.Prepare();
 
@@ -55,8 +50,21 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.WindowDispatcher(window =>
 			{
-				control.Trainer = trainer;
+				ControlPanel control = new ControlPanel("Control", trainer);
+				window.TabControl["Overview"].AddCumulativePanel(control, 2);
+				window.TabControl["Overview"].AddCumulativePanel(new CartesianTestPanel("Top", trainer), 2, 2);
+
+				window.TabControl["Log"].GridSize = new[] { 1, 1 };
+				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log"));
 			});
+
+			sigma.StartOperatorsOnRun = false;
+			sigma.RunAsync();
+
+			//gui.WindowDispatcher(window =>
+			//{
+			//	window.IsInitializing = false;
+			//});
 		}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
@@ -86,7 +94,8 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+
 			return trainer;
 		}
 	}

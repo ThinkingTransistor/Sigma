@@ -30,6 +30,11 @@ namespace Sigma.Core
 	public class SigmaEnvironment
 	{
 		/// <summary>
+		/// If the <see cref="IOperator"/>s should automatically start when calling <see cref="Run"/>.
+		/// </summary>
+		public bool StartOperatorsOnRun { get; set; } = true;
+
+		/// <summary>
 		/// If the <see cref="SigmaEnvironment"/> is currently running. 
 		/// </summary>
 		public bool Running { get; private set; }
@@ -194,6 +199,11 @@ namespace Sigma.Core
 			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
+		public async Task RunAsync()
+		{
+			await Task.Run(() => Run());
+		}
+
 		/// <summary>
 		/// Run this environment. Execute all registered options until stop is requested.
 		/// Note: This method is blocking and executes in the calling thread. 
@@ -208,8 +218,11 @@ namespace Sigma.Core
 
 			InitialiseTrainers();
 			FetchRunningOperators();
-			StartRunningOperators();
-
+			if (StartOperatorsOnRun)
+			{
+				StartRunningOperators();
+			}
+			
 			_logger.Info($"Started sigma environment \"{Name}\".");
 
 			while (shouldRun)
@@ -230,7 +243,7 @@ namespace Sigma.Core
 					shouldRun = false;
 				}
 
-				_logger.Debug($"Done processing for received state change signal.");
+				_logger.Debug("Done processing for received state change signal.");
 			}
 
 			StopRunningOperators();

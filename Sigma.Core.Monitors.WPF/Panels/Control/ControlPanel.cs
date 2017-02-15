@@ -39,6 +39,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Control
 		{
 			_trainer = trainer;
 
+			//TODO: style?
 			Content = new StackPanel
 			{
 				Orientation = Orientation.Vertical,

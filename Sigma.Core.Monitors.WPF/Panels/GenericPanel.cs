@@ -52,8 +52,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <param name="title">The given tile.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		protected GenericPanel(string title, object headerContent = null) : base(title, headerContent)
-		{}
+		protected GenericPanel(string title, object headerContent = null) : base(title, headerContent) {}
 
 		/// <summary>
 		/// Set the content of the <see cref="GenericPanel"/> and the <see cref="SigmaPanel"/>. 
