@@ -31,7 +31,7 @@ namespace Sigma.Core.Layers.Regularisation
 			{
 				INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
 				INDArray activations = handler.FlattenTimeAndFeatures(inputs);
-				INDArray dropoutMask = Parameters.Get<INDArray>("dropoutMask");
+				INDArray dropoutMask = Parameters.Get<INDArray>("dropout_mask");
 
 				handler.FillWithProbabilityMask(dropoutMask, Parameters.Get<double>("dropout_probability"));
 
