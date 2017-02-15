@@ -1,8 +1,8 @@
-﻿using System;
-using Sigma.Core.Architecture;
+﻿using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Layers.Regularisation
 {
@@ -27,12 +27,17 @@ namespace Sigma.Core.Layers.Regularisation
 		/// <param name="trainingPass">Indicate whether this is run is part of a training pass.</param>
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			throw new NotImplementedException();
-
 			if (trainingPass)
 			{
-				INDArray activations = buffer.Inputs["default"].Get<INDArray>("activations");
+				INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
+				INDArray activations = handler.FlattenTimeAndFeatures(inputs);
+				INDArray dropoutMask = Parameters.Get<INDArray>("dropoutMask");
 
+				handler.FillWithProbabilityMask(dropoutMask, Parameters.Get<double>("dropout_probability"));
+
+				activations = handler.RowWise(activations, row => handler.Multiply(row, dropoutMask));
+
+				buffer.Outputs["defalut"]["activations"] = activations.Reshape((long[]) inputs.Shape.Clone());
 			}
 			else
 			{
@@ -49,7 +54,7 @@ namespace Sigma.Core.Layers.Regularisation
 
 			LayerConstruct construct = new LayerConstruct(name, typeof(DropoutLayer));
 
-			construct.Parameters["drop_probability"] = dropoutProbability;
+			construct.Parameters["dropout_probability"] = dropoutProbability;
 
 			construct.UpdateBeforeInstantiationEvent +=
 				(sender, args) => args.Self.Parameters["size"] = args.Self.Inputs["default"].Parameters["size"];

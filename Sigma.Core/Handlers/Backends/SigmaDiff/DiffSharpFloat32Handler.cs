@@ -33,6 +33,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
 
+		private readonly Random _probabilityMaskRNG;
 		private readonly long _backendTag;
 
 		protected DiffSharpFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend)
@@ -47,8 +48,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
 			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
-
 			DiffsharpBackendHandle.BackendTag = _backendTag;
+
+			_probabilityMaskRNG = new Random();
 		}
 
 		protected BackendConfig<float> CreateBackendConfig()
@@ -691,7 +693,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			for (int i = begin; i < end; i++)
 			{
-				throw new NotImplementedException($"to be continued");
+				if (_probabilityMaskRNG.NextDouble() < probability)
+				{
+					data[i] = 1;
+				}
+				else
+				{
+					data[i] = 0;
+				}
 			}
 		}
 
