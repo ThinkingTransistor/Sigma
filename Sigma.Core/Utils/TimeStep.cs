@@ -7,8 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using ManagedCuda.NPP;
-using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Utils
 {
@@ -175,6 +173,26 @@ namespace Sigma.Core.Utils
 		/// A time scale for one training iteration (single forward + backward pass on iterator yield).
 		/// </summary>
 		public static readonly TimeScale Iteration = new TimeScale(nameof(Iteration));
+
+		/// <summary>
+		/// A time scale for a start training event.
+		/// </summary>
+		public static readonly TimeScale Start = new TimeScale(nameof(Start));
+
+		/// <summary>
+		/// A time scale for a stop training event.
+		/// </summary>
+		public static readonly TimeScale Stop = new TimeScale(nameof(Start));
+
+		/// <summary>
+		/// A time scale for a resume training event.
+		/// </summary>
+		public static readonly TimeScale Resume = new TimeScale(nameof(Start));
+
+		/// <summary>
+		/// A time scale for a pause training event.
+		/// </summary>
+		public static readonly TimeScale Pause = new TimeScale(nameof(Start));
 
 		/// <summary>
 		/// A time scale that is managed by the callee (e.g. when only invoking once, like for <see cref="ICommand"/>).
