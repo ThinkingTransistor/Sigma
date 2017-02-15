@@ -792,6 +792,8 @@ namespace Sigma.Core.Training.Operators
 					RunWorkersOnce();
 
 					State = ExecutionState.Running;
+
+					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
 			else
@@ -836,6 +838,8 @@ namespace Sigma.Core.Training.Operators
 					foreach (IWorker worker in Workers) { PauseWorker(worker); }
 
 					State = ExecutionState.Paused;
+
+					InvokeTimeScaleEvent(TimeScale.Pause);
 				}).Start();
 			}
 			else
@@ -857,6 +861,8 @@ namespace Sigma.Core.Training.Operators
 					 foreach (IWorker worker in Workers) { ResumeWorker(worker); }
 
 					 State = ExecutionState.Running;
+
+					 InvokeTimeScaleEvent(TimeScale.Resume);
 				 }).Start();
 			}
 			else
@@ -882,6 +888,8 @@ namespace Sigma.Core.Training.Operators
 					 }
 
 					 State = ExecutionState.Stopped;
+
+					 InvokeTimeScaleEvent(TimeScale.Stop);
 				 }).Start();
 			}
 			else
@@ -925,11 +933,10 @@ namespace Sigma.Core.Training.Operators
 			int localEpochNumber, int localIterationNumber)
 		{
 			if (registry == null) throw new ArgumentNullException(nameof(registry));
-			if (localNetwork == null) throw new ArgumentNullException(nameof(localNetwork));
 			if (localOptimiser == null) throw new ArgumentNullException(nameof(localOptimiser));
 			if (localIterator == null) throw new ArgumentNullException(nameof(localIterator));
 
-			registry["network"] = localNetwork.Registry;
+			registry["network"] = localNetwork?.Registry; // network may be null (if not initialised yet)
 			registry["optimiser"] = localOptimiser.Registry;
 			registry["iterator"] = localIterator.Registry;
 			registry["trainer"] = Trainer.Registry;

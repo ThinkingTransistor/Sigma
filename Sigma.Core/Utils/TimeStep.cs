@@ -176,6 +176,7 @@ namespace Sigma.Core.Utils
 
 		/// <summary>
 		/// A time scale for a start training event.
+		/// Note: When the current scope was just started some components may not have been initialised yet (e.g. local networks).
 		/// </summary>
 		public static readonly TimeScale Start = new TimeScale(nameof(Start));
 

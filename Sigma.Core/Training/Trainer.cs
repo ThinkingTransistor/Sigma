@@ -6,11 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -24,6 +19,11 @@ using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
 
 namespace Sigma.Core.Training
 {
@@ -56,7 +56,7 @@ namespace Sigma.Core.Training
 		public IReadOnlyCollection<IHook> LocalHooks { get; }
 		public IRegistry Registry { get; }
 
-		internal Trainer(string name)
+		public Trainer(string name)
 		{
 			if (name == null) { throw new ArgumentNullException(nameof(name)); }
 

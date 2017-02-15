@@ -1,20 +1,35 @@
-﻿using System;
-using System.Threading;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Sigma.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using System;
+using System.IO;
+using System.Threading;
 
 namespace Sigma.Tests.Training.Operators.Backend.NativeCpu
 {
 	public class TestCpuMultithreadedOperator
 	{
+		private static void RedirectGlobalsToTempPath()
+		{
+			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["cache"] = Path.GetTempPath() + "sigmacache";
+			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath() + "sigmadatasets";
+		}
+
 		private static CpuMultithreadedOperator CreateOperator()
 		{
 			SigmaEnvironment.Clear();
+			RedirectGlobalsToTempPath();
 
-			return new CpuMultithreadedOperator(new CpuFloat32Handler(), 3, ThreadPriority.Normal);
+			CpuMultithreadedOperator @operator = new CpuMultithreadedOperator(new CpuFloat32Handler(), 3, ThreadPriority.Normal);
+			@operator.Trainer = new MockTrainer();
+			@operator.Trainer.Initialise(@operator.Handler);
+			@operator.Network = @operator.Trainer.Network;
+			@operator.Sigma = SigmaEnvironment.GetOrCreate("testificate-operatorcreate");
+
+			return @operator;
 		}
 
 		[TestCase]
