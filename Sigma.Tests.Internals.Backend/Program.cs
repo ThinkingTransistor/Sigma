@@ -17,6 +17,7 @@ using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.Training;
@@ -62,7 +63,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
-											+ 5 * FullyConnectedLayer.Construct(3)
+											+ 5 * (DropoutLayer.Construct(0.2) + FullyConnectedLayer.Construct(3))
 											+ OutputLayer.Construct(3) 
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);

@@ -33,11 +33,14 @@ namespace Sigma.Core.Layers.Regularisation
 				INDArray activations = handler.FlattenTimeAndFeatures(inputs);
 				INDArray dropoutMask = Parameters.Get<INDArray>("dropout_mask");
 
-				handler.FillWithProbabilityMask(dropoutMask, Parameters.Get<double>("dropout_probability"));
+				activations = handler.RowWise(activations, row =>
+				{
+					handler.FillWithProbabilityMask(dropoutMask, 1.0 - Parameters.Get<double>("dropout_probability"));
 
-				activations = handler.RowWise(activations, row => handler.Multiply(row, dropoutMask));
+					return handler.Multiply(row, dropoutMask);
+				});
 
-				buffer.Outputs["defalut"]["activations"] = activations.Reshape((long[]) inputs.Shape.Clone());
+				buffer.Outputs["default"]["activations"] = activations.Reshape((long[]) inputs.Shape.Clone());
 			}
 			else
 			{
