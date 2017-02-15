@@ -154,8 +154,6 @@ namespace Sigma.Core.Training.Operators
 		private readonly ISet<string> _bufferRegistryEntries;
 		private readonly ISet<string> _bufferResolvedRegistryEntries;
 		private readonly object _networkChangedLock;
-		private readonly List<IHook> _bufferHooksToInvoke;
-		private readonly IList<IHook> _bufferHooksInBackgroundToInvoke;
 		private readonly IDictionary<IHook, ITimeStep> _localGlobalHookTimeSteps;
 		private int _highestIterationNumber;
 		private IDictionary<TimeScale, ISet<IHook>> _attachedLocalHooksByTimeScale;
@@ -204,8 +202,6 @@ namespace Sigma.Core.Training.Operators
 			_bufferRegistryResolver = new RegistryResolver(Registry);
 			_bufferRegistryEntries = new HashSet<string>();
 			_bufferResolvedRegistryEntries = new HashSet<string>();
-			_bufferHooksToInvoke = new List<IHook>();
-			_bufferHooksInBackgroundToInvoke = new List<IHook>();
 			_localHookInvocationIndices = new Dictionary<IHook, uint>();
 			_globalHookInvocationIndices = new Dictionary<IHook, uint>();
 			_localHookInvocationTargets = new Dictionary<IHook, uint>();
@@ -281,14 +277,16 @@ namespace Sigma.Core.Training.Operators
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			EjectTimeScaleEvent(timeScale, AttachedGlobalHooksByTimescale, _localGlobalHookTimeSteps, _bufferHooksToInvoke);
+			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>(); 
+				
+			EjectTimeScaleEvent(timeScale, AttachedGlobalHooksByTimescale, _localGlobalHookTimeSteps, bufferHooksToInvoke);
 
 			PopulateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
 
-			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, GetGlobalHookInvocationIndex);
-			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksInBackgroundToInvoke);
+			ArrayUtils.SortListInPlaceIndexed(bufferHooksToInvoke, GetGlobalHookInvocationIndex);
+			HookUtils.FetchOrderedBackgroundHooks(bufferHooksToInvoke, bufferHooksInBackgroundToInvoke);
 
-			foreach (IHook hook in _bufferHooksToInvoke)
+			foreach (IHook hook in bufferHooksToInvoke)
 			{
 				if (!hook.InvokeInBackground)
 				{
@@ -297,9 +295,9 @@ namespace Sigma.Core.Training.Operators
 				}
 			}
 
-			if (_bufferHooksInBackgroundToInvoke.Count > 0)
+			if (bufferHooksInBackgroundToInvoke.Count > 0)
 			{
-				DispatchBackgroundHookInvocation(_bufferHooksInBackgroundToInvoke, Registry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				DispatchBackgroundHookInvocation(bufferHooksInBackgroundToInvoke, Registry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 			}
 		}
 

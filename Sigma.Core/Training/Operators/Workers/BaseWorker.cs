@@ -255,26 +255,29 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
-			MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
-
-			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
-
-			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
-			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
-
-			foreach (IHook hook in _bufferHooksToInvoke)
+			lock (_bufferHooksToInvoke) // the lock is only needed as a safeguard against lifecycle invokes, but as it's just a marginal overhead it's better than colliding with another invoke
 			{
-				if (!hook.InvokeInBackground)
+				Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
+				MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
+
+				Operator.PopulateWorkerRegistry(_bufferRegistry, this);
+
+				ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
+				HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
+
+				foreach (IHook hook in _bufferHooksToInvoke)
 				{
-					hook.Operator = Operator;
-					hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
+					if (!hook.InvokeInBackground)
+					{
+						hook.Operator = Operator;
+						hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
+					}
 				}
-			}
 
-			if (_bufferHooksToInvokeInBackground.Count > 0)
-			{
-				Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				if (_bufferHooksToInvokeInBackground.Count > 0)
+				{
+					Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				}
 			}
 		}
 
