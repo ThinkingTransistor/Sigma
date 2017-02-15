@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using log4net;
 using Sigma.Core.Training.Hooks.Scorers;
 using Sigma.Core.Utils;
@@ -7,27 +8,10 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Training.Hooks.Reporters
 {
 	/// <summary>
-	/// This hook reports the validation accuracy of given tops. 
+	/// This hook reports the validation accuracy of given tops (typically for classification tasks). 
 	/// </summary>
 	public class ValidationAccuracyReporter : BaseHook
 	{
-		/// <summary>
-		/// The tops that will be reported.
-		/// 
-		/// E.g. 1,3,5 -> report the first, the third and the fifth best (accuracy).
-		/// </summary>
-		public int[] Tops { get; }
-
-		/// <summary>
-		///	Top values are stored in this dictionary (in order to prevent repeated allocation).
-		/// </summary>
-		private readonly IDictionary<int, double> _topDictionary;
-
-		/// <summary>
-		/// The base validation accuracy top identifier (without the top number) used to get the top value.
-		/// </summary>
-		private const string ValidationAccuracyTopIdentifier = "shared.validation_accuracy_top";
-
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
@@ -42,19 +26,11 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			{
 				throw new ArgumentException("Value cannot be an empty collection.", nameof(tops));
 			}
-			Tops = tops;
 
 			DefaultTargetMode = TargetMode.Global;
-
-			_topDictionary = new Dictionary<int, double>(tops.Length);
-
-			foreach (int top in tops)
-			{
-				string currentTop = ValidationAccuracyTopIdentifier + top;
-				_topDictionary.Add(top, double.NaN);
-
-				RequireHook(new ValidationAccuracyScorer(validationIteratorName, currentTop, timestep));
-			}
+			ParameterRegistry["tops"] = tops;
+			
+			RequireHook(new ValidationAccuracyScorer(validationIteratorName, "shared.validation_accuracy_top", timestep, tops));
 		}
 
 		/// <summary>
@@ -64,21 +40,24 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
 		{
-			foreach (int top in Tops)
+			int[] tops = ParameterRegistry.Get<int[]>("tops");
+			IDictionary<int, double> topDictionary = new Dictionary<int, double>();
+
+			foreach (int top in tops)
 			{
-				_topDictionary[top] = resolver.ResolveGetSingle<double>(ValidationAccuracyTopIdentifier + top);
+				topDictionary[top] = resolver.ResolveGetSingle<double>("shared.validation_accuracy_top" + top);
 			}
 			
-			Report(_topDictionary);
+			Report(topDictionary);
 		}
 
 		/// <summary>
 		/// Execute the report for every given top. 
 		/// </summary>
 		/// <param name="data">The mapping between the tops specified in the constructor and the score of the top.</param>
-		public virtual void Report(IDictionary<int, double> data)
+		protected virtual void Report(IDictionary<int, double> data)
 		{
-			_logger.Info($"Validation accuracy: top({string.Join(";", data.Keys)}) = {string.Join(";", data.Values)}");
+			_logger.Info(string.Join(", ", data.Select(p => $"top{p.Key} = {p.Value}")));
 		}
 	}
 }

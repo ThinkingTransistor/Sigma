@@ -163,7 +163,6 @@ namespace Sigma.Core.Utils
 			return ResolveGet(matchIdentifier, out emptyArrayThrowaway, values);
 		}
 
-
 		public T[] ResolveGet<T>(string matchIdentifier, out string[] fullMatchedIdentifierArray, T[] values = null)
 		{
 			CheckMatchIdentifier(matchIdentifier);
