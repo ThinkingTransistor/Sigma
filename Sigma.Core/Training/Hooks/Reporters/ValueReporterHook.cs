@@ -30,6 +30,30 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		public ValueReporterHook(string valueIdentifier, ITimeStep timestep) : this(new[] { valueIdentifier }, timestep) { }
 
 		/// <summary>
+		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
+		/// </summary>
+		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
+		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
+		/// <param name="target">The extrema criteria target.</param>
+		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
+		{
+			On(new ExtremaCriteria(GetAccumulatedIdentifier(valueIdentifier), target));
+		}
+
+		/// <summary>
+		/// Create a hook that conditionally (threshold criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
+		/// </summary>
+		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
+		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
+		/// <param name="threshold">The threshold to compare against.</param>
+		/// <param name="target">The threshold criteria comparison target.</param>
+		/// <param name="fireContinously">If the value should be reported every time step the criteria is satisfied (or just once).</param>
+		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : this(new[] { valueIdentifier }, timestep)
+		{
+			On(new ThresholdCriteria(GetAccumulatedIdentifier(valueIdentifier), target, threshold, fireContinously));
+		}
+
+		/// <summary>
 		///	Create a hook that fetches a given amount of values (i.e. registry identifiers) at a given <see cref="ITimeStep"/>.
 		/// </summary>
 		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
@@ -47,7 +71,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			{
 				string value = valueIdentifiers[i];
 
-				accumulatedIdentifiers[i] = "shared." + value.Replace('.', '_') + "_accumulated";
+				accumulatedIdentifiers[i] = GetAccumulatedIdentifier(value);
 
 				// TODO let caller decide if it's a number (double) / something else
 				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration)));
@@ -58,6 +82,11 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			ParameterRegistry["value_identifiers"] = valueIdentifiers;
 			ParameterRegistry["accumulated_identifiers"] = accumulatedIdentifiers;
 			ParameterRegistry["value_buffer"] = valueBuffer;
+		}
+
+		private static string GetAccumulatedIdentifier(string value)
+		{
+			return "shared." + value.Replace('.', '_') + "_accumulated";
 		}
 
 		/// <summary>

@@ -25,7 +25,7 @@ namespace Sigma.Core.Training.Hooks
 		{
 			if (requiredRegistryEntries == null) throw new ArgumentNullException(nameof(requiredRegistryEntries));
 
-			SimpleDirectEntries = new bool[RequiredRegistryEntries.Length];
+			SimpleDirectEntries = new bool[requiredRegistryEntries.Length];
 			for (var i = 0; i < requiredRegistryEntries.Length; i++)
 			{
 				SimpleDirectEntries[i] = !requiredRegistryEntries[i].Contains(".");
@@ -118,7 +118,7 @@ namespace Sigma.Core.Training.Hooks
 
 			if (double.IsNaN(currentExtremum) || reachedExtremum)
 			{
-				currentExtremum = value;
+				ParameterRegistry["current_extremum"] = value;
 
 				return true;
 			}
