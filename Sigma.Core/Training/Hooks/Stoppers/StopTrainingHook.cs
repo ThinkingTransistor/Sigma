@@ -22,7 +22,7 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 		/// Create a hook that will stop training when a certain custom criteria is met.
 		/// </summary>
 		/// <param name="criteria">The custom criteria at which training shall be stopped.</param>
-		public StopTrainingHook(HookInvokeCriteria criteria) : base(new TimeStep(TimeScale.Epoch, 1))
+		public StopTrainingHook(HookInvokeCriteria criteria) : base(new TimeStep(TimeScale.Epoch, 1)) // TODO add option to pass own timescale if per epoch isn't enough (it should be, but anyway)
 		{
 			DefaultTargetMode = TargetMode.Global;
 			InvokePriority = 10000; // typically the training should be stopped after all other hooks have been invoked

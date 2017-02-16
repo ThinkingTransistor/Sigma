@@ -8,7 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Utils;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Sigma.Core.Training.Hooks
 {
@@ -57,9 +59,29 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="times">The times (they are a changing).</param>
 		/// <returns>A repeat criteria as specified.</returns>
-		public RepeatCriteria Repeated(int times)
+		public virtual RepeatCriteria Repeated(long times)
 		{
 			return new RepeatCriteria(this, times);
+		}
+
+		/// <summary>
+		/// Create a combined multi or criteria with another criteria that fires when either of them fires (boolean OR).
+		/// </summary>
+		/// <param name="criteria">The other criteria.</param>
+		/// <returns>A multi or criteria combining this and another criteria with boolean OR.</returns>
+		public virtual MultiOrCriteria Or(HookInvokeCriteria criteria)
+		{
+			return new MultiOrCriteria(this, criteria);
+		}
+
+		/// <summary>
+		/// Create a combined multi or criteria with another criteria that fires when all of them fire (boolean AND)..
+		/// </summary>
+		/// <param name="criteria">The other criteria.</param>
+		/// <returns>A multi or criteria combining this and another criteria with boolean OR.</returns>
+		public virtual MultiAndCriteria And(HookInvokeCriteria criteria)
+		{
+			return new MultiAndCriteria(this, criteria);
 		}
 
 		/// <summary>
@@ -83,6 +105,96 @@ namespace Sigma.Core.Training.Hooks
 	}
 
 	/// <summary>
+	/// A multi or criteria to combine multiple criteria with a boolean OR. 
+	/// </summary>
+	public class MultiOrCriteria : HookInvokeCriteria
+	{
+		/// <summary>
+		/// Create a multi or criteria to combine certain criteria with a boolean OR. 
+		/// </summary>
+		/// <param name="criterias">The criteria to combine with OR.</param>
+		public MultiOrCriteria(params HookInvokeCriteria[] criterias)
+		{
+			if (criterias == null) throw new ArgumentNullException(nameof(criterias));
+			if (criterias.Length == 0) throw new ArgumentException($"There must be at least 1 criteria must 0 were given.");
+
+			ParameterRegistry["criterias"] = criterias.ToList();
+		}
+
+		public override MultiOrCriteria Or(HookInvokeCriteria criteria)
+		{
+			ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias").Add(criteria);
+
+			return this;
+		}
+
+		public override bool CheckCriteria(IRegistry registry, IRegistryResolver resolver)
+		{
+			IList<HookInvokeCriteria> criterias = ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias");
+
+			for (int i = 0; i < criterias.Count; i++)
+			{
+				if (criterias[i].CheckCriteria(registry, resolver))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public override string ToString()
+		{
+			return $"multi or criteria {string.Join(" or ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}";
+		}
+	}
+
+	/// <summary>
+	/// A multi or criteria to combine multiple criteria with a boolean AND. 
+	/// </summary>
+	public class MultiAndCriteria : HookInvokeCriteria
+	{
+		/// <summary>
+		/// Create a multi or criteria to combine certain criteria with a boolean AND. 
+		/// </summary>
+		/// <param name="criterias">The criteria to combine with AND.</param>
+		public MultiAndCriteria(params HookInvokeCriteria[] criterias)
+		{
+			if (criterias == null) throw new ArgumentNullException(nameof(criterias));
+			if (criterias.Length == 0) throw new ArgumentException($"There must be at least 1 criteria must 0 were given.");
+
+			ParameterRegistry["criterias"] = criterias.ToList();
+		}
+
+		public override MultiAndCriteria And(HookInvokeCriteria criteria)
+		{
+			ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias").Add(criteria);
+
+			return this;
+		}
+
+		public override bool CheckCriteria(IRegistry registry, IRegistryResolver resolver)
+		{
+			IList<HookInvokeCriteria> criterias = ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias");
+
+			for (int i = 0; i < criterias.Count; i++)
+			{
+				if (!criterias[i].CheckCriteria(registry, resolver))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		public override string ToString()
+		{
+			return $"multi and criteria {string.Join(" and ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}";
+		}
+	}
+
+	/// <summary>
 	/// A repeat criteria that fires if the underlying criteria fires a certain amount of times.
 	/// </summary>
 	public class RepeatCriteria : HookInvokeCriteria
@@ -92,7 +204,7 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="repetitions"></param>
 		/// <param name="criteria"></param>
-		public RepeatCriteria(HookInvokeCriteria criteria, int repetitions)
+		public RepeatCriteria(HookInvokeCriteria criteria, long repetitions)
 		{
 			if (criteria == null) throw new ArgumentNullException(nameof(criteria));
 			if (repetitions <= 0) throw new ArgumentOutOfRangeException($"{nameof(repetitions)} must be > 0.");
@@ -102,11 +214,18 @@ namespace Sigma.Core.Training.Hooks
 			ParameterRegistry["current_repetitions"] = 0;
 		}
 
+		public override RepeatCriteria Repeated(long times)
+		{
+			ParameterRegistry["target_repetitions"] = checked(ParameterRegistry.Get<long>("target_repetitions") * times);
+
+			return this;
+		}
+
 		public override bool CheckCriteria(IRegistry registry, IRegistryResolver resolver)
 		{
 			HookInvokeCriteria baseCriteria = ParameterRegistry.Get<HookInvokeCriteria>("base_criteria");
-			int targetRepetitions = ParameterRegistry.Get<int>("target_repetitions");
-			int currentRepititions = ParameterRegistry.Get<int>("current_repetitions");
+			long targetRepetitions = ParameterRegistry.Get<long>("target_repetitions");
+			long currentRepititions = ParameterRegistry.Get<long>("current_repetitions");
 
 			if (baseCriteria.CheckCriteria(registry, resolver))
 			{

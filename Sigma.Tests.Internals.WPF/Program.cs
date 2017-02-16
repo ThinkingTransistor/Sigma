@@ -94,7 +94,10 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
-										   + 5 * FullyConnectedLayer.Construct(3)
+										   + FullyConnectedLayer.Construct(10)
+										   + FullyConnectedLayer.Construct(20)
+										   + FullyConnectedLayer.Construct(10)
+										   + FullyConnectedLayer.Construct(3)
 										   + OutputLayer.Construct(3)
 										   + SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
