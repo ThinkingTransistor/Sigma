@@ -182,10 +182,21 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply a function along the second (column) dimension of an ndarray.
 		/// </summary>
-		/// <param name="array"></param>
+		/// <param name="array">The array.</param>
 		/// <param name="function">The function to apply.</param>
 		/// <returns>An ndarray with the given function applied column-wise to the given ndarray.</returns>
 		INDArray RowWise(INDArray array, Func<INDArray, INDArray> function);
+
+		/// <summary>
+		/// Get a traceable slice of an ndarray as a matrix of a certain range.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="rowIndex">The row index (dimension 0 start).</param>
+		/// <param name="columnIndex">The column index (dimension 1 start).</param>
+		/// <param name="rowLength">The row length (dimension 0 length).</param>
+		/// <param name="columnLength">The column length (dimension 1 length).</param>
+		/// <returns>A slice of the given ndarray along the given range.</returns>
+		INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength);
 
 		#endregion
 

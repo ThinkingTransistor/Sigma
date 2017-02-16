@@ -149,7 +149,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)
@@ -187,6 +186,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			return rows;
+		}
+
+		public INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			FSharpOption<int> rowStart = FSharpOption<int>.Some(rowIndex);
+			FSharpOption<int> rowEnd = FSharpOption<int>.Some(rowIndex + rowLength - 1);
+			FSharpOption<int> columnStart = FSharpOption<int>.Some(columnIndex);
+			FSharpOption<int> columnEnd = FSharpOption<int>.Some(columnIndex + columnLength - 1);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(rowStart, rowEnd, columnStart, columnEnd));
 		}
 
 		public INDArray Add<TOther>(INDArray array, TOther value)

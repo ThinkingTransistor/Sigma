@@ -324,6 +324,31 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.RowWise(CheckNice(array), function));
 		}
 
+		public INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength)
+		{
+			if (Enabled)
+			{
+				if (rowIndex < 0 || columnIndex < 0)
+				{
+					Report($"row index and column index must be > 0, but were {rowIndex} and {columnIndex}", array, rowIndex, columnIndex);
+				}
+
+				if (rowLength <= 0 || columnLength <= 0)
+				{
+					Report($"row and column length must be > 0, but were {rowLength} and {columnLength}", array, rowLength, columnLength);
+				}
+
+				if (rowIndex + rowLength >= array.Shape[0] || columnIndex + columnLength >= array.Shape[1])
+				{
+					Report($"row index and column index must be < ndarray.shape[i], but were {rowIndex + rowLength} and {columnIndex + columnLength} (bounds were {array.Shape[0]} and {array.Shape[1]})", array, rowIndex, columnIndex, rowLength, columnLength);
+				}
+			}
+
+			CheckMatrix(array, "get slice from matrix");
+
+			return CheckNice(UnderlyingHandler.GetSlice(CheckNice(array), rowIndex, columnIndex, rowLength, columnLength));
+		}
+
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
 			return CheckNice(UnderlyingHandler.Add(CheckNice(array), value));
