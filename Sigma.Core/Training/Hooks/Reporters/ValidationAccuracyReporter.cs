@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using log4net;
+﻿using log4net;
 using Sigma.Core.Training.Hooks.Scorers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
@@ -38,7 +38,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			int[] tops = ParameterRegistry.Get<int[]>("tops");
 			IDictionary<int, double> topDictionary = new Dictionary<int, double>();

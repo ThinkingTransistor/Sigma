@@ -28,7 +28,7 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			string registryEntry = ParameterRegistry.Get<string>("registry_entry");
 			string resultEntry = ParameterRegistry.Get<string>("shared_result_entry");

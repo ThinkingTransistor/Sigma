@@ -32,7 +32,7 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			var action = ParameterRegistry.Get<Action<IRegistry, IRegistryResolver>>("invoke_action");
 			action.Invoke(registry, resolver);

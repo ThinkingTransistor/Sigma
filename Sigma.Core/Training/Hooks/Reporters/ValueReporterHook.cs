@@ -6,12 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using log4net;
 using Sigma.Core.Training.Hooks.Accumulators;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
@@ -65,7 +65,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			string[] accumulatedIdentifiers = ParameterRegistry.Get<string[]>("accumulated_identifiers");
 			string[] valueIdentifiers = ParameterRegistry.Get<string[]>("value_identifiers");

@@ -194,6 +194,7 @@
     <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
     <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
+    <Compile Include="Training\Hooks\HookInvokeCriteria.cs" />
     <Compile Include="Training\Hooks\LambdaHook.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />

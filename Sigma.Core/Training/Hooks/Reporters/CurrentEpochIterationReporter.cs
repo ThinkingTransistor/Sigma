@@ -31,7 +31,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			int epoch = registry.Get<int>("epoch");
 			int iteration = registry.Get<int>("iteration");

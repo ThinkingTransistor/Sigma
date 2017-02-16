@@ -6,16 +6,15 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks
 {
-
 	/// <summary>
 	/// The base implementation of the <see cref="IHook"/> interface.
 	/// Represents a hook which can be used to "hook" into operations and execute custom code at a certain time step. 
@@ -75,6 +74,11 @@ namespace Sigma.Core.Training.Hooks
 		public IRegistry ParameterRegistry { get; }
 
 		/// <summary>
+		/// The optional hook invoke criteria.
+		/// </summary>
+		public HookInvokeCriteria InvokeCriteria { get; private set; }
+
+		/// <summary>
 		/// Create a hook with a certain time step and a set of required global registry entries. 
 		/// </summary>
 		/// <param name="timestep">The time step.</param>
@@ -107,6 +111,20 @@ namespace Sigma.Core.Training.Hooks
 			RequiredRegistryEntries = new ReadOnlyCollection<string>(_requiredRegistryEntries);
 			RequiredHooks = new ReadOnlyCollection<IHook>(_requiredHooks);
 			ParameterRegistry = new Registry();
+		}
+
+		/// <summary>
+		/// Invoke this hook only when a certain hook invoke criteria is satisfied.
+		/// </summary>
+		/// <param name="criteria"></param>
+		/// <returns></returns>
+		public BaseHook On(HookInvokeCriteria criteria)
+		{
+			if (criteria == null) throw new ArgumentNullException(nameof(criteria));
+
+			InvokeCriteria = criteria;
+
+			return this;
 		}
 
 		/// <summary>
@@ -144,7 +162,20 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public abstract void Invoke(IRegistry registry, IRegistryResolver resolver);
+		public void Invoke(IRegistry registry, IRegistryResolver resolver)
+		{
+			if (InvokeCriteria == null || InvokeCriteria.CheckCriteria(registry, resolver))
+			{
+				SubInvoke(registry, resolver);
+			}
+		}
+
+		/// <summary>
+		/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+		public abstract void SubInvoke(IRegistry registry, IRegistryResolver resolver);
 
 		/// <summary>
 		/// Check if this hook's functionality is equal to that of another. 
