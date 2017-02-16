@@ -33,7 +33,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		public IDataIterator LocalTrainingDataIterator { get; set; }
 		public IOptimiser LocalOptimiser { get; set; }
 
-		public int LocalEpochNumber { get; protected set; }
+		public int LocalEpochNumber { get; set; }
 		public int LocalIterationNumber { get; protected set; }
 
 		/// <summary>

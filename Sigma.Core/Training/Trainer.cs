@@ -115,7 +115,7 @@ namespace Sigma.Core.Training
 			{
 				throw new InvalidOperationException($"Ambiguous add hook call for hook {hook} with target mode {hook.DefaultTargetMode}. " +
 				                                    $"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
-				                                    $" (unable to determine where to add this hook).");
+				                                    $" (i.e. unable to determine where to add this hook, specify it explicitly in the caller).");
 			}
 		}
 

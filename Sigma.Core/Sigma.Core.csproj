@@ -201,6 +201,7 @@
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
     <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\Stoppers\StopTrainingHook.cs" />
     <Compile Include="Training\Hooks\TargetMode.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
@@ -255,7 +256,6 @@
     <Folder Include="Persistence\" />
     <Folder Include="Training\Hooks\Modifiers\" />
     <Folder Include="Training\Hooks\Saviors\" />
-    <Folder Include="Training\Hooks\Stoppers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

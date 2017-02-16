@@ -805,6 +805,7 @@ namespace Sigma.Core.Training.Operators
 			for (int i = 0; i < workers.Length; i++)
 			{
 				workers[i] = CreateWorker();
+				workers[i].LocalEpochNumber = EpochNumber;
 				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
 				workers[i].LocalOptimiser = (IOptimiser) Trainer?.Optimiser?.DeepCopy();
 
@@ -829,7 +830,7 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		///		Start all workers once (for one iteration) with <see cref="RunWorkerOnce"/>. 
+		///		Run all workers once (for one iteration) with <see cref="RunWorkerOnce"/>. 
 		/// </summary>
 		protected virtual void RunWorkersOnce()
 		{

@@ -57,7 +57,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		///     The current epoch number (i.e. how many epochs have been executed on this worker).
 		/// </summary>
-		int LocalEpochNumber { get; }
+		int LocalEpochNumber { get; set; }
 
 		/// <summary>
 		///		The iteration number within the current epoch (i.e. how many training iterations have been executed on this worker in the current epoch).
