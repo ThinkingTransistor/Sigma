@@ -6,6 +6,13 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
+using log4net.Config;
+using Sigma.Core.Monitors;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,13 +21,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using log4net;
-using log4net.Config;
-using Sigma.Core.Monitors;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core
 {
@@ -76,12 +76,19 @@ namespace Sigma.Core
 			get; private set;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		public int RandomSeed { get; private set; }
+
 		private SigmaEnvironment(string name)
 		{
 			Name = name;
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
-			Random = new Random();
+			
+			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
+
 			_monitors = new HashSet<IMonitor>();
 			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
@@ -96,6 +103,9 @@ namespace Sigma.Core
 		/// <param name="seed"></param>
 		public void SetRandomSeed(int seed)
 		{
+			_logger.Debug($"Using random initial seed {seed} in sigma environment \"{Name}\".");
+			
+			RandomSeed = seed;
 			Random = new Random(seed);
 		}
 

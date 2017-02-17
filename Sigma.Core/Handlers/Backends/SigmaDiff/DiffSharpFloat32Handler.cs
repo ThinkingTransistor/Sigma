@@ -24,15 +24,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	public abstract class DiffSharpFloat32Handler : IComputationHandler
 	{
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		public abstract IDataType DataType { get; }
+
+		public IRegistry Registry { get; }
 
 		public IBlasBackend BlasBackend { get; }
 		public ILapackBackend LapackBackend { get; }
 
-		public abstract IDataType DataType { get; }
-
 		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
 
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly Random _probabilityMaskRNG;
 		private readonly long _backendTag;
 
@@ -44,6 +45,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			BlasBackend = blasBackend;
 			LapackBackend = lapackBackend;
 
+			Registry = new Registry(tags: "handler");
 			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
 
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());

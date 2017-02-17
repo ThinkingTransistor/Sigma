@@ -56,7 +56,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			if (underlyingHandler == null) throw new ArgumentNullException(nameof(underlyingHandler));
 
 			UnderlyingHandler = underlyingHandler;
-			Registry = new Registry();
+			Registry = new Registry(tags: "handler");
 
 			// these need to be set once so they are set initially in the registry
 			//  kind of ugly but saves me from writing more solid property handling

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 
 namespace Sigma.Core.Handlers
@@ -18,6 +19,11 @@ namespace Sigma.Core.Handlers
 	/// </summary>
 	public interface IComputationHandler
 	{
+		/// <summary>
+		/// The registry containing relevant parameters of this computation handler. 
+		/// </summary>
+		IRegistry Registry { get; }
+
 		#region  Data (number, buffer, ndarray) creation and management
 
 		/// <summary>
