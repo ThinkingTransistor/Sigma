@@ -1,9 +1,29 @@
 # Sigma 
-| Build Status (master)               | Build Status (development)        |
-|:------------------------------------|:----------------------------------|
-|[![Build Status](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)|[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)|
+[![Build Status (Master)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://choosealicense.com/licenses/mit)
+
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
+
+Short overview about why anyone would use this, how it came to be (even shorter) and who is supporting it for the future
+
+## Installation
+
+### NuGet
+
+### From source
+
+## First sample program
+Very short first sample program to demonstrate capabilities, link to Samples project
+
+## Documentation---How do I? 
+How and what short overview, link to API and internal documentation
+
+## Contribute
+
+Contribution guidelines, issue tracking, versioning (?), style requirements, also refer to internal documentation for backend modifications
+
+## Libraries
 
 The following libraries / frameworks are used in the core project:
 
@@ -24,3 +44,8 @@ The following libraries / frameworks are used in the WPF visualiser:
 | [LiveCharts](https://github.com/beto-rodriguez/Live-Charts), [LiveCharts.Wpf](https://github.com/beto-rodriguez/Live-Charts) | Charting, graphing, advanced data, plotting |
 | [MahApps.Metro](https://github.com/MahApps/MahApps.Metro), [MahApps.Metro.Resources](https://github.com/MahApps/MahApps.Metro) | Toolkit for creating metro-style WPF applications |
 | [MaterialDesignColors](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit), [MaterialDesignThemes](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit), [MaterialDesignThemes.MahApps](https://github.com/ButchersBoy/MaterialDesignInXamlToolkit) | Material design for WPF/MahApps |
+
+
+## Acknowledgements 
+
+Special thanks to xyz
