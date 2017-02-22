@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using LiveCharts.Wpf;
+﻿using LiveCharts.Wpf;
 using log4net.Core;
 using log4net.Filter;
 using Sigma.Core;
@@ -37,7 +36,7 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
-			gui.Priority = ThreadPriority.Highest;
+			//gui.Priority = ThreadPriority.Highest;
 
 			gui.AddTabs("Overview", "Log");
 
@@ -62,12 +61,13 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
 
+
 				CartesianTestPanel chart = new CartesianTestPanel("Top accuracy of epoch", trainer);
 				chart.AxisY.MinValue = 0;
 				chart.AxisY.MaxValue = 1;
 				chart.Series.PointGeometrySize = 0;
 
-				//window.TabControl["Overview"].AddCumulativePanel(chart);
+				window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));

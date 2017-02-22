@@ -6,7 +6,14 @@ using LiveCharts.Wpf.Charts.Base;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	//TODO: documentation
+	/// <summary>
+	/// This <see cref="SigmaPanel"/> allows the illustration of various different chart types supported by LiveCharts.
+	/// 
+	/// See <a href="https://lvcharts.net">LiveCharts</a> for more information.
+	/// </summary>
+	/// <typeparam name="TChart">The type of the chart that is being used.</typeparam>
+	/// <typeparam name="TSeries">The type of series that is used to illustrate the points.</typeparam>
+	/// <typeparam name="TData">The data that will be displayed in the chart. See <a href="https://lvcharts.net/App/examples/v1/wpf/Types%20and%20Configuration">Types and Configuration</a>.</typeparam>
 	public class ChartPanel<TChart, TSeries, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new()
 	{
 		public SeriesCollection SeriesCollection { get; }
@@ -33,12 +40,15 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 				ScrollMode = ScrollMode.XY
 			};
 
+			//TODO: make style and don't do that in code!!
+
 			//using a gradient brush.
 			LinearGradientBrush gradientBrush = new LinearGradientBrush
 			{
 				StartPoint = new Point(0, 0),
 				EndPoint = new Point(0, 1)
 			};
+
 			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(33, 148, 241), 0));
 			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
