@@ -20,5 +20,7 @@ namespace Sigma.Core.Monitors
 		public abstract void Start();
 
 		public virtual void Dispose() { }
+
+		public virtual void SignalStop() { }
 	}
 }

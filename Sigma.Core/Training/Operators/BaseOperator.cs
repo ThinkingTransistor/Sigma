@@ -6,6 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -16,10 +20,6 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
@@ -218,8 +218,8 @@ namespace Sigma.Core.Training.Operators
 			AttachedLocalHooksByTimeScale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedLocalHooksByTimeScale);
 			AttachedGlobalHooksByTimescale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedGlobalHooksByTimescale);
 
-			AttachedLocalHooks= new ReadOnlyCollection<IHook>(_localHooks);
-			AttachedGlobalHooks= new ReadOnlyCollection<IHook>(_globalHooks);
+			AttachedLocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
+			AttachedGlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
 		}
 
 		public void PushProgress(IWorker worker)
@@ -279,8 +279,8 @@ namespace Sigma.Core.Training.Operators
 
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>(); 
-				
+			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>();
+
 			EjectTimeScaleEvent(timeScale, AttachedGlobalHooksByTimescale, _localGlobalHookTimeSteps, bufferHooksToInvoke);
 
 			PopulateRegistry(Registry, Network, Trainer.Optimiser, Trainer.TrainingDataIterator, EpochNumber, _highestIterationNumber);
@@ -333,6 +333,7 @@ namespace Sigma.Core.Training.Operators
 			lock (_pushedEpochNetworks)
 			{
 				INetwork[] networks = _pushedEpochNetworks.TryGetValue(worker.LocalEpochNumber, () => new INetwork[WorkerCount]);
+				// ReSharper disable once CoVariantArrayConversion
 				if (!networks.AddToNextNull(worker.LocalNetwork.DeepCopy()))
 				{
 					throw new InvalidOperationException($"Too many workers trying to push their network, worker {worker} attempted to push his network but {WorkerCount} workers already pushed their network for epoch {worker.LocalEpochNumber}.");
@@ -942,10 +943,13 @@ namespace Sigma.Core.Training.Operators
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				 {
-					 foreach (IWorker worker in Workers)
+					 if (Workers != null)
 					 {
-						 PauseWorker(worker);
-						 StopWorker(worker);
+						 foreach (IWorker worker in Workers)
+						 {
+							 PauseWorker(worker);
+							 StopWorker(worker);
+						 }
 					 }
 
 					 State = ExecutionState.Stopped;

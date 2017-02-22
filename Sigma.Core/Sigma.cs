@@ -6,13 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
-using log4net.Config;
-using Sigma.Core.Monitors;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,6 +14,13 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
+using log4net.Config;
+using Sigma.Core.Monitors;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core
 {
@@ -86,7 +86,7 @@ namespace Sigma.Core
 			Name = name;
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
-			
+
 			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
 
 			_monitors = new HashSet<IMonitor>();
@@ -104,7 +104,7 @@ namespace Sigma.Core
 		public void SetRandomSeed(int seed)
 		{
 			_logger.Debug($"Using random initial seed {seed} in sigma environment \"{Name}\".");
-			
+
 			RandomSeed = seed;
 			Random = new Random(seed);
 		}
@@ -126,6 +126,21 @@ namespace Sigma.Core
 			_logger.Debug($"Added monitor {monitor} to sigma environment \"{Name}\".");
 
 			return monitor;
+		}
+
+		public bool RemoveMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
+		{
+			bool ret = _monitors.Remove(monitor);
+
+			if (ret)
+			{
+				_logger.Debug($"Removed monitor {monitor} from sigma environment \"{Name}\".");
+			}
+			else
+			{
+				_logger.Info($"Could not remove monitor {monitor} from sigma environment \"{Name}\" - probably it was not added.");
+			}
+			return ret;
 		}
 
 		/// <summary>
@@ -209,10 +224,7 @@ namespace Sigma.Core
 			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
-		public async Task RunAsync()
-		{
-			await Task.Run(() => Run());
-		}
+
 
 		/// <summary>
 		/// Run this environment. Execute all registered options until stop is requested.
@@ -232,7 +244,7 @@ namespace Sigma.Core
 			{
 				StartRunningOperators();
 			}
-			
+
 			_logger.Info($"Started sigma environment \"{Name}\".");
 
 			while (shouldRun)
@@ -261,6 +273,14 @@ namespace Sigma.Core
 			Running = false;
 
 			_logger.Info($"Stopped sigma environment \"{Name}\".");
+		}
+
+		/// <summary>
+		/// Run this environment asynchronously. Execute all registered options until stop is requested.
+		/// </summary>
+		public async Task RunAsync()
+		{
+			await Task.Run(() => Run());
 		}
 
 		private void InitialiseTrainers()

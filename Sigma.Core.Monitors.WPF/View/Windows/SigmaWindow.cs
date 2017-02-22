@@ -345,6 +345,17 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+		/// <summary>
+		/// The method that handles all unhandled exception (log + popup). 
+		/// </summary>
+		/// <param name="sender">The sender of the event.</param>
+		/// <param name="e">The args for the unhandled exception.</param>
+		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			Exception exception = (Exception) e.ExceptionObject;
+			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
+		}
+
 		private void OnClosing(object sender, CancelEventArgs e)
 		{
 			if (!_forceClose && !IsRunningInBackground)
@@ -357,6 +368,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 					e.Cancel = true;
 				}
 			}
+		}
+
+		/// <summary>
+		/// This method gets called before the last window is closed (the whole application should exit).
+		/// Use it to free all resources required for the whole application.
+		/// 
+		/// All resources are still available (as long as they do not belong to another window).
+		/// </summary>
+		protected virtual void OnLastWindowClosed()
+		{
+			NotifyIcon.Visible = false;
+			Monitor.SignalStop();
 		}
 
 		protected virtual void OnClosed(object sender, EventArgs eventArgs)
@@ -569,6 +592,18 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+		/// <summary>
+		///		Adds the given tabs to the <see cref="TabControlUI{TWindow,TTabWrapper}"/> <see cref="TabControl"/>.
+		/// </summary>
+		/// <param name="tabs">A list that contains the names of each tab that will be added. </param>
+		public virtual void AddTabs(params string[] tabs)
+		{
+			foreach (string tab in tabs)
+			{
+				TabControl.AddTab(tab, new TabUI(tab, DefaultGridSize));
+			}
+		}
+
 		#endregion UICreation
 
 		#region CommandExecution
@@ -650,17 +685,6 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		#endregion CommandExecution
 
-		/// <summary>
-		/// The method that handles all unhandled exception (log + popup). 
-		/// </summary>
-		/// <param name="sender">The sender of the event.</param>
-		/// <param name="e">The args for the unhandled exception.</param>
-		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
-		{
-			Exception exception = (Exception) e.ExceptionObject;
-			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
-		}
-
 		///  <summary>
 		/// 		Set this window to be a child of another window.
 		///  </summary>
@@ -720,7 +744,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				// its the last window
 				else
 				{
-					NotifyIcon.Visible = false;
+					OnLastWindowClosed();
 				}
 			}
 			else

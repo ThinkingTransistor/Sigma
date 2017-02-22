@@ -25,6 +25,12 @@ namespace Sigma.Core.Monitors
 		void Start();
 
 		/// <summary>
+		/// Signal this <see cref="IMonitor"/> to stop. This method should call dispose.
+		/// This could for example stop the Sigma learning process (if mandatory), or clear up registry entries, resources ...
+		/// </summary>
+		void SignalStop();
+
+		/// <summary>
 		/// The sigma environment associated with this monitor.
 		/// </summary>
 		SigmaEnvironment Sigma { get; set; }
