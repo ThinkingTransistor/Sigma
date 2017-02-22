@@ -518,10 +518,20 @@ namespace Sigma.Core
 		/// </summary>
 		private static void RegisterGlobals()
 		{
-			Globals.Set("workspace_path", "workspace/", typeof(string));
-			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
-			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			SetGlobalWorkspacePath("workspace/");
 			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
+		}
+
+		/// <summary>
+		/// Set the global workspace path and re-route its subfolders (e.g. cache, datasets).
+		/// If you want to be more specific - e.g. only re-route cache folders - modify the <see cref="Globals"/> registry directly.
+		/// </summary>
+		/// <param name="path"></param>
+		public static void SetGlobalWorkspacePath(string path)
+		{
+			Globals.Set("workspace_path", "workspace/", typeof(string));
+			Globals.Set("cache_path", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
+			Globals.Set("datasets_path", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
 		}
 
 		/// <summary>

@@ -40,7 +40,7 @@ namespace Sigma.Core.Data.Sources
 		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
 		/// </summary>
 		/// <param name="url">The URL.</param>
-		public UrlSource(string url) : this(url, SigmaEnvironment.Globals["datasets"] + GetFileNameFromUrl(url))
+		public UrlSource(string url) : this(url, SigmaEnvironment.Globals["datasets_path"] + GetFileNameFromUrl(url))
 		{
 		}
 

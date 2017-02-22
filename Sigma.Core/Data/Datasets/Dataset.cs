@@ -101,7 +101,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
 		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
 		public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
-			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache") + name), true, recordExtractors)
+			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
 		{
 		}
 

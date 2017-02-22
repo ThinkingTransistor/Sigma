@@ -23,8 +23,8 @@ namespace Sigma.Tests.Data.Datasets
 		private static void RedirectGlobalsToTempPath()
 		{
 			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
-			SigmaEnvironment.Globals["cache"] = Path.GetTempPath();
-			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["cache_path"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["datasets_path"] = Path.GetTempPath();
 		}
 
 		private static void CreateCsvTempFile(string name)

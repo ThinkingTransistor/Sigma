@@ -26,8 +26,8 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		private static void RedirectGlobalsToTempPath()
 		{
 			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
-			SigmaEnvironment.Globals["cache"] = Path.GetTempPath() + "sigmacache";
-			SigmaEnvironment.Globals["datasets"] = Path.GetTempPath() + "sigmadatasets";
+			SigmaEnvironment.Globals["cache_path"] = Path.GetTempPath() + "sigmacache";
+			SigmaEnvironment.Globals["datasets_path"] = Path.GetTempPath() + "sigmadatasets";
 		}
 
 		private static CpuMultithreadedOperator CreateOperator()

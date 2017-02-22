@@ -151,7 +151,7 @@ namespace Sigma.Core.Data.Sources
 
 		private static string InferLocalUnpackPath(IDataSource source)
 		{
-			return SigmaEnvironment.Globals["datasets"] + Path.GetFileNameWithoutExtension(source.ResourceName);
+			return SigmaEnvironment.Globals["datasets_path"] + Path.GetFileNameWithoutExtension(source.ResourceName);
 		}
 
 		private static IUnpacker InferUnpacker(IDataSource source)

@@ -30,7 +30,7 @@ namespace Sigma.Core.Data.Sources
 		/// Create a file source referring to a locally stored file.
 		/// </summary>
 		/// <param name="path">The local fileName (relative to the global dataset fileName).</param>
-		public FileSource(string path) : this(path, SigmaEnvironment.Globals.Get<string>("datasets"))
+		public FileSource(string path) : this(path, SigmaEnvironment.Globals.Get<string>("datasets_path"))
 		{
 		}
 
