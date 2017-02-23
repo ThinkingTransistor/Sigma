@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Media;
 using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
@@ -234,7 +233,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			ChartValues.Add(chartValues);
 
 			series.Values = chartValues;
-			series.Fill = Brushes.Transparent;
+			//series.Fill = Brushes.Transparent;
 
 			Series.Add(series);
 			SeriesCollection.Add(series);
