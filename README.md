@@ -1,6 +1,7 @@
 # Sigma 
-[![Build Status (Master)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)
-[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://choosealicense.com/licenses/mit)
+[![Build Status (Master)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit)
 
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
