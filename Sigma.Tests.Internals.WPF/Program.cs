@@ -54,10 +54,8 @@ namespace Sigma.Tests.Internals.WPF
 				ControlPanel control = new ControlPanel("Control", trainer);
 				window.TabControl["Overview"].AddCumulativePanel(control, 2);
 
-				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new FastTrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				costChart.Series.PointGeometrySize = 0;
-				costChart.Content.Hoverable = false;
-				costChart.Content.DataTooltip = null;
 
 				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
 
@@ -67,7 +65,7 @@ namespace Sigma.Tests.Internals.WPF
 				chart.AxisY.MaxValue = 1;
 				chart.Series.PointGeometrySize = 0;
 
-				window.TabControl["Overview"].AddCumulativePanel(chart);
+				//window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));

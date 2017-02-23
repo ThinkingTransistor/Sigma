@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -16,18 +18,39 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <typeparam name="TData">The data that will be displayed in the chart. See <a href="https://lvcharts.net/App/examples/v1/wpf/Types%20and%20Configuration">Types and Configuration</a>.</typeparam>
 	public class ChartPanel<TChart, TSeries, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new()
 	{
+		/// <summary>
+		/// The <see cref="SeriesCollection"/> containing the <see cref="Series"/> (of the type <see cref="TSeries"/>). 
+		/// </summary>
 		public SeriesCollection SeriesCollection { get; }
 
+		/// <summary>
+		/// The <see cref="Series"/> that contains the actual data.
+		/// </summary>
 		public TSeries Series { get; }
 
+		/// <summary>
+		/// The values (i.e. collection of values) that are displayed in the chart.
+		/// </summary>
 		public ChartValues<TData> ChartValues { get; }
 
+		/// <summary>
+		/// A reference to the x-axis.
+		/// </summary>
 		public Axis AxisX { get; }
+		/// <summary>
+		/// A reference to the y-axis.
+		/// </summary>
 		public Axis AxisY { get; }
 
 		/// <summary>
-		///     Create a ChartPanel with a given title.
-		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
+		/// The maximum of points visible at once (others get removed). This number is only considered when calling <see cref="Add"/> and <see cref="AddRange"/>.
+		/// If negative (or zero), all points are displayed.
+		/// </summary>
+		public int MaxPoints { get; set; } = -1;
+
+		/// <summary>
+		/// Create a ChartPanel with a given title.
+		/// If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		/// </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
@@ -74,6 +97,40 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 			Content.AxisX.Add(AxisX);
 			Content.AxisY.Add(AxisY);
+		}
+
+		public void Add(TData data)
+		{
+			ChartValues.Add(data);
+
+			KeepValuesInRange();
+		}
+
+		public void AddRange(IEnumerable<TData> data)
+		{
+			ChartValues.AddRange(data);
+
+			KeepValuesInRange();
+		}
+
+		private void KeepValuesInRange()
+		{
+			if (MaxPoints > 0)
+			{
+				IEnumerator<TData> enumerator = ChartValues.AsEnumerable().GetEnumerator();
+				while (ChartValues.Count > MaxPoints)
+				{
+					ChartValues.Remove(enumerator.Current);
+					enumerator.MoveNext();
+				}
+
+				enumerator.Dispose();
+			}
+		}
+
+		public void Clear()
+		{
+			ChartValues.Clear();
 		}
 	}
 }

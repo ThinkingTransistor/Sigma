@@ -10,8 +10,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	public class CartesianTestPanel : ChartPanel<CartesianChart, LineSeries, double>
 	{
 		/// <summary>
-		///     Create a SigmaPanel with a given title.
-		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
+		/// Create a SigmaPanel with a given title.
+		/// If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		/// </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer"></param>
@@ -29,6 +29,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <summary>
 			/// Create a hook with a certain time step and a set of required global registry entries. 
 			/// </summary>
+			/// <param name="panel">The panel this reporter belongs to.</param>
 			/// <param name="validationIteratorName">The name of the validation data iterator to use (as in the trainer).</param>
 			/// <param name="timestep">The time step.</param>
 			/// <param name="tops">The tops that will get reported.</param>
