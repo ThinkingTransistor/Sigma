@@ -45,7 +45,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// This boolean determines the default value for dark / light.
 		/// </summary>
 		public static bool DarkDefault = false;
-		
+
 		/// <summary>
 		/// This boolean determines the default value for alternate.
 		/// </summary>
@@ -53,11 +53,11 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// <summary>
 		/// This <see cref="Swatch"/>  determines the default primary colour.
 		/// </summary>
-		public static Swatch PrimaryDefault = MaterialDesignValues.DeepOrange;
+		public static Swatch PrimaryDefault = MaterialDesignValues.Teal;
 		/// <summary>
 		/// This <see cref="Swatch"/> determines the default accent colour.
 		/// </summary>
-		public static Swatch SecondaryDefault = MaterialDesignValues.Amber;
+		public static Swatch SecondaryDefault = MaterialDesignValues.Indigo;
 
 		/// <summary>
 		///     Option for an alternate style for tabs.

@@ -20,11 +20,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public CartesianTestPanel(string title, ITrainer trainer, object headerContent = null) : base(title, headerContent)
 		{
 			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+
+			AxisY.MinValue = 0;
+			AxisY.MaxValue = 100;
 		}
 
 		protected class ChartValidationAccuracyReport : ValidationAccuracyReporter
 		{
-			private readonly ChartPanel<CartesianChart, LineSeries, double> _panel;
+			private const string PanelIdentifier = "Panel";
 
 			/// <summary>
 			/// Create a hook with a certain time step and a set of required global registry entries. 
@@ -35,7 +38,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="tops">The tops that will get reported.</param>
 			public ChartValidationAccuracyReport(ChartPanel<CartesianChart, LineSeries, double> panel, string validationIteratorName, ITimeStep timestep, params int[] tops) : base(validationIteratorName, timestep, tops)
 			{
-				_panel = panel;
+				ParameterRegistry[PanelIdentifier] = panel;
 			}
 
 			/// <summary>
@@ -45,7 +48,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			protected override void Report(IDictionary<int, double> data)
 			{
 				base.Report(data);
-				_panel.Dispatcher.InvokeAsync(() => _panel.ChartValues.Add(data[1]));
+				ChartPanel<CartesianChart, LineSeries, double> panel = (ChartPanel<CartesianChart, LineSeries, double>) ParameterRegistry[PanelIdentifier];
+				panel.Add(data[1] * 100);
 			}
 		}
 	}

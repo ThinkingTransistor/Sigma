@@ -16,6 +16,7 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
+using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -54,18 +55,17 @@ namespace Sigma.Tests.Internals.WPF
 				ControlPanel control = new ControlPanel("Control", trainer);
 				window.TabControl["Overview"].AddCumulativePanel(control, 2);
 
-				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new FastTrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				costChart.Series.PointGeometrySize = 0;
+				costChart.Fast();
 
 				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
 
-
 				CartesianTestPanel chart = new CartesianTestPanel("Top accuracy of epoch", trainer);
-				chart.AxisY.MinValue = 0;
-				chart.AxisY.MaxValue = 1;
 				chart.Series.PointGeometrySize = 0;
+				chart.Fast();
 
-				//window.TabControl["Overview"].AddCumulativePanel(chart);
+				window.TabControl["Overview"].AddCumulativePanel(chart);
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));
