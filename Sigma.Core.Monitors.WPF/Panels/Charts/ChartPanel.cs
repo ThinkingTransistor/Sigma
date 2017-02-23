@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -24,14 +23,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public SeriesCollection SeriesCollection { get; }
 
 		/// <summary>
-		/// The <see cref="Series"/> that contains the actual data.
+		/// A list of <see cref="Series"/>; they contain the actual data.
 		/// </summary>
-		public TSeries Series { get; }
+		public List<TSeries> Series { get; }
 
 		/// <summary>
 		/// The values (i.e. collection of values) that are displayed in the chart.
 		/// </summary>
-		public ChartValues<TData> ChartValues { get; }
+		public List<ChartValues<TData>> ChartValues { get; }
 
 		/// <summary>
 		/// A reference to the x-axis.
@@ -60,35 +59,26 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			Content = new TChart
 			{
 				Zoom = ZoomingOptions.Xy,
-				ScrollMode = ScrollMode.XY
+				//ScrollMode = ScrollMode.XY
 			};
 
 			//TODO: make style and don't do that in code!!
 
 			//using a gradient brush.
-			LinearGradientBrush gradientBrush = new LinearGradientBrush
-			{
-				StartPoint = new Point(0, 0),
-				EndPoint = new Point(0, 1)
-			};
+			//LinearGradientBrush gradientBrush = new LinearGradientBrush
+			//{
+			//	StartPoint = new Point(0, 0),
+			//	EndPoint = new Point(0, 1)
+			//};
 
-			gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(33, 148, 241), 0));
-			gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
+			//gradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(33, 148, 241), 0));
+			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
-			ChartValues = new ChartValues<TData>();
+			Series = new List<TSeries>();
+			ChartValues = new List<ChartValues<TData>>();
+			SeriesCollection = new SeriesCollection();
 
-			Series = new TSeries
-			{
-				Values = ChartValues
-				//Fill = gradientBrush,
-				//StrokeThickness = 1,
-				//PointGeometrySize = 0
-			};
-
-			SeriesCollection = new SeriesCollection
-			{
-				Series
-			};
+			AddSeries(new TSeries());
 
 			Content.Series = SeriesCollection;
 
@@ -99,28 +89,110 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			Content.AxisY.Add(AxisY);
 		}
 
+		#region PointManagement
+
+		#region SinglePoint
+
+		/// <summary>
+		/// Add a data entry to the first series. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
 		public void Add(TData data)
 		{
-			ChartValues.Add(data);
-
-			KeepValuesInRange();
+			Add(data, 0);
 		}
 
+		/// <summary>
+		/// Add a data entry to a given series. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="series">The series the data will be added to.</param>
+		public void Add(TData data, TSeries series)
+		{
+			Add(data, Series.IndexOf(series));
+		}
+
+		/// <summary>
+		/// Add a data entry to a given series (series is passed via index). Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="seriesIndex">The series index the data will be added to. (<see cref="Series"/>[index])</param>
+		public void Add(TData data, int seriesIndex)
+		{
+			Add(data, ChartValues[seriesIndex]);
+		}
+
+		/// <summary>
+		/// Add a data entry to a given <see cref="ChartValues"/>. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="values">The chart values the data will be added to.</param>
+		public void Add(TData data, ChartValues<TData> values)
+		{
+			values.Add(data);
+
+			KeepValuesInRange(values);
+		}
+
+		#endregion SinglePoint
+
+		#region PointRange
+
+		/// <summary>
+		/// Add a range of data entries to the first series. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
 		public void AddRange(IEnumerable<TData> data)
 		{
-			ChartValues.AddRange(data);
-
-			KeepValuesInRange();
+			AddRange(data, 0);
 		}
 
-		private void KeepValuesInRange()
+		/// <summary>
+		/// Add a range of data entries to a given series. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="series">The series the data will be added to.</param>
+		public void AddRange(IEnumerable<TData> data, TSeries series)
+		{
+			AddRange(data, Series.IndexOf(series));
+		}
+
+		/// <summary>
+		/// Add a range of data entries to a given series (series is passed via index). Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="seriesIndex">The series index the data will be added to. (<see cref="Series"/>[index])</param>
+		public void AddRange(IEnumerable<TData> data, int seriesIndex)
+		{
+			AddRange(data, ChartValues[seriesIndex]);
+		}
+
+		/// <summary>
+		/// Add a range of data entries to a given <see cref="ChartValues"/>. Additionally, this method maintains a maximum of <see cref="MaxPoints"/>.
+		/// </summary>
+		/// <param name="data">The data that will be added.</param>
+		/// <param name="values">The chart values the data will be added to.</param>
+		public void AddRange(IEnumerable<TData> data, ChartValues<TData> values)
+		{
+			values.AddRange(data);
+
+			KeepValuesInRange(values);
+		}
+
+		#endregion PointRange
+
+		/// <summary>
+		/// Maintain (i.e. eventually remove points) the point list for a given <see cref="MaxPoints"/> and chart values.
+		/// </summary>
+		/// <param name="chartValues">The chart values that will be maintained.</param>
+		private void KeepValuesInRange(ICollection<TData> chartValues)
 		{
 			if (MaxPoints > 0)
 			{
-				IEnumerator<TData> enumerator = ChartValues.AsEnumerable().GetEnumerator();
-				while (ChartValues.Count > MaxPoints)
+				IEnumerator<TData> enumerator = chartValues.AsEnumerable().GetEnumerator();
+				while (chartValues.Count > MaxPoints)
 				{
-					ChartValues.Remove(enumerator.Current);
+					chartValues.Remove(enumerator.Current);
 					enumerator.MoveNext();
 				}
 
@@ -130,7 +202,83 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 		public void Clear()
 		{
-			ChartValues.Clear();
+			foreach (ChartValues<TData> chartValues in ChartValues)
+			{
+				chartValues.Clear();
+			}
 		}
+
+		#endregion PointManagement
+
+		#region SeriesManagement
+
+		/// <summary>
+		/// Adds a single series.
+		/// </summary>
+		/// <returns>The newly created series.</returns>
+		public TSeries AddSeries()
+		{
+			TSeries series = new TSeries();
+			AddSeries(series);
+
+			return series;
+		}
+
+		/// <summary>
+		/// Adds a given series.
+		/// </summary>
+		/// <param name="series">The series that will be added.</param>
+		public void AddSeries(TSeries series)
+		{
+			ChartValues<TData> chartValues = new ChartValues<TData>();
+			ChartValues.Add(chartValues);
+
+			series.Values = chartValues;
+			series.Fill = Brushes.Transparent;
+
+			Series.Add(series);
+			SeriesCollection.Add(series);
+		}
+
+		/// <summary>
+		/// Adds a range of series specified by the amount.
+		/// </summary>
+		/// <param name="amount">The amount of series to add.</param>
+		/// <returns>The newly created series.</returns>
+		public IEnumerable<TSeries> AddSeriesRange(int amount)
+		{
+			TSeries[] series = new TSeries[amount];
+
+			for (int i = 0; i < series.Length; i++)
+			{
+				series[0] = new TSeries();
+			}
+
+			AddSeriesRange(series);
+
+			return series;
+		}
+
+		/// <summary>
+		/// Adds a range of series. Fastest if given an <see cref="TSeries"/>[].
+		/// </summary>
+		/// <param name="series">The series that will be added.</param>
+		public void AddSeriesRange(IEnumerable<TSeries> series)
+		{
+			TSeries[] collection = series as TSeries[] ?? series.ToArray();
+
+			Series.AddRange(collection);
+			SeriesCollection.AddRange(collection);
+
+			ChartValues<TData>[] chartValues = new ChartValues<TData>[collection.Length];
+			for (int i = 0; i < chartValues.Length; i++)
+			{
+				chartValues[i] = new ChartValues<TData>();
+			}
+
+			ChartValues.AddRange(chartValues);
+		}
+
+		#endregion
 	}
 }

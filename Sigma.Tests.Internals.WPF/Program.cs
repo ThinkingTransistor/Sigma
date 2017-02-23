@@ -56,16 +56,16 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Overview"].AddCumulativePanel(control, 2);
 
 				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
-				costChart.Series.PointGeometrySize = 0;
 				costChart.Fast();
-
+				costChart.MaxPoints = 500;
 				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
 
-				CartesianTestPanel chart = new CartesianTestPanel("Top accuracy of epoch", trainer);
-				chart.Series.PointGeometrySize = 0;
-				chart.Fast();
-
+				AccuracyPanel chart = new AccuracyPanel("Accuracy of epoch", trainer, tops: new[] { 1, 2 });
+				chart.Fast(hoverEnabled: true);
 				window.TabControl["Overview"].AddCumulativePanel(chart);
+
+				//ChartPanel<CartesianChart, LineSeries, double> testCollection = new ChartPanel<CartesianChart, LineSeries, double>("Test collection");
+				//testCollection.SeriesCollection.
 
 				window.TabControl["Log"].GridSize = new[] { 1, 1 };
 				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));

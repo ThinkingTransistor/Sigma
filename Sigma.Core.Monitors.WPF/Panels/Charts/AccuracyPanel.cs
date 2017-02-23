@@ -6,20 +6,37 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	//TODO: remove
-	public class CartesianTestPanel : ChartPanel<CartesianChart, LineSeries, double>
+	public class AccuracyPanel : ChartPanel<CartesianChart, LineSeries, double>
 	{
+
 		/// <summary>
-		/// Create a SigmaPanel with a given title.
+		/// Create an AccuracyPanel with a given title. It displays the best accuracy per epoch.
 		/// If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		/// </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer"></param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public CartesianTestPanel(string title, ITrainer trainer, object headerContent = null) : base(title, headerContent)
+		public AccuracyPanel(string title, ITrainer trainer, object headerContent = null) : this(title, trainer, headerContent, tops: 1) { }
+
+		/// <summary>
+		/// Create an AccuracyPanel with a given title. It displays given accuracies per epoch.
+		/// If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
+		/// </summary>
+		/// <param name="title">The given tile.</param>
+		/// <param name="trainer"></param>
+		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
+		/// the title will be used.</param>
+		/// <param name="tops"></param>
+		public AccuracyPanel(string title, ITrainer trainer, object headerContent = null, params int[] tops) : base(title, headerContent)
 		{
-			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			// skip the first since its automatically generated
+			for (int i = 1; i < tops.Length; i++)
+			{
+				AddSeries(new LineSeries());
+			}
+
+			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", TimeStep.Every(1, TimeScale.Epoch), tops));
 
 			AxisY.MinValue = 0;
 			AxisY.MaxValue = 100;
@@ -49,7 +66,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			{
 				base.Report(data);
 				ChartPanel<CartesianChart, LineSeries, double> panel = (ChartPanel<CartesianChart, LineSeries, double>) ParameterRegistry[PanelIdentifier];
-				panel.Add(data[1] * 100);
+
+				int i = 0;
+				foreach (KeyValuePair<int, double> top in data)
+				{
+					panel.Add(top.Value * 100, i++);
+				}
 			}
 		}
 	}
