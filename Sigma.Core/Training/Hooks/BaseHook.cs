@@ -132,7 +132,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Note: This is only meant to be used within the constructor, invocation in other areas may lead to illegal / inconsistent state.
 		/// </summary>
 		/// <param name="requiredRegistryEntries">The required registry entries.</param>
-		protected void RequireRegistryEntry(params string[] requiredRegistryEntries)
+		protected BaseHook RequireRegistryEntry(params string[] requiredRegistryEntries)
 		{
 			if (requiredRegistryEntries == null) throw new ArgumentNullException(nameof(requiredRegistryEntries));
 
@@ -140,6 +140,8 @@ namespace Sigma.Core.Training.Hooks
 			{
 				_requiredRegistryEntries.Add(entry);
 			}
+
+			return this;
 		}
 
 		/// <summary>
@@ -147,7 +149,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Note: This is only meant to be used within the constructor, invocation in other areas may lead to illegal / inconsistent state.
 		/// </summary>
 		/// <param name="requiredHooks">The required hooks.</param>
-		protected void RequireHook(params IHook[] requiredHooks)
+		protected BaseHook RequireHook(params IHook[] requiredHooks)
 		{
 			if (requiredHooks == null) throw new ArgumentNullException(nameof(requiredHooks));
 
@@ -155,6 +157,8 @@ namespace Sigma.Core.Training.Hooks
 			{
 				_requiredHooks.Add(hook);
 			}
+
+			return this;
 		}
 
 		/// <summary>

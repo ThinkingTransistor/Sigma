@@ -58,10 +58,11 @@ namespace Sigma.Core.Training.Hooks
 		/// Create a criteria that fires if this criteria fires a certain amount of <see cref="times"/>.
 		/// </summary>
 		/// <param name="times">The times (they are a changing).</param>
+		/// <param name="withoutInterruption">Indicate if the counter should be reset if the base criteria is not met.</param>
 		/// <returns>A repeat criteria as specified.</returns>
-		public virtual RepeatCriteria Repeated(long times)
+		public virtual RepeatCriteria Repeated(long times, bool withoutInterruption = false)
 		{
-			return new RepeatCriteria(this, times);
+			return new RepeatCriteria(this, times, withoutInterruption);
 		}
 
 		/// <summary>
@@ -75,13 +76,22 @@ namespace Sigma.Core.Training.Hooks
 		}
 
 		/// <summary>
-		/// Create a combined multi or criteria with another criteria that fires when all of them fire (boolean AND)..
+		/// Create a combined multi or criteria with another criteria that fires when all of them fire (boolean AND).
 		/// </summary>
 		/// <param name="criteria">The other criteria.</param>
 		/// <returns>A multi or criteria combining this and another criteria with boolean OR.</returns>
 		public virtual MultiAndCriteria And(HookInvokeCriteria criteria)
 		{
 			return new MultiAndCriteria(this, criteria);
+		}
+
+		/// <summary>
+		/// Create a not criteria that negates this criteria.
+		/// </summary>
+		/// <returns></returns>
+		public virtual NegateCriteria Negate()
+		{
+			return new NegateCriteria(this);
 		}
 
 		/// <summary>
@@ -101,6 +111,35 @@ namespace Sigma.Core.Training.Hooks
 		internal virtual bool FunctionallyEquals(HookInvokeCriteria other)
 		{
 			return GetType() == other.GetType() && ParameterRegistry.RegistryContentEquals(other.ParameterRegistry);
+		}
+	}
+
+	/// <summary>
+	/// A not criteria that inverts a certain base criteria.
+	/// </summary>
+	public class NegateCriteria : HookInvokeCriteria
+	{
+		/// <summary>
+		/// Create a not criteria that inverts a certain criteria.
+		/// </summary>
+		/// <param name="criteria">The criteria to negate.</param>
+		public NegateCriteria(HookInvokeCriteria criteria)
+		{
+			if (criteria == null) throw new ArgumentNullException(nameof(criteria));
+
+			ParameterRegistry["criteria"] = criteria;
+		}
+
+		public override bool CheckCriteria(IRegistry registry, IRegistryResolver resolver)
+		{
+			return !ParameterRegistry.Get<HookInvokeCriteria>("criteria").CheckCriteria(registry, resolver);
+		}
+
+		/// <summary>Returns a string that represents the current object.</summary>
+		/// <returns>A string that represents the current object.</returns>
+		public override string ToString()
+		{
+			return "not criteria [" + ParameterRegistry.Get<HookInvokeCriteria>("criteria") + "]";
 		}
 	}
 
@@ -145,7 +184,7 @@ namespace Sigma.Core.Training.Hooks
 
 		public override string ToString()
 		{
-			return $"multi or criteria {string.Join(" or ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}";
+			return $"multi or criteria [{string.Join(" or ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}]";
 		}
 	}
 
@@ -190,7 +229,7 @@ namespace Sigma.Core.Training.Hooks
 
 		public override string ToString()
 		{
-			return $"multi and criteria {string.Join(" and ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}";
+			return $"multi and criteria [{string.Join(" and ", ParameterRegistry.Get<IList<HookInvokeCriteria>>("criterias"))}]";
 		}
 	}
 
@@ -202,20 +241,28 @@ namespace Sigma.Core.Training.Hooks
 		/// <summary>
 		/// Create a repeat criteria for a certain amount of repeated fires of a base criteria.
 		/// </summary>
-		/// <param name="repetitions"></param>
-		/// <param name="criteria"></param>
-		public RepeatCriteria(HookInvokeCriteria criteria, long repetitions)
+		/// <param name="repetitions">The number of repetitions that should be </param>
+		/// <param name="criteria">The base criteria.</param>
+		/// <param name="withoutInterruption">Indicate if the counter should be reset if the base criteria is not met.</param>
+		public RepeatCriteria(HookInvokeCriteria criteria, long repetitions, bool withoutInterruption = false)
 		{
 			if (criteria == null) throw new ArgumentNullException(nameof(criteria));
 			if (repetitions <= 0) throw new ArgumentOutOfRangeException($"{nameof(repetitions)} must be > 0.");
 
 			ParameterRegistry["base_criteria"] = criteria;
 			ParameterRegistry["target_repetitions"] = repetitions;
-			ParameterRegistry["current_repetitions"] = 0;
+			ParameterRegistry["current_repetitions"] = 0L;
+			ParameterRegistry["without_interruption"] = withoutInterruption;
 		}
 
-		public override RepeatCriteria Repeated(long times)
+		public override RepeatCriteria Repeated(long times, bool withoutInterruption = false)
 		{
+			// only stack if both check for the exact same criteria
+			if (withoutInterruption != ParameterRegistry.Get<bool>("without_interruption"))
+			{
+				return base.Repeated(times, withoutInterruption);
+			}
+
 			ParameterRegistry["target_repetitions"] = checked(ParameterRegistry.Get<long>("target_repetitions") * times);
 
 			return this;
@@ -226,10 +273,15 @@ namespace Sigma.Core.Training.Hooks
 			HookInvokeCriteria baseCriteria = ParameterRegistry.Get<HookInvokeCriteria>("base_criteria");
 			long targetRepetitions = ParameterRegistry.Get<long>("target_repetitions");
 			long currentRepititions = ParameterRegistry.Get<long>("current_repetitions");
+			bool withoutInterruption = ParameterRegistry.Get<bool>("without_interruption");
 
 			if (baseCriteria.CheckCriteria(registry, resolver))
 			{
 				currentRepititions++;
+			}
+			else if (withoutInterruption)
+			{
+				currentRepititions = 0;
 			}
 
 			bool fire = currentRepititions >= targetRepetitions;
@@ -246,7 +298,7 @@ namespace Sigma.Core.Training.Hooks
 
 		public override string ToString()
 		{
-			return $"repeat criteria {ParameterRegistry.Get<HookInvokeCriteria>("base_criteria")} {ParameterRegistry.Get<int>("target_repetitions")} times";
+			return $"repeat criteria [{ParameterRegistry.Get<HookInvokeCriteria>("base_criteria")}] {ParameterRegistry.Get<long>("target_repetitions")} times";
 		}
 	}
 
@@ -353,7 +405,7 @@ namespace Sigma.Core.Training.Hooks
 
 		public override string ToString()
 		{
-			return $"extrema criteria for \"{ParameterRegistry.Get<string>("parameter_identifier")}\" when at \"{ParameterRegistry.Get<ExtremaTarget>("target")}";
+			return $"extrema criteria for \"{ParameterRegistry.Get<string>("parameter_identifier")}\" when at {ParameterRegistry.Get<ExtremaTarget>("target")}";
 		}
 	}
 

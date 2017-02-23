@@ -1,4 +1,12 @@
-﻿using log4net;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using log4net;
 using Sigma.Core.Training.Hooks.Scorers;
 using Sigma.Core.Utils;
 using System;
