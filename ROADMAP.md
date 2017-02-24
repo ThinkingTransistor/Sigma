@@ -5,7 +5,7 @@ The never ending list of nice-to-have things by project. These lists are not mea
 ## Sigma.Core Roadmap
 
 * Automated hyperparameter search across trainers
-  * "Supervisor" to easily manipulate certain parameters
+  * "Supervisor" to automagically and easily manipulate certain parameters (with smart guesses)
   * Multiple search modes for supervisor (e.g. basic grid search, advanced hyperparameter optimisation) 
 * Truly distributed operator across devices
   * Operates on sub-operators for each device
