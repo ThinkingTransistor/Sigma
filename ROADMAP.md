@@ -2,7 +2,7 @@
 
 The never ending list of nice-to-have things by project. These lists are not meant to be taken entirely seriously. Though they would be nice to have.
 
-## Sigma.Core Roadmap
+## Sigma.Core
 
 * Automated hyperparameter search across trainers
   * "Supervisor" to automagically and easily manipulate certain parameters (with smart guesses)
@@ -15,7 +15,7 @@ The never ending list of nice-to-have things by project. These lists are not mea
 * Improved preprocessor pipeline with extra step before extraction
   * Use extra step to detect values for preprocessing (e.g. for auto-normalisation)
 
-## Sigma.Core.Monitors General Roadmap
+## Sigma.Core.Monitors General
 
 * TCP monitor
   * Allow TCP connections to receive and send hooks (just like any monitor)
@@ -31,6 +31,6 @@ The never ending list of nice-to-have things by project. These lists are not mea
   * Monitor RAM
   * Receive notifications
 
-## Sigma.Core.Monitors.WPF Roadmap
+## Sigma.Core.Monitors.WPF
 
-* Language change within the GUI having to restart _everything_
+* Language change within the GUI without having to restart _everything_
