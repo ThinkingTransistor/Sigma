@@ -226,6 +226,7 @@
     <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Optimisers\MomentumGradientOptimiser.cs" />
     <Compile Include="Training\Providers\DefaultDataProvider.cs" />
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />

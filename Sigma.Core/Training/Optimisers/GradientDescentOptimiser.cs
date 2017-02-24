@@ -12,7 +12,9 @@ using Sigma.Core.MathAbstract;
 namespace Sigma.Core.Training.Optimisers
 {
 	/// <summary>
-	/// A gradient descent optimiser, using the gradient descent algorithm with a certain learning rate on each parameter. 
+	/// A gradient descent optimiser, using the classic gradient descent algorithm with a certain learning rate on each parameter.
+	/// The parameter update rule is: 
+	///     parameter = parameter - gradient * learning_rate
 	/// </summary>
 	public class GradientDescentOptimiser : BaseGradientOptimiser
 	{

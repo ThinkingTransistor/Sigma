@@ -144,7 +144,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 
 			IsScalar = Rank == 1 && shape[0] == 1;
 			IsVector = Rank == 2 && shape[0] == 1 ^ shape[1] == 1;
-			IsMatrix = Rank == 2 && shape[0] > 1 && shape[1] > 1;
+			IsMatrix = Rank == 2 && shape[0] >= 1 && shape[1] >= 1;
 		}
 
 		protected virtual void Reinitialise(long[] shape, long[] strides)

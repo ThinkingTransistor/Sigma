@@ -97,14 +97,21 @@ namespace Sigma.Core.Training.Optimisers
 					string parameterIdentifier = layerIdentifier + "." + trainableParameter;
 
 					INumber asNumber = parameter as INumber;
+					INDArray asArray = parameter as INDArray;
+
+					if (asNumber == null && asArray == null)
+					{
+						throw new InvalidOperationException($"Cannot optimise non-ndarray and non-number parameter \"{parameter}\" (identifier \"{parameterIdentifier}\"" +
+									$" in layer \"{layerBuffer.Layer.Name}\") but it is marked as trainable.");
+					}
 
 					if (asNumber != null)
 					{
 						// boxing the numbers to ndarrays is easier to work with and the performance difference is completely negligible
 						//  (especially considering that ndarrays are far more common as trainable parameters).
 						//  if you think otherwise, implement your own gradient optimiser and do it your way
-						INDArray convertedNumber = handler.AsNDArray(asNumber);
-						INDArray convertedGradient = handler.AsNDArray(handler.GetDerivative(asNumber));
+						INDArray convertedNumber = handler.ClearTrace(handler.AsNDArray(asNumber));
+						INDArray convertedGradient = handler.ClearTrace(handler.AsNDArray(handler.GetDerivative(asNumber)));
 
 						gradientRegistry[parameterIdentifier] = convertedGradient;
 
@@ -112,21 +119,11 @@ namespace Sigma.Core.Training.Optimisers
 					}
 					else
 					{
-						INDArray asArray = parameter as INDArray;
+						INDArray gradient = handler.ClearTrace(handler.GetDerivative(asArray));
 
-						if (asArray != null)
-						{
-							INDArray gradient = handler.GetDerivative(asArray);
+						gradientRegistry[parameterIdentifier] = gradient;
 
-							gradientRegistry[parameterIdentifier] = gradient;
-
-							layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, asArray, gradient, handler);
-						}
-						else
-						{
-							throw new InvalidOperationException($"Cannot optimise non-ndarray and non-number parameter \"{parameter}\" (identifier \"{parameterIdentifier}\"" +
-																$" in layer \"{layerBuffer.Layer.Name}\") but it is marked as trainable.");
-						}
+						layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, handler.ClearTrace(asArray), gradient, handler);
 					}
 
 					layerBuffer.Parameters[trainableParameter] = handler.ClearTrace(layerBuffer.Parameters.Get<ITraceable>(trainableParameter));

@@ -292,8 +292,8 @@ namespace Sigma.Core.Training
 
 			localOptimiser.PrepareRun(localNetwork, handler);
 			localNetwork.Run(handler, trainingPass: true);
-			ApplyValueModifiers(localNetwork, handler);
 			localOptimiser.Run(localNetwork, handler);
+			ApplyValueModifiers(localNetwork, handler);
 		}
 
 		private void ApplyValueModifiers(INetwork localNetwork, IComputationHandler handler)
