@@ -212,6 +212,9 @@
     <Compile Include="Training\Mergers\BaseNetworkMerger.cs" />
     <Compile Include="Training\Mergers\INetworkMerger.cs" />
     <Compile Include="Training\Mergers\WeightedNetworkMerger.cs" />
+    <Compile Include="Training\Modifiers\BaseValueModifier.cs" />
+    <Compile Include="Training\Modifiers\IValueModifier.cs" />
+    <Compile Include="Training\Modifiers\ClipValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />

@@ -682,19 +682,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
-			throw new NotImplementedException($"Clipping is currently not supported in this handler ({this}).");
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
+			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
 
-			/*
-						ADNDFloat32Array internalArray = InternaliseArray(array);
-						ADFloat32Number internalMinValue = InternaliseNumber(minValue);
-						ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
+			DNDArray lowerClipped = DNDArray.Max(internalMinValue._adNumberHandle, internalArray._adArrayHandle);
+			DNDArray clipped = DNDArray.Min(internalMaxValue._adNumberHandle, lowerClipped);
 
-						DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
-
-						DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
-
-						return new ADNDFloat32Array(clipped);
-			*/
+			return new ADNDFloat32Array(clipped);
 		}
 
 		public void FillWithProbabilityMask(INDArray array, double probability)

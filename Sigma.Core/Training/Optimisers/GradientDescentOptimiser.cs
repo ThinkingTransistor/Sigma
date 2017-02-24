@@ -23,7 +23,7 @@ namespace Sigma.Core.Training.Optimisers
 		/// <param name="externalCostAlias">The optional external output identifier by which to detect cost layers (defaults to "external_cost").</param>
 		public GradientDescentOptimiser(double learningRate, string externalCostAlias = "external_cost") : base(externalCostAlias)
 		{
-			Registry["learning_rate"] = learningRate;
+			Registry.Set("learning_rate", learningRate, typeof(double));
 		}
 
 		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)

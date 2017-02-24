@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Modifiers;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -77,6 +78,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
+
+			trainer.AddValueModifier("*.weights", new ClipValueModifier());
 
 			trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 10, target: ExtremaTarget.Min));
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));

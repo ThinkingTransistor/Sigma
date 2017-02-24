@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using Sigma.Core.Training.Modifiers;
 
 namespace Sigma.Core.Training
 {
@@ -39,6 +40,7 @@ namespace Sigma.Core.Training
 		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
+		private readonly IDictionary<string, ISet<IValueModifier>> _valueModifiers;
 		private bool _initialised;
 
 		public string Name { get; }
@@ -54,11 +56,12 @@ namespace Sigma.Core.Training
 		public IReadOnlyCollection<IHook> Hooks { get; }
 		public IReadOnlyCollection<IHook> GlobalHooks { get; }
 		public IReadOnlyCollection<IHook> LocalHooks { get; }
+		public IReadOnlyDictionary<string, ISet<IValueModifier>> ValueModifiers { get; }
 		public IRegistry Registry { get; }
 
 		public Trainer(string name)
 		{
-			if (name == null) { throw new ArgumentNullException(nameof(name)); }
+			if (name == null) throw new ArgumentNullException(nameof(name));
 
 			Name = name;
 
@@ -67,11 +70,13 @@ namespace Sigma.Core.Training
 			_globalHooks = new List<IHook>();
 			_additionalNameDataIterators = new Dictionary<string, IDataIterator>();
 			_initialisers = new Dictionary<string, IInitialiser>();
+			_valueModifiers = new Dictionary<string, ISet<IValueModifier>>();
 
 			Hooks = new ReadOnlyCollection<IHook>(_allHooks);
 			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
 			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
 			AdditionalNameDataIterators = new ReadOnlyDictionary<string, IDataIterator>(_additionalNameDataIterators);
+			ValueModifiers = new ReadOnlyDictionary<string, ISet<IValueModifier>>(_valueModifiers);
 			Initialisers = new ReadOnlyDictionary<string, IInitialiser>(_initialisers);
 			Registry = new Registry(tags: "trainer");
 			Registry["self"] = this;
@@ -95,10 +100,15 @@ namespace Sigma.Core.Training
 			if (_initialisers.ContainsKey(identifier))
 			{
 				throw new InvalidOperationException($"Cannot add duplicate identifier {identifier} for initialiser {initialiser}," +
-				                                    $" identifier is already bound to initialiser {_initialisers[identifier]}");
+													$" identifier is already bound to initialiser {_initialisers[identifier]}");
 			}
 
 			_initialisers.Add(identifier, initialiser);
+		}
+
+		public void AddValueModifier(string identifier, IValueModifier modifier)
+		{
+			_valueModifiers.TryGetValue(identifier, () => new HashSet<IValueModifier>()).Add(modifier);
 		}
 
 		public void AddHook(IHook hook)
@@ -114,8 +124,8 @@ namespace Sigma.Core.Training
 			else
 			{
 				throw new InvalidOperationException($"Ambiguous add hook call for hook {hook} with target mode {hook.DefaultTargetMode}. " +
-				                                    $"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
-				                                    $" (i.e. unable to determine where to add this hook, specify it explicitly in the caller).");
+													$"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
+													$" (i.e. unable to determine where to add this hook, specify it explicitly in the caller).");
 			}
 		}
 
@@ -282,7 +292,54 @@ namespace Sigma.Core.Training
 
 			localOptimiser.PrepareRun(localNetwork, handler);
 			localNetwork.Run(handler, trainingPass: true);
+			ApplyValueModifiers(localNetwork, handler);
 			localOptimiser.Run(localNetwork, handler);
+		}
+
+		private void ApplyValueModifiers(INetwork localNetwork, IComputationHandler handler)
+		{
+			if (_valueModifiers.Count == 0)
+			{
+				return;
+			}
+
+			RegistryResolver resolver = new RegistryResolver(localNetwork.Registry.Get<IRegistry>("layers"));
+
+			foreach (string identifier in _valueModifiers.Keys)
+			{
+				string[] fullyResolvedIdentifiers;
+				object[] values = resolver.ResolveGet<object>(identifier, out fullyResolvedIdentifiers);
+
+				for (var i = 0; i < values.Length; i++)
+				{
+					object value = values[i];
+					INDArray asNDArray = value as INDArray;
+
+					if (asNDArray != null)
+					{
+						foreach (IValueModifier modifier in _valueModifiers[identifier])
+						{
+							asNDArray = modifier.Modify(fullyResolvedIdentifiers[i], asNDArray, handler);
+						}
+						values[i] = asNDArray;
+					}
+					else
+					{
+						INumber asNumber = value as INumber;
+
+						if (asNumber != null)
+						{
+							foreach (IValueModifier modifier in _valueModifiers[identifier])
+							{
+								asNumber = modifier.Modify(fullyResolvedIdentifiers[i], asNumber, handler);
+							}
+							values[i] = asNumber;
+						}
+					}
+
+					resolver.ResolveSet(fullyResolvedIdentifiers[i], values[i]);
+				}
+			}
 		}
 
 		/// <summary>

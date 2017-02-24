@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Modifiers;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
@@ -48,6 +49,11 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 
 		/// <summary>
+		/// The value modifiers attached to this trainer by identifier.
+		/// </summary>
+		IReadOnlyDictionary<string, ISet<IValueModifier>> ValueModifiers { get; }
+
+		/// <summary>
 		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum - one instance per trainer).
 		/// </summary>
 		IOptimiser Optimiser { get; set; }
@@ -73,7 +79,7 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IDataIterator> AdditionalNameDataIterators { get; }
 
 		/// <summary>
-		/// The hooks attached to this trainer. 
+		/// All hooks attached to this trainer. 
 		/// </summary>
 		IReadOnlyCollection<IHook> Hooks { get; }
 
@@ -99,6 +105,14 @@ namespace Sigma.Core.Training
 		/// <param name="identifier">The identifier (registry resolve string).</param>
 		/// <param name="initialiser">The initialiser.</param>
 		void AddInitialiser(string identifier, IInitialiser initialiser);
+
+		/// <summary>
+		/// Add a value modifier to this trainer which will be invoked on all trainable parameters after each iteration by registry resolve string.
+		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
+		/// </summary>
+		/// <param name="identifier">The identifier (registry resolve string).</param>
+		/// <param name="modifier">The value modifier.</param>
+		void AddValueModifier(string identifier, IValueModifier modifier);
 
 		/// <summary>
 		/// Add a secondary named data iterator to this trainer.

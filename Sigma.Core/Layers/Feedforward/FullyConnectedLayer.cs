@@ -37,7 +37,6 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 
 			INDArray output = handler.Dot(activations, weights);
-
 			output = handler.RowWise(output, row => handler.Add(row, biases));
 			output = handler.Activation(buffer.Parameters.Get<string>("activation"), output);
 
