@@ -30,6 +30,7 @@ namespace Sigma.Core.Architecture
 		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
 		private List<ILayer> _orderedLayers;
 		private IComputationHandler _initialisationHandler;
+		private bool _initialised;
 
 		public Network(string name = "unnamed")
 		{
@@ -47,7 +48,7 @@ namespace Sigma.Core.Architecture
 			Network copy = new Network(Name);
 			copy.Architecture = (INetworkArchitecture) Architecture.DeepCopy();
 
-			if (_initialisationHandler != null)
+			if (_initialised)
 			{
 				copy.Initialise(_initialisationHandler);
 
@@ -186,6 +187,8 @@ namespace Sigma.Core.Architecture
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
+			_initialised = true;
+
 			_logger.Debug($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
@@ -193,6 +196,7 @@ namespace Sigma.Core.Architecture
 		{
 			Registry.Clear();
 
+			Registry["initialised"] = _initialised;
 			Registry["self"] = this;
 			Registry["name"] = Name;
 			Registry["architecture"] = Architecture?.Registry;
@@ -214,6 +218,23 @@ namespace Sigma.Core.Architecture
 			{
 				layerBuffer.Layer.Run(layerBuffer, handler, trainingPass);
 			}
+		}
+
+		public void Reset()
+		{
+			_logger.Debug($"Resetting network \"{Name}\" to un-initialised state...");
+
+			_orderedLayerBuffers.Clear();
+			_orderedLayers.Clear();
+			_externalInputsLayerBuffers.Clear();
+			_externalOutputsLayerBuffers.Clear();
+
+			_initialised = false;
+			_initialisationHandler = null;
+
+			UpdateRegistry();
+
+			_logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
 		}
 
 		public IEnumerable<ILayer> YieldLayersOrdered()

@@ -225,6 +225,7 @@ namespace Sigma.Core.Training
 
 		protected virtual void UpdateRegistry()
 		{
+			Registry["initialised"] = _initialised;
 			Registry["name"] = Name;
 			Registry["network"] = Network?.Registry;
 			Registry["optimiser"] = Optimiser?.Registry;
@@ -374,6 +375,29 @@ namespace Sigma.Core.Training
 					DataProvider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator (and wait for that).
+		/// </summary>
+		public void Reset()
+		{
+			_logger.Info($"Resetting trainer \"{Name}\" to un-initialised state, discarding all progress data...");
+
+			if (Operator?.State != ExecutionState.None)
+			{
+				_logger.Info($"Signalling operator to stop and reset, waiting for state change signal to continue trainer reset...");
+
+				Operator.SignalReset();
+				Operator.WaitForStateChanged();
+			}
+
+			Network?.Reset();
+			_initialised = false;
+
+			UpdateRegistry();
+
+			_logger.Info($"Done resetting trainer \"{Name}\" to un-initialised state, discarded all progress data and stopped operator.");
 		}
 	}
 }

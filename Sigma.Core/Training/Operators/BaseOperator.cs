@@ -80,7 +80,6 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		public int EpochNumber { get; protected set; }
 
-
 		/// <summary>
 		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
@@ -107,17 +106,17 @@ namespace Sigma.Core.Training.Operators
 		protected ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
 
 		/// <summary>
-		///     All the <see cref="IWorker" />s managed by this operator.
+		/// All the <see cref="IWorker" />s managed by this operator.
 		/// </summary>
 		protected IEnumerable<IWorker> Workers;
 
 		/// <summary>
-		///		The worker indices by workers for quick access.
+		///	The worker indices by workers for quick access.
 		/// </summary>
 		protected IReadOnlyDictionary<IWorker, int> WorkerIndicesByWorkers;
 
 		/// <summary>
-		/// The logger, which is initialised in the property getter so that the class matches the actual implementation.
+		/// The logger, which is initialised in the property getter so that the reported class matches the actual implementation.
 		/// </summary>
 		private ILog _logger;
 
@@ -137,7 +136,7 @@ namespace Sigma.Core.Training.Operators
 		private Dictionary<int, int[]> _pushedLocalIterationNumbers;
 
 		/// <summary>
-		///		The alive hooks by an array of flags of workers keeping it alive.
+		///	The alive hooks by an array of flags of workers keeping it alive.
 		/// </summary>
 		private readonly IDictionary<IHook, bool[]> _aliveHooksByInWorkerStates;
 
@@ -163,7 +162,6 @@ namespace Sigma.Core.Training.Operators
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
-		///		TODO update documentation (?)
 		/// </summary>
 		/// <param name="workerCount">
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
@@ -178,8 +176,7 @@ namespace Sigma.Core.Training.Operators
 		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
 		/// </summary>
 		/// <param name="handler">
-		///     The <see cref="IComputationHandler" /> that will be assigned to the
-		///     <see cref="IComputationHandler" />
+		///     The <see cref="IComputationHandler" /> that will be assigned to the <see cref="IComputationHandler" />
 		/// </param>
 		/// <param name="workerCount">
 		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
@@ -870,12 +867,11 @@ namespace Sigma.Core.Training.Operators
 		/// <exception cref="InvalidOperationException">If the operator is running or paused.</exception>
 		public void Start()
 		{
-			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
+			if (State == ExecutionState.None || State == ExecutionState.Stopped)
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
 					PrepareWorkers();
-
 					StartWorkers();
 
 					State = ExecutionState.Running;
@@ -942,7 +938,7 @@ namespace Sigma.Core.Training.Operators
 			if (State != ExecutionState.Stopped)
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
-				 {
+				{
 					 if (Workers != null)
 					 {
 						 foreach (IWorker worker in Workers)
@@ -955,7 +951,7 @@ namespace Sigma.Core.Training.Operators
 					 State = ExecutionState.Stopped;
 
 					 InvokeTimeScaleEvent(TimeScale.Stop);
-				 }).Start();
+				}).Start();
 			}
 			else
 			{
@@ -964,12 +960,60 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
+		///		Signal this operator to stop and reset as soon as possible.
+		///     This operator will be reset to the initial state (runtime data is discarded, network remains untouched, workers are kept).
 		/// </summary>
-		/// <param name="currentState"></param>
-		/// <exception cref="InvalidOperationException"></exception>
-		private void ThrowBadState(string currentState)
+		public void SignalReset()
 		{
-			throw new InvalidOperationException($"The operator cannot be {currentState} because the state is: {State}!");
+			if (State != ExecutionState.None)
+			{
+				SignalStop();
+				WaitForStateChanged();
+
+				new BlockingLockingThread(_stateChangeLock, () =>
+				{
+					// reset and clear all runtime data (attached hooks, local time steps, invocation target data, ...)
+					lock (_pushedEpochNetworks)
+					{
+						_pushedEpochNetworks.Clear();
+					}
+
+					_pushedLocalIterationNumbers.Clear();
+					_aliveHooksByInWorkerStates.Clear();
+					_localGlobalHookTimeSteps.Clear();
+					_localHooks.Clear();
+					_localHookInvocationIndices.Clear();
+					_localHookInvocationTargets.Clear();
+					_globalHooks.Clear();
+					_globalHookInvocationIndices.Clear();
+					_globalHookInvocationTargets.Clear();
+					_attachedGlobalHooksByTimescale.Clear();
+					_attachedLocalHooksByTimeScale.Clear();
+					_usedHookByRequiredHook.Clear();
+					_dependentHooksByRequiredHook.Clear();
+
+					// reset current epoch and iteration
+					_highestIterationNumber = -1;
+					EpochNumber = 0;
+
+					Workers = null;
+
+					State = ExecutionState.None;
+				}).Start();
+			}
+			else
+			{
+				ThrowBadState("reset");
+			}
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="targetState"></param>
+		/// <exception cref="InvalidOperationException"></exception>
+		private void ThrowBadState(string targetState)
+		{
+			throw new InvalidOperationException($"The operator cannot be {targetState} because the current state is: {State}!");
 		}
 
 		#endregion

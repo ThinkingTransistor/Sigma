@@ -201,7 +201,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			}
 			else
 			{
-				ThrowBadState("started once");
+				ThrowBadState("run once");
 			}
 		}
 

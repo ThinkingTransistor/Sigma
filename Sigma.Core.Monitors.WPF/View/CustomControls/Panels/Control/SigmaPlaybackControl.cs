@@ -150,13 +150,19 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			public override void Execute(object parameter)
 			{
 				//Debug.WriteLine("Rewind!");
-				//Control.Running = false;
-//#if DEBUG
-//				if (Control.Task != null)
-//				{
-//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-//				}
-//#endif
+				Control.Running = false;
+				ITrainer trainer = Control.Trainer;
+				trainer.Reset();
+				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
+															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
+				
+
+				//#if DEBUG
+				//				if (Control.Task != null)
+				//				{
+				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				//				}
+				//#endif
 			}
 
 			public DefaultRewind(SigmaPlaybackControl control) : base(control)
@@ -168,7 +174,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Step!");
+				//Debug.WriteLine("Step!");
 
 				Control.Running = false;
 

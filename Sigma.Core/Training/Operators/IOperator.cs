@@ -230,6 +230,12 @@ namespace Sigma.Core.Training.Operators
 		void SignalStop();
 
 		/// <summary>
+		///		Signal this operator to reset as soon as possible.
+		///     This operator will be reset to the initial state (runtime data is discarded, network remains untouched, workers are kept).
+		/// </summary>
+		void SignalReset();
+
+		/// <summary>
 		///     This method blocks until the last state change has been fully performed.
 		///     Returns immediately if not implemented.
 		/// </summary>

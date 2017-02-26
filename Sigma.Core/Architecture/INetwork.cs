@@ -53,6 +53,12 @@ namespace Sigma.Core.Architecture
 		void Run(IComputationHandler handler, bool trainingPass);
 
 		/// <summary>
+		/// Reset this network to an un-initialised state, discard and remove all layers and layer buffers.
+		/// Note: ALL progress is discarded and only the network architecture and cannot be restored. Use with caution.
+		/// </summary>
+		void Reset();
+
+		/// <summary>
 		/// Get the layers of this network in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>
