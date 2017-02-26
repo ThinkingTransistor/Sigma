@@ -73,10 +73,10 @@ namespace Sigma.Tests.Internals.Backend
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.003, momentum: 0.7);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.002, momentum: 0.0);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
+			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 10));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
 			//trainer.AddValueModifier("*.weights", new ClipValueModifier());

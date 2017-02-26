@@ -208,6 +208,7 @@
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Initialisers\XavierInitialiser.cs" />
     <Compile Include="Training\Mergers\AverageNetworkMerger.cs" />
     <Compile Include="Training\Mergers\BaseNetworkMerger.cs" />
     <Compile Include="Training\Mergers\INetworkMerger.cs" />
@@ -227,6 +228,7 @@
     <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
     <Compile Include="Training\Optimisers\MomentumGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\NesterovGradientOptimiser.cs" />
     <Compile Include="Training\Providers\DefaultDataProvider.cs" />
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />

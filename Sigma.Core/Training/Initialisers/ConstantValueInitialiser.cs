@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Initialisers
 {
@@ -18,9 +19,9 @@ namespace Sigma.Core.Training.Initialisers
 	public class ConstantValueInitialiser : IInitialiser
 	{
 		/// <summary>
-		/// The constant value to initialise with.
+		/// The registry containing relevant parameters and information about this initialiser.
 		/// </summary>
-		public double ConstantValue { get; set; }
+		public IRegistry Registry { get; } = new Registry(tags: "initialiser");
 
 		/// <summary>
 		/// Create a constant value initialiser for a certain constant value.
@@ -28,7 +29,7 @@ namespace Sigma.Core.Training.Initialisers
 		/// <param name="constantValue">The constant value.</param>
 		public ConstantValueInitialiser(double constantValue)
 		{
-			ConstantValue = constantValue;
+			Registry.Set("constant_value", constantValue, typeof(double));
 		}
 
 		/// <summary>
@@ -47,7 +48,7 @@ namespace Sigma.Core.Training.Initialisers
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 			if (random == null) throw new ArgumentNullException(nameof(random));
 
-			handler.Fill(ConstantValue, array);
+			handler.Fill(Registry.Get<double>("constant_value"), array);
 		}
 
 		public void Initialise(INumber number, IComputationHandler handler, Random random)
@@ -56,7 +57,7 @@ namespace Sigma.Core.Training.Initialisers
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
 			if (random == null) throw new ArgumentNullException(nameof(random));
 
-			number.Value = ConstantValue;
+			number.Value = Registry.Get<double>("constant_value");
 		}
 	}
 }
