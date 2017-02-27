@@ -253,6 +253,15 @@ namespace Sigma.Core.Training.Operators.Workers
 			_waitForResume.Reset();
 		}
 
+		/// <summary>
+		///		Indicate this worker that it will be reset and discarded.
+		///		Used for resource management and reset invocations.
+		/// </summary>
+		public void OnReset()
+		{
+			InvokeTimeScaleEvent(TimeScale.Reset);
+		}
+
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
 			lock (_bufferHooksToInvoke) // the lock is only needed as a safeguard against lifecycle invokes, but as it's just a marginal overhead it's better than colliding with another invoke

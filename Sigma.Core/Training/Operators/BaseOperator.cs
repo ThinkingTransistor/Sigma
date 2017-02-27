@@ -972,6 +972,11 @@ namespace Sigma.Core.Training.Operators
 
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
+					foreach (IWorker worker in Workers)
+					{
+						worker.OnReset();
+					}
+
 					// reset and clear all runtime data (attached hooks, local time steps, invocation target data, ...)
 					lock (_pushedEpochNetworks)
 					{

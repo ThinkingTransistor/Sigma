@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Utils
 {
@@ -183,17 +184,22 @@ namespace Sigma.Core.Utils
 		/// <summary>
 		/// A time scale for a stop training event.
 		/// </summary>
-		public static readonly TimeScale Stop = new TimeScale(nameof(Start));
+		public static readonly TimeScale Stop = new TimeScale(nameof(Stop));
 
 		/// <summary>
 		/// A time scale for a resume training event.
 		/// </summary>
-		public static readonly TimeScale Resume = new TimeScale(nameof(Start));
+		public static readonly TimeScale Resume = new TimeScale(nameof(Resume));
 
 		/// <summary>
 		/// A time scale for a pause training event.
 		/// </summary>
-		public static readonly TimeScale Pause = new TimeScale(nameof(Start));
+		public static readonly TimeScale Pause = new TimeScale(nameof(Pause));
+
+		/// <summary>
+		/// A time scale for a reset training event.
+		/// </summary>
+		public static readonly TimeScale Reset = new TimeScale(nameof(Reset));
 
 		/// <summary>
 		/// A time scale that is managed by the callee (e.g. when only invoking once, like for <see cref="ICommand"/>).

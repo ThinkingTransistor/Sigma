@@ -91,6 +91,12 @@ namespace Sigma.Core.Training.Operators.Workers
 		void SignalStop();
 
 		/// <summary>
+		///		Indicate that this worker will be reset, discarded and completely destroyed.
+		///		Used for resource management and reset invocations.
+		/// </summary>
+		void OnReset();
+
+		/// <summary>
 		/// Invoke the local hooks that correspond to the local time scale change.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
