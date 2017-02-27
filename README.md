@@ -1,8 +1,8 @@
 # Sigma 
-[![Build Status (Master)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=master)](https://travis-ci.org/ThinkingTransistor/Sigma)
-[![Build Status (Development)](https://travis-ci.org/ThinkingTransistor/Sigma.svg?branch=development)](https://travis-ci.org/ThinkingTransistor/Sigma)
-[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg)](http://choosealicense.com/licenses/mit)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
+[![Build Status (Master)](https://img.shields.io/travis/ThinkingTransistor/Sigma/master.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![Build Status (Development)](https://img.shields.io/travis/ThinkingTransistor/Sigma/development.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://choosealicense.com/licenses/mit)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat-square)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
 
@@ -21,7 +21,7 @@ Very short first sample program to demonstrate capabilities, link to Samples pro
 How and what short overview, link to API and internal documentation
 
 ## Contribute
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat-square)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
 
 Contribution guidelines, issue tracking, versioning (?), style requirements, also refer to internal documentation for backend modifications
 
