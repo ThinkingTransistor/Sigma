@@ -12,7 +12,7 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 
 ### NuGet
 
-The easiest way to use the latest version of Sigma is to add the NuGet dependency to your project.
+The recommended way to use the latest version of Sigma is to add the NuGet dependency to your project.
 <link>
 
 ### From source
