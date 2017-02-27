@@ -12,9 +12,18 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 
 ### NuGet
 
+The easiest way to use the latest version of Sigma is to add the NuGet dependency to your project.
+<link>
+
 ### From source
 
-## First sample program
+For extensive customisation you can also install Sigma from source. This is not recommended as it may be outdated and unstable, but you still might want to do it for whatever reason. First, clone from the GitHub repository - use master for stable releases, development for recent and possibly unstable changes and fixes:
+
+Restore and add all used NuGet packages (also see Used libraries):
+
+You can then integrate Sigma as usual and compile using.
+
+## Obligatory MNIST example
 Very short first sample program to demonstrate capabilities, link to Samples project
 
 ## Documentation---How do I? 
@@ -25,7 +34,7 @@ How and what short overview, link to API and internal documentation
 
 Contribution guidelines, issue tracking, versioning (?), style requirements, also refer to internal documentation for backend modifications
 
-## Libraries
+## Used libraries
 
 The following libraries / frameworks are used in the core project:
 
