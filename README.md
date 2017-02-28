@@ -12,7 +12,7 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 
 ### NuGet
 
-The recommended way to use the latest version of Sigma is to add the NuGet dependency to your project.
+The recommended way to use the latest version of Sigma is to add the NuGet dependency to your project. Package follows soon...
 <link>
 
 ### From source
@@ -27,6 +27,8 @@ You can then integrate Sigma as usual and compile using.
 Very short first sample program to demonstrate capabilities, link to Samples project
 
 ## Documentation---How do I? 
+The API-Documentation (of the master-branch) is always available at our [Github-Page](https://thinkingtransistor.github.io/Sigma/). If you want it locally available, clone the gh-pages branch.
+
 How and what short overview, link to API and internal documentation
 
 ## Contribute
