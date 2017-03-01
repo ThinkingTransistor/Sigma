@@ -107,12 +107,12 @@ namespace Sigma.Core.Training
 		void AddInitialiser(string identifier, IInitialiser initialiser);
 
 		/// <summary>
-		/// Add a value modifier to this trainer which will be invoked on all trainable parameters after each iteration by registry resolve string.
+		/// Add a value modifier to this trainer's network which will be invoked on all trainable parameters after each iteration by registry resolve string.
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
 		/// <param name="identifier">The identifier (registry resolve string).</param>
 		/// <param name="modifier">The value modifier.</param>
-		void AddValueModifier(string identifier, IValueModifier modifier);
+		void AddNetworkValueModifier(string identifier, IValueModifier modifier);
 
 		/// <summary>
 		/// Add a secondary named data iterator to this trainer.

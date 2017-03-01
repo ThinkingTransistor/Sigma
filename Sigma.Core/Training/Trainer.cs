@@ -106,7 +106,7 @@ namespace Sigma.Core.Training
 			_initialisers.Add(identifier, initialiser);
 		}
 
-		public void AddValueModifier(string identifier, IValueModifier modifier)
+		public void AddNetworkValueModifier(string identifier, IValueModifier modifier)
 		{
 			_valueModifiers.TryGetValue(identifier, () => new HashSet<IValueModifier>()).Add(modifier);
 		}

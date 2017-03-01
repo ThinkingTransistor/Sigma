@@ -196,6 +196,7 @@
     <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
     <Compile Include="Training\Hooks\HookInvokeCriteria.cs" />
     <Compile Include="Training\Hooks\LambdaHook.cs" />
+    <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Training\Modifiers\BaseValueModifier.cs" />
     <Compile Include="Training\Modifiers\IValueModifier.cs" />
     <Compile Include="Training\Modifiers\ClipValueModifier.cs" />
+    <Compile Include="Training\Modifiers\ScaleValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
@@ -260,8 +262,8 @@
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\" />
-    <Folder Include="Training\Hooks\Modifiers\" />
     <Folder Include="Training\Hooks\Saviors\" />
+    <Folder Include="Training\Supervisors\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

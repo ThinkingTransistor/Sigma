@@ -38,10 +38,10 @@ namespace Sigma.Core.Training.Optimisers
 				velocity = parameter;
 			}
 
-			velocity = handler.Add(handler.Multiply(velocity, momentum), handler.Multiply(gradient, -learningRate));
+			velocity = handler.Add(handler.Multiply(velocity, momentum), handler.Multiply(gradient, learningRate));
 			velocities[paramIdentifier] = velocity;
 
-			return handler.Add(velocity, parameter);
+			return handler.Subtract(velocity, parameter);
 		}
 
 		public override object DeepCopy()

@@ -73,17 +73,18 @@ namespace Sigma.Tests.Internals.Backend
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.002, momentum: 0.0);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.05, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
 			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 10));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
-			//trainer.AddValueModifier("*.weights", new ClipValueModifier());
+			trainer.AddNetworkValueModifier("*.weights", new ClipValueModifier());
 
-			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 10, target: ExtremaTarget.Min));
+			trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
+			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.Run();

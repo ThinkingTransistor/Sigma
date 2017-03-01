@@ -26,7 +26,7 @@ namespace Sigma.Core.Monitors.WPF
 {
 	/// <summary>
 	/// This <see cref="IMonitor" /> is the default visualisation monitor shipped with the big Sigma.
-	/// The <see cref="WPFMonitor" /> is designed to run on Windows.
+	/// The <see cref="WPFMonitor" /> is designed to run on the Windows platform.
 	/// </summary>
 	// ReSharper disable once InconsistentNaming
 	public class WPFMonitor : MonitorAdapter, IAppender
@@ -141,8 +141,8 @@ namespace Sigma.Core.Monitors.WPF
 
 		/// <summary>
 		///	Every new log entry has to pass through this filter - if it passes the filter,
-		/// it will get through to the root window (<see cref="Window"/>), otherwsie it will get discarded.
-		/// The default is a <see cref="LevelRangeFilter"/> wth a <see cref="LevelRangeFilter.LevelMin"/> of <see cref="Level.Warn"/>.
+		/// it will get through to the root window (<see cref="Window"/>), otherwise it will be discarded.
+		/// The default is a <see cref="LevelRangeFilter"/> with a <see cref="LevelRangeFilter.LevelMin"/> of <see cref="Level.Warn"/>.
 		/// 
 		/// If set to <c>null</c>, all messages will get passed.
 		/// </summary>
