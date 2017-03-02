@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ThinkingTransistor.Sigma.Core</id>
+    <version>$version$</version>
+    <title>Sigma.Core</title>
+    <authors>ThinkingTransistor</authors>
+    <owners>ThinkingTransistor</owners>
+    <licenseUrl>https://github.com/ThinkingTransistor/Sigma/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://sigma.rocks</projectUrl>
+    <iconUrl>https://sigma.rocks/icon.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.</description>
+    <releaseNotes>$summary$</releaseNotes>
+    <copyright>Copyright 2016-2017</copyright>
+    <tags>machine-learning neural-network artificial-intelligence artificial-neurall-networks framework</tags>
+  </metadata>
+</package>

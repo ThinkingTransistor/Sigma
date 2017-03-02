@@ -1,6 +1,4 @@
 ﻿using LiveCharts.Wpf;
-using log4net.Core;
-using log4net.Filter;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -13,6 +11,8 @@ using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
@@ -32,50 +32,102 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging();
-			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
-			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo"));
-			//gui.Priority = ThreadPriority.Highest;
+			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("JI-Demo", "de-DE"));
+			gui.AddTabs("Tab1", "Tab2");
 
-			gui.AddTabs("Overview", "Log");
+			ITrainer trainer = CreateIrisTrainer(sigma);
 
 			gui.WindowDispatcher(window =>
 			{
-				window.IsInitializing = true;
+				window.TabControl["Tab1"].AddCumulativePanel(new ControlPanel("Steuerung", trainer));
+			});
+
+			gui.ColourManager.PrimaryColor = MaterialDesignValues.Blue;
+			gui.ColourManager.SecondaryColor = MaterialDesignValues.Lime;
+
+			gui.WindowDispatcher(window =>
+			{
+				window.TabControl["Tab1"].GridSize = new[] { 2, 2 };
+				window.DefaultGridSize = new[] { 3, 3 };
+			});
+
+			StatusBarLegendInfo info = new StatusBarLegendInfo("Trainer 1", MaterialColour.Yellow);
+			gui.AddLegend(info);
+
+			gui.WindowDispatcher(window =>
+			{
+				var cost = new TrainerChartPanel<CartesianChart, LineSeries, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				cost.Fast();
+				window.TabControl["Tab2"].AddCumulativePanel(cost, legend: info);
+				window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 			});
 
 			sigma.Prepare();
 
-			ITrainer trainer = CreateIrisTrainer(sigma);
-
-			gui.WindowDispatcherAsync(window =>
-			{
-				ControlPanel control = new ControlPanel("Control", trainer);
-				window.TabControl["Overview"].AddCumulativePanel(control, 2);
-
-				TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
-				costChart.Fast();
-				costChart.MaxPoints = 500;
-				window.TabControl["Overview"].AddCumulativePanel(costChart, 2, 2);
-
-				AccuracyPanel chart = new AccuracyPanel("Accuracy of epoch", trainer, tops: new[] { 1, 2 });
-				chart.Fast(hoverEnabled: true);
-				window.TabControl["Overview"].AddCumulativePanel(chart);
-
-				//ChartPanel<CartesianChart, LineSeries, double> testCollection = new ChartPanel<CartesianChart, LineSeries, double>("Test collection");
-				//testCollection.SeriesCollection.
-
-				window.TabControl["Log"].GridSize = new[] { 1, 1 };
-				window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));
-
-				window.IsInitializing = false;
-			});
-
 			sigma.StartOperatorsOnRun = false;
 			sigma.Run();
 		}
+
+		//private static void Main(string[] args)
+		//{
+		//	SigmaEnvironment.EnableLogging();
+		//	SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+		//	SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
+
+		//	WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo", "de-DE"));
+		//	//gui.Priority = ThreadPriority.Highest;
+
+		//	gui.AddTabs("Überblick", "Log");
+
+		//	gui.WindowDispatcher(window =>
+		//	{
+		//		window.IsInitializing = true;
+		//	});
+
+
+		//	ITrainer trainer = CreateIrisTrainer(sigma);
+
+		//	gui.ColourManager.Alternate = false;
+		//	gui.ColourManager.Dark = true;
+		//	gui.ColourManager.PrimaryColor = MaterialDesignValues.DeepOrange;
+		//	gui.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
+
+		//	StatusBarLegendInfo legend = new StatusBarLegendInfo("Dropout", MaterialColour.Green);
+		//	gui.AddLegend(legend);
+
+		//	gui.WindowDispatcherAsync(window =>
+		//	{
+		//		ControlPanel control = new ControlPanel("Steuerung", trainer);
+
+		//		TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Fehlerfunktion", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+		//		costChart.Fast();
+		//		costChart.MaxPoints = 500;
+
+		//		AccuracyPanel chart = new AccuracyPanel("Genauigkeit der Epoche", trainer, tops: new[] { 1, 2 });
+		//		chart.Fast(hoverEnabled: true);
+
+		//		window.TabControl["Überblick"].GridSize.Rows -= 1;
+
+		//		window.TabControl["Überblick"].AddCumulativePanel(chart, legend: legend);
+		//		window.TabControl["Überblick"].AddCumulativePanel(control, 2, legend: legend);
+		//		window.TabControl["Überblick"].AddCumulativePanel(costChart, 2, 2, legend);
+
+
+		//		//ChartPanel<CartesianChart, LineSeries, double> testCollection = new ChartPanel<CartesianChart, LineSeries, double>("Test collection");
+		//		//testCollection.SeriesCollection.
+
+		//		window.TabControl["Log"].GridSize = new[] { 1, 1 };
+		//		window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));
+
+		//		window.IsInitializing = false;
+		//	});
+		//	sigma.Prepare();
+
+		//	sigma.StartOperatorsOnRun = false;
+		//	sigma.Run();
+		//}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
 		{
