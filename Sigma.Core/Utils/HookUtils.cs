@@ -89,7 +89,7 @@ namespace Sigma.Core.Utils
 				}
 
 				string lastPart = parts[parts.Length - 1];
-				object copiedValue = Registry.DeepestCopy(currentRoot[lastPart]);
+				object copiedValue = RegistryUtils.DeepestCopy(currentRoot[lastPart]);
 
 				currentRootCopy[lastPart] = copiedValue;
 			}

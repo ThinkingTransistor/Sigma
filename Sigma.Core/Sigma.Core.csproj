@@ -247,6 +247,7 @@
     <Compile Include="Utils\ITaskObserver.cs" />
     <Compile Include="Layers\ILayerBuffer.cs" />
     <Compile Include="Utils\PrintUtils.cs" />
+    <Compile Include="Utils\RegistryUtils.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />

@@ -163,9 +163,10 @@ namespace Sigma.Core.Training
 
 			RegistryResolver networkResolver = new RegistryResolver(Network.Registry.Get<IRegistry>("layers"));
 			int initialisedNDArrayCount = 0, initialisedNumberCount = 0;
+			List<string> orderedInitialiserIdentifiers = _initialisers.Keys.ToList();
+			orderedInitialiserIdentifiers.Sort(RegistryUtils.CompareIdentifierSpecificityAscending);
 
-			// TODO maybe sort by most specific ascending?
-			foreach (string identifier in _initialisers.Keys)
+			foreach (string identifier in orderedInitialiserIdentifiers)
 			{
 				object[] values = networkResolver.ResolveGet(identifier, new object[0]);
 				IInitialiser initialiser = _initialisers[identifier];

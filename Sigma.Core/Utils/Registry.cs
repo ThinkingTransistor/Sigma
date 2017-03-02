@@ -405,37 +405,6 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
-		/// Get the deepest copy of a given value (order: <see cref="IDeepCopyable.DeepCopy"/> => <see cref="ICloneable.Clone"/>).
-		/// If the value cannot be copied, the original value is returned.
-		/// </summary>
-		/// <param name="value">The value.</param>
-		/// <returns>The deepest available copy of the given value.</returns>
-		public static object DeepestCopy(object value)
-		{
-			object copiedValue;
-			IDeepCopyable deepCopyableValue = value as IDeepCopyable;
-
-			if (deepCopyableValue == null)
-			{
-				ICloneable cloneableValue = value as ICloneable;
-				if (cloneableValue != null)
-				{
-					copiedValue = cloneableValue.Clone();
-				}
-				else
-				{
-					copiedValue = value;
-				}
-			}
-			else
-			{
-				copiedValue = deepCopyableValue.DeepCopy();
-			}
-
-			return copiedValue;
-		}
-
-		/// <summary>
 		/// Check if this registry's contents equal another registry's contents.
 		/// </summary>
 		/// <param name="other">The other registry.</param>
