@@ -106,7 +106,7 @@ namespace Sigma.Core.Training
 			_initialisers.Add(identifier, initialiser);
 		}
 
-		public void AddNetworkValueModifier(string identifier, IValueModifier modifier)
+		public void AddValueModifier(string identifier, IValueModifier modifier)
 		{
 			_valueModifiers.TryGetValue(identifier, () => new HashSet<IValueModifier>()).Add(modifier);
 		}
@@ -287,34 +287,40 @@ namespace Sigma.Core.Training
 			Operator.Start();
 		}
 
-		public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler)
+		public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IRegistry localRegistry, IComputationHandler handler)
 		{
+			if (localNetwork == null) throw new ArgumentNullException(nameof(localNetwork));
+			if (localOptimiser == null) throw new ArgumentNullException(nameof(localOptimiser));
+			if (localRegistry == null) throw new ArgumentNullException(nameof(localRegistry));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+
 			CheckInitialised();
 
 			localOptimiser.PrepareRun(localNetwork, handler);
 			localNetwork.Run(handler, trainingPass: true);
 			localOptimiser.Run(localNetwork, handler);
-			ApplyValueModifiers(localNetwork, handler);
+			ApplyValueModifiers(localRegistry, handler);
 		}
 
-		private void ApplyValueModifiers(INetwork localNetwork, IComputationHandler handler)
+		private void ApplyValueModifiers(IRegistry localRegistry, IComputationHandler handler)
 		{
 			if (_valueModifiers.Count == 0)
 			{
 				return;
 			}
 
-			RegistryResolver resolver = new RegistryResolver(localNetwork.Registry.Get<IRegistry>("layers"));
+			RegistryResolver resolver = new RegistryResolver(localRegistry);
 
 			foreach (string identifier in _valueModifiers.Keys)
 			{
 				string[] fullyResolvedIdentifiers;
 				object[] values = resolver.ResolveGet<object>(identifier, out fullyResolvedIdentifiers);
 
-				for (var i = 0; i < values.Length; i++)
+				for (int i = 0; i < values.Length; i++)
 				{
 					object value = values[i];
 					INDArray asNDArray = value as INDArray;
+					INumber asNumber = value as INumber;
 
 					if (asNDArray != null)
 					{
@@ -324,17 +330,25 @@ namespace Sigma.Core.Training
 						}
 						values[i] = asNDArray;
 					}
+					else if (asNumber != null)
+					{
+						foreach (IValueModifier modifier in _valueModifiers[identifier])
+						{
+							asNumber = modifier.Modify(fullyResolvedIdentifiers[i], asNumber, handler);
+						}
+						values[i] = asNumber;
+					}
 					else
 					{
-						INumber asNumber = value as INumber;
+						double? asDouble = value as double?;
 
-						if (asNumber != null)
+						if (asDouble != null)
 						{
 							foreach (IValueModifier modifier in _valueModifiers[identifier])
 							{
-								asNumber = modifier.Modify(fullyResolvedIdentifiers[i], asNumber, handler);
+								asDouble = modifier.Modify(fullyResolvedIdentifiers[i], asDouble.Value, handler);
 							}
-							values[i] = asNumber;
+							values[i] = asDouble.Value;
 						}
 					}
 

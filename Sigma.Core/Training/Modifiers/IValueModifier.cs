@@ -39,5 +39,14 @@ namespace Sigma.Core.Training.Modifiers
 		/// <param name="handler">The computation handler to use.</param>
 		/// <returns>The modified parameter.</returns>
 		INumber Modify(string paramIdentifier, INumber parameter, IComputationHandler handler);
+
+		/// <summary>
+		/// Modify a certain number with a certain identifier.
+		/// </summary>
+		/// <param name="paramIdentifier">The parameter identifier.</param>
+		/// <param name="parameter">The parameter to modify.</param>
+		/// <param name="handler">The computation handler to use.</param>
+		/// <returns>The modified parameter.</returns>
+		double Modify(string paramIdentifier, double parameter, IComputationHandler handler);
 	}
 }

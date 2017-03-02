@@ -36,6 +36,18 @@ namespace Sigma.Core.Training.Modifiers
 		}
 
 		/// <summary>
+		/// Modify a certain number with a certain identifier.
+		/// </summary>
+		/// <param name="paramIdentifier">The parameter identifier.</param>
+		/// <param name="parameter">The parameter to modify.</param>
+		/// <param name="handler">The computation handler to use.</param>
+		/// <returns>The modified parameter.</returns>
+		public double Modify(string paramIdentifier, double parameter, IComputationHandler handler)
+		{
+			return Modify(paramIdentifier, handler.NDArray(new[] {parameter}, 1L, 1L), handler).GetValue<double>(0, 0);
+		}
+
+		/// <summary>
 		/// Modify a certain ndarray with a certain identifier.
 		/// </summary>
 		/// <param name="paramIdentifier">The parameter identifier.</param>

@@ -269,7 +269,7 @@ namespace Sigma.Core.Training.Operators.Workers
 				Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
 				MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
 
-				Operator.PopulateWorkerRegistry(_bufferRegistry, this);
+				IRegistry bufferRegistry = GetPopulatedBufferRegistry();
 
 				ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
 				HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
@@ -279,15 +279,22 @@ namespace Sigma.Core.Training.Operators.Workers
 					if (!hook.InvokeInBackground)
 					{
 						hook.Operator = Operator;
-						hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
+						hook.Invoke(bufferRegistry, _bufferRegistryResolver);
 					}
 				}
 
 				if (_bufferHooksToInvokeInBackground.Count > 0)
 				{
-					Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+					Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 				}
 			}
+		}
+
+		protected IRegistry GetPopulatedBufferRegistry()
+		{
+			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
+
+			return _bufferRegistry;
 		}
 
 		private void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)

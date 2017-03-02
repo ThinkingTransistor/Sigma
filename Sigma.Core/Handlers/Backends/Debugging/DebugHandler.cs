@@ -208,7 +208,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public INDArray NDArray<TOther>(TOther[] values, params long[] shape)
 		{
-			INDArray array = UnderlyingHandler.NDArray(shape);
+			INDArray array = UnderlyingHandler.NDArray(values, shape);
 
 			CheckNice(array);
 

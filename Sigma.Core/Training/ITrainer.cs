@@ -107,12 +107,12 @@ namespace Sigma.Core.Training
 		void AddInitialiser(string identifier, IInitialiser initialiser);
 
 		/// <summary>
-		/// Add a value modifier to this trainer's network which will be invoked on all trainable parameters after each iteration by registry resolve string.
-		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
+		/// Add a numeric value modifier to this trainer which will be invoked every iteration on the local working registry.
+		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier.
 		/// </summary>
 		/// <param name="identifier">The identifier (registry resolve string).</param>
 		/// <param name="modifier">The value modifier.</param>
-		void AddNetworkValueModifier(string identifier, IValueModifier modifier);
+		void AddValueModifier(string identifier, IValueModifier modifier);
 
 		/// <summary>
 		/// Add a secondary named data iterator to this trainer.
@@ -164,8 +164,9 @@ namespace Sigma.Core.Training
 		/// </summary>
 		/// <param name="localNetwork">The network to train.</param>
 		/// <param name="localOptimiser">The local optimiser to use.</param>
+		/// <param name="localRegistry">The local working registry (e.g. for per-iteration value modifiers).</param>
 		/// <param name="handler">The computation handler to use.</param>
-		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler);
+		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IRegistry localRegistry, IComputationHandler handler);
 
 		/// <summary>
 		/// Provide the external data to a network given the current record block (typically as given by the training data iterator).
