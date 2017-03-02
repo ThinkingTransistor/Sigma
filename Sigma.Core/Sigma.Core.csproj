@@ -189,6 +189,8 @@
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
+    <Compile Include="Persistence\Selectors\ISelector.cs" />
+    <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />
@@ -262,7 +264,6 @@
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
-    <Folder Include="Persistence\" />
     <Folder Include="Training\Hooks\Saviors\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>
