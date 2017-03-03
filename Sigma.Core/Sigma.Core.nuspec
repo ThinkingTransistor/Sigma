@@ -23,10 +23,14 @@
 			<dependency id="ManagedCuda-CUBLAS" version="8.0.13" />
 		</dependencies>
 
+		<references>
+			<reference file="DiffSharp.dll" />
+			<reference file="Sigma.Core.dll" />
+		</references>
 	</metadata>
 
 	<files>
-		<file src="ThinkingTransistor.Sigma.Core.props" target="build" />
+		<file src="ThinkingTransistor.Sigma.Core.targets" target="build" />
 	
 		<file src="libgcc_s_seh-1.dll" target="build" />
   		<file src="libgfortran-3.dll" target="build" />
@@ -34,8 +38,9 @@
   		<file src="libopenblas.so" target="build" />
  		<file src="libquadmath-0.dll" target="build" />
 	
-		<!-- so file missing, DiffSharp reference missing-->
-		<file src="bin\x64\Release\DiffSharp.dll" target="lib" />
+		<file src="Dependencies\DiffSharp.dll" target="lib" />
+	
+		<file src="*.so" target="content" />
 	</files>
-
+	
 </package>
