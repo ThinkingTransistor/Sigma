@@ -26,15 +26,15 @@
 	</metadata>
 
 	<files>
-		<file src="libgcc_s_seh-1.dll" target="content" />
+		<!--file src="libgcc_s_seh-1.dll" target="content" />
 		<file src="libgfortran-3.dll" target="content" />
 		<file src="libopenblas.dll" target="content" />
 		<file src="libopenblas.so" target="content" />
-		<file src="libquadmath-0.dll" target="content" />
+		<file src="libquadmath-0.dll" target="content" /-->
 		
 		<!-- DiffSharp -->
-		<file src="bin\x64\Release\Dependencies\DiffSharp.dll" target="content\Dependencies" />
-		<file src="Dependencies\DiffSharp.dll" target="lib" />
+		<!--file src="bin\x64\Release\Dependencies\DiffSharp.dll" target="content\Dependencies" /-->
+		<file src="bin\x64\Release\DiffSharp.dll" target="lib" />
 	</files>
 
 </package>

@@ -276,7 +276,7 @@
     <None Include="Sigma.Core.licenseheader" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\DiffSharp.dll" />
+    <Content Include="Dependencies\DiffSharp.dll" />
     <Content Include="libgcc_s_seh-1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
