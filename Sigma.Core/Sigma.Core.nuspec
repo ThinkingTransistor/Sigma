@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<metadata>
-		<id>ThinkingTransistor.Sigma.Core</id>
+		<id>Sigma.Core</id>
 		<version>$version$</version>
 		<title>Sigma.Core</title>
 		<authors>ThinkingTransistor</authors>
