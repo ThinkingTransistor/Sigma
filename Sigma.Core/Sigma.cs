@@ -552,6 +552,7 @@ namespace Sigma.Core
 			Globals.Set("workspace_path", "workspace/", typeof(string));
 			Globals.Set("cache_path", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
 			Globals.Set("datasets_path", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			Globals.Set("storage_path", Globals.Get<string>("workspace_path") + "storage/", typeof(string));
 		}
 
 		/// <summary>

@@ -191,6 +191,9 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Persistence\Selectors\ISelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
+    <Compile Include="Persistence\SerialisationTarget.cs" />
+    <Compile Include="Persistence\Serialisation.cs" />
+    <Compile Include="Persistence\Serialiser.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />

@@ -32,6 +32,7 @@ namespace Sigma.Core.Training
 	/// The default <see cref="ITrainer"/> implementation.
 	/// A trainer that defines how a network should be trained, denoting initialisers, optimiser, operator, custom hooks and data to apply and use. 
 	/// </summary>
+	[Serializable]
 	public class Trainer : ITrainer
 	{
 		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

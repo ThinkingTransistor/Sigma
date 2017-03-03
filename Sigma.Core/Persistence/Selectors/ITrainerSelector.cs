@@ -18,14 +18,14 @@ namespace Sigma.Core.Persistence.Selectors
 	public interface ITrainerSelector<T> : ISelector<T> where T : ITrainer
 	{
 		/// <summary>
-		/// Keep a set of trainer components, discard all other components.
+		/// Keep a set of trainer components, discard all other components in a new trainer.
 		/// </summary>
 		/// <param name="component">The component(s) to keep.</param>
 		/// <returns>A selector for a new trainer with the given component(s) retained.</returns>
 		ISelector<T> Keep(TrainerComponent component);
 
 		/// <summary>
-		/// Discard specified trainer components.
+		/// Discard specified trainer components in a new trainer.
 		/// </summary>
 		/// <param name="component">The component(s) to discard.</param>
 		/// <returns>A selector for a new trainer with the given component(s) discarded.</returns>

@@ -58,8 +58,6 @@ namespace Sigma.Tests.Internals.Backend
 			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
 
 			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
-			IDataset trainingDataset = dataset;
-			IDataset validationDataset = dataset;
 
 			ITrainer trainer = sigma.CreateTrainer("test");
 
@@ -71,8 +69,8 @@ namespace Sigma.Tests.Internals.Backend
 											+ FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3)
 											+ SquaredDifferenceCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
-			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
+			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.005, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 

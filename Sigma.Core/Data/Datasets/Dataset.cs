@@ -24,6 +24,7 @@ namespace Sigma.Core.Data.Datasets
 	/// A default implementation of the IDataset interface. 
 	/// Provides caching of entire blocks and reader data, partial extraction, unordered extraction, automatic block sizing, smart block loading. 
 	/// </summary>
+	[Serializable] // TODO this will probably need a custom serialiser because of the volatile cache (needs to be verified / flushed), maybe use OnDeserializedAttribute, see msdn docs, dunno yet
 	public class Dataset : IDataset
 	{
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
