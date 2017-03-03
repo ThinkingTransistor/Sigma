@@ -31,6 +31,10 @@
 		<file src="libopenblas.dll" target="content" />
 		<file src="libopenblas.so" target="content" />
 		<file src="libquadmath-0.dll" target="content" />
+		
+		<!-- DiffSharp -->
+		<file src="bin\x64\Release\Dependencies\DiffSharp.dll" target="content\Dependencies" />
+		<file src="Dependencies\DiffSharp.dll" target="lib" />
 	</files>
 
 </package>
