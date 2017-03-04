@@ -38,15 +38,54 @@ namespace Sigma.Core.Persistence.Selectors
 	[Flags]
 	public enum TrainerComponent
 	{
-		None             = 0,
-		Sigma            = 1 << 0,
-		Network          = 1 << 1,
-		Initialisers     = 1 << 2,
-		ValueModifiers   = 1 << 3,
-		Optimiser        = 1 << 4,
-		Operator         = 1 << 5,
-		DataProvider     = 1 << 6,
-		DataIterators    = 1 << 7,
-		Hooks            = 1 << 8,
+		/// <summary>
+		/// Nothing (except the trainer name, which is the minimum state and included by default).
+		/// </summary>
+		None            = 0,
+
+		/// <summary>
+		/// The network model in this trainer.
+		/// </summary>
+		Network         = 1 << 0,
+
+		/// <summary>
+		/// The attached initialisers.
+		/// </summary>
+		Initialisers    = 1 << 1,
+
+		/// <summary>
+		/// The attached value modifiers.
+		/// </summary>
+		ValueModifiers  = 1 << 2,
+
+		/// <summary>
+		/// The attached optimiser.
+		/// </summary>
+		Optimiser       = 1 << 3,
+
+		/// <summary>
+		/// The attached operator.
+		/// </summary>
+		Operator        = 1 << 4,
+
+		/// <summary>
+		/// The attached data provider.
+		/// </summary>
+		DataProvider    = 1 << 5,
+
+		/// <summary>
+		/// The attached data iterators.
+		/// </summary>
+		DataIterators   = 1 << 6,
+
+		/// <summary>
+		/// The attached hooks.
+		/// </summary>
+		Hooks       	= 1 << 7,
+
+		/// <summary>
+		/// Everything.
+		/// </summary>
+		All				= Int32.MaxValue
 	}
 }

@@ -203,6 +203,7 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Persistence\ISerialisationNotifier.cs" />
     <Compile Include="Persistence\Selectors\ISelector.cs" />
+    <Compile Include="Persistence\Selectors\ISigmaEnvironmentSelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
     <Compile Include="Persistence\SerialisationTarget.cs" />
     <Compile Include="Persistence\Serialisation.cs" />
@@ -281,6 +282,7 @@
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
+    <Folder Include="Persistence\Selectors\Trainer\" />
     <Folder Include="Training\Hooks\Saviors\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>
