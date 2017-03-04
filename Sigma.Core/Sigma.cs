@@ -15,7 +15,11 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using log4net.Appender;
 using log4net.Config;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
@@ -555,11 +559,53 @@ namespace Sigma.Core
 		}
 
 		/// <summary>
-		/// Loads the log4net configuration from the corresponding xml file. See log4net for more details.
+		/// Loads the log4net configuration either from the corresponding app.config file (see log4net for more details) or by
+		/// statically generating a default logger.
 		/// </summary>
-		public static void EnableLogging()
+		/// <param name="xml">If <c>true</c>, the app.config file will be loaded. Otherwise, a default configuration.</param>
+		public static void EnableLogging(bool xml = false)
 		{
-			XmlConfigurator.Configure();
+			if (xml)
+			{
+				XmlConfigurator.Configure();
+			}
+			else
+			{
+				// https://stackoverflow.com/questions/37213848/best-way-to-access-to-log4net-wrapper-app-config
+				Hierarchy hierarchy = (Hierarchy) LogManager.GetRepository();
+
+				PatternLayout patternLayout = new PatternLayout
+				{
+					ConversionPattern = "%date %level [%thread] %logger - %message%newline"
+				};
+				patternLayout.ActivateOptions();
+
+				// Create a console appender
+				ConsoleAppender console = new ConsoleAppender { Layout = patternLayout };
+
+				// Create also an appender that writes the log to sigma.log
+				RollingFileAppender roller = new RollingFileAppender
+				{
+					AppendToFile = true,
+					File = "sigma.log",
+					Layout = patternLayout,
+					MaxSizeRollBackups = 5,
+					MaximumFileSize = "15MB",
+					RollingStyle = RollingFileAppender.RollingMode.Size,
+					StaticLogFileName = true
+				};
+				roller.ActivateOptions();
+
+				hierarchy.Root.AddAppender(console);
+				hierarchy.Root.AddAppender(roller);
+
+				MemoryAppender memory = new MemoryAppender();
+				memory.ActivateOptions();
+				hierarchy.Root.AddAppender(memory);
+
+				hierarchy.Root.Level = Level.Debug;
+				hierarchy.Configured = true;
+			}
 		}
 
 		/// <summary>

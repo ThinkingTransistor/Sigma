@@ -32,6 +32,7 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static void Main(string[] args)
 		{
+			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("JI-Demo", "de-DE"));
