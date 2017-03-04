@@ -30,7 +30,7 @@
 	</metadata>
 
 	<files>
-		<file src="Sigma.Core.targets" target="build" />
+		<file src="build\Sigma.Core.targets" target="build" />
 	
 		<file src="libgcc_s_seh-1.dll" target="build" />
   		<file src="libgfortran-3.dll" target="build" />

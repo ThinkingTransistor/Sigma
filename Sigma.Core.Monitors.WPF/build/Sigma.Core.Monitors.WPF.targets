@@ -4,7 +4,7 @@
     <ItemGroup> 
       <MyPackageFiles Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.1.0.13\lib\de-DE\*.*"/> 
     </ItemGroup> 
-    <Copy SourceFiles="@(MyPackageFiles)" DestinationFolder="$(OutputPath)" > 
+    <Copy SourceFiles="@(MyPackageFiles)" DestinationFolder="$(OutputPath)\de-DE\" > 
     </Copy> 
   </Target> 
 </Project>
