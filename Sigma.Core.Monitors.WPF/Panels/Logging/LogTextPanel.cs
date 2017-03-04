@@ -30,10 +30,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		/// <param name="content"></param>
 		public LogTextPanel(string title, object content = null) : base(title, content)
 		{
-			Content.IsReadOnly = true;
-			Content.TextWrapping = TextWrapping.Wrap;
-			Content.AcceptsReturn = true;
-			Content.Margin = new Thickness(10);
+			Content = new TextBox
+			{
+				IsReadOnly = true,
+				TextWrapping = TextWrapping.Wrap,
+				AcceptsReturn = true,
+				Margin = new Thickness(10)
+			};
 
 			((Hierarchy) LogManager.GetRepository()).Root.AddAppender(this);
 		}

@@ -370,10 +370,8 @@ namespace Sigma.Core.Monitors.WPF
 				}
 				catch (Exception e)
 				{
-					_log.Fatal("Uncaught exception in Sigma UI has been thrown. Sigma core will continue execution...", e);
-#if DEBUG
+					_log.Fatal("Uncaught exception in Sigma UI has been thrown.", e);
 					throw;
-#endif
 				}
 			});
 
