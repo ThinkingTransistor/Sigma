@@ -19,6 +19,8 @@ dir
 echo "========"
 echo %WINDIR%
 
+%nuget% restore -SolutionDirectory ./
+
 %WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Sigma.sln /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=diag /nr:false
 
 REM pack Sigma.Core
