@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
 	<Target Name="AfterBuild">
-	<ItemGroup> 
+	<ItemGroup>
 		<GermanGermany Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.~version~\lib\de-DE\*.*"/> 
 		<EnglishGB Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.~version~\lib\en-GB\*.*"/> 
 		<EnglishUSA Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.~version~\lib\en-US\*.*"/> 
 
-	</ItemGroup> 
+	</ItemGroup>
 	<Copy SourceFiles="@(GermanGermany)" DestinationFolder="$(OutputPath)\de-DE\" ></Copy> 
 	<Copy SourceFiles="@(EnglishGB)" DestinationFolder="$(OutputPath)\en-GB\" ></Copy> 
 	<Copy SourceFiles="@(EnglishUSA)" DestinationFolder="$(OutputPath)\en-US\" ></Copy> 
-	</Target> 
+	</Target>
 </Project>

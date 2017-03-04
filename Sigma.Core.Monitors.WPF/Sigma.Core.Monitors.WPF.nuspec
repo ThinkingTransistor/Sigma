@@ -41,7 +41,9 @@
 		
 		<!-- Language resources -->
 		<file src="bin\x64\Release\de-DE\Sigma.Core.Monitors.WPF.resources.dll" target="lib\de-DE" />
-
+		<file src="bin\x64\Release\en-GB\Sigma.Core.Monitors.WPF.resources.dll" target="lib\en-GB" />
+		<file src="bin\x64\Release\en-US\Sigma.Core.Monitors.WPF.resources.dll" target="lib\en-US" />
+		
 		<!-- TODO: dynamic path-->
 		<file src="bin\x64\Release\Sigma.Core.Monitors.WPF.XML" target="lib" />
 	</files>
