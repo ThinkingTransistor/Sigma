@@ -90,17 +90,28 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			Trainer.AddHook(hook);
 		}
 
+		/// <summary>
+		/// The hook reports values to a given <see ref="ChartPanel"/>.
+		/// </summary>
 		protected class VisualValueReporterHook : ValueReporterHook
 		{
-			// TODO: don't keep reference - use ParameterRegistry
-			public readonly ChartPanel<TChart, TSeries, TData> ChartPanel;
+			/// <summary>
+			/// The identifier for the parameter registry that keeps a reference to the chartpanel
+			/// </summary>
+			protected const string ChartPanelIdentifier = "panel";
 
-			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TData> chartPanel, string valueIdentifier, ITimeStep timestep) : this(chartPanel, new[] { valueIdentifier }, timestep)
-			{ }
+			//public VisualValueReporterHook(ChartPanel<TChart, TSeries, TData> chartPanel, string valueIdentifier, ITimeStep timestep) : this(chartPanel, new[] { valueIdentifier }, timestep)
+			//{ }
 
+			/// <summary>
+			/// Create a new <see ref="VisualValueReportHook"/> fully prepared to report values.
+			/// </summary>
+			/// <param name="chartPanel">The chartpanel to which points will get added.</param>
+			/// <param name="valueIdentifiers">The identifiers for the <see cref="ValueReporterHook"/>; these values will get plotted.</param>
+			/// <param name="timestep">The <see cref="TimeStep"/> for the hook (i.e. execution definition).</param>
 			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep) : base(valueIdentifiers, timestep)
 			{
-				ChartPanel = chartPanel;
+				ParameterRegistry[ChartPanelIdentifier] = chartPanel;
 			}
 
 			/// <summary>
@@ -109,8 +120,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="valuesByIdentifier">The values by their identifier.</param>
 			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier)
 			{
-				ChartPanel.Add((TData) valuesByIdentifier.Values.First());
-				//TODO: multiple values
+				ChartPanel<TChart, TSeries, TData> chartPanel = (ChartPanel<TChart, TSeries, TData>) ParameterRegistry[ChartPanelIdentifier];
+				chartPanel.Add((TData) valuesByIdentifier.Values.First());
+
+				//TODO: multiple values (in same series)
 				//ChartPanel.Dispatcher.InvokeAsync(() => ChartPanel.Series.Values.Add(valuesByIdentifier.Values.First()));
 			}
 		}

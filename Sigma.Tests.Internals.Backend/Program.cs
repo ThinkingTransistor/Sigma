@@ -1,4 +1,9 @@
-﻿using Sigma.Core;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
@@ -21,11 +26,6 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using Sigma.Core.Persistence;
 
 namespace Sigma.Tests.Internals.Backend

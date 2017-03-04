@@ -28,7 +28,7 @@ namespace Sigma.Core.Architecture
 
 		/// <summary>
 		/// Validate this network architecture. 
-		/// </summary
+		/// </summary>
 		void Validate();
 
 		/// <summary>

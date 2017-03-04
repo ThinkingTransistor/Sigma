@@ -6,6 +6,11 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
+	/// <summary>
+	/// This panel is specifically designed to display the accuracy.
+	/// The advantage when using this panel is that multiple accuracies can be
+	/// added and displayed automatically.
+	/// </summary>
 	public class AccuracyPanel : ChartPanel<CartesianChart, LineSeries, double>
 	{
 
@@ -42,6 +47,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			AxisY.MaxValue = 100;
 		}
 
+		/// <summary>
+		/// This hook is specifically designed to report values to the <see cref="AccuracyPanel"/>.
+		/// It reports given top accuracies ranging from 0-100%. 
+		/// </summary>
 		protected class ChartValidationAccuracyReport : ValidationAccuracyReporter
 		{
 			private const string PanelIdentifier = "Panel";

@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package>
+	<metadata>
+		<id>Sigma.Core.Monitors.WPF</id>
+		<version>$version$</version>
+		<title>Sigma.Core.Monitors.WPF</title>
+		<authors>ThinkingTransistor</authors>
+		<owners>ThinkingTransistor</owners>
+		<licenseUrl>https://github.com/ThinkingTransistor/Sigma/blob/master/LICENSE</licenseUrl>
+		<projectUrl>https://sigma.rocks</projectUrl>
+		<iconUrl>https://sigma.rocks/logo.png</iconUrl>
+		<requireLicenseAcceptance>true</requireLicenseAcceptance>
+		<description>Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.</description>
+		<releaseNotes>$summary$</releaseNotes>
+		<copyright>Copyright 2016-2017 (MIT)</copyright>
+		<tags>machine-learning neural-network artificial-intelligence artificial-neural-networks framework</tags>
+	  
+		<dependencies>
+			<dependency id="Sigma.Core" version="0.2" />
+			<dependency id="Dragablz" version="0.0.3.186" />
+			<dependency id="LiveCharts.Wpf" version="0.9.3.5" />
+			<dependency id="MahApps.Metro.Resources" version="0.6.1" />
+			<dependency id="MaterialDesignThemes.MahApps" version="0.0.10" />
+		</dependencies>
+
+		<frameworkAssemblies>
+			<frameworkAssembly assemblyName="WindowsBase" />
+			<frameworkAssembly assemblyName="PresentationFramework" />
+			<frameworkAssembly assemblyName="PresentationCore" />
+			<frameworkAssembly assemblyName="System.Xaml" />
+		</frameworkAssemblies>
+		
+		<!--references>
+			<reference file="Sigma.Core.Monitors.WPF.dll" />
+			<reference file="Sigma.Core" />
+		</references-->
+	</metadata>
+	
+	<files>
+		<file src="build\Sigma.Core.Monitors.WPF.targets" target="build" />
+		
+		<!-- Language resources -->
+		<file src="bin\x64\Release\de-DE\Sigma.Core.Monitors.WPF.resources.dll" target="lib\de-DE" />
+		<file src="bin\x64\Release\en-GB\Sigma.Core.Monitors.WPF.resources.dll" target="lib\en-GB" />
+		<file src="bin\x64\Release\en-US\Sigma.Core.Monitors.WPF.resources.dll" target="lib\en-US" />
+		
+		<!-- TODO: dynamic path-->
+		<file src="bin\x64\Release\Sigma.Core.Monitors.WPF.XML" target="lib" />
+	</files>
+</package>

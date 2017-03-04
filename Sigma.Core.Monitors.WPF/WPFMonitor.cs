@@ -18,7 +18,7 @@ using log4net.Core;
 using log4net.Filter;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
-using Sigma.Core.Monitors.WPF.View.Themes;
+using Sigma.Core.Monitors.WPF.View.Colours;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Utils;
 
@@ -229,7 +229,7 @@ namespace Sigma.Core.Monitors.WPF
 
 		/// <summary>
 		/// This method adds a list of given tabs to <see cref="Tabs"/>. If you want to add a tab after <see cref="SigmaEnvironment.Prepare"/> has been called,
-		/// call <see cref="SigmaWindow.AddTabs"/> inside the window dispatcher (<see cref="WindowDispatcher"/>).
+		/// call this method inside the window dispatcher (<see cref="WindowDispatcher"/>).
 		/// </summary>
 		/// <param name="tabs"></param>
 		public void AddTabs(params string[] tabs)
@@ -254,6 +254,10 @@ namespace Sigma.Core.Monitors.WPF
 			return GetLegendInfo(legend.Name);
 		}
 
+		/// <summary>
+		/// This method is equal to <see cref="AddLegend"/> but it adds multiple legends.
+		/// </summary>
+		/// <param name="legends"></param>
 		public void AddLegends(params StatusBarLegendInfo[] legends)
 		{
 			lock (_onWindowStartup)
@@ -267,11 +271,20 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		/// <summary>
+		/// Receive a given <see cref="StatusBarLegendInfo"/> defined by its name (<see cref="StatusBarLegendInfo.Name"/>).
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		public StatusBarLegendInfo GetLegendInfo(string name)
 		{
 			return Legends[name];
 		}
 
+		/// <summary>
+		/// Return all legends to be able to iterate through.
+		/// </summary>
+		/// <returns></returns>
 		public IEnumerable<StatusBarLegendInfo> GetLegends()
 		{
 			return Legends.Values;
@@ -289,6 +302,7 @@ namespace Sigma.Core.Monitors.WPF
 
 		#region Lifecycle
 
+		/// <inheritdoc />
 		public override void Initialise()
 		{
 			base.Initialise();
@@ -315,6 +329,7 @@ namespace Sigma.Core.Monitors.WPF
 		//	});
 		//}
 
+		/// <inheritdoc />
 		public override void Start()
 		{
 			ThreadUtils.BlockingThread wpfThread = new ThreadUtils.BlockingThread(reset =>
@@ -354,10 +369,8 @@ namespace Sigma.Core.Monitors.WPF
 				}
 				catch (Exception e)
 				{
-					_log.Fatal("Uncaught exception in Sigma UI has been thrown. Sigma core will continue execution...", e);
-#if DEBUG
+					_log.Fatal("Uncaught exception in Sigma UI has been thrown.", e);
 					throw;
-#endif
 				}
 			});
 
@@ -374,6 +387,7 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been started. The window {_windowType.Name} should now be visible. ");
 		}
 
+		/// <inheritdoc />
 		public override void SignalStop()
 		{
 			if (StopSigmaOnClose)
