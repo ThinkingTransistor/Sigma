@@ -1,7 +1,7 @@
 REM @echo Off
 set config=%1
 if "%config%" == "" (
-   set config=Release
+   set config=NugetBuild
 )
  
 set version=1.0.0
