@@ -29,11 +29,22 @@
 			<frameworkAssembly assemblyName="PresentationCore" />
 			<frameworkAssembly assemblyName="System.Xaml" />
 		</frameworkAssemblies>
+		
+		<references>
+			<reference file="Sigma.Core.Monitors.WPF.dll" />
+		</references>
 	</metadata>
 	
 	<files>
+		<!-- Language resources -->
+		<file src="build\Sigma.Core.Monitors.WPF.targets" target="build" />
+	
+		<file src="bin\x64\Release\de-DE\Sigma.Core.Monitors.WPF.resources.dll" target="lib\de-DE" />
+
+	
 		<!-- TODO: dynamic path-->
 		<file src="bin\x64\Release\Sigma.Core.Monitors.WPF.XML" target="lib" />
-		<file src="bin\x64\Release\de-DE\Sigma.Core.Monitors.WPF.resources.dll" target="lib\net46" />
+		
+		
 	</files>
 </package>
