@@ -8,7 +8,7 @@
 		<owners>ThinkingTransistor</owners>
 		<licenseUrl>https://github.com/ThinkingTransistor/Sigma/blob/master/LICENSE</licenseUrl>
 		<projectUrl>https://sigma.rocks</projectUrl>
-		<iconUrl>https://sigma.rocks/icon.png</iconUrl>
+		<iconUrl>https://sigma.rocks/logo.png</iconUrl>
 		<requireLicenseAcceptance>true</requireLicenseAcceptance>
 		<description>Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.</description>
 		<releaseNotes>$summary$</releaseNotes>
@@ -30,7 +30,7 @@
 	</metadata>
 
 	<files>
-		<file src="ThinkingTransistor.Sigma.Core.targets" target="build" />
+		<file src="Sigma.Core.targets" target="build" />
 	
 		<file src="libgcc_s_seh-1.dll" target="build" />
   		<file src="libgfortran-3.dll" target="build" />

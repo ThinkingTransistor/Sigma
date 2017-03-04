@@ -13,9 +13,10 @@ using log4net;
 using MaterialDesignColors;
 using MaterialDesignThemes.Wpf;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
-namespace Sigma.Core.Monitors.WPF.View.Themes
+namespace Sigma.Core.Monitors.WPF.View.Colours
 {
 	/// <summary>
 	/// This <see cref="IColourManager"/> allows to modify the theme for
@@ -154,6 +155,10 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// </summary>
 		public string CustomDarkPath { get; set; }
 
+		/// <summary>
+		/// A reference to the root window this ColourManager belongs to.
+		/// This has to be a <see cref="SigmaWindow"/>. 
+		/// </summary>
 		public Window Window
 		{
 			get { return _sigmaWindow; }

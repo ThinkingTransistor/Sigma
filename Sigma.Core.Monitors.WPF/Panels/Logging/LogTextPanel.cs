@@ -15,29 +15,33 @@ using log4net.Repository.Hierarchy;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Logging
 {
-	public class LogTextPanel : SigmaPanel, IAppender
+	/// <summary>
+	/// This <see cref="LogTextPanel"/> pastes all new log entries in a <see cref="TextBox"/>.
+	/// 
+	/// For a more sophisticated logger see <see cref="LogDataGridPanel"/>.
+	/// </summary>
+	public class LogTextPanel : GenericPanel<TextBox>, IAppender
 	{
-		public new TextBox Content;
-
-		public LogTextPanel(string title) : base(title)
+		/// <summary>
+		/// A panel that displays log entries in a <see cref="TextBox"/>. It will automatically assign
+		/// to the appender list (i.e. receive logs).
+		/// </summary>
+		/// <param name="title"></param>
+		/// <param name="content"></param>
+		public LogTextPanel(string title, object content = null) : base(title, content)
 		{
-			Content = new TextBox
-			{
-				IsReadOnly = true,
-				TextWrapping = TextWrapping.Wrap,
-				AcceptsReturn = true,
-				Margin = new Thickness(10)
-			};
-			base.Content = Content;
+			Content.IsReadOnly = true;
+			Content.TextWrapping = TextWrapping.Wrap;
+			Content.AcceptsReturn = true;
+			Content.Margin = new Thickness(10);
 
 			((Hierarchy) LogManager.GetRepository()).Root.AddAppender(this);
 		}
 
-		public void Close()
-		{
-		}
+		void IAppender.Close()
+		{ }
 
-		public void DoAppend(LoggingEvent loggingEvent)
+		void IAppender.DoAppend(LoggingEvent loggingEvent)
 		{
 			Dispatcher.Invoke(() => Content.AppendText($"{loggingEvent.Level.Name}\t{loggingEvent.MessageObject}\n"));
 		}

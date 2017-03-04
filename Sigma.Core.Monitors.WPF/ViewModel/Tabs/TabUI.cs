@@ -124,8 +124,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		}
 
 		/// <summary>
-		///     This method finds an empty area suitable for an object with given <see cref="rowSpan" /> and
-		///     <see cref="columnSpan" />.
+		///     This method finds an empty area suitable for an object with given rowSpan and
+		///     columnSpan.
 		/// </summary>
 		/// <param name="grid">The grid it will be checked against.</param>
 		/// <param name="rowSpan">How many rows the new element requires.</param>
@@ -190,15 +190,15 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 
 		/// <summary>
 		///     Add a <see cref="SigmaPanel" /> cumulatively to the tab. (At
-		///     the next free position; may skips empty panels if <see cref="columnSpan" />
-		///     or <see cref="rowSpan" /> is too big.
+		///     the next free position; may skips empty panels if columnSpan
+		///     or rowSpan is too big.
 		/// </summary>
 		/// <param name="panel">The <see cref="SigmaPanel" /> that will be added.</param>
 		/// <param name="rowSpan">How many rows the panel requires. </param>
 		/// <param name="columnSpan">How many columns the panel requires. </param>
 		/// <param name="legend">Mark a panel to a special colour / legend. </param>
 		/// <exception cref="ArgumentOutOfRangeException">
-		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
+		///     If rowSpan is smaller or equal to zero or if columnSpan
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
@@ -211,14 +211,14 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 
 		/// <summary>
 		///     Add a <see cref="UIElement" /> cumulatively to the tab. (At
-		///     the next free position; may skips empty panels if <see cref="columnSpan" />
-		///     or <see cref="rowSpan" /> is too big.
+		///     the next free position; may skips empty panels if columnSpan
+		///     or rowSpan is too big.
 		/// </summary>
 		/// <param name="element">The <see cref="UIElement" /> that will be added.</param>
 		/// <param name="rowSpan">How many rows the panel requires. </param>
 		/// <param name="columnSpan">How many columns the panel requires. </param>
 		/// <exception cref="ArgumentOutOfRangeException">
-		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
+		///     If rowSpan is smaller or equal to zero or if columnSpan
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement" />. </exception>
@@ -259,7 +259,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="columnSpan">How many columns the <see cref="SigmaPanel" /> uses.</param>
 		/// <param name="legend">Mark a panel to a special colour / legend. </param>
 		/// <exception cref="ArgumentOutOfRangeException">
-		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
+		///     If rowSpan is smaller or equal to zero or if columnSpan
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="SigmaPanel" />. </exception>
@@ -280,7 +280,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		/// <param name="rowSpan">How many rows the <see cref="UIElement" /> uses.</param>
 		/// <param name="columnSpan">How many columns the <see cref="UIElement" /> uses.</param>
 		/// <exception cref="ArgumentOutOfRangeException">
-		///     If <see cref="rowSpan" /> is smaller or equal to zero or if <see cref="columnSpan" />
+		///     If rowSpan is smaller or equal to zero or if columnSpan
 		///     is smaller or equal to zero.
 		/// </exception>
 		/// <exception cref="IndexOutOfRangeException">If there is no space for the new <see cref="UIElement" />. </exception>

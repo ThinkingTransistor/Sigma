@@ -17,7 +17,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	public class ChartPanel<TChart, TSeries, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new()
 	{
 		/// <summary>
-		/// The <see cref="SeriesCollection"/> containing the <see cref="Series"/> (of the type <see cref="TSeries"/>). 
+		/// The <see cref="SeriesCollection"/> containing the <see cref="Series"/> (of the type <see ref="TSeries"/>). 
 		/// </summary>
 		public SeriesCollection SeriesCollection { get; }
 
@@ -41,7 +41,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public Axis AxisY { get; }
 
 		/// <summary>
-		/// The maximum of points visible at once (others get removed). This number is only considered when calling <see cref="Add"/> and <see cref="AddRange"/>.
+		/// The maximum of points visible at once (others get removed). This number is only considered when calling Add and AddRange.
 		/// If negative (or zero), all points are displayed.
 		/// </summary>
 		public int MaxPoints { get; set; } = -1;
@@ -199,6 +199,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			}
 		}
 
+		/// <summary>
+		/// Clear all <see cref="ChartValues"/> to be able to "restart" the graph.
+		/// </summary>
 		public void Clear()
 		{
 			foreach (ChartValues<TData> chartValues in ChartValues)
@@ -259,7 +262,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		}
 
 		/// <summary>
-		/// Adds a range of series. Fastest if given an <see cref="TSeries"/>[].
+		/// Adds a range of series. Fastest if given an <see ref="TSeries"/>[].
 		/// </summary>
 		/// <param name="series">The series that will be added.</param>
 		public void AddSeriesRange(IEnumerable<TSeries> series)
