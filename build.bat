@@ -23,7 +23,8 @@ powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://dis
 
 nuget.exe restore Sigma.sln
 
-%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Sigma.sln /p:Configuration="%config%" /p:Platform=x64 /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=diag /nr:false
+
+%programfiles(x86)%\MSBuild\14.0\Bin\MsBuild.exe Sigma.sln /p:Configuration="%config%" /p:Platform=x64
 
 REM pack Sigma.Core
 
