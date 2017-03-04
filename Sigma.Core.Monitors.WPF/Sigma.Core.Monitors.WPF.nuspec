@@ -30,4 +30,8 @@
 			<frameworkAssembly assemblyName="System.Xaml" />
 		</frameworkAssemblies>
 	</metadata>
+	
+	<files>
+		<file src="bin\x64\Release\Sigma.Core.Monitors.WPF.XML" target="lib" />
+	</files>
 </package>

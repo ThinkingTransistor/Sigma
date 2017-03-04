@@ -41,6 +41,9 @@
 		<file src="Dependencies\DiffSharp.dll" target="lib" />
 	
 		<file src="*.so" target="content" />
+		
+		<!-- TODO: relative path-->
+		<file src="bin\x64\Release\Sigma.Core.XML" target="lib" />
 	</files>
 	
 </package>
