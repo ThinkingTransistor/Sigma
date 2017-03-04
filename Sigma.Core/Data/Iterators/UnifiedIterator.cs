@@ -109,5 +109,10 @@ namespace Sigma.Core.Data.Iterators
 
 			return unifiedBlock;
 		}
+
+		public override string ToString()
+		{
+			return $"unified iterator";
+		}
 	}
 }

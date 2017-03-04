@@ -13,6 +13,8 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using log4net;
+using log4net.Core;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence
 {
@@ -31,13 +33,14 @@ namespace Sigma.Core.Persistence
 		/// <param name="target">The target stream.</param>
 		/// <param name="serialiser">The serialiser.</param>
 		/// <param name="autoClose">Optionally indicate if the stream should be automatically closed.</param>
-		public static void Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true)
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		public static void Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true, bool verbose = true)
 		{
 			if (obj == null) throw new ArgumentNullException(nameof(obj));
 			if (target == null) throw new ArgumentNullException(nameof(target));
 			if (serialiser == null) throw new ArgumentNullException(nameof(serialiser));
 
-			ClazzLogger.Debug($"Writing object {obj} of type {obj.GetType()} to target stream {target} using serialiser {serialiser}...");
+			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Writing {obj.GetType().Name} {obj} of type {obj.GetType()} to target stream {target} using serialiser {serialiser}...", ClazzLogger);
 
 			Stopwatch stopwatch = Stopwatch.StartNew();
 			long beforePosition = target.Position;
@@ -52,8 +55,8 @@ namespace Sigma.Core.Persistence
 
 			target.Close();
 
-			ClazzLogger.Debug($"Done writing object {obj} to target stream {target} using serialiser {serialiser}, " +
-						  $"wrote {(bytesWritten / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.");
+			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Done writing {obj.GetType().Name} {obj} to target stream {target} using serialiser {serialiser}, " +
+						  $"wrote {(bytesWritten / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.", ClazzLogger);
 		}
 
 		/// <summary>
@@ -63,12 +66,13 @@ namespace Sigma.Core.Persistence
 		/// <param name="target">The target stream.</param>
 		/// <param name="serialiser">The serialiser.</param>
 		/// <returns>The read object of the requested type.</returns>
-		public static T Read<T>(Stream target, ISerialiser serialiser)
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		public static T Read<T>(Stream target, ISerialiser serialiser, bool verbose = true)
 		{
 			if (target == null) throw new ArgumentNullException(nameof(target));
 			if (serialiser == null) throw new ArgumentNullException(nameof(serialiser));
 
-			ClazzLogger.Debug($"Reading object from target stream {target} using serialiser {serialiser}...");
+			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Reading {typeof(T).Name} from target stream {target} using serialiser {serialiser}...", ClazzLogger);
 
 			Stopwatch stopwatch = Stopwatch.StartNew();
 			long beforePosition = target.Position;
@@ -77,7 +81,7 @@ namespace Sigma.Core.Persistence
 
 			if (!(read is T))
 			{
-				throw new SerializationException($"Unable to read object from target {target} using serialiser {serialiser}, read object {read} was not of the requested type.");
+				throw new SerializationException($"Unable to read {typeof(T).Name} from target {target} using serialiser {serialiser}, read object {read} was not of the requested type.");
 			}
 
 			TraverseObjectGraph(read, new HashSet<object>(), (parent, field, obj) =>
@@ -91,8 +95,8 @@ namespace Sigma.Core.Persistence
 				(obj as ISerialisationNotifier)?.OnDeserialised();
 			});
 
-			ClazzLogger.Debug($"Done reading object {read} from target stream {target} using serialiser {serialiser}, " +
-							  $"read {((target.Position - beforePosition) / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.");
+			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Done reading {typeof(T).Name} {read} from target stream {target} using serialiser {serialiser}, " +
+							  $"read {((target.Position - beforePosition) / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.", ClazzLogger);
 
 			return (T) read;
 		}

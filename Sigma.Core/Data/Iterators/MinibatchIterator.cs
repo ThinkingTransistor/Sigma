@@ -219,5 +219,10 @@ namespace Sigma.Core.Data.Iterators
 
 			_logger.Debug($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} available blocks (including last pending).");
 		}
+
+		public override string ToString()
+		{
+			return $"minibatch iterator size {MinibatchSize}";
+		}
 	}
 }

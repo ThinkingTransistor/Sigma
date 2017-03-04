@@ -70,5 +70,10 @@ namespace Sigma.Core.Data.Iterators
 				currentIndex++;
 			}
 		}
+
+		public override string ToString()
+		{
+			return $"undivided iterator";
+		}
 	}
 }

@@ -416,5 +416,10 @@ namespace Sigma.Core.Training
 
 			_logger.Info($"Done resetting trainer \"{Name}\" to un-initialised state, discarded all progress data and stopped operator.");
 		}
+
+		public override string ToString()
+		{
+			return $"trainer \"{Name}\"";
+		}
 	}
 }

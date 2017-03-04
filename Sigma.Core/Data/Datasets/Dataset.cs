@@ -1021,5 +1021,10 @@ namespace Sigma.Core.Data.Datasets
 				}
 			}
 		}
+
+		public override string ToString()
+		{
+			return $"dataset \"{Name}\"";
+		}
 	}
 }
