@@ -9,13 +9,9 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Windows;
 using log4net;
 using MaterialDesignThemes.Wpf;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
 using Sigma.Core.Utils;
@@ -30,14 +26,14 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 		public readonly List<Func<Application, Window, TitleBarItem>> TitleBarFuncs;
 
+		private ILog _log = LogManager.GetLogger(typeof(TitleBarFactory));
+
 		/// <summary>
 		/// The <see cref="IRegistry"/> where all required factories are contained. 
 		/// </summary>
 		public IRegistry Registry { get; set; }
 
-		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0))
-		{
-		}
+		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0)) { }
 
 		/// <summary>
 		/// 
@@ -77,7 +73,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			//TODO: hack
 			if (TitleBarFuncs.Count == 0)
 			{
-				InitialiseDefaultTabs();
+				InitialiseDefaultItems();
 			}
 
 			foreach (Func<Application, Window, TitleBarItem> titleBarFunc in TitleBarFuncs)
@@ -89,8 +85,13 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			return titleBarControl;
 		}
 
-		public virtual void InitialiseDefaultTabs()
+		/// <summary>
+		/// The default item generation that will be called if no other title bar item is specified (i.e. <see cref="TitleBarFuncs"/> is empty).
+		/// </summary>
+		public virtual void InitialiseDefaultItems()
 		{
+			_log.Info("Creating default title bar items because no others have been specified.");
+
 			TitleBarFuncs.Add(
 				(app, window) =>
 					new TitleBarItem(Properties.Resources.ButtonEnvironment, Properties.Resources.MenuButtonLoad, Properties.Resources.MenuButtonSave,

@@ -19,7 +19,6 @@ using log4net.Filter;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Colours;
-using Sigma.Core.Monitors.WPF.View.Themes;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Utils;
 
