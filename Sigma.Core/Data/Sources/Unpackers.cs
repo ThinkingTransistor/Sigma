@@ -88,6 +88,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A GZip unpacker using the default Systems.IO.Compression GZipStream implementation.
 	/// </summary>
+	[Serializable]
 	public class GZipUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
@@ -99,6 +100,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A Tar unpacker using the SharpZipLib TarInputStream implementation.
 	/// </summary>
+	[Serializable]
 	public class TarUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
@@ -110,6 +112,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A Zip unpacker using the SharpZipLib ZipInputStream implementation.
 	/// </summary>
+	[Serializable]
 	public class ZipUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
@@ -121,6 +124,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A BZip2 unpacker using the SharpZipLib BZip2Unpacker implementation.
 	/// </summary>
+	[Serializable]
 	public class BZip2Unpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)
@@ -132,6 +136,7 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A LZW unpacker using the SharpZipLib LzwInputStream implementation.
 	/// </summary>
+	[Serializable]
 	public class LzwUnpacker : IUnpacker
 	{
 		public Stream Unpack(Stream input)

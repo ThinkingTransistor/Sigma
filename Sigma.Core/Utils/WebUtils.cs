@@ -148,8 +148,10 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A custom WebClient implementation which allows downloading a file with progress reporting within the calling thread via events. 
 	/// </summary>
+	[Serializable]
 	public class BlockingWebClient : WebClient
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly int _timeoutMilliseconds;

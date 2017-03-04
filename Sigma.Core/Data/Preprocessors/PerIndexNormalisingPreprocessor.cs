@@ -16,6 +16,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// <summary>
 	/// A normalising preprocessor that operators per feature index.
 	/// </summary>
+	[Serializable]
 	public class PerIndexNormalisingPreprocessor : BasePreprocessor
 	{
 		public override bool AffectsDataShape => false;

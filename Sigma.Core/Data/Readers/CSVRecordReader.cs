@@ -19,11 +19,13 @@ namespace Sigma.Core.Data.Readers
 	/// <summary>
 	/// A CSV record reader which reads comma separated values as string lines from a source.
 	/// </summary>
+	[Serializable]
 	public class CsvRecordReader : IRecordReader
 	{
-		private const int NumberColumnsNotSet = -1;
-
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		private const int NumberColumnsNotSet = -1;
 
 		private readonly char _separator;
 		private readonly bool _skipFirstLine;
@@ -31,9 +33,7 @@ namespace Sigma.Core.Data.Readers
 		private StreamReader _reader;
 		private int _numberColumns = NumberColumnsNotSet;
 
-		public IDataSource Source
-		{
-			get; }
+		public IDataSource Source { get; }
 
 		/// <summary>
 		/// Create a CSV record reader of a certain data set source and separator.

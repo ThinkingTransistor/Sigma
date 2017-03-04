@@ -19,6 +19,7 @@ namespace Sigma.Core.Training.Providers
 	/// <summary>
 	/// The default data provider, providing default links for default inputs and targets and optional additional input and output links.
 	/// </summary>
+	[Serializable]
 	public class DefaultDataProvider : IDataProvider
 	{
 		/// <summary>

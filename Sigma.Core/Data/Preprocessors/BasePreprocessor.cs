@@ -18,6 +18,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// <summary>
 	/// The base class for all preprocessors. Takes care of selective per section processing and simplifies implementation of new preprocessors. 
 	/// </summary>
+	[Serializable]
 	public abstract class BasePreprocessor : BaseExtractor, IRecordPreprocessor
 	{
 		/// <summary>

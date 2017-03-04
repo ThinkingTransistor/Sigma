@@ -18,6 +18,7 @@ namespace Sigma.Core.Data.Datasets
 	/// A dataset slice representing a part of an underlying dataset. 
 	/// Record-wise datasets forward partial blocks, i.e. some parts of each block instead of some entire blocks per slice (as in <see cref="DatasetBlockwiseSlice"/>.
 	/// </summary>
+	[Serializable]
 	public class DatasetRecordwiseSlice : IDataset
 	{
 		public IDataset UnderlyingDataset { get; }

@@ -17,6 +17,7 @@ namespace Sigma.Core.Layers.Feedforward
 	/// <summary>
 	/// An element-wise layer with element-wise weights and connections. 
 	/// </summary>
+	[Serializable]
 	public class ElementwiseLayer : BaseLayer
 	{
 		public ElementwiseLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
@@ -32,6 +33,12 @@ namespace Sigma.Core.Layers.Feedforward
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
 			INDArray activations = buffer.Inputs["default"].Get<INDArray>("activations");
+			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
+			INumber bias = buffer.Parameters.Get<INumber>("bias");
+
+			activations = handler.RowWise(activations, row => handler.Add(handler.Multiply(row, weights), bias));
+
+			buffer.Outputs["default"]["activations"] = activations;
 		}
 
 		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-elementwise")

@@ -16,6 +16,7 @@ namespace Sigma.Core.Architecture.Linear
 	/// <summary>
 	/// A linear network architecture which only allows linear single connections between layer constructs.
 	/// </summary>
+	[Serializable]
 	public class LinearNetworkArchitecture : INetworkArchitecture
 	{
 		public IRegistry Registry { get; }

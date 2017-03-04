@@ -16,6 +16,7 @@ namespace Sigma.Core.Layers
 	/// <summary>
 	/// A default implementation of the <see cref="ILayerBuffer"/> interface for internal use.
 	/// </summary>
+	[Serializable]
 	public class InternalLayerBuffer : ILayerBuffer
 	{
 		public ILayer Layer { get; }

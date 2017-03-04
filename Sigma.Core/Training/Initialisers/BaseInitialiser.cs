@@ -16,6 +16,7 @@ namespace Sigma.Core.Training.Initialisers
 	/// <summary>
 	/// A base initialiser for simplified per value calculations.
 	/// </summary>
+	[Serializable]
 	public abstract class BaseInitialiser : IInitialiser
 	{
 		/// <summary>

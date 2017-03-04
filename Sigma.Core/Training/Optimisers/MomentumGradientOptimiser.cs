@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -18,6 +19,7 @@ namespace Sigma.Core.Training.Optimisers
 	///		velocity = velocity * momentum - gradient * learningRate
 	///     parameter = parameter + velocity
 	/// </summary>
+	[Serializable]
 	public class MomentumGradientOptimiser : BaseGradientOptimiser
 	{
 		public MomentumGradientOptimiser(double learningRate, double momentum)

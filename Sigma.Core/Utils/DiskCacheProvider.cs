@@ -11,20 +11,24 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Utils
 {
 	/// <summary>
 	/// A cache provider implementation that uses a directory on the local disk. 
 	/// </summary>
-	public class DiskCacheProvider : ICacheProvider
+	[Serializable]
+	public class DiskCacheProvider : ICacheProvider, ISerialisationNotifier
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public string RootDirectory { get; }
 		public string CacheFileExtension { get; set; } = ".cache";
 
-		private readonly IFormatter _serialisationFormatter;
+		[NonSerialized]
+		private IFormatter _serialisationFormatter;
 
 		/// <summary>
 		/// Create a disk cache provider with a certain root directory.
@@ -48,6 +52,28 @@ namespace Sigma.Core.Utils
 			}
 
 			RootDirectory = rootDirectory;
+			_serialisationFormatter = new BinaryFormatter();
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
 			_serialisationFormatter = new BinaryFormatter();
 		}
 

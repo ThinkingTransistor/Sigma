@@ -20,6 +20,7 @@ namespace Sigma.Core.Data.Extractors
 	/// <summary>
 	/// The base class for extractors which implements some basic methods (which are probably be the same for most extractors).
 	/// </summary>
+	[Serializable]
 	public abstract class BaseExtractor : IRecordExtractor
 	{
 		public IRecordReader Reader

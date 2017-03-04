@@ -12,6 +12,7 @@ using Sigma.Core.MathAbstract;
 
 namespace Sigma.Core.Training.Optimisers
 {
+	[Serializable]
 	public class NesterovGradientOptimiser : BaseGradientOptimiser
 	{
 		/// <summary>

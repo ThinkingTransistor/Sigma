@@ -18,8 +18,10 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	/// <summary>
 	/// This hook reports the validation accuracy of given tops (typically for classification tasks). 
 	/// </summary>
+	[Serializable]
 	public class ValidationAccuracyReporter : BaseHook
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

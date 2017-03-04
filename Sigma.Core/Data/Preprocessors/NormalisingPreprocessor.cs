@@ -15,6 +15,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// <summary>
 	/// A normalising preprocessor, which normalises all values in certain named sections to a given range of values.
 	/// </summary>
+	[Serializable]
 	public class NormalisingPreprocessor : BasePreprocessor
 	{
 		public override bool AffectsDataShape => false;

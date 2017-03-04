@@ -6,10 +6,15 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Accumulators
 {
+	/// <summary>
+	/// An accumulator hook f
+	/// </summary>
+	[Serializable]
 	public class NumberAccumulatorHook : BaseHook
 	{
 		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep, int resetInterval = 0) : this(registryEntry, registryEntry.Replace('.', '_') + "_accumulated", timeStep, resetInterval)

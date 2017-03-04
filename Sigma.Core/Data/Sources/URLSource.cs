@@ -11,14 +11,17 @@ using Sigma.Core.Utils;
 using System;
 using System.IO;
 using System.Net;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Data.Sources
 {
 	/// <summary>
 	/// A URL resource used for datasets. Entire resource is downloaded and stored locally for processing.
 	/// </summary>
-	public class UrlSource : IDataSource
+	[Serializable]
+	public class UrlSource : IDataSource, ISerialisationNotifier
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public string ResourceName { get; }
@@ -33,8 +36,11 @@ namespace Sigma.Core.Data.Sources
 
 		private readonly string _localDownloadPath;
 		private readonly string _localTempDownloadPath;
-		private FileStream _localDownloadedFileStream;
-		private readonly IWebProxy _proxy;
+
+		[NonSerialized]
+		private IWebProxy _proxy;
+
+		private FileSource _underlyingFileSource;
 
 		/// <summary>
 		/// Create a URL source with a certain URL and store the downloaded file in the datasets directory with an inferred name. 
@@ -79,6 +85,28 @@ namespace Sigma.Core.Data.Sources
 
 			_proxy = proxy ?? SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
 			NumberRetriesOnError = numberRetriesOnError;
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			_proxy = SigmaEnvironment.Globals.Get<IWebProxy>("web_proxy");
 		}
 
 		private static string GetFileNameFromUrl(string url)
@@ -208,24 +236,29 @@ namespace Sigma.Core.Data.Sources
 			} while (!downloadSuccess && numberRetriesLeft-- > 0); 
 
 			_logger.Debug($"Opened file \"{_localDownloadPath}\".");
-			_localDownloadedFileStream = new FileStream(_localDownloadPath, FileMode.Open);
+
+			FileInfo localDownloadFileInfo = new FileInfo(_localDownloadPath);
+
+			// cannot move for unit test because of permissions, use temp folder I think?
+			_underlyingFileSource = new FileSource(localDownloadFileInfo.Name, localDownloadFileInfo.DirectoryName);
+			_underlyingFileSource.Prepare();
 
 			_prepared = true;
 		}
 
 		public Stream Retrieve()
 		{
-			if (_localDownloadedFileStream == null)
+			if (_underlyingFileSource == null)
 			{
 				throw new InvalidOperationException("Cannot retrieve URL source, URL source was not prepared correctly (missing or failed Prepare() call?).");
 			}
 
-			return _localDownloadedFileStream;
+			return _underlyingFileSource.Retrieve();
 		}
 
 		public void Dispose()
 		{
-			_localDownloadedFileStream?.Dispose();
+			_underlyingFileSource?.Dispose();
 		}
 	}
 }

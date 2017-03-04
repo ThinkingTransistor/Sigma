@@ -17,6 +17,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 	/// <summary>
 	/// A debug handler that checks for various invalid operations at runtime.
 	/// </summary>
+	[Serializable]
 	public class DebugHandler : IComputationHandler
 	{
 		public IComputationHandler UnderlyingHandler { get; }
@@ -49,6 +50,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			set { Registry.Set("check_infinite", value, typeof(bool)); }
 		}
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(typeof(DebugHandler));
 
 		public DebugHandler(IComputationHandler underlyingHandler, bool throwExceptionOnReport = true, bool enabled = true)

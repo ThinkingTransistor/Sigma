@@ -20,6 +20,7 @@ namespace Sigma.Core.Data.Iterators
 	/// <summary>
 	/// A base iterator for data iterators working with datasets. Includes asynchronous background block preparation and fetching.
 	/// </summary>
+	[Serializable]
 	public abstract class BaseIterator : IDataIterator
 	{
 		/// <summary>
@@ -32,6 +33,7 @@ namespace Sigma.Core.Data.Iterators
 		/// </summary>
 		public IRegistry Registry { get; }
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

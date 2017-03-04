@@ -15,6 +15,10 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Scorers
 {
+	/// <summary>
+	/// A validation accuracy scorer that scores model predictions against their targets with topx accuracy (e.g. top1, top3 and top10).
+	/// </summary>
+	[Serializable]
 	public class ValidationAccuracyScorer : BaseValidationScorer
 	{
 		///  <summary>

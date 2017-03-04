@@ -16,13 +16,15 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
 using System;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	/// <summary>
 	/// An abstract DiffSharp computation handle for 32-bit floats with dynamic Blas and Lapack backends.
 	/// </summary>
-	public abstract class DiffSharpFloat32Handler : IComputationHandler
+	[Serializable]
+	public abstract class DiffSharpFloat32Handler : IComputationHandler, ISerialisationNotifier
 	{
 		public abstract IDataType DataType { get; }
 
@@ -31,11 +33,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public IBlasBackend BlasBackend { get; }
 		public ILapackBackend LapackBackend { get; }
 
-		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
+		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle
+		{
+			get { return _diffsharpBackendHandle; }
+			private set { _diffsharpBackendHandle = value; }
+		}
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		private readonly Random _probabilityMaskRNG;
-		private readonly long _backendTag;
+		private readonly Random _probabilityMaskRng;
+
+		[NonSerialized]
+		private DiffSharpBackendHandle<float> _diffsharpBackendHandle;
+		private long _backendTag;
 
 		protected DiffSharpFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend)
 		{
@@ -46,13 +56,40 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			LapackBackend = lapackBackend;
 
 			Registry = new Registry(tags: "handler");
-			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
 
+			InitialiseBackend(blasBackend, lapackBackend);
+
+			_probabilityMaskRng = new Random();
+		}
+
+		private void InitialiseBackend(IBlasBackend blasBackend, ILapackBackend lapackBackend)
+		{
+			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
 			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
 			DiffsharpBackendHandle.BackendTag = _backendTag;
+		}
 
-			_probabilityMaskRNG = new Random();
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			InitialiseBackend(BlasBackend, LapackBackend);
 		}
 
 		protected BackendConfig<float> CreateBackendConfig()
@@ -700,7 +737,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			for (int i = begin; i < end; i++)
 			{
-				if (_probabilityMaskRNG.NextDouble() < probability)
+				if (_probabilityMaskRng.NextDouble() < probability)
 				{
 					data[i] = 1;
 				}

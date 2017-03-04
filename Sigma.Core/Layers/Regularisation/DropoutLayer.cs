@@ -14,6 +14,10 @@ using System;
 
 namespace Sigma.Core.Layers.Regularisation
 {
+	/// <summary>
+	/// A standard dropout layer applying a random probability mask with a given dropout probability during training.
+	/// </summary>
+	[Serializable]
 	public class DropoutLayer : BaseLayer
 	{
 		/// <summary>

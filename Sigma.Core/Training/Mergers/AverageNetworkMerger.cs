@@ -18,6 +18,7 @@ namespace Sigma.Core.Training.Mergers
 	///     mean).
 	///     Theoretically it is equal to a <see cref="WeightedNetworkMerger" /> with equal weights.
 	/// </summary>
+	[Serializable]
 	public class AverageNetworkMerger : BaseNetworkMerger
 	{
 		public AverageNetworkMerger(params string[] matchIdentifiers) : base(matchIdentifiers)

@@ -13,6 +13,7 @@ namespace Sigma.Core.Training.Initialisers
 	/// <summary>
 	/// A Gaussian initialiser for ndarrays with mean and standard deviation. 
 	/// </summary>
+	[Serializable]
 	public class GaussianInitialiser : BaseInitialiser
 	{
 		/// <summary>

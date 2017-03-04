@@ -11,6 +11,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Initialisers
 {
+	[Serializable]
 	public class XavierInitialiser : BaseInitialiser
 	{
 		/// <summary>

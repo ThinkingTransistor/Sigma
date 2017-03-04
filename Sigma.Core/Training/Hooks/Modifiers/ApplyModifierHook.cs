@@ -16,6 +16,7 @@ namespace Sigma.Core.Training.Hooks.Modifiers
 	/// <summary>
 	/// An apply modifier hook that applies a certain <see cref="IValueModifier"/> to a certain, single parameter.
 	/// </summary>
+	[Serializable]
 	public class ApplyModifierHook : BaseHook
 	{
 		public ApplyModifierHook(string parameter, IValueModifier modifier, TimeStep timeStep) : base(timeStep, parameter)
