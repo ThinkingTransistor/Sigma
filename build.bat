@@ -38,7 +38,7 @@ cd ../Sigma.Core.Monitors.WPF
 
 	REM update the targets file
 	cd build
-		powershell -Command "(gc Sigma.Core.Monitors.WPF.targets) -replace '~version~', '%version%' | Out-File Sigma.Core.Monitors.WPF.targets"
+		powershell -Command "(gc Sigma.Core.Monitors.WPF.template.targets) -replace '~version~', '%version%' | Out-File Sigma.Core.Monitors.WPF.targets"
 		cd ..
 		
 	REM actual build
@@ -49,3 +49,17 @@ cd ../Sigma.Core.Monitors.WPF
 	REM pack Sigma.Core.Monitors.WPF
 	
 	nuget.exe pack "Sigma.Core.Monitors.WPF.csproj" -IncludeReferencedProjects -Prop Platform=x64 -Verbosity detailed -Prop Configuration=%config% -Version %version%
+	
+	
+	REM cleanup
+	
+	REM delete newly created target file
+	cd build 
+		del Sigma.Core.Monitors.WPF.targets
+	cd ..
+	del nuget.exe
+	cd ..
+	del nuget.exe
+	cd Sigma.Core
+	del nuget.exe
+	
