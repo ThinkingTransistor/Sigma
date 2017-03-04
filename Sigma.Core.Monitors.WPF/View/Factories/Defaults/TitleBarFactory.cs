@@ -9,9 +9,13 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using System.Windows;
 using log4net;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Data.Iterators;
+using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
 using Sigma.Core.Utils;

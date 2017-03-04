@@ -38,7 +38,10 @@ cd ../Sigma.Core.Monitors.WPF
 
 	REM update the targets file
 	cd build
-		powershell -Command "(gc Sigma.Core.Monitors.WPF.template.targets) -replace '~version~', '%version%' | Out-File Sigma.Core.Monitors.WPF.targets"
+		move Sigma.Core.Monitors.WPF.template.targets targets.txt
+		powershell -Command "(Get-Content targets.txt) -replace '~version~', '%version%' | Set-Content Sigma.Core.Monitors.WPF.targets.txt"
+		move Sigma.Core.Monitors.WPF.targets.txt Sigma.Core.Monitors.WPF.targets
+		move targets.txt Sigma.Core.Monitors.WPF.template.targets
 		cd ..
 		
 	REM actual build
@@ -62,4 +65,4 @@ cd ../Sigma.Core.Monitors.WPF
 	del nuget.exe
 	cd Sigma.Core
 	del nuget.exe
-	
+	cd ..

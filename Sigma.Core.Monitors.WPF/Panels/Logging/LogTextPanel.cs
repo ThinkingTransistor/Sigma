@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using log4net;
@@ -42,11 +43,20 @@ namespace Sigma.Core.Monitors.WPF.Panels.Logging
 		}
 
 		void IAppender.Close()
-		{ }
+		{
+		}
 
 		void IAppender.DoAppend(LoggingEvent loggingEvent)
 		{
-			Dispatcher.Invoke(() => Content.AppendText($"{loggingEvent.Level.Name}\t{loggingEvent.MessageObject}\n"));
+			try
+			{
+
+				Dispatcher.Invoke(() => Content.AppendText($"{loggingEvent.Level.Name}\t{loggingEvent.MessageObject}\n"));
+			}
+			catch (Exception)
+			{
+				((IAppender) this).Close();
+			}
 		}
 	}
 }
