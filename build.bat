@@ -38,6 +38,7 @@ cd ../Sigma.Core.Monitors.WPF
 
 	REM update the targets file
 	cd build
+		REM this is required in order to handle it as text instead of binary (im a powershell noob)
 		move Sigma.Core.Monitors.WPF.template.targets targets.txt
 		powershell -Command "(Get-Content targets.txt) -replace '~version~', '%version%' | Set-Content Sigma.Core.Monitors.WPF.targets.txt"
 		move Sigma.Core.Monitors.WPF.targets.txt Sigma.Core.Monitors.WPF.targets
