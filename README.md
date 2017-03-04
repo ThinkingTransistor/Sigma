@@ -1,6 +1,6 @@
 # Sigma 
 [![Build Status (Master)](https://img.shields.io/travis/ThinkingTransistor/Sigma/master.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma)
-[![Build Status (Development)](https://img.shields.io/travis/ThinkingTransistor/Sigma/development.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma)
+[![Build Status (Development)](https://img.shields.io/travis/ThinkingTransistor/Sigma/development.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma/branches)
 [![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://choosealicense.com/licenses/mit)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat-square)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
 
