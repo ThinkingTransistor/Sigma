@@ -16,8 +16,8 @@ if "%nuget%" == "" (
 
 powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/latest/nuget.exe','nuget.exe')"
 
-copy nuget.exe Sigma.Core/
-copy nuget.exe Sigma.Core.Monitors.WPF/
+copy nuget.exe Sigma.Core
+copy nuget.exe Sigma.Core.Monitors.WPF
 
 nuget.exe restore Sigma.sln
 
