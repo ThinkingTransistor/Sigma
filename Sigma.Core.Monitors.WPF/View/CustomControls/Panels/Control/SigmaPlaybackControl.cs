@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,6 +15,10 @@ using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
+	/// <summary>
+	/// This "playback control" works controlling the music. Play it, pause it, rewind it.
+	/// And this all works with the trainer.
+	/// </summary>
 	public class SigmaPlaybackControl : System.Windows.Controls.Control
 	{
 		static SigmaPlaybackControl()
@@ -155,7 +158,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				trainer.Reset();
 				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
 															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
-				
+
 
 				//#if DEBUG
 				//				if (Control.Task != null)
@@ -178,12 +181,12 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 				Control.Running = false;
 
-//#if DEBUG
-//				if (Control.Task != null)
-//				{
-//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-//				}
-//#endif
+				//#if DEBUG
+				//				if (Control.Task != null)
+				//				{
+				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				//				}
+				//#endif
 			}
 
 			public DefaultStep(SigmaPlaybackControl control) : base(control)
