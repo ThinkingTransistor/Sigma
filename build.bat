@@ -1,4 +1,4 @@
-REM @echo Off
+@echo Off
 set config=%1
 if "%config%" == "" (
    set config=Release
@@ -20,8 +20,6 @@ powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://dis
 
 copy nuget.exe Sigma.Core
 copy nuget.exe Sigma.Core.Monitors.WPF
-
-REM old: "%build%" Sigma.sln /p:Configuration="%config%" /p:Platform=x64
 
 REM build Sigma.Core
 cd Sigma.Core
