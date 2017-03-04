@@ -16,7 +16,10 @@ if "%nuget%" == "" (
 
 dir
 
-%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild src\Sigma.sln /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=diag /nr:false
+echo "========"
+echo %WINDIR%
+
+%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Sigma.sln /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=diag /nr:false
 
 REM pack Sigma.Core
 
