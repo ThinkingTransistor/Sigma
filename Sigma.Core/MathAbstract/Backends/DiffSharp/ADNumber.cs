@@ -16,6 +16,7 @@ namespace Sigma.Core.MathAbstract.Backends.DiffSharp
 	/// Represents single mathematical value (i.e. number), used for interaction between ndarrays and handlers (is more expressive and faster). 
 	/// </summary>
 	/// <typeparam name="T">The data type of this single value.</typeparam>
+	[Serializable]
 	public class ADNumber<T> : INumber
 	{
 		private T _value;

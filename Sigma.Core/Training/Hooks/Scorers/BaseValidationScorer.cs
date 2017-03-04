@@ -16,6 +16,10 @@ using System;
 
 namespace Sigma.Core.Training.Hooks.Scorers
 {
+	/// <summary>
+	/// A base implementation for validation scorers that takes care of automatically getting the final output of a and staging the scoring process.
+	/// </summary>
+	[Serializable]
 	public abstract class BaseValidationScorer : BaseHook
 	{
 		/// <summary>

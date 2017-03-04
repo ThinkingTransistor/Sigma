@@ -16,6 +16,7 @@ using log4net;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Persistence;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Datasets
@@ -24,9 +25,10 @@ namespace Sigma.Core.Data.Datasets
 	/// A default implementation of the IDataset interface. 
 	/// Provides caching of entire blocks and reader data, partial extraction, unordered extraction, automatic block sizing, smart block loading. 
 	/// </summary>
-	[Serializable] // TODO this will probably need a custom serialiser because of the volatile cache (needs to be verified / flushed), maybe use OnDeserializedAttribute, see msdn docs, dunno yet
-	public class Dataset : IDataset
+	[Serializable] 
+	public class Dataset : IDataset, ISerialisationNotifier
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
@@ -82,8 +84,9 @@ namespace Sigma.Core.Data.Datasets
 		private bool _autoSetExternalChangeBlockSize;
 
 		// TODO fix available blocks semaphore logic
-		// the waitones/releases are inconsistent, because blocks aren't always actually allocated, such as null returns are not considered 
-		private readonly Semaphore _availableBlocksSemaphore;
+		// the waitones/releases are inconsistent, because blocks aren't always actually allocated, such as null returns are not considered
+		[NonSerialized] 
+		private Semaphore _availableBlocksSemaphore;
 		private int _availableBlocksSemaphoreState;
 
 		/// <summary>
@@ -136,31 +139,33 @@ namespace Sigma.Core.Data.Datasets
 				throw new ArgumentNullException(nameof(cacheProvider));
 			}
 
-			if (blockSizeRecords == BlockSizeAll)
-			{
-				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
-				TargetBlockSizeRecords = int.MaxValue;
-			}
-			else if (blockSizeRecords == BlockSizeAuto)
-			{
-				//somewhat temporary guesstimate, should probably expose the individual parameters 
-				const long estimatedRecordSizeBytes = 1024;
-				const double memoryToConsume = 0.2f;
-				const long optimalNumberBlocks = 8;
-				const int maxBlockSizeRecords = 4096;
-				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
+			switch (blockSizeRecords) {
+				case BlockSizeAll:
+					//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
+					TargetBlockSizeRecords = int.MaxValue;
+					break;
+				case BlockSizeAuto:
+					//somewhat temporary guesstimate, should probably expose the individual parameters 
+					const long estimatedRecordSizeBytes = 1024;
+					const double memoryToConsume = 0.2f;
+					const long optimalNumberBlocks = 8;
+					const int maxBlockSizeRecords = 4096;
+					long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
-				TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
+					TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
 
-				_autoSetBlockSize = true;
-			}
-			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
-			{
-				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
-			}
-			else
-			{
-				TargetBlockSizeRecords = blockSizeRecords;
+					_autoSetBlockSize = true;
+					break;
+				default:
+					if (blockSizeRecords == 0 || blockSizeRecords < -2)
+					{
+						throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
+					}
+					else
+					{
+						TargetBlockSizeRecords = blockSizeRecords;
+					}
+					break;
 			}
 
 			Name = name;
@@ -183,6 +188,29 @@ namespace Sigma.Core.Data.Datasets
 
 				_logger.Debug($"Done flushing all caches for dataset \"{Name}.\"");
 			}
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			InvalidateAndClearCaches();
+			_availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockCount, MaxConcurrentActiveBlocks);
 		}
 
 		public IDataset[] SplitBlockwise(params int[] parts)
@@ -392,16 +420,16 @@ namespace Sigma.Core.Data.Datasets
 
 		/// <summary>
 		/// Invalidate and clear all caches associated with this dataset. 
-		/// WARNING: Removing cache entries may cause certain datasets to load much more slowly or incorrectly. 
-		///			 Use cases include removing cache entries for old datasets or datasets with different extractors. 
+		/// WARNING: Removing cache entries may cause certain datasets to load much more slowly or even incorrectly. 
+		///			 Legitimate use cases include removing cache entries for old datasets or changing extractors. 
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
 			_logger.Debug("Invalidating and clearing all caches...");
 
 			_cacheProvider.RemoveAll();
-
 			_cachedBlocks.Clear();
+			_totalCachedBlockSizeBytes = 0L;
 
 			_logger.Debug("Done invalidating and clearing all caches.");
 		}
@@ -563,7 +591,7 @@ namespace Sigma.Core.Data.Datasets
 
 		private Dictionary<string, INDArray> LoadAndExtractRaw(int blockIndex, IComputationHandler handler)
 		{
-			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and risking corruption of data
+			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and / or corrupting cache state
 			lock (this)
 			{
 				if (blockIndex >= _lastReadRawDataBlockIndex)

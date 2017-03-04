@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 
@@ -14,6 +15,7 @@ namespace Sigma.Core.Training.Modifiers
 	/// <summary>
 	/// A scale value modifier to scale certain values such that x = x * scale.
 	/// </summary>
+	[Serializable]
 	public class ScaleValueModifier : BaseValueModifier
 	{
 		/// <summary>

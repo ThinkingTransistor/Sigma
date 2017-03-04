@@ -17,6 +17,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// A DiffSharp backend handle, as passed to the backend provider and used by Sigma.DiffSharp internally for direct operations on Blas and Lapack backends.
 	/// </summary>
 	/// <typeparam name="T">The primitive data type processed by this backend handle.</typeparam>
+	[Serializable]
 	public abstract class DiffSharpBackendHandle<T> : Backend<T>
 	{
 		public long BackendTag { get; set; }

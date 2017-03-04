@@ -25,6 +25,7 @@ namespace Sigma.Core.Data.Preprocessors
 	///		an input of 7 becomes [0, 0, 0, 0, 0, 0, 1, 0, 0]
 	/// </example>
 	/// </summary>
+	[Serializable]
 	public class OneHotPreprocessor : BasePreprocessor
 	{
 		public override bool AffectsDataShape => true;

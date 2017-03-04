@@ -24,6 +24,7 @@ namespace Sigma.Core.Architecture
 		public string Name { get; }
 		public IRegistry Registry { get; }
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;

@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using log4net;
 using log4net.Config;
 using Sigma.Core.Monitors;
+using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
@@ -27,7 +28,8 @@ namespace Sigma.Core
 	/// <summary>
 	/// A sigma environment, where all the magic happens.
 	/// </summary>
-	public class SigmaEnvironment
+	[Serializable]
+	public class SigmaEnvironment : ISerialisationNotifier
 	{
 		/// <summary>
 		/// If the <see cref="IOperator"/>s should automatically start when calling <see cref="Run"/>.
@@ -44,19 +46,18 @@ namespace Sigma.Core
 		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _globalHooksToAttach;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _localHooksToAttach;
-		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
 
+		[NonSerialized]
+		private ManualResetEvent _processQueueEvent;
+
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The unique name of this environment. 
 		/// </summary>
-		public string Name
-		{
-			get;
-		}
-
+		public string Name { get; }
 		/// <summary>
 		/// The root registry of this environment where all exposed parameters are stored hierarchically.
 		/// </summary>
@@ -71,10 +72,7 @@ namespace Sigma.Core
 		/// <summary>
 		/// The random number generator to use for randomised operations for reproducibility. 
 		/// </summary>
-		public Random Random
-		{
-			get; private set;
-		}
+		public Random Random { get; private set; }
 
 		/// <summary>
 		/// 
@@ -94,6 +92,28 @@ namespace Sigma.Core
 			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
+			_processQueueEvent = new ManualResetEvent(true);
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
 			_processQueueEvent = new ManualResetEvent(true);
 		}
 
@@ -162,6 +182,16 @@ namespace Sigma.Core
 		public ITrainer CreateTrainer(string name)
 		{
 			return AddTrainer(new Trainer(name));
+		}
+
+		/// <summary>
+		/// Create a trainer with a certain unique name without adding it to this sigma environment.
+		/// </summary>
+		/// <param name="name">The trainer name.</param>
+		/// <returns>A new trainer with the given name.</returns>
+		public ITrainer CreateGhostTrainer(string name)
+		{
+			return new Trainer(name);
 		}
 
 		/// <summary>

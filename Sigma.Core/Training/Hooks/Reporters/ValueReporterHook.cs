@@ -18,8 +18,10 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	/// <summary>
 	/// A hook that logs the current local value of each worker (e.g. cost) over a certain time period.
 	/// </summary>
+	[Serializable]
 	public class ValueReporterHook : BaseHook
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

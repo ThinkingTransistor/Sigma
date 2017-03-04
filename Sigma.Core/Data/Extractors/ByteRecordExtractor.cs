@@ -19,8 +19,10 @@ namespace Sigma.Core.Data.Extractors
 	/// <summary>
 	/// A byte record extractor, which extracts named ranges to ndarrays byte-wise from a byte record reader.
 	/// </summary>
+	[Serializable]
 	public class ByteRecordExtractor : BaseExtractor
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Dictionary<string, long[][]> _indexMappings;

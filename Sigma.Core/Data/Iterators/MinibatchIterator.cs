@@ -20,6 +20,7 @@ namespace Sigma.Core.Data.Iterators
 	/// <summary>
 	/// A minibatch iterator which randomly traverses a dataset in minibatches of a certain size.
 	/// </summary>
+	[Serializable]
 	public class MinibatchIterator : BaseIterator
 	{
 		/// <summary>
@@ -36,6 +37,7 @@ namespace Sigma.Core.Data.Iterators
 			set { Registry.Set("minibatch_size", value, typeof(int));}
 		}
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly IList<int> _currentBatchNotTraversedBlockIndices;

@@ -16,8 +16,10 @@ namespace Sigma.Core.Data.Sources
 	/// <summary>
 	/// A collection of data set sources which automatically chooses the first existing source and then acts like that data source.
 	/// </summary>
+	[Serializable]
 	public class MultiSource : IDataSource
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

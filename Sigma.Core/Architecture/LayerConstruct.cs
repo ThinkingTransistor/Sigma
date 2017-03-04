@@ -71,6 +71,7 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		public event EventHandler<LayerConstructEventArgs> ValidateEvent;
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Type _layerInterfaceType = typeof(ILayer);

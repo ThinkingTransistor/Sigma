@@ -16,7 +16,6 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.DiffSharp;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
-using Sigma.Core.Training.Hooks.Stoppers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -27,8 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Modifiers;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -43,6 +41,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			SampleTrainerOperatorWorkerIris();
 
+			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
 		}
 
@@ -59,7 +58,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
 
-			ITrainer trainer = sigma.CreateTrainer("test");
+			ITrainer trainer = sigma.CreateGhostTrainer("test");
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
@@ -82,6 +81,11 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+
+			Serialisation.Write(trainer, Target.FileByName("trainer.sgtrainer"), Serialisers.BinarySerialiser);
+			trainer = Serialisation.Read<ITrainer>(Target.FileByName("trainer.sgtrainer"), Serialisers.BinarySerialiser);
+
+			trainer = sigma.AddTrainer(trainer);
 
 			sigma.Run();
 		}

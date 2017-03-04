@@ -189,6 +189,7 @@
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
+    <Compile Include="Persistence\ISerialisationNotifier.cs" />
     <Compile Include="Persistence\Selectors\ISelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
     <Compile Include="Persistence\SerialisationTarget.cs" />

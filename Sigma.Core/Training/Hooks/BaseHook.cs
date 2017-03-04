@@ -20,6 +20,7 @@ namespace Sigma.Core.Training.Hooks
 	/// Represents a hook which can be used to "hook" into operations and execute custom code at a certain time step. 
 	/// The required parameters from the callers registry must be denoted before <see cref="Invoke"/> is first called (so that the operator can fetch the requested parameters).
 	/// </summary>
+	[Serializable]
 	public abstract class BaseHook : IHook
 	{
 		private readonly IList<IHook> _requiredHooks;

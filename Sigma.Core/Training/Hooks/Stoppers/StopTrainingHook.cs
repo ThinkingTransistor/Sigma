@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using log4net;
 using Sigma.Core.Training.Hooks.Accumulators;
 using Sigma.Core.Utils;
@@ -15,8 +16,10 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 	/// <summary>
 	/// A stop training hook that will stop training when certain conditions are met (and reports so to the logger).
 	/// </summary>
+	[Serializable]
 	public class StopTrainingHook : BaseHook
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

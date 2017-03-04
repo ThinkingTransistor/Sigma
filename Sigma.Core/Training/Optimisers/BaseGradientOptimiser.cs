@@ -20,6 +20,7 @@ namespace Sigma.Core.Training.Optimisers
 	/// A base class for gradient based optimisers for easier implementation (all parameters treated as ndarray and passed with identifiers). 
 	/// Provides a default implementation of the cost calculation algorithm. 
 	/// </summary>
+	[Serializable]
 	public abstract class BaseGradientOptimiser : IOptimiser
 	{
 		/// <summary>
@@ -29,6 +30,7 @@ namespace Sigma.Core.Training.Optimisers
 
 		protected readonly string ExternalCostAlias;
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private bool _prepared;
 		private uint _traceTag;

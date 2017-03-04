@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
@@ -16,6 +17,7 @@ namespace Sigma.Core.Training.Modifiers
 	/// A base value modifier which transforms all numbers to ndarrays for convenience if they are to be treated identically.
 	/// Note: If you want to handle numbers and ndarrays separately, create your own <see cref="IValueModifier"/> implementation.
 	/// </summary>
+	[Serializable]
 	public abstract class BaseValueModifier : IValueModifier
 	{
 		/// <summary>

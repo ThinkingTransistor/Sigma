@@ -35,6 +35,7 @@ namespace Sigma.Core.Training
 	[Serializable]
 	public class Trainer : ITrainer
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly IList<IHook> _localHooks;
 		private readonly IList<IHook> _globalHooks;

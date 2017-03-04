@@ -114,19 +114,11 @@ namespace Sigma.Core.Data
 	[Serializable]
 	public class DataType<T> : IDataType
 	{
-		public int SizeBytes
-		{
-			get; }
+		public int SizeBytes { get; }
 
-		public Type UnderlyingType
-		{
-			get;
-		} = typeof(T);
+		public Type UnderlyingType { get; } = typeof(T);
 
-		public Type BaseUnderlyingType
-		{
-			get;
-		}
+		public Type BaseUnderlyingType { get; }
 
 		public string Identifier { get; }
 

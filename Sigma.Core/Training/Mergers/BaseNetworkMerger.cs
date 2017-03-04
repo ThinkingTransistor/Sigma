@@ -22,6 +22,7 @@ namespace Sigma.Core.Training.Mergers
 	///     This is the <see cref="BaseNetworkMerger" /> - it provides functionality that
 	///     should make it easier to implement the <see cref="INetworkMerger" /> interface.
 	/// </summary>
+	[Serializable]
 	public abstract class BaseNetworkMerger : INetworkMerger
 	{
 		/// <summary>
@@ -29,7 +30,9 @@ namespace Sigma.Core.Training.Mergers
 		/// </summary>
 		protected readonly ICollection<string> MatchIdentifier;
 
+		[NonSerialized]
 		private ILog _log;
+
 		protected ILog Log => _log ?? (_log = LogManager.GetLogger(GetType()));
 
 		protected BaseNetworkMerger(params string[] matchIdentifiers)

@@ -18,6 +18,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	/// <summary>
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
 	/// </summary>
+	[Serializable]
 	public class CpuFloat32Handler : DiffSharpFloat32Handler
 	{
 		public CpuFloat32Handler() : base(new OpenBlasBlasBackend(), new OpenBlasLapackBackend())

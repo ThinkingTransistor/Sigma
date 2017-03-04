@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
@@ -19,6 +20,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 	///     On some cases it can be useful to have separate classes.
 	///     It runs only on a single thread.
 	/// </summary>
+	[Serializable]
 	public class CpuSinglethreadedOperator : CpuMultithreadedOperator
 	{
 		/// <summary>
@@ -49,6 +51,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 	///     operations on the CPU. The tasks will be executed concurrently by the
 	///     number of threads specified.
 	/// </summary>
+	[Serializable]
 	public class CpuMultithreadedOperator : BaseOperator
 	{
 		/// <summary>

@@ -13,6 +13,7 @@ namespace Sigma.Core.Training.Hooks
 {
 	/// <summary>
 	/// A utility lambda hook for miscellaneous things and debugging.
+	/// Note: Lambda hooks are not serialisable. 
 	/// </summary>
 	public class LambdaHook : BaseHook
 	{

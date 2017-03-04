@@ -18,8 +18,10 @@ namespace Sigma.Core.Data.Readers
 	/// <summary>
 	/// A byte record reader, which reads sources byte-wise.
 	/// </summary>
+	[Serializable]
 	public class ByteRecordReader : IRecordReader
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public IDataSource Source { get; }

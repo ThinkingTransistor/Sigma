@@ -17,6 +17,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// A base hook invoke criteria for additionally limiting hook invocations to certain criteria.
 	/// </summary>
+	[Serializable]
 	public abstract class HookInvokeCriteria
 	{
 		/// <summary>
