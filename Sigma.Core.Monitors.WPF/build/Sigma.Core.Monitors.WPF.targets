@@ -2,7 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
   <Target Name="AfterBuild"> 
     <ItemGroup> 
-      <MyPackageFiles Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.1.0.13\lib\de-DE\*.*"/> 
+	<!-- ~version~ is a custom notation, it gets automatically replaced by the build script -->
+      <MyPackageFiles Include="$(MSBuildProjectDirectory)\..\Packages\Sigma.Core.Monitors.WPF.~version~\lib\de-DE\*.*"/> 
     </ItemGroup> 
     <Copy SourceFiles="@(MyPackageFiles)" DestinationFolder="$(OutputPath)\de-DE\" > 
     </Copy> 
