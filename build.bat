@@ -14,17 +14,14 @@ if "%nuget%" == "" (
 	set nuget=nuget
 )
 
-dir
-
-echo "========"
-echo %WINDIR%
-
 powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/latest/nuget.exe','nuget.exe')"
+
+cp nuget.exe Sigma.Core/
+cp nuget.exe Sigma.Core.Monitors.WPF/
 
 nuget.exe restore Sigma.sln
 
-
-%programfiles(x86)%\MSBuild\14.0\Bin\MsBuild.exe Sigma.sln /p:Configuration="%config%" /p:Platform=x64
+"%programfiles(x86)%\MSBuild\14.0\Bin\MsBuild.exe" Sigma.sln /p:Configuration="%config%" /p:Platform=x64
 
 REM pack Sigma.Core
 
