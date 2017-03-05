@@ -6,6 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+
 namespace Sigma.Core.Persistence.Selectors
 {
 	/// <summary>
@@ -32,5 +34,48 @@ namespace Sigma.Core.Persistence.Selectors
 		/// </summary>
 		/// <returns></returns>
 		ISelector<T> Uninitialised();
+	}
+
+	/// <summary>
+	/// A selector component and its id. 
+	/// </summary>
+	public abstract class SelectorComponent
+	{
+		/// <summary>
+		/// The component id of this component. 
+		/// </summary>
+		public int Id { get; }
+
+		/// <summary>
+		/// The selected sub components of this component (if any).
+		/// </summary>
+		public SelectorComponent[] SubComponents { get; }
+
+		/// <summary>
+		/// Create a selector component with a certain id. 
+		/// The id must be the same for semantically equivalent components at the current level
+		///  (i.e. a trainer component must have the same id as another trainer component with different sub-flags).
+		/// </summary>
+		/// <param name="id">The id.</param>
+		protected SelectorComponent(int id)
+		{
+			if (id < 0) throw new ArgumentOutOfRangeException($"Sub id must be >= 0 but was {id}.");
+
+			Id = id;
+		}
+
+		/// <summary>
+		/// Create a selector component with a certain id and certain sub-components. 
+		/// The id must be the same for semantically equivalent components at the current level
+		///  (i.e. a trainer component must have the same id as another trainer component with different sub-flags).
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <param name="subComponents">The selected sub components.</param>
+		protected SelectorComponent(int id, params SelectorComponent[] subComponents) : this(id)
+		{
+			if (subComponents == null) throw new ArgumentNullException(nameof(subComponents));
+
+			SubComponents = subComponents;
+		}
 	}
 }

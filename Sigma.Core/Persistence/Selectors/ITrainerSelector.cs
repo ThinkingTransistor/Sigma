@@ -14,78 +14,98 @@ namespace Sigma.Core.Persistence.Selectors
 	/// <summary>
 	/// A trainer selector to selectively keep and discard <see cref="ITrainer"/> data.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public interface ITrainerSelector<T> : ISelector<T> where T : ITrainer
+	/// <typeparam name="T">The trainer type.</typeparam>
+	public interface ITrainerSelector<out T> : ISelector<T> where T : ITrainer
 	{
 		/// <summary>
 		/// Keep a set of trainer components, discard all other components in a new trainer.
 		/// </summary>
-		/// <param name="component">The component(s) to keep.</param>
+		/// <param name="components">The component(s) to keep.</param>
 		/// <returns>A selector for a new trainer with the given component(s) retained.</returns>
-		ISelector<T> Keep(TrainerComponent component);
+		ISelector<T> Keep(params TrainerComponent[] components);
 
 		/// <summary>
 		/// Discard specified trainer components in a new trainer.
 		/// </summary>
-		/// <param name="component">The component(s) to discard.</param>
+		/// <param name="components">The component(s) to discard.</param>
 		/// <returns>A selector for a new trainer with the given component(s) discarded.</returns>
-		ISelector<T> Discard(TrainerComponent component);
+		ISelector<T> Discard(params TrainerComponent[] components);
 	}
 
 	/// <summary>
 	/// An individual trainer component for <see cref="ITrainer"/> data selection (keep / discard).
 	/// </summary>
-	[Flags]
-	public enum TrainerComponent
+	public class TrainerComponent : SelectorComponent
 	{
 		/// <summary>
 		/// Nothing (except the trainer name, which is the minimum state and included by default).
 		/// </summary>
-		None            = 0,
+		public static readonly TrainerComponent None = new TrainerComponent(0);
 
 		/// <summary>
 		/// The network model in this trainer.
 		/// </summary>
-		Network         = 1 << 0,
+		public static readonly TrainerComponent Network = new TrainerComponent(1 << 0);
 
 		/// <summary>
 		/// The attached initialisers.
 		/// </summary>
-		Initialisers    = 1 << 1,
+		public static readonly TrainerComponent Initialisers = new TrainerComponent(1 << 1);
 
 		/// <summary>
 		/// The attached value modifiers.
 		/// </summary>
-		ValueModifiers  = 1 << 2,
+		public static readonly TrainerComponent ValueModifiers = new TrainerComponent(1 << 2);
 
 		/// <summary>
 		/// The attached optimiser.
 		/// </summary>
-		Optimiser       = 1 << 3,
+		public static readonly TrainerComponent Optimiser = new TrainerComponent(1 << 3);
 
 		/// <summary>
 		/// The attached operator.
 		/// </summary>
-		Operator        = 1 << 4,
+		public static readonly TrainerComponent Operator = new TrainerComponent(1 << 4);
 
 		/// <summary>
 		/// The attached data provider.
 		/// </summary>
-		DataProvider    = 1 << 5,
+		public static readonly TrainerComponent DataProvider = new TrainerComponent(1 << 4);
 
 		/// <summary>
 		/// The attached data iterators.
 		/// </summary>
-		DataIterators   = 1 << 6,
+		public static readonly TrainerComponent DataIterator = new TrainerComponent(1 << 4);
 
 		/// <summary>
 		/// The attached hooks.
 		/// </summary>
-		Hooks       	= 1 << 7,
+		public static readonly TrainerComponent Hooks = new TrainerComponent(1 << 4);
 
 		/// <summary>
 		/// Everything.
 		/// </summary>
-		All				= Int32.MaxValue
+		public static readonly TrainerComponent All = new TrainerComponent(int.MaxValue);
+
+		/// <summary>
+		/// Create a selector component with a certain id. 
+		/// The id must be the same for semantically equivalent components at the current level
+		///  (i.e. a trainer component must have the same id as another trainer component with different sub-flags).
+		/// </summary>
+		/// <param name="id">The id.</param>
+		public TrainerComponent(int id) : base(id)
+		{
+		}
+
+		/// <summary>
+		/// Create a selector component with a certain id and certain sub-components. 
+		/// The id must be the same for semantically equivalent components at the current level
+		///  (i.e. a trainer component must have the same id as another trainer component with different sub-flags).
+		/// </summary>
+		/// <param name="id">The id.</param>
+		/// <param name="subComponents">The selected sub components.</param>
+		protected TrainerComponent(int id, params SelectorComponent[] subComponents) : base(id, subComponents)
+		{
+		}
 	}
 }
