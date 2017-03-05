@@ -106,12 +106,19 @@ namespace Sigma.Core.Persistence
 			Type type = root.GetType();
 			traversedObjects.Add(root);
 
+			// traverse all types up to object base type for all relevant fields in the graph
 			do
 			{
 				FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
+				// for every type check all fields for relevance
 				foreach (FieldInfo field in fields)
 				{
+					if (field.FieldType.IsPrimitive)
+					{
+						continue;
+					}
+
 					object value = field.GetValue(root);
 
 					if (value != null)

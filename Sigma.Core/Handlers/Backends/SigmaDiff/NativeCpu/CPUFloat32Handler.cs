@@ -9,9 +9,9 @@ For full license see LICENSE in the root directory of this project.
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using System;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {

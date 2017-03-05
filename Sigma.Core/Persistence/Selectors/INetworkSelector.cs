@@ -21,14 +21,14 @@ namespace Sigma.Core.Persistence.Selectors
 		/// </summary>
 		/// <param name="components">The component(s) to keep.</param>
 		/// <returns>A selector for a new network with the given component(s) retained.</returns>
-		ISelector<T> Keep(params TrainerComponent[] components);
+		ISelector<T> Keep(params NetworkComponent[] components);
 
 		/// <summary>
 		/// Discard specified network components in a new network.
 		/// </summary>
 		/// <param name="components">The component(s) to discard.</param>
 		/// <returns>A selector for a new network with the given component(s) discarded.</returns>
-		ISelector<T> Discard(params TrainerComponent[] components);
+		ISelector<T> Discard(params NetworkComponent[] components);
 	}
 
 	/// <summary>

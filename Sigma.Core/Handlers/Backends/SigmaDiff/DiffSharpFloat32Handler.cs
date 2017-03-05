@@ -13,9 +13,9 @@ using log4net;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
 using System;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff

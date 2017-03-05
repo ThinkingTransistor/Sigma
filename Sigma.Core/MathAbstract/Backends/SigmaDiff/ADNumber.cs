@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Handlers;
 
-namespace Sigma.Core.MathAbstract.Backends.DiffSharp
+namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 {
 	/// <summary>
 	/// A default implementation of the <see cref="INumber"/> interface.

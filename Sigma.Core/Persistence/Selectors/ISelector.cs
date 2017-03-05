@@ -7,6 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Sigma.Core.Persistence.Selectors
 {

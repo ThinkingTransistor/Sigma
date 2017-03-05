@@ -190,13 +190,13 @@
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\ADNDArray.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\ADNumber.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\ADNDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
@@ -206,6 +206,7 @@
     <Compile Include="Persistence\Selectors\ISelector.cs" />
     <Compile Include="Persistence\Selectors\IEnvironmentSelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
+    <Compile Include="Persistence\Selectors\Network\BaseNetworkSelector.cs" />
     <Compile Include="Persistence\SerialisationTarget.cs" />
     <Compile Include="Persistence\Serialisation.cs" />
     <Compile Include="Persistence\Serialiser.cs" />
@@ -284,7 +285,6 @@
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
-    <Folder Include="Persistence\Selectors\Network\" />
     <Folder Include="Persistence\Selectors\Trainer\" />
     <Folder Include="Training\Hooks\Saviors\" />
     <Folder Include="Training\Supervisors\" />

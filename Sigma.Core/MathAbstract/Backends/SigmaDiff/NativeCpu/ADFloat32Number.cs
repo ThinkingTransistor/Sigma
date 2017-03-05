@@ -10,7 +10,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using DiffSharp.Interop.Float32;
 
-namespace Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu
+namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 {
 	/// <summary>
 	/// A number with a float32 backend Sigma.DiffSharp handle for tracing and AD operations.

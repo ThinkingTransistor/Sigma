@@ -131,13 +131,13 @@ namespace Sigma.Core.Training
 		void AddHook(IHook hook);
 
 		/// <summary>
-		/// Add an global hook to this trainer, which will be executed during runtime directly in each worker. 
+		/// Add an global hook to this trainer, which will be invoked globally by the operator (i.e. the most recent "official" state).
 		/// </summary>
 		/// <param name="hook">The global hook to add to this trainer.</param>
 		void AddGlobalHook(IHook hook);
 
 		/// <summary>
-		/// Add a local hook to this trainer, which will be executed asynchronously or in the owning monitor.
+		/// Add a local hook to this trainer, which will be invoked locally by each worker working on the training independently.
 		/// </summary>
 		/// <param name="hook">The local hook to add to this trainer.</param>
 		void AddLocalHook(IHook hook);
