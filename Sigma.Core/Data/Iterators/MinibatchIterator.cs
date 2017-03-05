@@ -34,7 +34,7 @@ namespace Sigma.Core.Data.Iterators
 		public int MinibatchSize
 		{
 			get { return Registry.Get<int>("minibatch_size"); }
-			set { Registry.Set("minibatch_size", value, typeof(int));}
+			set { Registry.Set("minibatch_size", value, typeof(int)); }
 		}
 
 		[NonSerialized]
@@ -183,7 +183,7 @@ namespace Sigma.Core.Data.Iterators
 				_totalHighestTraversedBlockIndex = _currentHighestTraversedBlockIndex;
 			}
 
-			if (!_allAvailableBlockIndices.Contains(yieldedIndex))
+			if ((UnderlyingDataset.Online || _fetchedBlocks[yieldedIndex] != null) && !_allAvailableBlockIndices.Contains(yieldedIndex))
 			{
 				_allAvailableBlockIndices.Add(yieldedIndex);
 			}

@@ -21,11 +21,17 @@ namespace Sigma.Core.Data.Datasets
 	[Serializable]
 	public class DatasetRecordwiseSlice : IDataset
 	{
+		public string Name => UnderlyingDataset.Name;
+		public bool Online
+		{
+			get { return UnderlyingDataset.Online; }
+			set { UnderlyingDataset.Online = value; }
+		}
+
 		public IDataset UnderlyingDataset { get; }
 		public double ShareOffset { get; private set; }
 		public double Share { get; private set; }
 
-		public string Name => UnderlyingDataset.Name;
 		public int TargetBlockSizeRecords => UnderlyingDataset.TargetBlockSizeRecords;
 		public int MaxConcurrentActiveBlocks => UnderlyingDataset.MaxConcurrentActiveBlocks;
 		public long MaxTotalActiveBlockSizeBytes => UnderlyingDataset.MaxTotalActiveBlockSizeBytes;

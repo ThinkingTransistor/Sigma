@@ -652,6 +652,8 @@ namespace Sigma.Core
 				});
 				console.ActivateOptions();
 
+				hierarchy.Root.AddAppender(console);
+
 				// Create also an appender that writes the log to sigma.log
 				RollingFileAppender roller = new RollingFileAppender
 				{
@@ -665,7 +667,6 @@ namespace Sigma.Core
 				};
 				roller.ActivateOptions();
 
-				hierarchy.Root.AddAppender(console);
 				hierarchy.Root.AddAppender(roller);
 
 				MemoryAppender memory = new MemoryAppender();

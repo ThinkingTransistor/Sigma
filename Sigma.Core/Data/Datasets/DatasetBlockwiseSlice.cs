@@ -21,13 +21,19 @@ namespace Sigma.Core.Data.Datasets
 	[Serializable]
 	public class DatasetBlockwiseSlice : IDataset
 	{
+		public string Name => UnderlyingDataset.Name;
+		public bool Online
+		{
+			get { return UnderlyingDataset.Online; }
+			set { UnderlyingDataset.Online = value; }
+		}
+
 		public IDataset UnderlyingDataset { get; }
 		public int SplitBeginIndex { get; }
 		public int SplitEndIndex { get; }
 		public int SplitSize { get; }
 		public int SplitInterval { get; }
 
-		public string Name => UnderlyingDataset.Name;
 		public int TargetBlockSizeRecords => UnderlyingDataset.TargetBlockSizeRecords;
 		public int MaxConcurrentActiveBlocks => UnderlyingDataset.MaxConcurrentActiveBlocks;
 		public long MaxTotalActiveBlockSizeBytes => UnderlyingDataset.MaxTotalActiveBlockSizeBytes;

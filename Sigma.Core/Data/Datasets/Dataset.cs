@@ -41,28 +41,46 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public const int BlockSizeAll = -2;
 
-		public int MaxConcurrentActiveBlocks { get; } = 24; //24 seems like a good number, right?
-
-		public long MaxTotalActiveBlockSizeBytes { get; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
-
-		public IReadOnlyCollection<int> ActiveBlockIndices => _activeBlocks.Keys.ToList();
-
+		/// <inheritdoc />
 		public string Name { get; }
 
+		/// <summary>
+		/// Indicate if this dataset is an online dataset (meaning new data might be added during runtime).
+		/// By default, this is assumed to be false, indicating a static dataset.
+		/// Note: Data iterators and may perform certain optimisations for static datasets, so set this to false if possible.
+		/// </summary>
+		public bool Online { get; set; } = false;
+
+		/// <inheritdoc />
+		public int MaxConcurrentActiveBlocks { get; } = 24; //24 seems like a good number, right?
+
+		/// <inheritdoc />
+		public long MaxTotalActiveBlockSizeBytes { get; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
+
+		/// <inheritdoc />
+		public IReadOnlyCollection<int> ActiveBlockIndices => _activeBlocks.Keys.ToList();
+
+		/// <inheritdoc />
 		public int ActiveBlockRegionCount => _activeBlocks.Count;
 
+		/// <inheritdoc />
 		public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
+		/// <inheritdoc />
 		public int TargetBlockSizeRecords { get; private set; }
 
+		/// <inheritdoc />
 		public string[] SectionNames { get; private set; }
 
+		/// <inheritdoc />
 		public long TotalActiveBlockSizeBytes { get; private set; }
 
 		public long TotalActiveRecords { get; private set; }
 
+		/// <inheritdoc />
 		public int MaxBlocksInCache { get; set; } = int.MaxValue;
 
+		/// <inheritdoc />
 		public long MaxBytesInCache { get; set; } = long.MaxValue;
 
 		/// <summary>
