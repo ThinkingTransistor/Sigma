@@ -38,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x64\Debug\Sigma.Core.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -207,6 +208,7 @@
     <Compile Include="Persistence\Selectors\IEnvironmentSelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
     <Compile Include="Persistence\Selectors\Network\BaseNetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\Network\DefaultNetworkSelector.cs" />
     <Compile Include="Persistence\SerialisationTarget.cs" />
     <Compile Include="Persistence\Serialisation.cs" />
     <Compile Include="Persistence\Serialiser.cs" />

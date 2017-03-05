@@ -82,10 +82,10 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
-			Serialisation.Write(trainer, Target.FileByName("trainer.sgtrainer"), Serialisers.BinarySerialiser);
-			trainer = Serialisation.Read<ITrainer>(Target.FileByName("trainer.sgtrainer"), Serialisers.BinarySerialiser);
+			Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
+			trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
 
-			trainer = sigma.AddTrainer(trainer);
+			sigma.AddTrainer(trainer);
 
 			sigma.Run();
 		}

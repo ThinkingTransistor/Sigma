@@ -20,10 +20,39 @@ namespace Sigma.Core.Persistence
 {
 	/// <summary>
 	/// A utility class for serialising and de-serialising various objects to and from streams (e.g. file, network). 
+	/// Unlike default serialisation, the Sigma serialisation class takes care of notifying all serialised members along the object graph.
 	/// </summary>
 	public static class Serialisation
 	{
 		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		#region Utility methods for most standard use cases
+
+		/// <summary>
+		/// Write an object to a file in binary to the storage directory.
+		/// </summary>
+		/// <param name="obj">The object.</param>
+		/// <param name="filename">The filename.</param>
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		public static void WriteBinaryFile(object obj, string filename, bool verbose = true)
+		{
+			Write(obj, Target.FileByName(filename), Serialisers.BinarySerialiser, verbose);
+		}
+
+		/// <summary>
+		/// Read an object of a certain type from a binary file from the storage directory.
+		/// </summary>
+		/// <param name="filename">The filename.</param>
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		/// <returns>The read object of the requested type.</returns>
+		public static T ReadBinaryFile<T>(string filename, bool verbose = true)
+		{
+			return Read<T>(Target.FileByName(filename), Serialisers.BinarySerialiser);
+		}
+
+		#endregion
+
+		#region Core functions for read / write 
 
 		/// <summary>
 		/// Write an object to a target stream using a certain serialiser.
@@ -65,8 +94,8 @@ namespace Sigma.Core.Persistence
 		/// </summary>
 		/// <param name="target">The target stream.</param>
 		/// <param name="serialiser">The serialiser.</param>
-		/// <returns>The read object of the requested type.</returns>
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		/// <returns>The read object of the requested type.</returns>
 		public static T Read<T>(Stream target, ISerialiser serialiser, bool verbose = true)
 		{
 			if (target == null) throw new ArgumentNullException(nameof(target));
@@ -101,6 +130,12 @@ namespace Sigma.Core.Persistence
 			return (T) read;
 		}
 
+		/// <summary>
+		/// Traverse the object graph of a given object (i.e. all related and referenced objects, recursively).
+		/// </summary>
+		/// <param name="root">The root object (or current parent, depending on call depth).</param>
+		/// <param name="traversedObjects">A set of all objects already traversed.</param>
+		/// <param name="action">The action to take on each object given the parent object, corresponding field info and value in parent object.</param>
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
 			Type type = root.GetType();
@@ -152,5 +187,7 @@ namespace Sigma.Core.Persistence
 				}
 			} while ((type = type.BaseType) != null && type != typeof(object));
 		}
+
+		#endregion
 	}
 }

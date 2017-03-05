@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence.Selectors
 {
@@ -44,6 +45,11 @@ namespace Sigma.Core.Persistence.Selectors
 	public abstract class SelectorComponent
 	{
 		/// <summary>
+		/// All available selector components by id by their type (e.g. <see cref="NetworkComponent"/>).
+		/// </summary>
+		public static IDictionary<Type, IDictionary<int, SelectorComponent>> AllComponentsByIdByType { get; } = new Dictionary<Type, IDictionary<int, SelectorComponent>>();
+
+		/// <summary>
 		/// The component id of this component. 
 		/// </summary>
 		public int Id { get; }
@@ -64,6 +70,13 @@ namespace Sigma.Core.Persistence.Selectors
 			if (id < 0) throw new ArgumentOutOfRangeException($"Sub id must be >= 0 but was {id}.");
 
 			Id = id;
+
+			var allComponentsById = AllComponentsByIdByType.TryGetValue(GetType(), () => new Dictionary<int, SelectorComponent>());
+
+			if (!allComponentsById.ContainsKey(id))
+			{
+				allComponentsById.Add(id, this);
+			}
 		}
 
 		/// <summary>

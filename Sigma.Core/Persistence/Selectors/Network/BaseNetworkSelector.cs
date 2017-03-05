@@ -12,6 +12,10 @@ using Sigma.Core.Architecture;
 
 namespace Sigma.Core.Persistence.Selectors.Network
 {
+	/// <summary>
+	/// A base network selector that handles basic <see cref="NetworkComponent"/> selection independent of actual network type.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public abstract class BaseNetworkSelector<T> : INetworkSelector<T> where T : INetwork
 	{
 		/// <summary>
@@ -20,9 +24,9 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		public T Result { get; }
 
 		/// <summary>
-		/// Create a base network selector with a certain initial network.
+		/// Create a base network selector for a network.
 		/// </summary>
-		/// <param name="result"></param>
+		/// <param name="result">The network.</param>
 		protected BaseNetworkSelector(T result)
 		{
 			if (result == null) throw new ArgumentNullException(nameof(result));
@@ -56,7 +60,24 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		/// <returns>A selector for a new network with the given component(s) retained.</returns>
 		public ISelector<T> Keep(params NetworkComponent[] components)
 		{
-			throw new NotImplementedException();
+			if (components.Length != 1)
+			{
+				throw new ArgumentException($"Number of network components to keep must be 1 but was {components.Length} (either none, architecture or everything - they are mutually exclusive).");
+			}
+
+			if (components[0] == NetworkComponent.Everything)
+			{
+				return CreateSelector((T) Result.DeepCopy());
+			}
+
+			T network = CreateNetwork(Result.Name);
+
+			if (components[0] == NetworkComponent.Architecture)
+			{				
+				network.Architecture = Result.Architecture;
+			}
+
+			return CreateSelector(network);
 		}
 
 		/// <summary>
