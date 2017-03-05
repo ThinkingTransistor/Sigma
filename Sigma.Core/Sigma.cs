@@ -18,6 +18,7 @@ using log4net;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Core;
+using log4net.Filter;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors;
@@ -602,17 +603,54 @@ namespace Sigma.Core
 			}
 			else
 			{
-				// https://stackoverflow.com/questions/37213848/best-way-to-access-to-log4net-wrapper-app-config
+				// see https://stackoverflow.com/questions/37213848/best-way-to-access-to-log4net-wrapper-app-config
 				Hierarchy hierarchy = (Hierarchy) LogManager.GetRepository();
 
 				PatternLayout patternLayout = new PatternLayout
 				{
-					ConversionPattern = "%date %level [%thread] %logger - %message%newline"
+					ConversionPattern = "%date %level [%thread] %logger{1} - %message%newline"
 				};
 				patternLayout.ActivateOptions();
 
-				// Create a console appender
-				ConsoleAppender console = new ConsoleAppender { Layout = patternLayout };
+				// Create a colored console appender with color mappings and level range [Info, Fatal]
+				ColoredConsoleAppender console = new ColoredConsoleAppender
+				{
+					Threshold = Level.All,
+					Layout = patternLayout
+				};
+				LevelRangeFilter consoleRangeFilter = new LevelRangeFilter
+				{
+					LevelMin = Level.Info,
+					LevelMax = Level.Fatal
+				};
+				console.AddFilter(consoleRangeFilter);
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Debug,
+					ForeColor = ColoredConsoleAppender.Colors.White
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Info,
+					ForeColor = ColoredConsoleAppender.Colors.Green
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Warn,
+					ForeColor = ColoredConsoleAppender.Colors.Yellow | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Error,
+					ForeColor = ColoredConsoleAppender.Colors.Red | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Fatal,
+					ForeColor = ColoredConsoleAppender.Colors.White | ColoredConsoleAppender.Colors.HighIntensity,
+					BackColor = ColoredConsoleAppender.Colors.Red | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.ActivateOptions();
 
 				// Create also an appender that writes the log to sigma.log
 				RollingFileAppender roller = new RollingFileAppender
