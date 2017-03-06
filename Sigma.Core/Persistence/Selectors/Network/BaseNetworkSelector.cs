@@ -15,19 +15,19 @@ namespace Sigma.Core.Persistence.Selectors.Network
 	/// <summary>
 	/// A base network selector that handles basic <see cref="NetworkComponent"/> selection independent of actual network type.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	public abstract class BaseNetworkSelector<T> : INetworkSelector<T> where T : INetwork
+	/// <typeparam name="TNetwork"></typeparam>
+	public abstract class BaseNetworkSelector<TNetwork> : INetworkSelector<TNetwork> where TNetwork : INetwork
 	{
 		/// <summary>
-		/// The current result object of type <see cref="T"/>.
+		/// The current result object of type <see cref="INetwork"/>.
 		/// </summary>
-		public T Result { get; }
+		public TNetwork Result { get; }
 
 		/// <summary>
 		/// Create a base network selector for a network.
 		/// </summary>
 		/// <param name="result">The network.</param>
-		protected BaseNetworkSelector(T result)
+		protected BaseNetworkSelector(TNetwork result)
 		{
 			if (result == null) throw new ArgumentNullException(nameof(result));
 
@@ -35,20 +35,20 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		}
 
 		/// <summary>
-		/// Get the "emptiest" available version of this <see cref="T"/> while still retaining a legal object state for type <see cref="T"/>.
+		/// Get the "emptiest" available version of this <see cref="TNetwork"/> while still retaining a legal object state for type <see cref="TNetwork"/>.
 		/// Note: Any parameters that are fixed per-object (such as unique name) must be retained.
 		/// </summary>
 		/// <returns>An empty version of the object.</returns>
-		public ISelector<T> Empty()
+		public ISelector<TNetwork> Empty()
 		{
 			return Keep(NetworkComponent.None);
 		}
 
 		/// <summary>
-		/// Get an uninitialised version of this <see cref="T"/> without any runtime information, but ready to be re-initialised.
+		/// Get an uninitialised version of this <see cref="TNetwork"/> without any runtime information, but ready to be re-initialised.
 		/// </summary>
 		/// <returns></returns>
-		public ISelector<T> Uninitialised()
+		public ISelector<TNetwork> Uninitialised()
 		{
 			return Keep(NetworkComponent.Architecture);
 		}
@@ -58,7 +58,7 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		/// </summary>
 		/// <param name="components">The component(s) to keep.</param>
 		/// <returns>A selector for a new network with the given component(s) retained.</returns>
-		public ISelector<T> Keep(params NetworkComponent[] components)
+		public ISelector<TNetwork> Keep(params NetworkComponent[] components)
 		{
 			if (components.Length != 1)
 			{
@@ -67,10 +67,10 @@ namespace Sigma.Core.Persistence.Selectors.Network
 
 			if (components[0] == NetworkComponent.Everything)
 			{
-				return CreateSelector((T) Result.DeepCopy());
+				return CreateSelector((TNetwork) Result.DeepCopy());
 			}
 
-			T network = CreateNetwork(Result.Name);
+			TNetwork network = CreateNetwork(Result.Name);
 
 			if (components[0] == NetworkComponent.Architecture)
 			{				
@@ -85,7 +85,7 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		/// </summary>
 		/// <param name="components">The component(s) to discard.</param>
 		/// <returns>A selector for a new network with the given component(s) discarded.</returns>
-		public ISelector<T> Discard(params NetworkComponent[] components)
+		public ISelector<TNetwork> Discard(params NetworkComponent[] components)
 		{
 			if (components.Contains(NetworkComponent.Everything))
 			{
@@ -100,8 +100,8 @@ namespace Sigma.Core.Persistence.Selectors.Network
 			throw new InvalidOperationException($"Cannot discard given components {components}, discard is invalid and probably does not make sense.");
 		}
 
-		protected abstract T CreateNetwork(string name);
+		protected abstract TNetwork CreateNetwork(string name);
 
-		protected abstract INetworkSelector<T> CreateSelector(T network);
+		protected abstract INetworkSelector<TNetwork> CreateSelector(TNetwork network);
 	}
 }

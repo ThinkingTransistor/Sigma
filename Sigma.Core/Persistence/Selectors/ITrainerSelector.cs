@@ -27,9 +27,9 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// Discard specified trainer components in a new trainer.
 		/// </summary>
-		/// <param name="components">The component(s) to discard.</param>
+		/// <param name="componentsToDiscard">The component(s) to discard.</param>
 		/// <returns>A selector for a new trainer with the given component(s) discarded.</returns>
-		ISelector<T> Discard(params TrainerComponent[] components);
+		ISelector<T> Discard(params TrainerComponent[] componentsToDiscard);
 	}
 
 	/// <summary>
@@ -45,7 +45,10 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// The network model in this trainer.
 		/// </summary>
-		public static readonly TrainerComponent Network = new TrainerComponent(1 << 0);
+		public static TrainerComponent Network(params NetworkComponent[] components)
+		{
+			return new TrainerComponent(1 << 0, components);
+		}
 
 		/// <summary>
 		/// The attached initialisers.
@@ -65,22 +68,25 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// The attached operator.
 		/// </summary>
-		public static readonly TrainerComponent Operator = new TrainerComponent(1 << 4);
+		public static TrainerComponent Operator(params OperatorComponent[] components)
+		{
+			return new TrainerComponent(1 << 4, components);
+		}
 
 		/// <summary>
 		/// The attached data provider.
 		/// </summary>
-		public static readonly TrainerComponent DataProvider = new TrainerComponent(1 << 4);
+		public static readonly TrainerComponent DataProvider = new TrainerComponent(1 << 5);
 
 		/// <summary>
 		/// The attached data iterators.
 		/// </summary>
-		public static readonly TrainerComponent DataIterator = new TrainerComponent(1 << 4);
+		public static readonly TrainerComponent DataIterators = new TrainerComponent(1 << 6);
 
 		/// <summary>
 		/// The attached hooks.
 		/// </summary>
-		public static readonly TrainerComponent Hooks = new TrainerComponent(1 << 4);
+		public static readonly TrainerComponent Hooks = new TrainerComponent(1 << 7);
 
 		/// <summary>
 		/// Everything.

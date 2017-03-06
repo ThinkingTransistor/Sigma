@@ -60,6 +60,11 @@ namespace Sigma.Core.Persistence.Selectors
 		public SelectorComponent[] SubComponents { get; }
 
 		/// <summary>
+		/// A flag indicating whether this selector components has sub components.
+		/// </summary>
+		public bool HasSubComponents => SubComponents?.Length > 0;
+
+		/// <summary>
 		/// Create a selector component with a certain id. 
 		/// The id must be the same for semantically equivalent components at the current level
 		///  (i.e. a trainer component must have the same id as another trainer component with different sub-flags).
@@ -89,6 +94,7 @@ namespace Sigma.Core.Persistence.Selectors
 		protected SelectorComponent(int id, params SelectorComponent[] subComponents) : this(id)
 		{
 			if (subComponents == null) throw new ArgumentNullException(nameof(subComponents));
+			if (subComponents.Length == 0) throw new ArgumentException($"Selected sub components must be > 0 but none were given (empty array).");
 
 			SubComponents = subComponents;
 		}

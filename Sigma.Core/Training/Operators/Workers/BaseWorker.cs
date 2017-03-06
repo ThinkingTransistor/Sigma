@@ -31,7 +31,9 @@ namespace Sigma.Core.Training.Operators.Workers
 		public IComputationHandler Handler { get; }
 		public INetwork LocalNetwork { get; set; }
 		public IDataIterator LocalTrainingDataIterator { get; set; }
-		public IOptimiser LocalOptimiser { get; set; }
+		public IOptimiser LocalOptimiser { get; set; } // TODO improve local optimiser state handling (if possible, for persistence and such)
+													   // As of now, all workers are completely thrown away when serialising and thereby also their local optimiser state.
+													   // That is probably not the way it should be because it may make restoring the state inconsistent (e.g. momentum velocities being lost).
 
 		public int LocalEpochNumber { get; set; }
 		public int LocalIterationNumber { get; protected set; }

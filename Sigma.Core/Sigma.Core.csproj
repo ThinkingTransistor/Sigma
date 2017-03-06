@@ -204,11 +204,14 @@
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Persistence\ISerialisationNotifier.cs" />
     <Compile Include="Persistence\Selectors\INetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\IOperatorSelector.cs" />
     <Compile Include="Persistence\Selectors\ISelector.cs" />
     <Compile Include="Persistence\Selectors\IEnvironmentSelector.cs" />
     <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
     <Compile Include="Persistence\Selectors\Network\BaseNetworkSelector.cs" />
     <Compile Include="Persistence\Selectors\Network\DefaultNetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\Trainer\BaseTrainerSelector.cs" />
+    <Compile Include="Persistence\Selectors\Trainer\DefaultTrainerSelector.cs" />
     <Compile Include="Persistence\SerialisationTarget.cs" />
     <Compile Include="Persistence\Serialisation.cs" />
     <Compile Include="Persistence\Serialiser.cs" />
@@ -288,7 +291,7 @@
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
-    <Folder Include="Persistence\Selectors\Trainer\" />
+    <Folder Include="Persistence\Selectors\Operator\" />
     <Folder Include="Training\Hooks\Saviors\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>
