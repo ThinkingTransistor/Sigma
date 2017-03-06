@@ -541,6 +541,12 @@ namespace Sigma.Core
 
 		static SigmaEnvironment()
 		{
+			if (!ProcessUtils.Is64BitProcess())
+			{
+				throw new NotSupportedException("Sigma can only run in 64bit mode, please change your launch configuration to match this mode. See http://sigma.rocks/installation for more details.");
+			}
+
+
 			// logging not initialised
 			SetDefaultCulture(DefaultCultureInfo);
 

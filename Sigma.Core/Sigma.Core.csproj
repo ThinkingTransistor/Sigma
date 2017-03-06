@@ -271,6 +271,7 @@
     <Compile Include="Layers\ILayerBuffer.cs" />
     <Compile Include="Utils\LoggingUtils.cs" />
     <Compile Include="Utils\PrintUtils.cs" />
+    <Compile Include="Utils\ProcessUtils.cs" />
     <Compile Include="Utils\RegistryUtils.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
