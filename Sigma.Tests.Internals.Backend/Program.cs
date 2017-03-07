@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -19,6 +14,7 @@ using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -26,7 +22,11 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using Sigma.Core.Persistence;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -64,7 +64,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network.Architecture = InputLayer.Construct(4)
 											+ FullyConnectedLayer.Construct(10)
 											+ FullyConnectedLayer.Construct(20)
-											+ FullyConnectedLayer.Construct(10)
+							
+											 + FullyConnectedLayer.Construct(10)
 											+ FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3)
 											+ SquaredDifferenceCostLayer.Construct();

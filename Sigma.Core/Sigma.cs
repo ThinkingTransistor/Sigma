@@ -6,14 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -22,11 +14,20 @@ using log4net.Filter;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors;
+using Sigma.Core.Parameterisation;
 using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sigma.Core
 {
@@ -78,6 +79,11 @@ namespace Sigma.Core
 		/// The random number generator to use for randomised operations for reproducibility. 
 		/// </summary>
 		public Random Random { get; private set; }
+		
+		/// <summary>
+		/// The parameterisation manager which defines which values to parameterise as what (e.g. range, enumeration, check box).
+		/// </summary>
+		public IParameterisationManager ParameterisationManager { get; }
 
 		/// <summary>
 		/// 
@@ -89,6 +95,7 @@ namespace Sigma.Core
 			Name = name;
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
+			ParameterisationManager = new ParameterisationManager();
 
 			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
 

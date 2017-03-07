@@ -202,6 +202,9 @@
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
+    <Compile Include="Parameterisation\IParameterisationManager.cs" />
+    <Compile Include="Parameterisation\IParameterType.cs" />
+    <Compile Include="Parameterisation\ParameterisationManager.cs" />
     <Compile Include="Persistence\ISerialisationNotifier.cs" />
     <Compile Include="Persistence\Selectors\INetworkSelector.cs" />
     <Compile Include="Persistence\Selectors\IOperatorSelector.cs" />
@@ -290,6 +293,7 @@
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
+    <Folder Include="Parameterisation\Types\" />
     <Folder Include="Persistence\Selectors\Environment\" />
     <Folder Include="Persistence\Selectors\Operator\" />
     <Folder Include="Training\Hooks\Saviors\" />
