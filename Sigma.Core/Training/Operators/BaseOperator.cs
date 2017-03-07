@@ -1063,6 +1063,37 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Get a shallow copy of this operator, including all available runtime state.
+		/// </summary>
+		/// <returns></returns>
+		public IOperator ShallowCopy()
+		{
+			BaseOperator copy = CreateInstance();
+
+			copy._aliveHooksByInWorkerStates.AddAll(_aliveHooksByInWorkerStates);
+			copy._attachedGlobalHooksByTimescale.AddAll(_attachedGlobalHooksByTimescale);
+			copy._attachedLocalHooksByTimeScale.AddAll(_attachedLocalHooksByTimeScale);
+			copy._dependentHooksByRequiredHook.AddAll(_dependentHooksByRequiredHook);
+			copy._globalHookInvocationIndices.AddAll(_globalHookInvocationIndices);
+			copy._globalHookInvocationTargets.AddAll(_globalHookInvocationTargets);
+			copy._globalHooks.AddRange(_globalHooks);
+			copy._localHooks.AddRange(_localHooks);
+			copy._highestIterationNumber = _highestIterationNumber;
+			copy._localGlobalHookTimeSteps.AddAll(_localGlobalHookTimeSteps);
+			copy._pushedEpochNetworks.AddAll(_pushedEpochNetworks);
+			copy._pushedLocalIterationNumbers.AddAll(_pushedLocalIterationNumbers);
+
+			return copy;
+		}
+
+		/// <summary>
+		/// Create an instance of this operator with the same parameters.
+		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
+		/// </summary>
+		/// <returns></returns>
+		protected abstract BaseOperator CreateInstance();
+
 		#region AbstractWorkerMethods
 
 		/// <summary>

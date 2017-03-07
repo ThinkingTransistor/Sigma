@@ -25,11 +25,13 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		{
 		}
 
+		/// <inheritdoc cref="BaseNetworkSelector{TNetwork}.CreateNetwork"/>
 		protected override TNetwork CreateNetwork(string name)
 		{
 			return (TNetwork) Activator.CreateInstance(Result.GetType(), name);
 		}
 
+		/// <inheritdoc cref="BaseNetworkSelector{TNetwork}.CreateSelector"/>
 		protected override INetworkSelector<TNetwork> CreateSelector(TNetwork network)
 		{
 			return new DefaultNetworkSelector<TNetwork>(network);

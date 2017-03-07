@@ -93,5 +93,23 @@ namespace Sigma.Core.Utils
 
 			return collection.Count == 0 && dictionary.Remove(key);
 		}
+
+		/// <summary>
+		/// Add all key value pairs from another dictionary to this dictionary.
+		/// </summary>
+		/// <typeparam name="K">The key type.</typeparam>
+		/// <typeparam name="V">The value type.</typeparam>
+		/// <param name="dictionary">This dictionary (where the entries will be added to).</param>
+		/// <param name="other">The other dictionary (where the entries will be taken from).</param>
+		public static void AddAll<K, V>(this IDictionary<K, V> dictionary, IDictionary<K, V> other)
+		{
+			if (other == null) throw new ArgumentNullException(nameof(other));
+
+			foreach (var keypair in other)
+			{
+				dictionary.Add(keypair);
+			}
+		}
+
 	}
 }

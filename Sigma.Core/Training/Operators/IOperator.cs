@@ -247,5 +247,11 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="registry">The registry to populate.</param>
 		/// <param name="worker">The worker to fetch local values from.</param>
 		void PopulateWorkerRegistry(IRegistry registry, IWorker worker);
+
+		/// <summary>
+		/// Get a shallow copy of this operator, including all available runtime state.
+		/// </summary>
+		/// <returns></returns>
+		IOperator ShallowCopy();
 	}
 }

@@ -44,6 +44,16 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		public CpuSinglethreadedOperator(IComputationHandler handler, ThreadPriority priority = ThreadPriority.Highest) : base(handler, 1, priority)
 		{
 		}
+
+		/// <summary>
+		/// Create an instance of this operator with the same parameters.
+		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
+		/// </summary>
+		/// <returns></returns>
+		protected override BaseOperator CreateInstance()
+		{
+			return new CpuSinglethreadedOperator(Handler, WorkerPriority);
+		}
 	}
 
 	/// <summary>
@@ -135,6 +145,16 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			Logger.Debug($"Stopping worker {worker} in operator {this}...");
 
 			worker.SignalStop();
+		}
+
+		/// <summary>
+		/// Create an instance of this operator with the same parameters.
+		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
+		/// </summary>
+		/// <returns></returns>
+		protected override BaseOperator CreateInstance()
+		{
+			return new CpuMultithreadedOperator(Handler, base.WorkerCount, WorkerPriority);
 		}
 	}
 }

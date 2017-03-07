@@ -100,8 +100,18 @@ namespace Sigma.Core.Persistence.Selectors.Network
 			throw new InvalidOperationException($"Cannot discard given components {components}, discard is invalid and probably does not make sense.");
 		}
 
+		/// <summary>
+		/// Create a network of this network selectors network type with a certain name.
+		/// </summary>
+		/// <param name="name">The name.</param>
+		/// <returns>A network of the appropriate time with the given name.</returns>
 		protected abstract TNetwork CreateNetwork(string name);
 
-		protected abstract INetworkSelector<TNetwork> CreateSelector(TNetwork network);
+	    /// <summary>
+	    /// Create a network selector with a certain network.
+	    /// </summary>
+	    /// <param name="network">The network.</param>
+	    /// <returns>A network of the appropriate time with the given name.</returns>
+	    protected abstract INetworkSelector<TNetwork> CreateSelector(TNetwork network);
 	}
 }
