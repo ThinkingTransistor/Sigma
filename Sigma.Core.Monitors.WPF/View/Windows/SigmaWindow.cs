@@ -50,11 +50,41 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 	/// </summary>
 	public class SigmaWindow : WPFWindow, IDisposable
 	{
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the rootpanel. If none is specified, <see cref="RootPanelFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string RootPanelFactoryIdentifier = "rootpanel_factory";
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the title bar. If none is specified, <see cref="TitleBarFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string TitleBarFactoryIdentifier = "titlebar_factory";
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the tab control. If none is specified, <see cref="TabControlFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string TabControlFactoryIdentifier = "tabcontrol_factory";
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the status bar. If none is specified, <see cref="StatusBarFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string StatusBarFactoryIdentifier = "statusbar_factory";
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the loading indicator (normally a spinning circle). If none is specified, <see cref="LoadingIndicatorFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string LoadingIndicatorFactoryIdentifier = "loading_indicator_factory";
+		/// <summary>
+		/// This identifiers defines the factory (see <see cref="IUIFactory{T}"/>) that will be used for generating 
+		/// the <see cref="NotifyIcon"/> (displyed in the lower right corner in Windows). If none is specified, <see cref="DefaultSigmaNotifyIconFactory"/> will be used.
+		/// Add an <see cref="IUIFactory{T}"/> to the <see cref="IMonitor.Registry"/> with this key if you want to change it.
+		/// </summary>
 		public const string NotifyIconFactoryIdentifier = "notifyicon_factory";
 
 		/// <summary>
@@ -214,6 +244,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		#region DependencyProperties
 
+		/// <summary>
+		/// The property for the default grid size (i.e. every tab will be initialised with this grid size). 
+		/// </summary>
 		public static readonly DependencyProperty DefaultGridSizeProperty = DependencyProperty.Register("DefaultGridSize",
 			typeof(GridSize), typeof(WPFWindow), new UIPropertyMetadata(new GridSize(3, 4)));
 
@@ -309,6 +342,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		#region Lifecycle
+
+		/// <summary>
+		/// This method will be automatically assigned and unassigned. It will be invoked on start of the window.
+		/// It simply automatically disables the initialisation process (if not manually overriden).
+		/// </summary>
+		/// <param name="sender">The sender of the event. may be <c>null</c>.</param>
+		/// <param name="startupEventArgs">The arguments of the event. </param>
 		protected virtual void OnStart(object sender, StartupEventArgs startupEventArgs)
 		{
 			if (!_manualOverride)
@@ -317,6 +357,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+		/// <summary>
+		/// This method will get called, when the window is minimised (and only when minimised).
+		/// Since a <see cref="NotifyIcon"/> is used, we have to hide the minimised window and keep it running.
+		/// <see cref="IsRunningInBackground"/> will become true and the window will be hidden.
+		/// </summary>
 		protected virtual void CustomMinimise()
 		{
 			IsRunningInBackground = true;
@@ -325,6 +370,10 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Hide();
 		}
 
+		/// <summary>
+		/// This method will get called, when the window is maximised. This can only happen if the window
+		/// has previously been minimised with <see cref="CustomMinimise"/>. It shows the window again.
+		/// </summary>
 		protected virtual void CustomMaximise()
 		{
 			if (IsRunningInBackground)
@@ -336,6 +385,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			}
 		}
 
+		/// <summary>
+		/// Gets automatically called when the title has changed. If <see cref="SyncTitle"/> is activated,
+		/// all other windows get automatically synced (i.e. same title) - since this would cause recursion, the update
+		/// only triggers at the root window. 
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
 		protected virtual void OnTitleChanged(object sender, EventArgs args)
 		{
 			// if the title should be sync, update all child titles. 
@@ -382,6 +438,13 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			Monitor.SignalStop();
 		}
 
+		/// <summary>
+		/// This method will get automatically called when the window is about to close (i.e. closing the monitor not minimising it to the task tray).
+		/// 
+		/// In the default implementation, all events are unassigned and dispose will be called.
+		/// </summary>
+		/// <param name="sender">The sender of the event. may be <c>null</c>.</param>
+		/// <param name="eventArgs">The arguments of the event. </param>
 		protected virtual void OnClosed(object sender, EventArgs eventArgs)
 		{
 			App.Startup -= OnStart;
@@ -661,7 +724,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		/// <summary>
-		/// Execute an action on the element <see cref="start" /> and all children of start.
+		/// Execute an action on the element <see ref="start" /> and all children of start.
 		/// This method also maintains the children reference list. (<see cref="Children" />)
 		/// </summary>
 		/// <param name="action">The <see cref="Action" /> that will be executed. </param>
@@ -725,6 +788,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 		#region IDisposable
 
+		/// <inheritdoc />
 		public void Dispose()
 		{
 			if (ParentWindow == null)
@@ -765,6 +829,9 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			DialogHost = null;
 		}
 
+		/// <summary>
+		/// The default destructor. Automatically calls dispose (which may not be necessary)
+		/// </summary>
 		~SigmaWindow()
 		{
 			Dispose();
