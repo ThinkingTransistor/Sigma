@@ -14,8 +14,10 @@
 		<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 	</parameterisation:UserControlParameterVisualiser.Resources>
 	
-	<CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}">
-		<TextBlock Name="ParameterNameBox" x:FieldModifier="public"/>
+	<CheckBox Name="CheckBox" x:FieldModifier="public"
+			  IsChecked="{Binding IsChecked}"
+			  IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}">
+		<TextBlock Name="ParameterNameTextBlock" x:FieldModifier="public"/>
 	</CheckBox>
 </parameterisation:UserControlParameterVisualiser>
 

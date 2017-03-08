@@ -23,8 +23,8 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override string ParameterName
 		{
-			get { return ParameterNameBox.Text; }
-			set { ParameterNameBox.Text = value; }
+			get { return ParameterNameTextBlock.Text; }
+			set { ParameterNameTextBlock.Text = value; }
 		}
 
 		/// <summary>
