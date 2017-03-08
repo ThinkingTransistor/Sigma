@@ -16,7 +16,7 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 ### NuGet [Recommended]
 
 The recommended way to use the latest version of Sigma is adding the NuGet package to your project. 
-You can either include the core framework (command line only) [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core) or the WPF visualiser (only works on windows) which also references the core framework [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF). 
+You can either include the core framework (command line only) [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core) or the WPF visualiser (only works on Windows) which also references the core framework [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF). 
 
 In both cases, you can use any project with a main (ConsoleApplication) but you have to change the project settings to x64 since Sigma only supports 64bit mode.
 
@@ -57,7 +57,7 @@ Special thanks to xyz
 
 ## Used libraries
 
-For reference, a list of all libraries integrated with the Sigma. The following libraries / frameworks are used in the core:
+For reference, a list of all libraries used in the Sigma project. The following libraries / frameworks are used in the core:
 
 | Library                             | Purpose                           |
 | :-----------------------------------|:----------------------------------|
