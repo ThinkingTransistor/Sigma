@@ -1,12 +1,10 @@
-﻿using System.Windows.Controls;
-
-namespace Sigma.Core.Monitors.WPF.View.Parameterisation
+﻿namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 {
 	/// <summary>
 	/// Every visualiser that is responsible for displaying a parameter (e.g. a CheckBox visualiser ...)
 	/// has to implement this interface for easy modification.
 	/// 
-	/// It also allows the visualiser to be a <see cref="Control"/> and a <see cref="UserControl"/>.
+	/// It also allows the visualiser to be a <see cref="System.Windows.Controls.Control"/> and a <see cref="System.Windows.Controls.UserControl"/>.
 	/// </summary>
 	public interface IParameterVisualiser
 	{
@@ -21,10 +19,8 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		bool IsEnabled { get; set; }
 
 		/// <summary>
-		/// Determines whether the parameter is edible or not. 
+		/// Determines whether the parameter is readonly or not. 
 		/// </summary>
 		bool IsReadOnly { get; set; }
 	}
-
-
 }

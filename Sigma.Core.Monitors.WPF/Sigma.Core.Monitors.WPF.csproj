@@ -33,6 +33,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Sigma.Core.Monitors.WPF.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -141,6 +143,7 @@
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
     <Compile Include="Panels\Logging\LogTextPanel.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.en-GB.Designer.cs">
       <DependentUpon>Resources.en-GB.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -157,6 +160,7 @@
       <DependentUpon>Resources.en-US.resx</DependentUpon>
     </Compile>
     <Compile Include="Utils\ChartPanelPerformance.cs" />
+    <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
@@ -205,6 +209,11 @@
     <Compile Include="Panels\SigmaPanel.cs" />
     <Compile Include="ViewModel\Tabs\TabUI.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
+    <Compile Include="View\Parameterisation\IParameterVisualiser.cs" />
+    <Compile Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml.cs">
+      <DependentUpon>SigmaCheckBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Parameterisation\UserControlParameterVisualiser.cs" />
     <Compile Include="View\UIWrapper.cs" />
     <Compile Include="View\Windows\SigmaWindow.cs" />
     <Compile Include="View\Windows\WPFWindow.cs" />
@@ -351,6 +360,10 @@
     <Page Include="View\CustomControls\TitleBar\SigmaAboutBoxGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>

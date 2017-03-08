@@ -410,6 +410,7 @@ namespace Sigma.Core.Monitors.WPF
 		#endregion Lifecyclce
 
 		#region WindowDispatch
+		//TODO: documentation
 
 		private void InvokeWindowDispatcherAsync<T>(Action<T> action, DispatcherPriority priority) where T : WPFWindow
 		{

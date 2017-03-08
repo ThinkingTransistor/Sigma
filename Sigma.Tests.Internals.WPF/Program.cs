@@ -1,4 +1,7 @@
-﻿using LiveCharts.Wpf;
+﻿using System.Diagnostics;
+using System.Threading;
+using System.Windows.Controls;
+using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -17,6 +20,8 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.Parameterisation;
+using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -57,18 +62,29 @@ namespace Sigma.Tests.Internals.WPF
 			StatusBarLegendInfo info = new StatusBarLegendInfo("Trainer 1", MaterialColour.Yellow);
 			gui.AddLegend(info);
 
+			SigmaCheckBox checkbox;
+
 			gui.WindowDispatcher(window =>
 			{
 				var cost = new TrainerChartPanel<CartesianChart, LineSeries, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				cost.Fast();
 				window.TabControl["Tab2"].AddCumulativePanel(cost, legend: info);
-				window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
+
+
+				var testpanel = new TestPanel("test");
+				checkbox = new SigmaCheckBox {ParameterName = "My first box"};
+				testpanel.Content.Children.Add(checkbox);
+				testpanel.Content.Children.Add(new SigmaCheckBox {ParameterName = "Other"});
+
+				window.TabControl["Tab2"].AddCumulativePanel(testpanel);
+				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 			});
 
 			sigma.Prepare();
 
 			sigma.StartOperatorsOnRun = false;
 			sigma.Run();
+
 		}
 
 		//private static void Main(string[] args)

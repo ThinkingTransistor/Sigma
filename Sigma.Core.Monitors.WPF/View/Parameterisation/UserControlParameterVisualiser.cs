@@ -5,25 +5,19 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 	/// <summary>
 	/// This class is a wrapper or <see cref="IParameterVisualiser"/>. It automatically implements
 	/// code that is global for all <see cref="UserControl"/>s.
+	/// 
+	/// When extending from this class you have to call InitializeComponent manually.
 	/// </summary>
-	public abstract partial class UserControlParameterVisualiser : IParameterVisualiser
+	public abstract class UserControlParameterVisualiser : UserControl, IParameterVisualiser
 	{
 		/// <summary>
-		/// The default constructor for the <see cref="UserControlParameterVisualiser"/>.
-		/// </summary>
-		protected UserControlParameterVisualiser()
-		{
-			InitializeComponent();
-		}
-
-		/// <summary>
-		/// Determines whether the parameter is edible or not. 
+		/// Determines whether the parameter is editable or not. 
 		/// </summary>
 		public abstract bool IsReadOnly { get; set; }
 
 		/// <summary>
 		/// The name of the parameter that is being displayed.
-		/// </summary>
+		/// </summary> 
 		public abstract string ParameterName { get; set; }
 	}
 }
