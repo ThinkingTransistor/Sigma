@@ -1,4 +1,12 @@
-﻿using System.Collections.Generic;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Collections.Generic;
 using LiveCharts.Wpf;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;

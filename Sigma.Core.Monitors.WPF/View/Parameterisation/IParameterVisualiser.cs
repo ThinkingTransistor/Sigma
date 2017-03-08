@@ -1,4 +1,12 @@
-﻿namespace Sigma.Core.Monitors.WPF.View.Parameterisation
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 {
 	/// <summary>
 	/// Every visualiser that is responsible for displaying a parameter (e.g. a CheckBox visualiser ...)
