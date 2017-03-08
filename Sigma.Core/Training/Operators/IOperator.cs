@@ -13,6 +13,7 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Utils;
 using System.Collections.Generic;
+using Sigma.Core.Persistence.Selectors;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -253,5 +254,11 @@ namespace Sigma.Core.Training.Operators
 		/// </summary>
 		/// <returns></returns>
 		IOperator ShallowCopy();
+
+		/// <summary>
+		/// Get an operator selector for this operator.
+		/// </summary>
+		/// <returns>The selector for this operator.</returns>
+		IOperatorSelector<IOperator> Select();
 	}
 }

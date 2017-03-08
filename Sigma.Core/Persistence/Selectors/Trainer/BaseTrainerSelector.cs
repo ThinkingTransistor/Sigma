@@ -112,9 +112,12 @@ namespace Sigma.Core.Persistence.Selectors.Trainer
 				// TODO add network selector implementation and select method to interface, call that here with cast sub components
 			}
 
-			if (components.Contains(TrainerComponent.Operator()))
+			var operatorComponent = TrainerComponent.Operator();
+			if (components.Contains(operatorComponent))
 			{
-				// TODO add operator selector implementation and select method to interface, call that here with cast sub components
+				var actualOperatorComponent = components.First(c => operatorComponent.Equals(c));
+
+				trainer.Operator = Result.Operator.Select().Keep((OperatorComponent[]) actualOperatorComponent.SubComponents).Result;
 			}
 
 			return CreateSelector(trainer);

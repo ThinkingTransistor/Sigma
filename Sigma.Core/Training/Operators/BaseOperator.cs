@@ -15,6 +15,7 @@ using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
@@ -1069,7 +1070,7 @@ namespace Sigma.Core.Training.Operators
 		/// <returns></returns>
 		public IOperator ShallowCopy()
 		{
-			BaseOperator copy = CreateInstance();
+			BaseOperator copy = CreateDuplicateInstance();
 
 			copy._aliveHooksByInWorkerStates.AddAll(_aliveHooksByInWorkerStates);
 			copy._attachedGlobalHooksByTimescale.AddAll(_attachedGlobalHooksByTimescale);
@@ -1092,7 +1093,13 @@ namespace Sigma.Core.Training.Operators
 		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
 		/// </summary>
 		/// <returns></returns>
-		protected abstract BaseOperator CreateInstance();
+		protected abstract BaseOperator CreateDuplicateInstance();
+
+		/// <summary>
+		/// Get an operator selector for this operator.
+		/// </summary>
+		/// <returns>The selector for this operator.</returns>
+		public abstract IOperatorSelector<IOperator> Select();
 
 		#region AbstractWorkerMethods
 

@@ -9,12 +9,13 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Training.Operators;
 using System.Linq;
-using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Persistence.Selectors.Operator
 {
 	/// <summary>
 	/// A base oeprator selector that handles basic <see cref="NetworkComponent"/> selection independent of actual network type.
+	/// Note:   There is no default operator selector using reflection because operators do not have a common constructor type (it could be anything).
+	///         Essentially, creating operators via activator will probably break things and not having a default selector makes people take care of their own constructors as they see fit.
 	/// </summary>
 	/// <typeparam name="TOperator"></typeparam>
 	public abstract class BaseOperatorSelector<TOperator> : IOperatorSelector<TOperator> where TOperator : IOperator
@@ -23,6 +24,15 @@ namespace Sigma.Core.Persistence.Selectors.Operator
 		/// The current result object of type <see cref="TOperator"/>.
 		/// </summary>
 		public TOperator Result { get; }
+
+		/// <summary>
+		/// Create a base operator selector with a certain operator.
+		/// </summary>
+		/// <param name="operator">The operator.</param>
+		protected BaseOperatorSelector(TOperator @operator)
+		{
+			Result = @operator;
+		}
 
 		/// <summary>
 		/// Get the "emptiest" available version of this <see cref="TOperator"/> while still retaining a legal object state for type <see cref="TOperator"/>.
@@ -50,15 +60,15 @@ namespace Sigma.Core.Persistence.Selectors.Operator
 		/// <returns>A selector for a new network with the given component(s) retained.</returns>
 		public ISelector<TOperator> Keep(params OperatorComponent[] components)
 		{
-		    TOperator @operator;
+			TOperator @operator;
 
 			if (components.Contains(OperatorComponent.Everything) || components.Contains(OperatorComponent.RuntimeState))
 			{
-			    @operator = (TOperator) Result.ShallowCopy();
+				@operator = (TOperator) Result.ShallowCopy();
 			}
 			else
 			{
-			    @operator = CreateOperator();
+				@operator = CreateOperator();
 			}
 
 			return CreateSelector(@operator);
@@ -85,16 +95,16 @@ namespace Sigma.Core.Persistence.Selectors.Operator
 		}
 
 		/// <summary>
-		/// Create an operator of this operator selectors appropriate type.
+		/// Create an operator of this operator selectors appropriate type (take necessary constructor arguments from the current <see cref="Result"/> operator).
 		/// </summary>
 		/// <returns>The operator.</returns>
-		public abstract TOperator CreateOperator();
+		protected abstract TOperator CreateOperator();
 
 		/// <summary>
 		/// Create an operator selector with a certain operator.
 		/// </summary>
 		/// <param name="operator">The operator</param>
 		/// <returns>An operator selector with the given operator.</returns>
-		public abstract IOperatorSelector<TOperator> CreateSelector(TOperator @operator);
+		protected abstract IOperatorSelector<TOperator> CreateSelector(TOperator @operator);
 	}
 }
