@@ -3,6 +3,8 @@
 [![Build Status (Development)](https://img.shields.io/travis/ThinkingTransistor/Sigma/development.svg?style=flat-square)](https://travis-ci.org/ThinkingTransistor/Sigma/branches)
 [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core)
 [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF)
+[![MyGet (PreRelease)](https://img.shields.io/myget/sigma/v/Sigma.Core.svg?style=flat-square)](https://www.myget.org/feed/sigma/package/nuget/Sigma.Core)
+[![MyGet (PreRelease WPF)](https://img.shields.io/myget/sigma/v/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.myget.org/feed/sigma/package/nuget/Sigma.Core.Monitors.WPF)
 [![MIT license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](http://choosealicense.com/licenses/mit)
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
