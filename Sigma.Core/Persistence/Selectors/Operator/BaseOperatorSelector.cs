@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Training.Operators;
 using System.Linq;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence.Selectors.Operator
 {
@@ -62,7 +63,7 @@ namespace Sigma.Core.Persistence.Selectors.Operator
 		{
 			TOperator @operator;
 
-			if (components.Contains(OperatorComponent.Everything) || components.Contains(OperatorComponent.RuntimeState))
+			if (components.ContainsFlag(OperatorComponent.Everything) || components.ContainsFlag(OperatorComponent.RuntimeState))
 			{
 				@operator = (TOperator) Result.ShallowCopy();
 			}
@@ -81,12 +82,12 @@ namespace Sigma.Core.Persistence.Selectors.Operator
 		/// <returns>A selector for a new network with the given component(s) discarded.</returns>
 		public ISelector<TOperator> Discard(params OperatorComponent[] components)
 		{
-			if (components.Contains(OperatorComponent.Everything))
+			if (components.ContainsFlag(OperatorComponent.Everything))
 			{
 				return Keep(OperatorComponent.None);
 			}
 
-			if (components.Contains(OperatorComponent.RuntimeState))
+			if (components.ContainsFlag(OperatorComponent.RuntimeState))
 			{
 				throw new InvalidOperationException($"Cannot only discard runtime state and keep everything, that does not make sense.");
 			}

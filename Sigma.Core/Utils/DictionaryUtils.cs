@@ -8,6 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sigma.Core.Persistence.Selectors;
 
 namespace Sigma.Core.Utils
 {
@@ -111,5 +113,16 @@ namespace Sigma.Core.Utils
 			}
 		}
 
+		/// <summary>
+		/// Check if any component in an array of selector components contains a component id flag.
+		/// </summary>
+		/// <typeparam name="TComponent">The component type.</typeparam>
+		/// <param name="enumeration">The enumeration.</param>
+		/// <param name="component">The component (flag) to check for.</param>
+		/// <returns>A boolean indicating whether the enumeration contains a component with the given components id flag.</returns>
+		public static bool ContainsFlag<TComponent>(this IEnumerable<TComponent> enumeration, TComponent component) where TComponent : SelectorComponent
+		{
+			return enumeration.Any(element => (element.Id & component.Id) == component.Id);
+		}
 	}
 }
