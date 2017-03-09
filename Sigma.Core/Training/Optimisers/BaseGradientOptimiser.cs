@@ -172,7 +172,7 @@ namespace Sigma.Core.Training.Optimisers
 		/// <param name="parameter">The parameter to optimise.</param>
 		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
 		/// <param name="handler">The handler to use.</param>
-		/// <returns></returns>
+		/// <returns>The optimised parameter.</returns>
 		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
 
 		/// <summary>

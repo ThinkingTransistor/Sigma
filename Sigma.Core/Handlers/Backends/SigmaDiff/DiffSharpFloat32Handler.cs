@@ -390,6 +390,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(internalA._adArrayHandle * internalB._adArrayHandle);
 		}
 
+		public INDArray Divide<TOther>(TOther value, INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(internalValue / internalArray._adArrayHandle);
+		}
+
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -511,14 +519,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return DNDArray.MinIndex(internalArray._adArrayHandle);
 		}
 
-		public INDArray Sqrt(INDArray array)
+		public INDArray SquareRoot(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADNDFloat32Array(DNDArray.Sqrt(internalArray._adArrayHandle));
 		}
 
-		public INumber Sqrt(INumber number)
+		public INumber SquareRoot(INumber number)
 		{
 			ADFloat32Number internalValue = InternaliseNumber(number);
 

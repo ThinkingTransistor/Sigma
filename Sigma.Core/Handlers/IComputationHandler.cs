@@ -211,7 +211,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Add a constant value to all elements in an ndarray.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of adding value to each array element.</returns>
@@ -318,7 +318,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Multiply a constant value with all elements in an ndarray.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of multiplying value with each array element.</returns>
@@ -365,9 +365,18 @@ namespace Sigma.Core.Handlers
 		INDArray Dot(INDArray a, INDArray b);
 
 		/// <summary>
+		/// Divide a constant value by all elements in an ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of dividing array element by the value.</returns>
+		INDArray Divide<TOther>(TOther value, INDArray array);
+
+		/// <summary>
 		/// Divide all elements in an ndarray by a constant value.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of dividing array element by the value.</returns>
@@ -506,14 +515,14 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The square root of the given array element-wise.</returns>
-		INDArray Sqrt(INDArray array);
+		INDArray SquareRoot(INDArray array);
 
 		/// <summary>
 		/// The square root of a traceable number.
 		/// </summary>
 		/// <param name="number">The traceable number.</param>
 		/// <returns>The square root of the given traceable number.</returns>
-		INumber Sqrt(INumber number);
+		INumber SquareRoot(INumber number);
 
 		/// <summary>
 		/// The logarithm base e of an ndarray.

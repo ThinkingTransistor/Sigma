@@ -83,15 +83,8 @@ namespace Sigma.Core.Architecture
 						// copy and copy efficiently by any means possible
 						if (deepCopyableValue == null)
 						{
-							ICloneable cloneableValue = value as ICloneable;
-							if (cloneableValue != null)
-							{
-								copiedValue = cloneableValue.Clone();
-							}
-							else
-							{
-								copiedValue = value;
-							}
+						    ICloneable cloneableValue = value as ICloneable;
+						    copiedValue = cloneableValue?.Clone() ?? value;
 						}
 						else
 						{

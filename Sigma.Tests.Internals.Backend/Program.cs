@@ -71,7 +71,7 @@ namespace Sigma.Tests.Internals.Backend
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.005, momentum: 0.9);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
 			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 25));
@@ -273,7 +273,7 @@ namespace Sigma.Tests.Internals.Backend
 			INumber c = handler.Trace(handler.Add(a, b), traceTag);
 			INumber d = handler.Multiply(c, 2);
 			INumber e = handler.Add(d, handler.Add(c, 3));
-			INumber f = handler.Sqrt(e);
+			INumber f = handler.SquareRoot(e);
 
 			array = handler.Multiply(array, f);
 

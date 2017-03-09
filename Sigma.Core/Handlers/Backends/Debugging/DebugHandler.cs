@@ -26,24 +26,36 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public IRegistry Registry { get; }
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler is enabled (does any checks).
+		/// </summary>
 		public bool Enabled
 		{
 			get { return Registry.Get<bool>("enabled"); }
 			set { Registry.Set("enabled", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should throw an exception when a bad condition is reported (or just log it).
+		/// </summary>
 		public bool ThrowExceptionOnReport
 		{
 			get { return Registry.Get<bool>("throw_exeption_on_report"); }
 			set { Registry.Set("throw_exeption_on_report", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should check for NaN values.
+		/// </summary>
 		public bool CheckNaN
 		{
 			get { return Registry.Get<bool>("check_nan"); }
 			set { Registry.Set("check_nan", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should check for infinite values.
+		/// </summary>
 		public bool CheckInfinite
 		{
 			get { return Registry.Get<bool>("check_infinite"); }
@@ -460,6 +472,11 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.Dot(CheckNice(a), CheckNice(b)));
 		}
 
+		public INDArray Divide<TOther>(TOther value, INDArray array)
+		{
+			return CheckNice(UnderlyingHandler.Divide(value, CheckNice(array)));
+		}
+
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
 			return CheckNice(UnderlyingHandler.Divide(CheckNice(array), value));
@@ -552,14 +569,14 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return UnderlyingHandler.MinIndex(CheckNice(array));
 		}
 
-		public INDArray Sqrt(INDArray array)
+		public INDArray SquareRoot(INDArray array)
 		{
-			return CheckNice(UnderlyingHandler.Sqrt(CheckNice(array)));
+			return CheckNice(UnderlyingHandler.SquareRoot(CheckNice(array)));
 		}
 
-		public INumber Sqrt(INumber number)
+		public INumber SquareRoot(INumber number)
 		{
-			return CheckNice(UnderlyingHandler.Sqrt(CheckNice(number)));
+			return CheckNice(UnderlyingHandler.SquareRoot(CheckNice(number)));
 		}
 
 		public INDArray Log(INDArray array)
