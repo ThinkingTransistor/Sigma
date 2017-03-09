@@ -102,7 +102,8 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			Type type = obj.GetType();
 
 			// it is null when calling typeof(object).BaseType
-			while (type != null)
+			// prevent that everything with an interface is an object
+			while (type.BaseType != null)
 			{
 				if (TypeMapping.ContainsKey(type))
 				{
@@ -114,7 +115,17 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 
 			// check all interfaces
 			type = obj.GetType();
-			return type.GetInterfaces().FirstOrDefault(iface => TypeMapping.ContainsKey(iface));
+
+			Type[] interfaces = type.GetInterfaces();
+			foreach (Type iface in interfaces)
+			{
+				if (TypeMapping.ContainsKey(iface))
+				{
+					return iface;
+				}
+			}
+
+			return typeof(object);
 		}
 	}
 }
