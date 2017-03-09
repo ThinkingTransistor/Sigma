@@ -159,9 +159,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.en-US.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utils\AttributeUtils.cs" />
     <Compile Include="Utils\ChartPanelPerformance.cs" />
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
+    <Compile Include="ViewModel\Parameterisation\IParameterVisualisationManager.cs" />
+    <Compile Include="ViewModel\Parameterisation\ParameterVisualisationManager.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
@@ -209,6 +212,10 @@
     <Compile Include="Panels\SigmaPanel.cs" />
     <Compile Include="ViewModel\Tabs\TabUI.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
+    <Compile Include="View\Parameterisation\Defaults\SigmaTextBox.xaml.cs">
+      <DependentUpon>SigmaTextBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Parameterisation\ParameterVisualiserAttribute.cs" />
     <Compile Include="View\Parameterisation\IParameterVisualiser.cs" />
     <Compile Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml.cs">
       <DependentUpon>SigmaCheckBox.xaml</DependentUpon>
@@ -364,6 +371,10 @@
     <Page Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Parameterisation\Defaults\SigmaTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

@@ -11,21 +11,13 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 	/// <summary>
 	/// Interaction logic for SigmaCheckBox.xaml
 	/// </summary>
-	public partial class SigmaCheckBox : IParameterVisualiser
+	[ParameterVisualiser(typeof(bool), Priority = ParameterVisualiserAttribute.VisualiserPriority.Lower)]
+	public partial class SigmaCheckBox
 	{
 		/// <summary>
 		/// Determines whether the parameter is edible or not. 
 		/// </summary>
 		public override bool IsReadOnly { get; set; }
-
-		/// <summary>
-		/// The name of the parameter that is being displayed.
-		/// </summary>
-		public override string ParameterName
-		{
-			get { return ParameterNameTextBlock.Text; }
-			set { ParameterNameTextBlock.Text = value; }
-		}
 
 		/// <summary>
 		/// Determines whether the UserControl is checked or not. 

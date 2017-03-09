@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Controls;
 using LiveCharts.Wpf;
@@ -22,6 +23,7 @@ using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -72,15 +74,20 @@ namespace Sigma.Tests.Internals.WPF
 
 
 				var testpanel = new TestPanel("test");
-				checkbox = new SigmaCheckBox {ParameterName = "My first box"};
+				checkbox = new SigmaCheckBox();
 				testpanel.Content.Children.Add(checkbox);
-				testpanel.Content.Children.Add(new SigmaCheckBox {ParameterName = "Other"});
+				testpanel.Content.Children.Add(new SigmaCheckBox());
+				testpanel.Content.Children.Add(new SigmaTextBox { Text = "Hello" });
+				testpanel.Content.Children.Add(new SigmaTextBox { Text = "locked", IsReadOnly = true });
 
 				window.TabControl["Tab2"].AddCumulativePanel(testpanel);
 				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 			});
 
 			sigma.Prepare();
+
+			var man = new ParameterVisualisationManager();
+			Debug.WriteLine("====================\n" + man.VisualiserType(new Program()));
 
 			sigma.StartOperatorsOnRun = false;
 			sigma.Run();

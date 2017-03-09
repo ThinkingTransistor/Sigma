@@ -17,11 +17,6 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 	public interface IParameterVisualiser
 	{
 		/// <summary>
-		/// The name of the parameter that is being displayed.
-		/// </summary>
-		string ParameterName { get; set; }
-
-		/// <summary>
 		/// Determines whether the parameter is visible or not.
 		/// </summary>
 		bool IsEnabled { get; set; }

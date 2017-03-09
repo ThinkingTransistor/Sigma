@@ -22,10 +22,5 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// Determines whether the parameter is editable or not. 
 		/// </summary>
 		public abstract bool IsReadOnly { get; set; }
-
-		/// <summary>
-		/// The name of the parameter that is being displayed.
-		/// </summary> 
-		public abstract string ParameterName { get; set; }
 	}
 }
