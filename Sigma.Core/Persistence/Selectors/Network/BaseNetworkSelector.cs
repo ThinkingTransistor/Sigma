@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Linq;
 using Sigma.Core.Architecture;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence.Selectors.Network
 {
@@ -87,12 +88,12 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		/// <returns>A selector for a new network with the given component(s) discarded.</returns>
 		public ISelector<TNetwork> Discard(params NetworkComponent[] components)
 		{
-			if (components.Contains(NetworkComponent.Everything))
+			if (components.ContainsFlag(NetworkComponent.Everything))
 			{
 				return Keep(NetworkComponent.None);
 			}
 
-			if (components.Contains(NetworkComponent.Architecture))
+			if (components.ContainsFlag(NetworkComponent.Architecture))
 			{
 				throw new InvalidOperationException($"Cannot only discard architecture and keep everything, that does not make sense.");
 			}

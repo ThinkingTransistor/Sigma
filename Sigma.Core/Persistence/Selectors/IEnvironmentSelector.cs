@@ -56,7 +56,7 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// All attached trainers, monitors and additional runtime data (pending requests, hook queues, execution states).
 		/// </summary>
-		public static readonly EnvironmentComponent RuntimeState = new EnvironmentComponent(Monitors.Id | Trainers(TrainerComponent.All).Id);
+		public static readonly EnvironmentComponent RuntimeState = new EnvironmentComponent(Monitors.Id | Trainers(TrainerComponent.Everything).Id);
 
 		/// <summary>
 		/// Everything.

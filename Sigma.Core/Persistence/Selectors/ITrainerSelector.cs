@@ -91,7 +91,7 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// Everything.
 		/// </summary>
-		public static readonly TrainerComponent All = new TrainerComponent(int.MaxValue);
+		public static readonly TrainerComponent Everything = new TrainerComponent(int.MaxValue);
 
 		/// <summary>
 		/// Create a selector component with a certain id. 
