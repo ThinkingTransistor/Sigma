@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 
-namespace Sigma.Core.Training.Optimisers
+namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 {
     /// <summary>
     /// A base memory gradient optimiser for implementing gradient optimisers that require some form of memory (e.g. over past gradients, param updates).

@@ -21,6 +21,7 @@ using Sigma.Core.Training.Optimisers;
 using Sigma.Tests.Layers;
 using System;
 using System.Collections.Generic;
+using Sigma.Core.Training.Optimisers.Gradient;
 
 namespace Sigma.Tests.Training
 {

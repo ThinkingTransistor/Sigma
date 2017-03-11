@@ -10,7 +10,7 @@ using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 
-namespace Sigma.Core.Training.Optimisers
+namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 {
 	/// <summary>
 	/// An adagrad optimiser which adapts the learning rate for each parameter basted on the sum of past squared gradients.

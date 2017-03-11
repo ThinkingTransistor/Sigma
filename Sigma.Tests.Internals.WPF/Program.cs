@@ -29,6 +29,7 @@ using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF

@@ -9,8 +9,9 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
-namespace Sigma.Core.Training.Optimisers
+namespace Sigma.Core.Training.Optimisers.Gradient
 {
 	/// <summary>
 	/// A momentum gradient optimiser using a basic momentum gradient optimisation algorithm with a certain learning rate and momentum.

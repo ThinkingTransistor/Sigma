@@ -14,7 +14,7 @@ using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Training.Optimisers
+namespace Sigma.Core.Training.Optimisers.Gradient
 {
 	/// <summary>
 	/// A base class for gradient based optimisers for easier implementation (all parameters treated as ndarray and passed with identifiers). 
@@ -28,6 +28,9 @@ namespace Sigma.Core.Training.Optimisers
 		/// </summary>
 		public IRegistry Registry { get; }
 
+		/// <summary>
+		/// The external cost alias to use.
+		/// </summary>
 		protected readonly string ExternalCostAlias;
 
 		[NonSerialized]

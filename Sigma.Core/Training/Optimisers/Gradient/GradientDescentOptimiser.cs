@@ -10,7 +10,7 @@ using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 
-namespace Sigma.Core.Training.Optimisers
+namespace Sigma.Core.Training.Optimisers.Gradient
 {
 	/// <summary>
 	/// A gradient descent optimiser, using the classic gradient descent algorithm with a certain learning rate on each parameter.
