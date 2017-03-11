@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Sigma.Core.Training.Optimisers.Gradient;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -72,10 +73,10 @@ namespace Sigma.Tests.Internals.Backend
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.005);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
-			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 25));
+			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 20));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
 			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
