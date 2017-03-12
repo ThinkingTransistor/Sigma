@@ -64,19 +64,17 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
+											+ FullyConnectedLayer.Construct(12)
 											+ FullyConnectedLayer.Construct(10)
-											+ FullyConnectedLayer.Construct(20)
-							
-											 + FullyConnectedLayer.Construct(10)
 											+ FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3)
 											+ SquaredDifferenceCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.005);
+			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
-			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 20));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.2));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
 			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));

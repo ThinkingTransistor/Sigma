@@ -12,29 +12,56 @@ using Sigma.Core.MathAbstract;
 
 namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 {
+    /// <summary>
+    /// An adadelta optimiser, which optimises parameters using second-order information of past gradients and parameter updates. 
+    /// </summary>
+    [Serializable]
     public class AdadeltaOptimiser : BaseMemoryGradientOptimiser<INDArray>
     {
         /// <summary>
-        /// Create a base memory gradient optimiser with an optional external output cost alias to use. 
+        /// Create an adadelta optimiser with a certain decay rate (and optionally a smoothing constant).
         /// </summary>
+        /// <param name="decayRate">The decay rate.</param>
+        /// <param name="smoothing">The optional smoothing constant.</param>
         /// <param name="externalCostAlias">The optional external output identifier by which to detect cost layers (defaults to "external_cost").</param>
-        public AdadeltaOptimiser(string memoryIdentifier, string externalCostAlias = "external_cost") : base("memory_previous_param_update", externalCostAlias)
+        public AdadeltaOptimiser(double decayRate, double smoothing = 1E-6, string externalCostAlias = "external_cost") : base("memory_previous_update_gradient", externalCostAlias)
         {
+            Registry.Set("decay_rate", decayRate, typeof(double));
+            Registry.Set("smoothing", smoothing, typeof(double));
         }
 
         /// <inheritdoc />
         protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
         {
-            //double momentum = Registry.Get<double>("momentum"), smoothing = Registry.Get<double>("smoothing");
+            // implementation according to the reference algorithm 1 in the published paper "ADADELTA: AN ADAPTIVE LEARNING RATE METHOD"
+            double decayRate = Registry.Get<double>("decay_rate"), smoothing = Registry.Get<double>("smoothing");
+            string memoryIdentifierUpdate = paramIdentifier + "_update", memoryIdentifierGradient = paramIdentifier + "_gradient";
 
-            //INDArray previousParamUpdateE = GetMemory(paramIdentifier, () => SquareRootSmoothed(handler.Multiply(gradient, gradient), smoothing, handler));
-            //INDArray parameterUpdateE = handler.Add(handler.Multiply(previousParamUpdateE, momentum), handler.Multiply());
+            // get accumulated gradients / update if memorised, otherwise initialise empty (all zeroes)
+            INDArray previousAccumulatedGradient = GetMemory(memoryIdentifierGradient, () => handler.NDArray((long[]) gradient.Shape.Clone()));
+            INDArray previousAccumulatedUpdate = GetMemory(memoryIdentifierUpdate, () => handler.NDArray((long[]) gradient.Shape.Clone()));
 
-            //INDArray gradientRms = SquareRootSmoothed(handler.Multiply(gradient, gradient), smoothing, handler);
+            // compute accumulated decayed gradients
+            INDArray currentGradientDecayed = handler.Multiply(handler.Multiply(gradient, gradient), 1.0 - decayRate);
+            INDArray currentAccumulatedGradient = handler.Add(handler.Multiply(previousAccumulatedGradient, decayRate), currentGradientDecayed);
 
-            //INDArray parameterUpdate = handler.Multiply(handler.Divide())
+            // compute previous accumulated gradient root mean squared (rms) and previous accumulated update rms
+            INDArray previousUpdateRms = SquareRootSmoothed(previousAccumulatedUpdate, smoothing, handler);
+            INDArray gradientRms = SquareRootSmoothed(currentAccumulatedGradient, smoothing, handler);
 
-            throw new NotImplementedException();
+            // compute parameter update using previous accumulated gradient / update rms
+            INDArray update = handler.Multiply(handler.Multiply(handler.Divide(previousUpdateRms, gradientRms), gradient), -1.0);
+
+            // compute current accumulated squared decayed updates for next iteration
+            INDArray squaredUpdateDecayed = handler.Multiply(handler.Multiply(update, update), 1.0 - decayRate);
+            INDArray currentAccumulatedUpdate = handler.Add(handler.Multiply(previousAccumulatedUpdate, decayRate), squaredUpdateDecayed);
+
+            // store accumulated values for next iteration
+            SetMemory(memoryIdentifierGradient, currentAccumulatedGradient);
+            SetMemory(memoryIdentifierUpdate, currentAccumulatedUpdate);
+
+            // compute optimised parameter using computed update
+            return handler.Add(parameter, update);
         }
 
         private INDArray SquareRootSmoothed(INDArray array, double smoothing, IComputationHandler handler)
@@ -42,13 +69,10 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
             return handler.SquareRoot(handler.Add(array, smoothing));
         }
 
-        /// <summary>
-        /// Deep copy this object.
-        /// </summary>
-        /// <returns>A deep copy of this object.</returns>
+        /// <inheritdoc />
         public override object DeepCopy()
         {
-            throw new NotImplementedException();
+            return new AdadeltaOptimiser(Registry.Get<double>("decay_rate"), Registry.Get<double>("smoothing"), ExternalCostAlias);
         }
     }
 }
