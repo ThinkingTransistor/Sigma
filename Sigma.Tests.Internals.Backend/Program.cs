@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
@@ -54,9 +55,9 @@ namespace Sigma.Tests.Internals.Backend
 			sigma.Prepare();
 
 			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
-			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
-			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2));
-			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
+			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
+														.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2))
+														.Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0));
 
 			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
 
@@ -68,7 +69,7 @@ namespace Sigma.Tests.Internals.Backend
 											+ FullyConnectedLayer.Construct(10)
 											+ FullyConnectedLayer.Construct(3)
 											+ OutputLayer.Construct(3)
-											+ SquaredDifferenceCostLayer.Construct();
+											+ SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);

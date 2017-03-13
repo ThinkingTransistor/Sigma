@@ -153,6 +153,8 @@
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\Iterators\UndividedIterator.cs" />
     <Compile Include="Data\Iterators\UnifiedIterator.cs" />
+    <Compile Include="Data\Preprocessors\Adaptive\AdaptiveNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\Adaptive\BaseAdaptivePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />

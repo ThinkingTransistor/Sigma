@@ -84,13 +84,8 @@ namespace Sigma.Core.Data.Preprocessors
 			}
 		}
 
-		/// <summary>
-		/// TODO:
-		/// </summary>
-		/// <param name="array"></param>
-		/// <param name="handler"></param>
-		/// <returns></returns>
-		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
+	    /// <inheritdoc />
+	    internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
 			//BTF with single feature dimension
 			if (array.Rank != 3)
