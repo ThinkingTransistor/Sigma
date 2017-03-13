@@ -12,7 +12,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 	/// A custom checkbox that implements <see cref="IParameterVisualiser"/> and can visualise values from a registry
 	/// (booleans in this case).
 	/// </summary>
-	[ParameterVisualiser(typeof(bool), Priority = ParameterVisualiserAttribute.VisualiserPriority.Lower)]
+	[ParameterVisualiser(typeof(bool), Priority = VisualiserPriority.Lower)]
 	public partial class SigmaCheckBox
 	{
 		/// <summary>

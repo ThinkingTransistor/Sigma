@@ -164,8 +164,8 @@
     <Compile Include="Utils\ChartPanelPerformance.cs" />
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
-    <Compile Include="ViewModel\Parameterisation\IParameterVisualisationManager.cs" />
-    <Compile Include="ViewModel\Parameterisation\ParameterVisualisationManager.cs" />
+    <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />
+    <Compile Include="ViewModel\Parameterisation\ParameterVisualiserManager.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
@@ -213,14 +213,19 @@
     <Compile Include="Panels\SigmaPanel.cs" />
     <Compile Include="ViewModel\Tabs\TabUI.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
+    <Compile Include="View\Parameterisation\Defaults\SigmaTextBlock.xaml.cs">
+      <DependentUpon>SigmaTextBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Parameterisation\Defaults\SigmaTextBox.xaml.cs">
       <DependentUpon>SigmaTextBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Parameterisation\IParameterVisualiserInfo.cs" />
     <Compile Include="View\Parameterisation\ParameterVisualiserAttribute.cs" />
     <Compile Include="View\Parameterisation\IParameterVisualiser.cs" />
     <Compile Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml.cs">
       <DependentUpon>SigmaCheckBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Parameterisation\ParameterVisualiserInfo.cs" />
     <Compile Include="View\Parameterisation\UserControlParameterVisualiser.cs" />
     <Compile Include="View\UIWrapper.cs" />
     <Compile Include="View\Windows\SigmaWindow.cs" />
@@ -372,6 +377,10 @@
     <Page Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Parameterisation\Defaults\SigmaTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Parameterisation\Defaults\SigmaTextBox.xaml">
       <SubType>Designer</SubType>

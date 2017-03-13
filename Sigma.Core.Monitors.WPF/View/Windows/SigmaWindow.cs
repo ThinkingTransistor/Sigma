@@ -23,6 +23,7 @@ using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.View.Factories;
 using Sigma.Core.Monitors.WPF.View.Factories.Defaults;
 using Sigma.Core.Monitors.WPF.View.Factories.Defaults.StatusBar;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Tabs;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
 using Sigma.Core.Utils;
@@ -167,6 +168,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		#endregion UIElements
 
 		/// <summary>
+		/// The <see cref="IParameterVisualiserManager"/> that is responsible for creation and detection of 
+		/// visualisation elements.
+		/// </summary>
+		public IParameterVisualiserManager ParameterVisualiser { get;  }
+
+		/// <summary>
 		/// The prefix-identifier for <see cref="DialogHost"/>.
 		/// Should be unique
 		/// </summary>
@@ -303,7 +310,12 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (other == null)
 			{
+				ParameterVisualiser = new ParameterVisualiserManager();
 				AssignFactories(monitor.Registry, app, monitor);
+			}
+			else
+			{
+				ParameterVisualiser = other.ParameterVisualiser;
 			}
 
 			SetParent(other);
@@ -869,14 +881,5 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		}
 
 		#endregion
-
-
-		//TODO: remove
-		//private int _count;
-		//public new string Title
-		//{
-		//	get { return base.Title; }
-		//	set { base.Title = $"well, no {_count++}"; }
-		//}
 	}
 }

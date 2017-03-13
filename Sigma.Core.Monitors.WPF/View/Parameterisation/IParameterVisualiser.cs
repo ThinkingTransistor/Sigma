@@ -12,6 +12,8 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 	/// Every visualiser that is responsible for displaying a parameter (e.g. a CheckBox visualiser ...)
 	/// has to implement this interface for easy modification.
 	/// 
+	/// Every visualiser requires an <b>empty</b> constructor.
+	/// 
 	/// It also allows the visualiser to be a <see cref="System.Windows.Controls.Control"/> and a <see cref="System.Windows.Controls.UserControl"/>.
 	/// </summary>
 	public interface IParameterVisualiser

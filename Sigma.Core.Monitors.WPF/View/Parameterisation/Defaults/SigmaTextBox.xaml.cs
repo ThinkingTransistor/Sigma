@@ -1,7 +1,9 @@
 ﻿namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 {
-	[ParameterVisualiser(typeof(string), Priority = ParameterVisualiserAttribute.VisualiserPriority.Lower)]
-	[ParameterVisualiser(typeof(object), Priority = ParameterVisualiserAttribute.VisualiserPriority.Lower)]
+	/// <summary>
+	/// Sigmas way of displaying strings. 
+	/// </summary>
+	[ParameterVisualiser(typeof(string), Priority = VisualiserPriority.Lower)]
 	public partial class SigmaTextBox
 	{
 		/// <summary>
@@ -14,6 +16,9 @@
 		/// </summary>
 		public string Text { get; set; }
 
+		/// <summary>
+		/// Create a new default textbox that can display parameters.
+		/// </summary>
 		public SigmaTextBox()
 		{
 			InitializeComponent();

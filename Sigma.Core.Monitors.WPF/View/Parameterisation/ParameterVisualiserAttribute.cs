@@ -8,13 +8,17 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 	/// Multiple attributes can be specified (to display <c>string</c>s and <c>object</c>s for example).
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-	public class ParameterVisualiserAttribute : Attribute
+	public class ParameterVisualiserAttribute : Attribute, IParameterVisualiserInfo
 	{
 		/// <summary>
 		/// The type this visualiser visualises.
 		/// </summary>
 		public Type Type { get; }
 
+		/// <summary>
+		/// The priority of the <see cref="IParameterVisualiserInfo"/>. If another priority with a lower priority has already been added, the
+		/// higher priority will override the settings. 
+		/// </summary>
 		public VisualiserPriority Priority { get; set; } = VisualiserPriority.Normal;
 
 		/// <summary>
@@ -24,15 +28,6 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		public ParameterVisualiserAttribute(Type type)
 		{
 			Type = type;
-		}
-
-		public enum VisualiserPriority
-		{
-			Lowest,
-			Lower,
-			Normal,
-			Higher,
-			Highest
 		}
 	}
 }

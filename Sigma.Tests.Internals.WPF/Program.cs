@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Diagnostics;
 using System.Windows.Controls;
 using LiveCharts.Wpf;
 using Sigma.Core;
@@ -19,16 +17,13 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Control;
-using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Utils;
-using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
 
@@ -38,7 +33,7 @@ namespace Sigma.Tests.Internals.WPF
 	{
 		public static MinibatchIterator TrainingIterator;
 
-		private static void Main(string[] args)
+		private static void Main()
 		{
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
@@ -81,78 +76,19 @@ namespace Sigma.Tests.Internals.WPF
 				testpanel.Content.Children.Add(new SigmaTextBox { Text = "Hello" });
 				testpanel.Content.Children.Add(new SigmaTextBox { Text = "locked", IsReadOnly = true });
 
+				testpanel.Content.Children.Add(new SigmaTextBlock { Text = window.ToString() });
+
 				window.TabControl["Tab2"].AddCumulativePanel(testpanel);
+
 				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 			});
 
 			sigma.Prepare();
 
-			var man = new ParameterVisualisationManager();
-			Debug.WriteLine("====================\n" + man.VisualiserType(new Program()));
-
 			sigma.StartOperatorsOnRun = false;
 			sigma.Run();
 
 		}
-
-		//private static void Main(string[] args)
-		//{
-		//	SigmaEnvironment.EnableLogging();
-		//	SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
-		//	SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
-
-		//	WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("WPF Monitor Demo", "de-DE"));
-		//	//gui.Priority = ThreadPriority.Highest;
-
-		//	gui.AddTabs("Überblick", "Log");
-
-		//	gui.WindowDispatcher(window =>
-		//	{
-		//		window.IsInitializing = true;
-		//	});
-
-
-		//	ITrainer trainer = CreateIrisTrainer(sigma);
-
-		//	gui.ColourManager.Alternate = false;
-		//	gui.ColourManager.Dark = true;
-		//	gui.ColourManager.PrimaryColor = MaterialDesignValues.DeepOrange;
-		//	gui.ColourManager.SecondaryColor = MaterialDesignValues.Amber;
-
-		//	StatusBarLegendInfo legend = new StatusBarLegendInfo("Dropout", MaterialColour.Green);
-		//	gui.AddLegend(legend);
-
-		//	gui.WindowDispatcherAsync(window =>
-		//	{
-		//		ControlPanel control = new ControlPanel("Steuerung", trainer);
-
-		//		TrainerChartPanel<CartesianChart, LineSeries, double> costChart = new TrainerChartPanel<CartesianChart, LineSeries, double>("Fehlerfunktion", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
-		//		costChart.Fast();
-		//		costChart.MaxPoints = 500;
-
-		//		AccuracyPanel chart = new AccuracyPanel("Genauigkeit der Epoche", trainer, tops: new[] { 1, 2 });
-		//		chart.Fast(hoverEnabled: true);
-
-		//		window.TabControl["Überblick"].GridSize.Rows -= 1;
-
-		//		window.TabControl["Überblick"].AddCumulativePanel(chart, legend: legend);
-		//		window.TabControl["Überblick"].AddCumulativePanel(control, 2, legend: legend);
-		//		window.TabControl["Überblick"].AddCumulativePanel(costChart, 2, 2, legend);
-
-
-		//		//ChartPanel<CartesianChart, LineSeries, double> testCollection = new ChartPanel<CartesianChart, LineSeries, double>("Test collection");
-		//		//testCollection.SeriesCollection.
-
-		//		window.TabControl["Log"].GridSize = new[] { 1, 1 };
-		//		window.TabControl["Log"].AddCumulativePanel(new LogDataGridPanel("Log", new LevelRangeFilter { LevelMin = Level.Info }));
-
-		//		window.IsInitializing = false;
-		//	});
-		//	sigma.Prepare();
-
-		//	sigma.StartOperatorsOnRun = false;
-		//	sigma.Run();
-		//}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
 		{
