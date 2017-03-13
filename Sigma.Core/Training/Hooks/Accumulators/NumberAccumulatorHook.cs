@@ -12,7 +12,7 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Training.Hooks.Accumulators
 {
 	/// <summary>
-	/// An accumulator hook f
+	/// An accumulator hook for accumulating any number over a certain time step (this hook's time step).
 	/// </summary>
 	[Serializable]
 	public class NumberAccumulatorHook : BaseHook

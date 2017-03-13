@@ -42,6 +42,11 @@ namespace Sigma.Core.Training.Operators
 		ExecutionState State { get; }
 
 		/// <summary>
+		/// The total running time of this operator since start in milliseconds (running only when the <see cref="ExecutionState"/> is <see cref="ExecutionState.Running"/>).
+		/// </summary>
+		long RunningTimeMilliseconds { get; }
+
+		/// <summary>
 		///     The <see cref="IComputationHandler" /> used to compute everything in
 		///     this <see cref="IOperator" />. It will be automatically set by the
 		///     <see cref="ITrainer" /> if not specified.

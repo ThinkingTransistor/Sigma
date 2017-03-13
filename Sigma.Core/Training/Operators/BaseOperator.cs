@@ -9,12 +9,14 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Persistence;
 using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
@@ -26,7 +28,7 @@ using static Sigma.Core.Utils.ThreadUtils;
 namespace Sigma.Core.Training.Operators
 {
 	[Serializable]
-	public abstract class BaseOperator : IOperator
+	public abstract class BaseOperator : IOperator, ISerialisationNotifier
 	{
 		/// <summary>
 		///		A registry containing relevant parameters of this operator.
@@ -44,6 +46,11 @@ namespace Sigma.Core.Training.Operators
 		///     if the operator has not been started yet.
 		/// </summary>
 		public ExecutionState State { get; protected set; } = ExecutionState.None;
+
+		/// <summary>
+		/// The total running time of this operator since start in seconds (running only when the <see cref="ExecutionState"/> is <see cref="ExecutionState.Running"/>).
+		/// </summary>
+		public long RunningTimeMilliseconds => _runningStopwatch.ElapsedMilliseconds;
 
 		/// <summary>
 		///     The <see cref="IComputationHandler" /> used to compute everything in
@@ -160,6 +167,9 @@ namespace Sigma.Core.Training.Operators
 		private readonly IDictionary<TimeScale, ISet<IHook>> _attachedGlobalHooksByTimescale;
 		private int _highestIterationNumber;
 
+		[NonSerialized]
+		private Stopwatch _runningStopwatch;
+
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> using the default <see cref="IComputationHandler" /> (currently <see cref="CpuFloat32Handler"/>.
 		///     The <see cref="IComputationHandler" /> will be automatically set by the <see cref="ITrainer" />.
@@ -212,6 +222,7 @@ namespace Sigma.Core.Training.Operators
 			_aliveHooksByInWorkerStates = new Dictionary<IHook, bool[]>();
 			_attachedLocalHooksByTimeScale = new Dictionary<TimeScale, ISet<IHook>>();
 			_attachedGlobalHooksByTimescale = new Dictionary<TimeScale, ISet<IHook>>();
+			_runningStopwatch = new Stopwatch();
 
 			AttachedLocalHooksByTimeScale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedLocalHooksByTimeScale);
 			AttachedGlobalHooksByTimescale = new ReadOnlyDictionary<TimeScale, ISet<IHook>>(_attachedGlobalHooksByTimescale);
@@ -220,6 +231,30 @@ namespace Sigma.Core.Training.Operators
 			AttachedGlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
 		}
 
+
+	    /// <summary>
+	    /// Called before this object is serialised.
+	    /// </summary>
+	    public void OnSerialising()
+	    {
+	    }
+
+	    /// <summary>
+	    /// Called after this object was serialised.
+	    /// </summary>
+	    public void OnSerialised()
+	    {
+	    }
+
+	    /// <summary>
+	    /// Called after this object was de-serialised. 
+	    /// </summary>
+	    public void OnDeserialised()
+	    {
+	        _runningStopwatch = new Stopwatch();
+	    }
+
+		/// <inheritdoc />
 		public void PushProgress(IWorker worker)
 		{
 			// TODO workers calling this method are assumed to only submit new progress with a different epoch / iteration number, check for that or explicitly state in documentation
@@ -301,6 +336,7 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <inheritdoc />
 		public void PullProgress(IWorker worker)
 		{
 			// before first iteration of new epoch or network has not been initialised yet
@@ -691,7 +727,6 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="resultHooksToInvoke">The resulting hooks to invoke.</param>
 		public void EjectTimeScaleEvent(TimeScale timeScale, IReadOnlyDictionary<TimeScale, ISet<IHook>> hooksByTimescale, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke)
 		{
-			if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
 			if (hooksByTimescale == null) throw new ArgumentNullException(nameof(hooksByTimescale));
 			if (localHookTimeSteps == null) throw new ArgumentNullException(nameof(localHookTimeSteps));
 			if (resultHooksToInvoke == null) throw new ArgumentNullException(nameof(resultHooksToInvoke));
@@ -761,6 +796,22 @@ namespace Sigma.Core.Training.Operators
 
 				// TODO add background hook "bucket" invocation for dependent / required hooks
 				System.Threading.Tasks.Task.Factory.StartNew(() => hook.Invoke(copy, copyResolver));
+			}
+		}
+
+		private void _InternalResumeRunningStopwatch()
+		{
+			if (!_runningStopwatch.IsRunning)
+			{
+				_runningStopwatch.Start();
+			}
+		}
+
+		private void _InternalPauseRunningStopwatch()
+		{
+			if (_runningStopwatch.IsRunning)
+			{
+				_runningStopwatch.Stop();
 			}
 		}
 
@@ -853,6 +904,8 @@ namespace Sigma.Core.Training.Operators
 
 					State = ExecutionState.Running;
 
+					_InternalResumeRunningStopwatch(); // TODO this can't be right?
+
 					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
@@ -876,6 +929,9 @@ namespace Sigma.Core.Training.Operators
 					StartWorkers();
 
 					State = ExecutionState.Running;
+					_InternalResumeRunningStopwatch();
+
+					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
 			else
@@ -898,6 +954,8 @@ namespace Sigma.Core.Training.Operators
 
 					State = ExecutionState.Paused;
 
+					_InternalPauseRunningStopwatch();
+
 					InvokeTimeScaleEvent(TimeScale.Pause);
 				}).Start();
 			}
@@ -917,9 +975,14 @@ namespace Sigma.Core.Training.Operators
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				 {
-					 foreach (IWorker worker in Workers) { ResumeWorker(worker); }
+					 foreach (IWorker worker in Workers)
+					 {
+						 ResumeWorker(worker);
+					 }
 
 					 State = ExecutionState.Running;
+
+					 _InternalResumeRunningStopwatch();
 
 					 InvokeTimeScaleEvent(TimeScale.Resume);
 				 }).Start();
@@ -950,6 +1013,8 @@ namespace Sigma.Core.Training.Operators
 					 }
 
 					 State = ExecutionState.Stopped;
+
+					 _InternalPauseRunningStopwatch();
 
 					 InvokeTimeScaleEvent(TimeScale.Stop);
 				}).Start();

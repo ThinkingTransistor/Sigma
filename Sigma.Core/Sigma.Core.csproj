@@ -235,6 +235,7 @@
     <Compile Include="Training\Hooks\LambdaHook.cs" />
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\RunningElapsedTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
