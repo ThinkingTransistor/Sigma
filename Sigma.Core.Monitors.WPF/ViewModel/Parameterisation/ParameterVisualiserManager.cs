@@ -1,7 +1,15 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections.Generic;
+using System.Windows;
 using log4net;
-using Sigma.Core.Monitors.WPF.Annotations;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
@@ -89,6 +97,11 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 				_log.Warn($"{visualiserClass.Name} does not have a public parameterless constructor - be aware that this can cause weird errors when using Sigmas default parameter display.");
 			}
 
+			if (!typeof(UIElement).IsAssignableFrom(visualiserClass))
+			{
+				_log.Warn($"{visualiserClass.Name} does not derive from {nameof(UIElement)} - be aware that this can cause weird errors when using Sigmas default parameter display.");
+			}
+
 			Type storedClass;
 			IParameterVisualiserInfo storedAttribte;
 
@@ -122,9 +135,9 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		/// Get the type which is used to visualise given type (e.g. <c>typeof(bool)</c>). 
 		/// </summary>
 		/// <param name="type">The object type which will be displayed.</param>
-		/// <returns>The closest type for visualisation.</returns>
+		/// <returns>The closest type for visualisation. <c>null</c> if not found.</returns>
 		/// <exception cref="ArgumentNullException">If the given type is null.</exception>
-		public Type VisualiserType([NotNull] Type type)
+		public Type VisualiserType(Type type)
 		{
 			if (type == null)
 			{
@@ -139,7 +152,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			{
 				if (TypeMapping.ContainsKey(type))
 				{
-					return type;
+					return TypeMapping[type];
 				}
 
 				type = type.BaseType;
@@ -158,16 +171,17 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			}
 
 			// if nothing fits, it has to be an object
-			return typeof(object);
+			// check if we have an object mapping and return null otherwise
+			return TypeMapping.ContainsKey(typeof(object)) ? TypeMapping[typeof(object)] : null;
 		}
 
 		/// <summary>
 		/// Get the type which is used to visualise given object (reference not type). 
 		/// </summary>
 		/// <param name="obj">The object which will be displayed.</param>
-		/// <returns>The closest type for visualisation.</returns>
+		/// <returns>The closest type for visualisation. <c>null</c> if not found.</returns>
 		/// <exception cref="ArgumentNullException">If the given object is null.</exception>
-		public Type VisualiserTypeByReference([NotNull] object obj)
+		public Type VisualiserTypeByReference(object obj)
 		{
 			if (obj == null)
 			{

@@ -1,15 +1,14 @@
 <ResourceDictionary
-	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/TitleBar/SigmaAboutBoxGeneric.xaml"/>
-		
+
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/StatusBar/StatusBarLegendGeneric.xaml"/>
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/StatusBar/TaskVisualizerGeneric.xaml"/>
 
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/Control/SigmaPlaybackControlGeneric.xaml"/>
 	</ResourceDictionary.MergedDictionaries>
 
-
+	
 </ResourceDictionary>

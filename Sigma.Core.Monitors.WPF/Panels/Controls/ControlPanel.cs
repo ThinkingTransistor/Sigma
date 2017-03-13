@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
 using Sigma.Core.Training;
 
-namespace Sigma.Core.Monitors.WPF.Panels.Control
+namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
 	/// <summary>
 	/// This <see cref="SigmaPanel"/> allows to control the training progress for a trainer and
@@ -23,6 +23,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Control
 
 		private ITrainer _trainer;
 
+		/// <summary>
+		/// The this ControlPanel belongs to. It can control this trainer (play, pause, next stop, rewind).
+		/// </summary>
 		public ITrainer Trainer
 		{
 			get { return _trainer; }

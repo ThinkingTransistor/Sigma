@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Media;
 using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -16,16 +17,19 @@ using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
-using Sigma.Core.Monitors.WPF.Panels.Control;
+using Sigma.Core.Monitors.WPF.Panels.Controls;
+using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.CustomControls.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
-using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
+using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
+using ParameterView = Sigma.Core.Monitors.WPF.View.Parameterisation.ParameterView;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -38,13 +42,14 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
-			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("JI-Demo", "de-DE"));
+			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma-Demo", "de-DE"));
 			gui.AddTabs("Tab1", "Tab2");
 
 			ITrainer trainer = CreateIrisTrainer(sigma);
 
 			gui.WindowDispatcher(window =>
 			{
+				window.IsInitializing = true;
 				window.TabControl["Tab1"].AddCumulativePanel(new ControlPanel("Steuerung", trainer));
 			});
 
@@ -80,7 +85,16 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Tab2"].AddCumulativePanel(testpanel);
 
+				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser);
+				parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
+				parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
+
+
+				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
+
 				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
+
+				window.IsInitializing = false;
 			});
 
 			sigma.Prepare();

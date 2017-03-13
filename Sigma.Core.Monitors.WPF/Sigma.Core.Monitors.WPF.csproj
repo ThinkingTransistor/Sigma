@@ -140,10 +140,11 @@
     <Compile Include="Panels\Charts\ChartPanel.cs" />
     <Compile Include="Panels\Charts\Definitions\IPointVisualiser.cs" />
     <Compile Include="Panels\Charts\TrainerChartPanel.cs" />
-    <Compile Include="Panels\Control\ControlPanel.cs" />
+    <Compile Include="Panels\Controls\ControlPanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
     <Compile Include="Panels\Logging\LogTextPanel.cs" />
+    <Compile Include="Panels\Parameterisation\ParameterPanel.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\Resources.en-GB.Designer.cs">
       <DependentUpon>Resources.en-GB.resx</DependentUpon>
@@ -167,6 +168,7 @@
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />
     <Compile Include="ViewModel\Parameterisation\ParameterVisualiserManager.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
+    <Compile Include="View\CustomControls\Parameterisation\ParameterView.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
     <Compile Include="ViewModel\StatusBar\IWpfTaskVisualizationManager.cs" />
@@ -220,6 +222,9 @@
       <DependentUpon>SigmaTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Parameterisation\IParameterVisualiserInfo.cs" />
+    <Compile Include="View\Parameterisation\ParameterView.xaml.cs">
+      <DependentUpon>ParameterView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Parameterisation\ParameterVisualiserAttribute.cs" />
     <Compile Include="View\Parameterisation\IParameterVisualiser.cs" />
     <Compile Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml.cs">
@@ -362,6 +367,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\CustomControls\Parameterisation\ParameterViewGeneric.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\CustomControls\StatusBar\StatusBarLegendGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -383,6 +392,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Parameterisation\Defaults\SigmaTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Parameterisation\ParameterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
