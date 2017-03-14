@@ -1,4 +1,12 @@
-﻿using System.Windows.Controls;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System.Windows.Controls;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
