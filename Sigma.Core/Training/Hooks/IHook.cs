@@ -88,6 +88,7 @@ namespace Sigma.Core.Training.Hooks
 	{
 		/// <summary>
 		/// The callback method that will be executed when the command finishes execution.
+		/// <c>null</c> if not required.
 		/// </summary>
 		Action OnFinish { get; set; }
 	}

@@ -1,4 +1,6 @@
-﻿using LiveCharts.Wpf;
+﻿using System.Diagnostics;
+using System.Threading;
+using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -25,6 +27,7 @@ using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
 using System.Windows.Controls;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -37,7 +40,7 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
 
-			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma-Demo", "de-DE"));
+			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma-Demo"/*, "de-DE"*/));
 			gui.AddTabs("Tab1", "Tab2");
 
 			ITrainer trainer = CreateIrisTrainer(sigma);
@@ -60,7 +63,13 @@ namespace Sigma.Tests.Internals.WPF
 			StatusBarLegendInfo info = new StatusBarLegendInfo("Trainer 1", MaterialColour.Yellow);
 			gui.AddLegend(info);
 
-			SigmaCheckBox checkbox;
+
+			IRegistry registry = new Registry
+			{
+				["boolean"] = true,
+				["string"] = "huhu"
+			};
+			registry.Add("object", sigma);
 
 			gui.WindowDispatcher(window =>
 			{
@@ -69,20 +78,12 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Tab2"].AddCumulativePanel(cost, legend: info);
 
 
-				var testpanel = new TestPanel("test");
-				checkbox = new SigmaCheckBox();
-				testpanel.Content.Children.Add(checkbox);
-				testpanel.Content.Children.Add(new SigmaCheckBox());
-				testpanel.Content.Children.Add(new SigmaTextBox { Text = "Hello" });
-				testpanel.Content.Children.Add(new SigmaTextBox { Text = "locked", IsReadOnly = true });
-
-				testpanel.Content.Children.Add(new SigmaTextBlock { Text = window.ToString() });
-
-				window.TabControl["Tab2"].AddCumulativePanel(testpanel);
-
-				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser);
-				parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
-				parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
+				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser, sigma.SynchronisationHandler);
+				parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
+				parameterPanel.Content.Add("String test", typeof(string), registry, "string");
+				//parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
+				//parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
+				//parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
 
 
 				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
@@ -95,8 +96,14 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.Prepare();
 
 			sigma.StartOperatorsOnRun = false;
-			sigma.Run();
+			sigma.RunAsync();
 
+			while (true)
+			{
+				Debug.WriteLine(registry["boolean"]);
+				Debug.WriteLine(registry["string"]);
+				Thread.Sleep(1000);
+			}
 		}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)

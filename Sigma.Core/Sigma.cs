@@ -22,6 +22,7 @@ using log4net.Filter;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors;
+using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Parameterisation;
 using Sigma.Core.Persistence;
 using Sigma.Core.Training;
@@ -79,15 +80,17 @@ namespace Sigma.Core
 		/// The random number generator to use for randomised operations for reproducibility. 
 		/// </summary>
 		public Random Random { get; private set; }
-		
+
 		/// <summary>
 		/// The parameterisation manager which defines which values to parameterise as what (e.g. range, enumeration, check box).
 		/// </summary>
 		public IParameterisationManager ParameterisationManager { get; }
 
 		/// <summary>
-		/// 
+		/// The handler that is responsible for syncing the monitor with operators / workers. 
 		/// </summary>
+		public ISynchronisationHandler SynchronisationHandler { get; }
+
 		public int RandomSeed { get; private set; }
 
 		private SigmaEnvironment(string name)
@@ -96,6 +99,7 @@ namespace Sigma.Core
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
 			ParameterisationManager = new ParameterisationManager();
+			SynchronisationHandler = new SynchronisationHandler(this);
 
 			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
 

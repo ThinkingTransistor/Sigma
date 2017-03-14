@@ -25,9 +25,16 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public override bool IsReadOnly { get; set; } = true;
 
 		/// <summary>
-		/// The fully resolved key to access the synchandler.
+		/// This boolean determines whether there are unsaved changes or not.
+		/// <c>True</c> if there are other changes, <c>false</c> otherwise.
 		/// </summary>
-		public override string Key { get; set; }
+		public override bool Pending { get; set; }
+
+		/// <summary>
+		/// This boolean determines whether a synchronisation erroered or not.
+		/// <c>True</c> if there are errors, <c>false</c> otherwise.
+		/// </summary>
+		public override bool Errored { get; set; }
 
 		/// <summary>
 		/// Create a new default textblock that can display parameters (i.e. objects).
@@ -37,6 +44,23 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 			InitializeComponent();
 
 			DataContext = this;
+		}
+
+		/// <summary>
+		/// Force the visualiser to update its value (i.e. display the value that is stored).
+		/// </summary>
+		public override void Read()
+		{
+			Text = SynchronisationHandler.SynchroniseGet<string>(Registry, Key);
+		}
+
+		/// <summary>
+		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
+		/// </summary>
+		public override void Write()
+		{
+			Pending = true;
+			SynchronisationHandler.SynchroniseSet(Registry, Key, Text, val => Pending = false, e => Errored = true);
 		}
 	}
 }

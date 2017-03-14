@@ -28,10 +28,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// associated with. May not be <c>null</c>.</param>
 		public SynchronisationHandler(SigmaEnvironment sigma)
 		{
-			if (sigma == null)
-			{
-				throw new ArgumentNullException(nameof(sigma));
-			}
+			if (sigma == null) throw new ArgumentNullException(nameof(sigma));
 
 			RegistryResolvers = new Dictionary<IRegistry, IRegistryResolver>();
 
@@ -43,12 +40,12 @@ namespace Sigma.Core.Monitors.Synchronisation
 		{
 			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
 
+			// check if the registry is from an operator
 			foreach (IOperator op in Sigma.RunningOperatorsByTrainer.Values)
 			{
 				if (ReferenceEquals(op.Registry, registry))
 				{
-					throw new NotImplementedException("Operator syncing currently not supported.");
-					// TODO: send command
+					op.InvokeCommand(new SetValueCommand<T>(key, val));
 
 					return;
 				}
@@ -66,9 +63,10 @@ namespace Sigma.Core.Monitors.Synchronisation
 		}
 
 		/// <inheritdoc />
-		public virtual void SynchroniseGet<T>(IRegistry registry, string key)
+		public virtual T SynchroniseGet<T>(IRegistry registry, string key)
 		{
-			throw new NotImplementedException();
+			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
+			return resolver.ResolveGetSingleWithDefault(key, default(T));
 		}
 	}
 }

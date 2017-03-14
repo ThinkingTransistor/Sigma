@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using Sigma.Core.Monitors.Synchronisation;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 {
@@ -36,8 +37,23 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		string Key { get; set; }
 
 		/// <summary>
+		/// The registry for which the visualiser displays values. (e.g. operators registry)
+		/// </summary>
+		IRegistry Registry { get; set; }
+
+		/// <summary>
 		/// The SynchronisationHandler that is used to sync the parameter with the training process.
 		/// </summary>
 		ISynchronisationHandler SynchronisationHandler { get; set; }
+
+		/// <summary>
+		/// Force the visualiser to update its value (i.e. display the value that is stored).
+		/// </summary>
+		void Read();
+
+		/// <summary>
+		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
+		/// </summary>
+		void Write();
 	}
 }

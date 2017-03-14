@@ -15,8 +15,8 @@
 	</parameterisation:UserControlParameterVisualiser.Resources>
 	
 	<TextBox Name="TextBox" x:FieldModifier="public"
-			  Text="{Binding Text}"
 			  IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+			  KeyDown="OnKeyDownHandler"
 			  VerticalAlignment="Center"/>
 </parameterisation:UserControlParameterVisualiser>
 

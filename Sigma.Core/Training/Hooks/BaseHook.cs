@@ -217,13 +217,14 @@ namespace Sigma.Core.Training.Hooks
 
 		/// <summary>
 		/// The callback method that will be executed when the command finishes execution.
+		/// <c>null</c> if not required.
 		/// </summary>
 		public Action OnFinish { get; set; }
 
 		/// <summary>
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
-		/// <param name="onFinish">Set a callback for when the command is finsihed.</param>
+		/// <param name="onFinish">Set a callback for when the command is finsihed. <c>null</c> if not required.</param>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
 		protected BaseCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
 		{
@@ -233,7 +234,7 @@ namespace Sigma.Core.Training.Hooks
 		/// <summary>
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
-		/// <param name="onFinish">Set a callback for when the command is finsihed.</param>
+		/// <param name="onFinish">Set a callback for when the command is finsihed. <c>null</c> if not required.</param>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
 		protected BaseCommand(ISet<string> requiredRegistryEntries, Action onFinish = null) : base(TimeStepCommand, requiredRegistryEntries)
 		{

@@ -16,7 +16,8 @@
 	
 	<CheckBox Name="CheckBox" x:FieldModifier="public"
 			  IsChecked="{Binding IsChecked}"
-			  IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"/>
+			  IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+			  VerticalAlignment="Center"/>
 </parameterisation:UserControlParameterVisualiser>
 
 

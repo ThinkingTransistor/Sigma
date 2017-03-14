@@ -223,6 +223,7 @@ namespace Sigma.Core.Utils
 			}
 		}
 
+		/// <inheritdoc />
 		public T Get<T>(string identifier)
 		{
 			return (T) MappedValues[identifier];

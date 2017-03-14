@@ -32,6 +32,6 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="registry">The registry in which the entry will be set.</param>
 		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
 		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
-		void SynchroniseGet<T>(IRegistry registry, string key);
+		T SynchroniseGet<T>(IRegistry registry, string key);
 	}
 }
