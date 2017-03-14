@@ -6,11 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -23,6 +18,11 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
@@ -499,6 +499,15 @@ namespace Sigma.Core.Training.Operators
 			allHooks.Add(hook);
 
 			hooksByTimescale.TryGetValue(hook.TimeStep.TimeScale, () => new HashSet<IHook>()).Add(hook);
+
+			bool[] aliveFlags = new bool[WorkerCount];
+
+			for (int i = 0; i < aliveFlags.Length; i++)
+			{
+				aliveFlags[i] = true;
+			}
+
+			_aliveHooksByInWorkerStates.Add(hook, aliveFlags);
 
 			foreach (IHook requiredHook in hook.RequiredHooks)
 			{
