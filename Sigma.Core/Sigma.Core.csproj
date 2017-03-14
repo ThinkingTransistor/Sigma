@@ -300,6 +300,7 @@
     <Compile Include="Utils\ITaskManager.cs" />
     <Compile Include="Utils\ThreadUtils.cs" />
     <Compile Include="Utils\TimeStep.cs" />
+    <Compile Include="Utils\TimeUnit.cs" />
     <Compile Include="Utils\WeakList.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>

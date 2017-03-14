@@ -13,6 +13,9 @@ using System;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
+	/// <summary>
+	/// A running time reporter that reports the running time of a certain time scale events.
+	/// </summary>
 	[Serializable]
 	public class RunningTimeReporter : BaseHook
 	{
@@ -43,15 +46,21 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		{
 			string baseResultKey = ParameterRegistry.Get<string>("base_result_key");
 
-			long lastTime = resolver.ResolveGetSingleWithDefault<long>(baseResultKey + "_time", -1L);
+			long lastTime = resolver.ResolveGetSingleWithDefault<long>(baseResultKey + "_last", -1L);
 			long averageTime = resolver.ResolveGetSingleWithDefault<long>(baseResultKey + "_average", -1L);
 
-			Report(TimeStep.TimeScale, lastTime, averageTime, lastTime / 1000.0, averageTime / 1000.0);
+			Report(TimeStep.TimeScale, lastTime, averageTime);
 		}
 
-		protected virtual void Report(TimeScale timeScale, long lastTime, long averageTime, double lastTimeSeconds, double averageTimeSeconds)
+		/// <summary>
+		/// Report the frequency of a time scale event.
+		/// </summary>
+		/// <param name="timeScale">The time scale event that just occurred.</param>
+		/// <param name="lastTime">The elapsed time to the last occurrence.</param>
+		/// <param name="averageTime">The average time between occurrences.</param>
+		protected virtual void Report(TimeScale timeScale, long lastTime, long averageTime)
 		{
-			_logger.Info($"Time per {timeScale}: {averageTimeSeconds:N} seconds");
+			_logger.Info($"Time per {timeScale}: average {PrintUtils.GetFormattedTime(averageTime)}, last {PrintUtils.GetFormattedTime(lastTime)}");
 		}
 	}
 }
