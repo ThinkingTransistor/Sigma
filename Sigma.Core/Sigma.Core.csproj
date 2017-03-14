@@ -206,6 +206,8 @@
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
+    <Compile Include="Monitors\Synchronisation\ISynchronisationHandler.cs" />
+    <Compile Include="Monitors\Synchronisation\SynchronisationHandler.cs" />
     <Compile Include="Parameterisation\IParameterisationManager.cs" />
     <Compile Include="Parameterisation\IParameterType.cs" />
     <Compile Include="Parameterisation\ParameterisationManager.cs" />

@@ -6,14 +6,14 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Utils;
-using System.Collections.Generic;
-using Sigma.Core.Persistence.Selectors;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -178,6 +178,12 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="hook">The hook.</param>
 		/// <returns>The invocation target for the given global hook.</returns>
 		uint GetGlobalHookInvocationTarget(IHook hook);
+
+		/// <summary>
+		/// Execute a given command. It is uncertain when the command is executed.
+		/// </summary>
+		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
+		void ExecuteCommand(ICommand command);
 
 		/// <summary>
 		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 

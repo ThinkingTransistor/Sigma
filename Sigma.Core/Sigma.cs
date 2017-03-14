@@ -6,6 +6,14 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -20,14 +28,6 @@ using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sigma.Core
 {
@@ -49,7 +49,7 @@ namespace Sigma.Core
 
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
-		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
+		public readonly IDictionary<ITrainer, IOperator> RunningOperatorsByTrainer;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _globalHooksToAttach;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _localHooksToAttach;
 		private bool _requestedStop;
@@ -102,7 +102,7 @@ namespace Sigma.Core
 			_monitors = new HashSet<IMonitor>();
 			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
-			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
+			RunningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
 			_processQueueEvent = new ManualResetEvent(true);
 		}
@@ -240,17 +240,17 @@ namespace Sigma.Core
 				throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as it does not exist in this environment.");
 			}
 
-			if (_runningOperatorsByTrainer.ContainsKey(trainer))
+			if (RunningOperatorsByTrainer.ContainsKey(trainer))
 			{
-				if (_runningOperatorsByTrainer[trainer].State == ExecutionState.Running)
+				if (RunningOperatorsByTrainer[trainer].State == ExecutionState.Running)
 				{
-					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {_runningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
+					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {RunningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
 				}
 
-				IOperator @operator = _runningOperatorsByTrainer[trainer];
+				IOperator @operator = RunningOperatorsByTrainer[trainer];
 
-				_runningOperatorsByTrainer[trainer].Sigma = null;
-				_runningOperatorsByTrainer.Remove(trainer);
+				RunningOperatorsByTrainer[trainer].Sigma = null;
+				RunningOperatorsByTrainer.Remove(trainer);
 
 				_logger.Debug($"Removed operator {@operator} from sigma environment \"{Name}\" in association with trainer {trainer}.");
 			}
@@ -344,7 +344,7 @@ namespace Sigma.Core
 
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
-				_runningOperatorsByTrainer.Add(trainer, trainer.Operator);
+				RunningOperatorsByTrainer.Add(trainer, trainer.Operator);
 
 				trainer.Operator.Sigma = this;
 			}
@@ -354,7 +354,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Starting operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperatorsByTrainer.Values)
+			foreach (IOperator op in RunningOperatorsByTrainer.Values)
 			{
 				op.Start();
 			}
@@ -364,7 +364,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Stopping operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperatorsByTrainer.Values)
+			foreach (IOperator op in RunningOperatorsByTrainer.Values)
 			{
 				op.SignalStop();
 			}

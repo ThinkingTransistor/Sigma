@@ -6,12 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks
 {
@@ -216,19 +216,28 @@ namespace Sigma.Core.Training.Hooks
 		protected static readonly TimeStep TimeStepCommand = new TimeStep(TimeScale.Indeterminate, 1, 1);
 
 		/// <summary>
+		/// The callback method that will be executed when the command finishes execution.
+		/// </summary>
+		public Action OnFinish { get; set; }
+
+		/// <summary>
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
+		/// <param name="onFinish">Set a callback for when the command is finsihed.</param>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-		protected BaseCommand(params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
+		protected BaseCommand(Action onFinish = null,params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
 		{
+			OnFinish = onFinish;
 		}
 
 		/// <summary>
 		/// Create a command with a set of required global registry entries.
 		/// </summary>
+		/// <param name="onFinish">Set a callback for when the command is finsihed.</param>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-		protected BaseCommand(ISet<string> requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
+		protected BaseCommand(ISet<string> requiredRegistryEntries, Action onFinish = null) : base(TimeStepCommand, requiredRegistryEntries)
 		{
+			OnFinish = onFinish;
 		}
 	}
 }

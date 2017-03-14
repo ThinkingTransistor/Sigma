@@ -27,6 +27,11 @@ using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
 {
+	/// <summary>
+	///     An operator that operates (executes) the training process defined in a trainer.
+	///     Operators typically split the workload into multiple workers and backends for CPU, GPU and inter-device cooperation
+	///     are provided.
+	/// </summary>
 	[Serializable]
 	public abstract class BaseOperator : IOperator, ISerialisationNotifier
 	{
@@ -719,6 +724,20 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
+		/// Execute a given command. It is uncertain when the command is executed.
+		/// </summary>
+		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
+		public void ExecuteCommand(ICommand command)
+		{
+			AttachLocalHook(command);
+		}
+
+		private void CommandExecuted(ICommand command)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
 		/// Eject a certain time scale event within a certain worker and update the local time steps.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
@@ -1207,5 +1226,44 @@ namespace Sigma.Core.Training.Operators
 		protected abstract void StopWorker(IWorker worker);
 
 		#endregion AbstractWorkerMethods
+
+		private class OperatorCommand : BaseCommand
+		{
+			private const string WorkerCountIdentifier ="worker_count";
+			private const string FinishedWorkerCountIdentifier = "finished_worker_count";
+			private const string BaseOperatorIdentifier = "base_operator";
+
+			public OperatorCommand(IHook wrappedCommand, BaseOperator op) : base(new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
+			{
+				ParameterRegistry[WorkerCountIdentifier] = op.WorkerCount;
+				ParameterRegistry[FinishedWorkerCountIdentifier] = 0;
+				ParameterRegistry[BaseOperatorIdentifier] = op;
+			}
+
+			/// <summary>
+			/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+			/// </summary>
+			/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+			{
+				int workerCount = (int) ParameterRegistry[WorkerCountIdentifier];
+
+				int finishedWorkers;
+				// increse the number by one and store it
+				lock (ParameterRegistry)
+				{
+					finishedWorkers = (int) ParameterRegistry[FinishedWorkerCountIdentifier] + 1;
+					ParameterRegistry[FinishedWorkerCountIdentifier] = finishedWorkers;
+				}
+
+				// finished execution
+				if (finishedWorkers == workerCount)
+				{
+					BaseOperator op = (BaseOperator) ParameterRegistry[BaseOperatorIdentifier];
+					op.CommandExecuted(this);
+				}
+			}
+		}
 	}
 }

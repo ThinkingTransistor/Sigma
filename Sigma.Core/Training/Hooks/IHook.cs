@@ -6,9 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Utils;
+using System;
 using System.Collections.Generic;
 using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks
 {
@@ -85,5 +86,9 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public interface ICommand : IHook
 	{
+		/// <summary>
+		/// The callback method that will be executed when the command finishes execution.
+		/// </summary>
+		Action OnFinish { get; set; }
 	}
 }

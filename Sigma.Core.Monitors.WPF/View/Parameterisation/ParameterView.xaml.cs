@@ -28,6 +28,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 			InitializeComponent();
 		}
 
+		public void Add(string name, Type type)
+		{
+			Add(new Label { Content = name }, type);
+		}
+
 		public void Add(UIElement name, Type type)
 		{
 			Content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -35,7 +40,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 			Grid.SetColumn(name, 0);
 			Grid.SetRow(name, RowPos);
 
-			UIElement displayer = (UIElement)Activator.CreateInstance(_manager.VisualiserType(type));
+			UIElement displayer = (UIElement) Activator.CreateInstance(_manager.VisualiserType(type));
 			Grid.SetColumn(displayer, 1);
 			Grid.SetRow(displayer, RowPos);
 
