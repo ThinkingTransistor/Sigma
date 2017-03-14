@@ -183,7 +183,7 @@ namespace Sigma.Core.Training.Operators
 		/// Execute a given command. It is uncertain when the command is executed.
 		/// </summary>
 		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
-		void ExecuteCommand(ICommand command);
+		void InvokeCommand(ICommand command);
 
 		/// <summary>
 		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 

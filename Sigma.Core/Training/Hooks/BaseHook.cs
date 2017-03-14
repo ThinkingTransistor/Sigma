@@ -225,7 +225,7 @@ namespace Sigma.Core.Training.Hooks
 		/// </summary>
 		/// <param name="onFinish">Set a callback for when the command is finsihed.</param>
 		/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-		protected BaseCommand(Action onFinish = null,params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
+		protected BaseCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(TimeStepCommand, requiredRegistryEntries)
 		{
 			OnFinish = onFinish;
 		}

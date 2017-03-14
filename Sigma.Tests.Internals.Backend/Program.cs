@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -17,18 +22,13 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.Persistence;
 using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -79,9 +79,9 @@ namespace Sigma.Tests.Internals.Backend
 
 			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
 			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
-			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
-			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
+			//trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			//trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
 			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
@@ -90,7 +90,28 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.AddTrainer(trainer);
 
+			trainer.Operator.InvokeCommand(new TestCommand(() => Debug.WriteLine("Finished hook"), "optimiser.learning_rate"));
+
 			sigma.Run();
+		}
+
+		[Serializable]
+		private class TestCommand : BaseCommand
+		{
+			public TestCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(onFinish, requiredRegistryEntries)
+			{
+			}
+
+			/// <summary>
+			/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+			/// </summary>
+			/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+			{
+				throw new NotImplementedException();
+				//resolver.ResolveSet("optimiser.learning_rate", 10);
+			}
 		}
 
 		private static void SampleTrainerOperatorWorkerMnist()

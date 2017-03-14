@@ -25,6 +25,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public string Text { get; set; }
 
 		/// <summary>
+		/// The fully resolved key to access the synchandler.
+		/// </summary>
+		public override string Key { get; set; }
+
+		/// <summary>
 		/// Create a new default textbox that can display parameters.
 		/// </summary>
 		public SigmaTextBox()

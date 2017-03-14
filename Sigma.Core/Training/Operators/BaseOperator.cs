@@ -237,27 +237,27 @@ namespace Sigma.Core.Training.Operators
 		}
 
 
-	    /// <summary>
-	    /// Called before this object is serialised.
-	    /// </summary>
-	    public void OnSerialising()
-	    {
-	    }
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
 
-	    /// <summary>
-	    /// Called after this object was serialised.
-	    /// </summary>
-	    public void OnSerialised()
-	    {
-	    }
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
 
-	    /// <summary>
-	    /// Called after this object was de-serialised. 
-	    /// </summary>
-	    public void OnDeserialised()
-	    {
-	        _runningStopwatch = new Stopwatch();
-	    }
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			_runningStopwatch = new Stopwatch();
+		}
 
 		/// <inheritdoc />
 		public void PushProgress(IWorker worker)
@@ -724,17 +724,18 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
-		/// Execute a given command. It is uncertain when the command is executed.
+		/// Invoke a given command. It is uncertain when the command is executed.
 		/// </summary>
 		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
-		public void ExecuteCommand(ICommand command)
+		public void InvokeCommand(ICommand command)
 		{
-			AttachLocalHook(command);
+			AttachLocalHook(new InvokeCommandHook(command, this));
+			AttachGlobalHook(new InvokeCommandHook(command, this));
 		}
 
-		private void CommandExecuted(ICommand command)
+		private void CommandExecuted(ICommand wrappedCommand)
 		{
-			throw new NotImplementedException();
+			AttachGlobalHook(new InvokeCallbackHook(wrappedCommand));
 		}
 
 		/// <summary>
@@ -1022,20 +1023,20 @@ namespace Sigma.Core.Training.Operators
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
-					 if (Workers != null)
-					 {
-						 foreach (IWorker worker in Workers)
-						 {
-							 PauseWorker(worker);
-							 StopWorker(worker);
-						 }
-					 }
+					if (Workers != null)
+					{
+						foreach (IWorker worker in Workers)
+						{
+							PauseWorker(worker);
+							StopWorker(worker);
+						}
+					}
 
-					 State = ExecutionState.Stopped;
+					State = ExecutionState.Stopped;
 
-					 _InternalPauseRunningStopwatch();
+					_InternalPauseRunningStopwatch();
 
-					 InvokeTimeScaleEvent(TimeScale.Stop);
+					InvokeTimeScaleEvent(TimeScale.Stop);
 				}).Start();
 			}
 			else
@@ -1227,29 +1228,54 @@ namespace Sigma.Core.Training.Operators
 
 		#endregion AbstractWorkerMethods
 
-		private class OperatorCommand : BaseCommand
+		/// <summary>
+		/// A hook that invokes a callback as soon as possible
+		/// </summary>
+		private class InvokeCallbackHook : BaseHook
 		{
-			private const string WorkerCountIdentifier ="worker_count";
+			private const string WrappedCommandIdentifier = "wrapped_command";
+
+			/// <summary>
+			/// Create a hook that executes a given ICommand onfinish callback as soon as possible.
+			/// </summary>
+			public InvokeCallbackHook(ICommand command) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1))
+			{
+				ParameterRegistry[WrappedCommandIdentifier] = command;
+			}
+
+			/// <inheritdoc />
+			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+			{
+				((ICommand) ParameterRegistry[WrappedCommandIdentifier]).OnFinish?.Invoke();
+			}
+		}
+
+		/// <summary>
+		/// A hook that wraps an arbitrary command to be executed on every worker and operator.
+		/// This operator itself does not have an onfinished.
+		/// </summary>
+		private class InvokeCommandHook : BaseHook
+		{
+			private const string WorkerCountIdentifier = "worker_count";
 			private const string FinishedWorkerCountIdentifier = "finished_worker_count";
 			private const string BaseOperatorIdentifier = "base_operator";
+			private const string WrappedCommandIdentifier = "wrapped_command";
 
-			public OperatorCommand(IHook wrappedCommand, BaseOperator op) : base(new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
+			public InvokeCommandHook(ICommand wrappedCommand, BaseOperator op) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1), new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
 			{
+				ParameterRegistry[WrappedCommandIdentifier] = wrappedCommand;
 				ParameterRegistry[WorkerCountIdentifier] = op.WorkerCount;
 				ParameterRegistry[FinishedWorkerCountIdentifier] = 0;
 				ParameterRegistry[BaseOperatorIdentifier] = op;
 			}
 
-			/// <summary>
-			/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
-			/// </summary>
-			/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
 				int workerCount = (int) ParameterRegistry[WorkerCountIdentifier];
 
 				int finishedWorkers;
+
 				// increse the number by one and store it
 				lock (ParameterRegistry)
 				{
@@ -1258,10 +1284,10 @@ namespace Sigma.Core.Training.Operators
 				}
 
 				// finished execution
-				if (finishedWorkers == workerCount)
+				if (finishedWorkers > workerCount)
 				{
 					BaseOperator op = (BaseOperator) ParameterRegistry[BaseOperatorIdentifier];
-					op.CommandExecuted(this);
+					op.CommandExecuted((ICommand) ParameterRegistry[WrappedCommandIdentifier]);
 				}
 			}
 		}

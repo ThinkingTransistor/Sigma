@@ -25,6 +25,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public override bool IsReadOnly { get; set; } = true;
 
 		/// <summary>
+		/// The fully resolved key to access the synchandler.
+		/// </summary>
+		public override string Key { get; set; }
+
+		/// <summary>
 		/// Create a new default textblock that can display parameters (i.e. objects).
 		/// </summary>
 		public SigmaTextBlock()
@@ -33,6 +38,5 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 
 			DataContext = this;
 		}
-
 	}
 }

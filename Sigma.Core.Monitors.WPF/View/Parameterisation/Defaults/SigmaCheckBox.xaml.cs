@@ -26,6 +26,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public bool IsChecked { get; set; }
 
 		/// <summary>
+		/// The fully resolved key to access the synchandler.
+		/// </summary>
+		public override string Key { get; set; }
+
+		/// <summary>
 		/// The default constructor for a <see cref="SigmaCheckBox"/>.
 		/// </summary>
 		public SigmaCheckBox()
@@ -34,6 +39,5 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 
 			DataContext = this;
 		}
-
 	}
 }
