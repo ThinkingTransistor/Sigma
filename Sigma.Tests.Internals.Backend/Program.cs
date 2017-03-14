@@ -4,6 +4,7 @@ using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
+using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
@@ -20,16 +21,14 @@ using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Optimisers.Gradient;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Sigma.Core.Data.Preprocessors.Adaptive;
-using Sigma.Core.Training.Optimisers.Gradient;
-using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -39,7 +38,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging();
+			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SampleTrainerOperatorWorkerIris();

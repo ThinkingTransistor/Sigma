@@ -682,10 +682,6 @@ namespace Sigma.Core
 
 				hierarchy.Root.AddAppender(roller);
 
-				MemoryAppender memory = new MemoryAppender();
-				memory.ActivateOptions();
-				hierarchy.Root.AddAppender(memory);
-
 				hierarchy.Root.Level = Level.Debug;
 				hierarchy.Configured = true;
 			}
