@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows.Controls;
-using System.Windows.Media;
-using LiveCharts.Wpf;
+﻿using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -20,16 +17,14 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
-using Sigma.Core.Monitors.WPF.View.CustomControls.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
-using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
-using ParameterView = Sigma.Core.Monitors.WPF.View.Parameterisation.ParameterView;
+using System.Windows.Controls;
 
 namespace Sigma.Tests.Internals.WPF
 {
