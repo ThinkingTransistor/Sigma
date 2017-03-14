@@ -6,6 +6,11 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -18,11 +23,6 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
 using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
@@ -738,8 +738,12 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
 		public void InvokeCommand(ICommand command)
 		{
-			AttachLocalHook(new InvokeCommandHook(command, this));
-			AttachGlobalHook(new InvokeCommandHook(command, this));
+			InvokeCommandHook localCommand = new InvokeCommandHook(command, this);
+			// The second hook receives a reference to the first hook in order to communicate
+			InvokeCommandHook globalCommand = new InvokeCommandHook(command, this, localCommand);
+
+			AttachLocalHook(localCommand);
+			AttachGlobalHook(globalCommand);
 		}
 
 		private void CommandExecuted(ICommand wrappedCommand)
@@ -1269,21 +1273,38 @@ namespace Sigma.Core.Training.Operators
 			private const string FinishedWorkerCountIdentifier = "finished_worker_count";
 			private const string BaseOperatorIdentifier = "base_operator";
 			private const string WrappedCommandIdentifier = "wrapped_command";
+			private const string ParameterRegistryIdentifier = "registry";
 
-			public InvokeCommandHook(ICommand wrappedCommand, BaseOperator op) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1), new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
+			private new IRegistry ParameterRegistry
 			{
-				ParameterRegistry[WrappedCommandIdentifier] = wrappedCommand;
-				ParameterRegistry[WorkerCountIdentifier] = op.WorkerCount;
-				ParameterRegistry[FinishedWorkerCountIdentifier] = 0;
-				ParameterRegistry[BaseOperatorIdentifier] = op;
+				get { return (IRegistry) base.ParameterRegistry[ParameterRegistryIdentifier]; }
+				set { base.ParameterRegistry[ParameterRegistryIdentifier] = value; }
+			}
+
+			public InvokeCommandHook(ICommand wrappedCommand, BaseOperator op, InvokeCommandHook other = null) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1), new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
+			{
+				//since it is not intended that hooks communicate global + local (without bloating the shared space), we pass the first hook to the second
+				//and access the same registry (i.e. both hooks use the registry of the first one (both = local + global)). 
+
+				ParameterRegistry = other == null ? base.ParameterRegistry : other.ParameterRegistry;
+
+				if (other == null)
+				{
+					ParameterRegistry[WrappedCommandIdentifier] = wrappedCommand;
+					ParameterRegistry[WorkerCountIdentifier] = op.WorkerCount;
+					ParameterRegistry[FinishedWorkerCountIdentifier] = 0;
+					ParameterRegistry[BaseOperatorIdentifier] = op;
+				}
 			}
 
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
 				int workerCount = (int) ParameterRegistry[WorkerCountIdentifier];
-
 				int finishedWorkers;
+
+				ICommand wrappedCommand = (ICommand) ParameterRegistry[WrappedCommandIdentifier];
+				wrappedCommand.Invoke(registry, resolver);
 
 				// increse the number by one and store it
 				lock (ParameterRegistry)
@@ -1296,7 +1317,7 @@ namespace Sigma.Core.Training.Operators
 				if (finishedWorkers > workerCount)
 				{
 					BaseOperator op = (BaseOperator) ParameterRegistry[BaseOperatorIdentifier];
-					op.CommandExecuted((ICommand) ParameterRegistry[WrappedCommandIdentifier]);
+					op.CommandExecuted(wrappedCommand);
 				}
 			}
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using log4net;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -90,7 +91,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.AddTrainer(trainer);
 
-			trainer.Operator.InvokeCommand(new TestCommand(() => Debug.WriteLine("Finished hook"), "optimiser.learning_rate"));
+			trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
 
 			sigma.Run();
 		}
@@ -98,8 +99,10 @@ namespace Sigma.Tests.Internals.Backend
 		[Serializable]
 		private class TestCommand : BaseCommand
 		{
+			private readonly ILog _log = LogManager.GetLogger(typeof(TestCommand));
 			public TestCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(onFinish, requiredRegistryEntries)
 			{
+				_log.Info("Test command created");
 			}
 
 			/// <summary>
@@ -109,7 +112,7 @@ namespace Sigma.Tests.Internals.Backend
 			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				throw new NotImplementedException();
+				_log.Info("Test command invoked");
 				//resolver.ResolveSet("optimiser.learning_rate", 10);
 			}
 		}
