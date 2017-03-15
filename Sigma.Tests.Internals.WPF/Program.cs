@@ -27,6 +27,7 @@ using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
 using System.Windows.Controls;
+using log4net;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Tests.Internals.WPF
@@ -34,6 +35,8 @@ namespace Sigma.Tests.Internals.WPF
 	public class Program
 	{
 		public static MinibatchIterator TrainingIterator;
+
+		public static ILog Log = LogManager.GetLogger(typeof(Program));
 
 		private static void Main()
 		{
@@ -67,9 +70,11 @@ namespace Sigma.Tests.Internals.WPF
 			IRegistry registry = new Registry
 			{
 				["boolean"] = true,
-				["string"] = "huhu"
+				["string"] = "huhu",
+				["learning_rate"] = 0.0
 			};
 			registry.Add("object", sigma);
+
 
 			gui.WindowDispatcher(window =>
 			{
@@ -81,7 +86,10 @@ namespace Sigma.Tests.Internals.WPF
 				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser, sigma.SynchronisationHandler);
 				parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
 				parameterPanel.Content.Add("String test", typeof(string), registry, "string");
-				//parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
+				parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
+
+				parameterPanel.Content.Add("Learning Rate", typeof(double), registry, "learning_rate");
+
 				//parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
 				//parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
 
@@ -98,10 +106,14 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.StartOperatorsOnRun = false;
 			sigma.RunAsync();
 
+			Log.Warn(registry);
+
+
 			while (true)
 			{
 				Debug.WriteLine(registry["boolean"]);
 				Debug.WriteLine(registry["string"]);
+				Debug.WriteLine(registry["learning_rate"]);
 				Thread.Sleep(1000);
 			}
 		}

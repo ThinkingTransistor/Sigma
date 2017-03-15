@@ -14,10 +14,25 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 	[ParameterVisualiser(typeof(object), Priority = VisualiserPriority.Lower)]
 	public partial class SigmaTextBlock
 	{
+		private object _object;
+
+		/// <summary>
+		/// The object that is being displayed (toString is called).
+		/// </summary>
+		public object Object
+		{
+			get { return _object; }
+			set
+			{
+				_object = value;
+				TextBlock.Text = value?.ToString() ?? "null";
+			}
+		}
+
 		/// <summary>
 		/// The text that is visualised. 
 		/// </summary>
-		public string Text { get; set; }
+		public string Text => TextBlock.Text;
 
 		/// <summary>
 		/// Determines whether the parameter is editable or not. 
@@ -51,7 +66,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override void Read()
 		{
-			Text = SynchronisationHandler.SynchroniseGet<string>(Registry, Key);
+			Object = SynchronisationHandler.SynchroniseGet<object>(Registry, Key);
 		}
 
 		/// <summary>
@@ -60,7 +75,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public override void Write()
 		{
 			Pending = true;
-			SynchronisationHandler.SynchroniseSet(Registry, Key, Text, val => Pending = false, e => Errored = true);
+			SynchronisationHandler.SynchroniseSet(Registry, Key, Object, val => Pending = false, e => Errored = true);
 		}
 	}
 }

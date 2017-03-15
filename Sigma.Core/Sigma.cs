@@ -535,7 +535,15 @@ namespace Sigma.Core
 			return RegistryResolver.ResolveSet(matchIdentifier, value, addIdentifierIfNotExists, associatedType);
 		}
 
+		/// <summary>Returns a string that represents the current environement.</summary>
+		/// <returns>A string that represents the current enviornemnt.</returns>
+		public override string ToString()
+		{
+			return Name;
+		}
+
 		// static part of SigmaEnvironment
+		#region static
 
 		/// <summary>
 		/// The task manager for this environment.
@@ -760,5 +768,7 @@ namespace Sigma.Core
 		{
 			ActiveSigmaEnvironments.Clear();
 		}
+
+#endregion static
 	}
 }

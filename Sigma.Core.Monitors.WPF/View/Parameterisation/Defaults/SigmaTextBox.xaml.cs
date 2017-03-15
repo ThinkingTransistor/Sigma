@@ -6,11 +6,60 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Diagnostics;
+using System;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 {
+	[ParameterVisualiser(typeof(float), Priority = VisualiserPriority.Lower)]
+	internal class SigmaFloatBox : SigmaNumberBox<float> { }
+
+	[ParameterVisualiser(typeof(double), Priority = VisualiserPriority.Lower)]
+	internal class SigmaDoubleBox : SigmaNumberBox<double> { }
+
+
+	/// <summary>
+	/// Sigmas way of displaying numbers. 
+	/// </summary>
+	internal class SigmaNumberBox<T> : SigmaTextBox
+	{
+		/// <summary>
+		/// The converter that converts the given type for the registry
+		/// </summary>
+		protected readonly TypeConverter Converter;
+
+		internal SigmaNumberBox()
+		{
+			Converter = TypeDescriptor.GetConverter(typeof(T));
+		}
+
+		/// <summary>
+		/// Force the visualiser to update its value (i.e. display the value that is stored).
+		/// </summary>
+		public override void Read()
+		{
+			Text = SynchronisationHandler.SynchroniseGet<T>(Registry, Key).ToString();
+		}
+
+		/// <summary>
+		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
+		/// </summary>
+		public override void Write()
+		{
+			try
+			{
+				T num = (T) Converter.ConvertFromString(Text);
+				Pending = true;
+				SynchronisationHandler.SynchroniseSet(Registry, Key, num, val => Pending = false, e => Errored = true);
+			}
+			catch (Exception)
+			{
+				Errored = true;
+			}
+		}
+	}
+
 	/// <summary>
 	/// Sigmas way of displaying strings. 
 	/// </summary>
