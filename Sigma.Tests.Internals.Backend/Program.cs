@@ -21,9 +21,10 @@ using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
-using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Stoppers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -78,20 +79,20 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.2));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
-			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
+			trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
 			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
-			//trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			//trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
-			//trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
-			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
-			Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
-			trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
+			//Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
+			//trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
 
 			sigma.AddTrainer(trainer);
 
-			trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
+			//trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
 
 			sigma.Run();
 		}

@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading;
+﻿using System.Threading;
 using LiveCharts.Wpf;
+using log4net;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -19,16 +19,12 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
-using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
-using System.Windows.Controls;
-using log4net;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -63,7 +59,8 @@ namespace Sigma.Tests.Internals.WPF
 				window.DefaultGridSize = new[] { 3, 3 };
 			});
 
-			StatusBarLegendInfo info = new StatusBarLegendInfo("Trainer 1", MaterialColour.Yellow);
+			StatusBarLegendInfo info = new StatusBarLegendInfo("CNN", MaterialColour.Yellow);
+			var info2 = new StatusBarLegendInfo("");
 			gui.AddLegend(info);
 
 
@@ -89,6 +86,7 @@ namespace Sigma.Tests.Internals.WPF
 				parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
 
 				parameterPanel.Content.Add("Learning Rate", typeof(double), registry, "learning_rate");
+				parameterPanel.Content.Add("Learning Rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 
 				//parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
 				//parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
@@ -106,14 +104,21 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.StartOperatorsOnRun = false;
 			sigma.RunAsync();
 
-			Log.Warn(registry);
+			//Log.Warn(registry);
 
+			IRegistryResolver resolver = new RegistryResolver(trainer.Operator.Registry);
 
 			while (true)
 			{
-				Debug.WriteLine(registry["boolean"]);
-				Debug.WriteLine(registry["string"]);
-				Debug.WriteLine(registry["learning_rate"]);
+				double[] vals = resolver.ResolveGet<double>("optimiser.learning_rate");
+				if (vals != null && vals.Length > 0)
+				{
+					Log.Info($"optimiser.learning_rate: {vals[0]}");
+				}
+				//Log.Info(trainer.Operator.Registry);
+				//Debug.WriteLine(registry["boolean"]);
+				//Debug.WriteLine(registry["string"]);
+				//Debug.WriteLine(registry["learning_rate"]);
 				Thread.Sleep(1000);
 			}
 		}

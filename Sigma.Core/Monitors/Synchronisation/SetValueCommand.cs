@@ -81,7 +81,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 			AddItentifierIfNotExists = false;
 
 			// expand the values 
-			if (values.Length == 1)
+			if (values.Length == 1 && keys.Length != 1)
 			{
 				T[] expandedValues = new T[keys.Length];
 				for (int i = 0; i < expandedValues.Length; i++)
@@ -93,8 +93,8 @@ namespace Sigma.Core.Monitors.Synchronisation
 			}
 
 			//store keys and values in the parameter registry
-			ParameterRegistry[KeyIdentifier] = keys;
-			ParameterRegistry[ValueIdentifier] = values;
+			ParameterRegistry.Add(KeyIdentifier, keys);
+			ParameterRegistry.Add(ValueIdentifier, values);
 		}
 
 

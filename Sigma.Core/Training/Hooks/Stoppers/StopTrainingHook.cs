@@ -75,6 +75,7 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 	/// <summary>
 	/// A utility hook that stops training if a certain parameter does not improve (i.e. increase / decrease as specified) for a certain amount of time steps. 
 	/// </summary>
+	[Serializable]
 	public class EarlyStopperHook : StopTrainingHook
 	{
 		/// <summary>

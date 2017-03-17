@@ -1275,48 +1275,45 @@ namespace Sigma.Core.Training.Operators
 			private const string WrappedCommandIdentifier = "wrapped_command";
 			private const string ParameterRegistryIdentifier = "registry";
 
-			private new IRegistry ParameterRegistry
-			{
-				get { return (IRegistry) base.ParameterRegistry[ParameterRegistryIdentifier]; }
-				set { base.ParameterRegistry[ParameterRegistryIdentifier] = value; }
-			}
-
-			public InvokeCommandHook(ICommand wrappedCommand, BaseOperator op, InvokeCommandHook other = null) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1), new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
+			public InvokeCommandHook(ICommand wrappedCommand, IOperator op, InvokeCommandHook other = null) : base(Utils.TimeStep.Every(1, TimeScale.Iteration, 1), new HashSet<string>(wrappedCommand.RequiredRegistryEntries))
 			{
 				//since it is not intended that hooks communicate global + local (without bloating the shared space), we pass the first hook to the second
 				//and access the same registry (i.e. both hooks use the registry of the first one (both = local + global)). 
 
-				ParameterRegistry = other == null ? base.ParameterRegistry : other.ParameterRegistry;
+				IRegistry newRegistry = other == null ? ParameterRegistry : other.ParameterRegistry;
+				ParameterRegistry.Add(ParameterRegistryIdentifier, newRegistry);
 
+				// if the other is null, we have to initialise the values
 				if (other == null)
 				{
-					ParameterRegistry[WrappedCommandIdentifier] = wrappedCommand;
-					ParameterRegistry[WorkerCountIdentifier] = op.WorkerCount;
-					ParameterRegistry[FinishedWorkerCountIdentifier] = 0;
-					ParameterRegistry[BaseOperatorIdentifier] = op;
+					newRegistry.Add(WrappedCommandIdentifier, wrappedCommand);
+					newRegistry.Add(WorkerCountIdentifier, op.WorkerCount);
+					newRegistry.Add(FinishedWorkerCountIdentifier, 0);
+					newRegistry.Add(BaseOperatorIdentifier, op);
 				}
 			}
 
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				int workerCount = (int) ParameterRegistry[WorkerCountIdentifier];
+				IRegistry paramRegistry = (IRegistry) ParameterRegistry[ParameterRegistryIdentifier];
+				int workerCount = (int) paramRegistry[WorkerCountIdentifier];
 				int finishedWorkers;
 
-				ICommand wrappedCommand = (ICommand) ParameterRegistry[WrappedCommandIdentifier];
+				ICommand wrappedCommand = (ICommand) paramRegistry[WrappedCommandIdentifier];
 				wrappedCommand.Invoke(registry, resolver);
 
 				// increse the number by one and store it
-				lock (ParameterRegistry)
+				lock (paramRegistry)
 				{
-					finishedWorkers = (int) ParameterRegistry[FinishedWorkerCountIdentifier] + 1;
-					ParameterRegistry[FinishedWorkerCountIdentifier] = finishedWorkers;
+					finishedWorkers = (int) paramRegistry[FinishedWorkerCountIdentifier] + 1;
+					paramRegistry[FinishedWorkerCountIdentifier] = finishedWorkers;
 				}
 
 				// finished execution
 				if (finishedWorkers > workerCount)
 				{
-					BaseOperator op = (BaseOperator) ParameterRegistry[BaseOperatorIdentifier];
+					BaseOperator op = (BaseOperator) paramRegistry[BaseOperatorIdentifier];
 					op.CommandExecuted(wrappedCommand);
 				}
 			}

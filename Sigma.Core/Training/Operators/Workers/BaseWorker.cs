@@ -6,15 +6,15 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Sigma.Core.Training.Operators.Workers
 {
@@ -269,7 +269,6 @@ namespace Sigma.Core.Training.Operators.Workers
 			lock (_bufferHooksToInvoke) // the lock is only needed as a safeguard against lifecycle invokes, but as it's just a marginal overhead it's better than colliding with another invoke
 			{
 				Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
-				MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
 
 				IRegistry bufferRegistry = GetPopulatedBufferRegistry();
 
@@ -289,6 +288,8 @@ namespace Sigma.Core.Training.Operators.Workers
 				{
 					Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
 				}
+
+				MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
 			}
 		}
 

@@ -47,7 +47,7 @@ namespace Sigma.Core.Monitors.WPF.View.Colours
 		bool Alternate { get; set; }
 
 		/// <summary>
-		///     Force an update of all values.
+		///     Force an update of all values. Normally not required.
 		/// </summary>
 		void ForceUpdate();
 	}

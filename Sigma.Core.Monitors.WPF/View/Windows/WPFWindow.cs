@@ -37,14 +37,8 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="app">The <see cref="Application" /> environment.</param>
 		protected WPFWindow(WPFMonitor monitor, Application app)
 		{
-			if (monitor == null)
-			{
-				throw new ArgumentNullException(nameof(monitor));
-			}
-			if (app == null)
-			{
-				throw new ArgumentNullException(nameof(app));
-			}
+			if (monitor == null) throw new ArgumentNullException(nameof(monitor));
+			if (app == null) throw new ArgumentNullException(nameof(app));
 
 			Monitor = monitor;
 			App = app;
