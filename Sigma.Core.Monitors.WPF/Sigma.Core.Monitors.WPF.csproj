@@ -215,6 +215,9 @@
     <Compile Include="Panels\SigmaPanel.cs" />
     <Compile Include="ViewModel\Tabs\TabUI.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
+    <Compile Include="View\Parameterisation\Defaults\SigmaComboBox.xaml.cs">
+      <DependentUpon>SigmaComboBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Parameterisation\Defaults\SigmaSlider.xaml.cs">
       <DependentUpon>SigmaSlider.xaml</DependentUpon>
     </Compile>
@@ -387,6 +390,10 @@
     <Page Include="View\Parameterisation\Defaults\SigmaCheckBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Parameterisation\Defaults\SigmaComboBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Parameterisation\Defaults\SigmaSlider.xaml">
       <SubType>Designer</SubType>

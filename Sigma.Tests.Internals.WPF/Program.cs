@@ -84,6 +84,12 @@ namespace Sigma.Tests.Internals.WPF
 				//parameterPanel.Content.Add("Offline Learning Rate", typeof(double), registry, "learning_rate");
 
 				parameterPanel.Content.Add("Learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+
+				SigmaComboBox comboBox = new SigmaComboBox(new[] { "a", "b", "c" }, new object[] { 1.0, 2.0, 3.3 });
+
+				parameterPanel.Content.Add(new Label { Content = "Box" }, comboBox, trainer.Operator.Registry, "optimiser.learning_rate");
+
+
 				SigmaSlider slider = new SigmaSlider(0.000001, 1)
 				{
 					IsLogarithmic = true

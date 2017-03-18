@@ -8,8 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Resources;
 using System.Windows.Input;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;

@@ -42,16 +42,6 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		public abstract ISynchronisationHandler SynchronisationHandler { get; set; }
 
 		/// <summary>
-		/// Force the visualiser to update its value (i.e. display the value that is stored).
-		/// </summary>
-		public abstract void Read();
-
-		/// <summary>
-		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
-		/// </summary>
-		public abstract void Write();
-
-		/// <summary>
 		/// This boolean determines whether there are unsaved changes or not.
 		/// <c>True</c> if there are other changes, <c>false</c> otherwise.
 		/// </summary>
@@ -62,5 +52,15 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// <c>True</c> if there are errors, <c>false</c> otherwise.
 		/// </summary>
 		public abstract bool Errored { get; set; }
+
+		/// <summary>
+		/// Force the visualiser to update its value (i.e. display the value that is stored).
+		/// </summary>
+		public abstract void Read();
+
+		/// <summary>
+		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
+		/// </summary>
+		public abstract void Write();
 	}
 }
