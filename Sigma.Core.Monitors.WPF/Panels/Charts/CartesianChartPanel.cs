@@ -6,11 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using LiveCharts;
 using LiveCharts.Wpf;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
-	public class CartesianChartPanel : ChartPanel<CartesianChart, LineSeries, double>
+	public class CartesianChartPanel : ChartPanel<CartesianChart, LineSeries, ChartValues<double>, double>
 	{
 		/// <summary>
 		///     Create a ChartPanel with a given title.

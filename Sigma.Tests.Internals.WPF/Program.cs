@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using LiveCharts.Wpf;
 using log4net;
+using LiveCharts;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -75,7 +76,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.WindowDispatcher(window =>
 			{
-				var cost = new TrainerChartPanel<CartesianChart, LineSeries, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				cost.Fast();
 				window.TabControl["Tab2"].AddCumulativePanel(cost, legend: info);
 

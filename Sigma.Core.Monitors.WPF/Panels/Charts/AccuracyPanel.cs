@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Collections.Generic;
+using LiveCharts;
 using LiveCharts.Wpf;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
@@ -19,7 +20,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// The advantage when using this panel is that multiple accuracies can be
 	/// added and displayed automatically.
 	/// </summary>
-	public class AccuracyPanel : ChartPanel<CartesianChart, LineSeries, double>
+	public class AccuracyPanel : ChartPanel<CartesianChart, LineSeries, ChartValues<double>, double>
 	{
 
 		/// <summary>
@@ -70,7 +71,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="validationIteratorName">The name of the validation data iterator to use (as in the trainer).</param>
 			/// <param name="timestep">The time step.</param>
 			/// <param name="tops">The tops that will get reported.</param>
-			public ChartValidationAccuracyReport(ChartPanel<CartesianChart, LineSeries, double> panel, string validationIteratorName, ITimeStep timestep, params int[] tops) : base(validationIteratorName, timestep, tops)
+			public ChartValidationAccuracyReport(ChartPanel<CartesianChart, LineSeries, ChartValues<double>, double> panel, string validationIteratorName, ITimeStep timestep, params int[] tops) : base(validationIteratorName, timestep, tops)
 			{
 				ParameterRegistry[PanelIdentifier] = panel;
 			}
@@ -82,7 +83,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			protected override void Report(IDictionary<int, double> data)
 			{
 				base.Report(data);
-				ChartPanel<CartesianChart, LineSeries, double> panel = (ChartPanel<CartesianChart, LineSeries, double>) ParameterRegistry[PanelIdentifier];
+				ChartPanel<CartesianChart, LineSeries, ChartValues<double>, double> panel = (ChartPanel<CartesianChart, LineSeries, ChartValues<double>, double>) ParameterRegistry[PanelIdentifier];
 
 				int i = 0;
 				foreach (KeyValuePair<int, double> top in data)

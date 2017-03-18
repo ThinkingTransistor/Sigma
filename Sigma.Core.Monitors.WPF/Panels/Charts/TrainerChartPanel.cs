@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System.Collections.Generic;
 using System.Linq;
+using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Training;
@@ -24,7 +25,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <typeparam name="TChart">The <see cref="Chart"/> that is used.</typeparam>
 	/// <typeparam name="TSeries">The <see cref="Series"/> that is used.</typeparam>
 	/// <typeparam name="TData">The data the <see cref="Series"/> contains.</typeparam>
-	public class TrainerChartPanel<TChart, TSeries, TData> : ChartPanel<TChart, TSeries, TData> where TChart : Chart, new() where TSeries : Series, new()
+	public class TrainerChartPanel<TChart, TSeries, TChartValues, TData> : ChartPanel<TChart, TSeries, TChartValues, TData> where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IList<TData>, IChartValues, new()
 	{
 		/// <summary>
 		/// The trainer to attach the hook to. 
@@ -117,7 +118,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="chartPanel">The chartpanel to which points will get added.</param>
 			/// <param name="valueIdentifiers">The identifiers for the <see cref="ValueReporterHook"/>; these values will get plotted.</param>
 			/// <param name="timestep">The <see cref="TimeStep"/> for the hook (i.e. execution definition).</param>
-			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep) : base(valueIdentifiers, timestep)
+			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep) : base(valueIdentifiers, timestep)
 			{
 				ParameterRegistry[ChartPanelIdentifier] = chartPanel;
 			}
@@ -128,7 +129,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="valuesByIdentifier">The values by their identifier.</param>
 			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier)
 			{
-				ChartPanel<TChart, TSeries, TData> chartPanel = (ChartPanel<TChart, TSeries, TData>) ParameterRegistry[ChartPanelIdentifier];
+				ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel = (ChartPanel<TChart, TSeries, TChartValues, TData>) ParameterRegistry[ChartPanelIdentifier];
 				chartPanel.Add((TData) valuesByIdentifier.Values.First());
 
 				//TODO: multiple values (in same series)

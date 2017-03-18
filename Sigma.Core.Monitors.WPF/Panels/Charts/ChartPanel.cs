@@ -6,14 +6,88 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
+	public class TickChartValues<T> : ChartValues<T>, ICollection<T>, IDisposable
+	{
+		public int Ticks { get; set; } = 200;
+
+		protected Thread Thread { get; }
+
+		protected bool Running { get; set; } = true;
+
+		protected int LastTicks { get; private set; }
+
+		protected ConcurrentBag<T> Values { get; }
+
+		private readonly IList<T> _cacheList;
+
+		void ICollection<T>.Add(T item)
+		{
+			Values.Add(item);
+		}
+
+		public TickChartValues()
+		{
+			Values = new ConcurrentBag<T>();
+			_cacheList = new List<T>(20);
+
+			Thread = new Thread(() =>
+			{
+				while (Running)
+				{
+					int currentTicks = Environment.TickCount;
+					if (currentTicks - LastTicks >= Ticks)
+					{
+						Tick();
+						LastTicks = currentTicks;
+						Thread.Sleep(Ticks);
+					}
+				}
+			});
+
+			Thread.Start();
+		}
+		public TickChartValues(int ticks) : this()
+		{
+			Ticks = ticks;
+		}
+
+		protected virtual void Tick()
+		{
+			while (!Values.IsEmpty)
+			{
+				T item;
+				Values.TryTake(out item);
+				_cacheList.Add(item);
+			}
+
+			AddRange(_cacheList);
+
+			_cacheList.Clear();
+		}
+
+		public void Stop()
+		{
+			Running = false;
+		}
+
+		/// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+		public void Dispose()
+		{
+			Stop();
+		}
+	}
 	/// <summary>
 	/// This <see cref="SigmaPanel"/> allows the illustration of various different chart types supported by LiveCharts.
 	/// 
@@ -22,7 +96,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <typeparam name="TChart">The type of the chart that is being used.</typeparam>
 	/// <typeparam name="TSeries">The type of series that is used to illustrate the points.</typeparam>
 	/// <typeparam name="TData">The data that will be displayed in the chart. See <a href="https://lvcharts.net/App/examples/v1/wpf/Types%20and%20Configuration">Types and Configuration</a>.</typeparam>
-	public class ChartPanel<TChart, TSeries, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new()
+	public class ChartPanel<TChart, TSeries, TChartValues, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IChartValues, ICollection<TData>, new()
 	{
 		/// <summary>
 		/// The <see cref="SeriesCollection"/> containing the <see cref="Series"/> (of the type <see ref="TSeries"/>). 
@@ -37,7 +111,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The values (i.e. collection of values) that are displayed in the chart.
 		/// </summary>
-		public List<ChartValues<TData>> ChartValues { get; }
+		public List<TChartValues> ChartValues { get; }
 
 		/// <summary>
 		/// A reference to the x-axis.
@@ -82,7 +156,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			//gradientBrush.GradientStops.Add(new GradientStop(Colors.Transparent, 1));
 
 			Series = new List<TSeries>();
-			ChartValues = new List<ChartValues<TData>>();
+			ChartValues = new List<TChartValues>();
 			SeriesCollection = new SeriesCollection();
 
 			AddSeries(new TSeries());
@@ -134,7 +208,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		/// <param name="data">The data that will be added.</param>
 		/// <param name="values">The chart values the data will be added to.</param>
-		public void Add(TData data, ChartValues<TData> values)
+		public void Add(TData data, TChartValues values)
 		{
 			values.Add(data);
 
@@ -179,9 +253,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		/// <param name="data">The data that will be added.</param>
 		/// <param name="values">The chart values the data will be added to.</param>
-		public void AddRange(IEnumerable<TData> data, ChartValues<TData> values)
+		public void AddRange(IEnumerable<TData> data, TChartValues values)
 		{
-			values.AddRange(data);
+			values.AddRange(data.Cast<object>());
 
 			KeepValuesInRange(values);
 		}
@@ -212,9 +286,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		public void Clear()
 		{
-			foreach (ChartValues<TData> chartValues in ChartValues)
+			foreach (TChartValues chartValues in ChartValues)
 			{
-				chartValues.Clear();
+				((ICollection<TData>) chartValues).Clear();
 			}
 		}
 
@@ -240,7 +314,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="series">The series that will be added.</param>
 		public void AddSeries(TSeries series)
 		{
-			ChartValues<TData> chartValues = new ChartValues<TData>();
+			TChartValues chartValues = new TChartValues();
 			ChartValues.Add(chartValues);
 
 			series.Values = chartValues;
@@ -280,15 +354,24 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			Series.AddRange(collection);
 			SeriesCollection.AddRange(collection);
 
-			ChartValues<TData>[] chartValues = new ChartValues<TData>[collection.Length];
+			TChartValues[] chartValues = new TChartValues[collection.Length];
 			for (int i = 0; i < chartValues.Length; i++)
 			{
-				chartValues[i] = new ChartValues<TData>();
+				chartValues[i] = new TChartValues();
 			}
 
 			ChartValues.AddRange(chartValues);
 		}
 
 		#endregion
+
+		~ChartPanel()
+		{
+			foreach (TChartValues chartValues in ChartValues)
+			{
+				IDisposable disposable = chartValues as IDisposable;
+				disposable?.Dispose();
+			}
+		}
 	}
 }

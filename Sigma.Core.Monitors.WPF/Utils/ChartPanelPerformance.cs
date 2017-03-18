@@ -6,6 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Collections.Generic;
+using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
@@ -21,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.Utils
 		/// Set all required actions to improve the performance of the <see cref="ChartPanel{TChart,TSeries,TData}"/>.
 		/// This method allows to disable animations, hovering, and tooltips. It will not reenable them. 
 		/// </summary>
-		public static void Fast<TChart, TSeries, TData>(this ChartPanel<TChart, TSeries, TData> chart, bool animationsEnabled = false, bool hoverEnabled = false, bool pointGemeotryEnabled = false) where TChart : Chart, new() where TSeries : Series, new()
+		public static void Fast<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart, bool animationsEnabled = false, bool hoverEnabled = false, bool pointGemeotryEnabled = false) where TChart : Chart, new() where TSeries : Series, new() where TValues : IList<TData>, IChartValues, new()
 		{
 			if (!animationsEnabled)
 			{
