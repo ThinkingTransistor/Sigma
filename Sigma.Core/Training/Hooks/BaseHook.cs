@@ -208,6 +208,7 @@ namespace Sigma.Core.Training.Hooks
 	/// The base implementation of the <see cref="ICommand"/> interface.
 	/// A local hook that is only invoked one time on global and local scope(s), regardless of TimeStep (though live time should be 1 for consistency).
 	/// </summary>
+	[Serializable]
 	public abstract class BaseCommand : BaseHook, ICommand
 	{
 		/// <summary>

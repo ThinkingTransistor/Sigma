@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.ComponentModel;
 using Sigma.Core.Monitors.WPF.Annotations;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 {

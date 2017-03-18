@@ -25,7 +25,7 @@ using WPFGrid = System.Windows.Controls.Grid;
 namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 {
 	/// <summary>
-	///     This class is basically only a wrapper for the tabs to be handled easily (and future proof)
+	///     This class is basically only a wrapper for the tabs to be handled easily (and future proof if Dragablz is not supported anymore in near future).
 	/// </summary>
 	public class TabUI : UIWrapper<TabItem>
 	{

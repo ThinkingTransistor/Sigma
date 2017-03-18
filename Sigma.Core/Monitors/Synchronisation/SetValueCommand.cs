@@ -129,9 +129,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="key">The registry key. It has to be fully resolved.</param>
 		/// <param name="value">The new value the registry[key] will get.</param>
 		/// <param name="onFinish">The function that will be called when the execution has been finished. If <c>null</c>, no function will be called.</param>
-		public SetValueCommand(string key, object value, Action onFinish = null) : base(key, value, onFinish)
-		{
-		}
+		public SetValueCommand(string key, object value, Action onFinish = null) : base(key, value, onFinish) { }
 
 		/// <summary>
 		/// Create a command that sets two registry keys with two individual values.
@@ -141,9 +139,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="key2">The second registry key. It has to be fully resolved.</param>
 		/// <param name="value2">The second new value the registry[key2] will get.</param>
 		/// <param name="onFinish">The function that will be called when the execution has been finished. If <c>null</c>, no function will be called.</param>
-		public SetValueCommand(string key1, object value1, string key2, object value2, Action onFinish = null) : base(key1, value1, key2, value2, onFinish)
-		{
-		}
+		public SetValueCommand(string key1, object value1, string key2, object value2, Action onFinish = null) : base(key1, value1, key2, value2, onFinish) { }
 
 		/// <summary>
 		/// Create a command that sets multiple registry keys to the same value.
@@ -151,9 +147,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="keys">The registry keys that will be modified. They have to be fully resolved.</param>
 		/// <param name="value">The value each registry[key] will be set to.</param>
 		/// <param name="onFinish">The function that will be called when the execution has been finished. If <c>null</c>, no function will be called.</param>
-		public SetValueCommand(string[] keys, object value, Action onFinish = null) : base(keys, value, onFinish)
-		{
-		}
+		public SetValueCommand(string[] keys, object value, Action onFinish = null) : base(keys, value, onFinish) { }
 
 		/// <summary>
 		/// Create a command that sets multiple registry kess to multiple different values. 
@@ -162,9 +156,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="keys">The registry keys that will be modified. They have to be fully resolved.</param>
 		/// <param name="values">The values that will be set to the registry. The first key will receive the first value and so on.</param>
 		/// <param name="onFinish">The function that will be called when the execution has been finished. If <c>null</c>, no function will be called.</param>
-		public SetValueCommand(string[] keys, object[] values, Action onFinish = null) : base(keys, values, onFinish)
-		{
-		}
+		public SetValueCommand(string[] keys, object[] values, Action onFinish = null) : base(keys, values, onFinish) { }
 	}
 
 	#endregion

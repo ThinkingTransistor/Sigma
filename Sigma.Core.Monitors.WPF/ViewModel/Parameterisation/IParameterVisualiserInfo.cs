@@ -7,9 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 
-namespace Sigma.Core.Monitors.WPF.View.Parameterisation
+namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 {
 	/// <summary>
 	/// The priority for a given <see cref="IParameterVisualiserInfo"/>. It is used in order to provide an easy way to force
@@ -20,7 +19,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// <summary>
 		/// The lowest possible priority.
 		/// </summary>
-		Lowest ,
+		Lowest,
 		/// <summary>
 		/// The second lowest priority. Use this to mark classes that may be exchanged by the user
 		/// </summary>

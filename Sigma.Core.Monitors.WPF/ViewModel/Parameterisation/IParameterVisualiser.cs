@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Utils;
 
-namespace Sigma.Core.Monitors.WPF.View.Parameterisation
+namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 {
 	/// <summary>
 	/// Every visualiser that is responsible for displaying a parameter (e.g. a CheckBox visualiser ...)

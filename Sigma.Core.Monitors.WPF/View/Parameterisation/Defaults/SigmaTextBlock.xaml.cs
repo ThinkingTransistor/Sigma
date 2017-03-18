@@ -6,6 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Monitors.Synchronisation;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
+using Sigma.Core.Utils;
+
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 {
 	/// <summary>
@@ -33,6 +37,22 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// The text that is visualised. 
 		/// </summary>
 		public string Text => TextBlock.Text;
+
+
+		/// <summary>
+		/// The fully resolved key to access the synchandler.
+		/// </summary>
+		public override string Key { get; set; }
+
+		/// <summary>
+		/// The registry for which the visualiser displays values. (e.g. operators registry)
+		/// </summary>
+		public override IRegistry Registry { get; set; }
+
+		/// <summary>
+		/// The SynchronisationHandler that is used to sync the parameter with the training process.
+		/// </summary>
+		public override ISynchronisationHandler SynchronisationHandler { get; set; }
 
 		/// <summary>
 		/// Determines whether the parameter is editable or not. 

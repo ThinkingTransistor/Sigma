@@ -21,6 +21,7 @@ using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
@@ -93,6 +94,7 @@ namespace Sigma.Tests.Internals.Backend
 			sigma.AddTrainer(trainer);
 
 			//trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
+			trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02d, () => {/* finished */}));
 
 			sigma.Run();
 		}

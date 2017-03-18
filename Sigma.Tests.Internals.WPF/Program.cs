@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Diagnostics;
+using System.Threading;
+using System.Windows.Controls;
 using LiveCharts.Wpf;
 using log4net;
 using LiveCharts;
@@ -20,6 +22,8 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -65,29 +69,26 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(info);
 
 
-			IRegistry registry = new Registry
-			{
-				["boolean"] = true,
-				["string"] = "huhu",
-				["learning_rate"] = 0.0
-			};
-			registry.Add("object", sigma);
-
-
 			gui.WindowDispatcher(window =>
 			{
 				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				cost.Fast();
-				window.TabControl["Tab2"].AddCumulativePanel(cost, legend: info);
+				window.TabControl["Tab1"].AddCumulativePanel(cost, legend: info);
 
 
 				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser, sigma.SynchronisationHandler);
-				parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
-				parameterPanel.Content.Add("String test", typeof(string), registry, "string");
-				parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
+				//parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
+				//parameterPanel.Content.Add("String test", typeof(string), registry, "string");
+				//parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
 
-				parameterPanel.Content.Add("Learning Rate", typeof(double), registry, "learning_rate");
-				parameterPanel.Content.Add("Learning Rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+				//parameterPanel.Content.Add("Offline Learning Rate", typeof(double), registry, "learning_rate");
+
+				parameterPanel.Content.Add("Learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+				SigmaSlider slider = new SigmaSlider(0.000001, 1)
+				{
+					IsLogarithmic = true
+				};
+				parameterPanel.Content.Add(new Label { Content = "Learning" }, slider, trainer.Operator.Registry, "optimiser.learning_rate");
 
 				//parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
 				//parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
@@ -106,22 +107,6 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.RunAsync();
 
 			//Log.Warn(registry);
-
-			IRegistryResolver resolver = new RegistryResolver(trainer.Operator.Registry);
-
-			while (true)
-			{
-				double[] vals = resolver.ResolveGet<double>("optimiser.learning_rate");
-				if (vals != null && vals.Length > 0)
-				{
-					Log.Info($"optimiser.learning_rate: {vals[0]}");
-				}
-				//Log.Info(trainer.Operator.Registry);
-				//Debug.WriteLine(registry["boolean"]);
-				//Debug.WriteLine(registry["string"]);
-				//Debug.WriteLine(registry["learning_rate"]);
-				Thread.Sleep(1000);
-			}
 		}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)

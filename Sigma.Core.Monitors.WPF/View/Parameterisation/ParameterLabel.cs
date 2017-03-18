@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 {
