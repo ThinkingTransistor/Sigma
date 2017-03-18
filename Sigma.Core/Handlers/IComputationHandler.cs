@@ -446,17 +446,6 @@ namespace Sigma.Core.Handlers
 		/// <returns>The result of the power of the number a to the constant b.</returns>
 		INumber Pow<TOther>(INumber a, TOther b);
 
-		/// <summary>
-		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
-		/// </summary>
-		/// <param name="activation">The activation to apply.</param>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		INumber Activation(string activation, INumber number);
-
-
-		INDArray Activation(string activation, INDArray array);
-
 		#endregion
 
 		#region Primitive unary mathematical operations
@@ -652,6 +641,22 @@ namespace Sigma.Core.Handlers
 		#region Complex mathematical operations (e.g. activation functions)
 
 		#region Activation functions
+
+		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="number">The number.</param>
+		/// <returns>The number with the activation function applied to it.</returns>
+		INumber Activation(string activation, INumber number);
+
+		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The array with the activation function applied to it.</returns>
+		INDArray Activation(string activation, INDArray array);
 
 		/// <summary>
 		/// Apply the rectified linear function to an ndarray.
