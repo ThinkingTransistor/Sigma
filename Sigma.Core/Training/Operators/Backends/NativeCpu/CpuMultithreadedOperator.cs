@@ -170,7 +170,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		/// <returns></returns>
 		protected override BaseOperator CreateDuplicateInstance()
 		{
-			return new CpuMultithreadedOperator(Handler, base.WorkerCount, WorkerPriority);
+			return new CpuMultithreadedOperator(Handler, WorkerCount, WorkerPriority);
 		}
 
 		/// <summary>

@@ -29,7 +29,7 @@ namespace Sigma.Core.Training.Operators
 {
 	/// <summary>
 	///     An operator that operates (executes) the training process defined in a trainer.
-	///     Operators typically split the workload into multiple workers and backends for CPU, GPU and inter-device cooperation
+	///     Operators typic1ally split the workload into multiple workers and backends for CPU, GPU and inter-device cooperation
 	///     are provided.
 	/// </summary>
 	[Serializable]

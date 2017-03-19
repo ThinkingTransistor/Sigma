@@ -17,6 +17,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 {
+	/// <summary>
+	/// A worker that executes its operations on the cpu with a cpu backend.
+	/// </summary>
 	public class CpuWorker : BaseWorker
 	{
 		private ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
@@ -24,23 +27,18 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 		private IEnumerator<IDictionary<string, INDArray>> _epochBlockYield;
 
-		public CpuWorker(IOperator @operator) : base(@operator)
-		{
-		}
+		public CpuWorker(IOperator @operator) : base(@operator) { }
 
-		public CpuWorker(IOperator @operator, IComputationHandler handler) : base(@operator, handler)
-		{
-		}
+		public CpuWorker(IOperator @operator, IComputationHandler handler) : base(@operator, handler) { }
 
-		public CpuWorker(IOperator @operator, IComputationHandler handler, ThreadPriority priority) : base(@operator, handler, priority)
-		{
-		}
+		public CpuWorker(IOperator @operator, IComputationHandler handler, ThreadPriority priority) : base(@operator, handler, priority) { }
 
+		/// <inheritdoc />
 		protected override void Initialise()
 		{
 			Logger.Debug($"Initialising worker {this}...");
 
-			var blockYieldEnumerable = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma);
+			IEnumerable<IDictionary<string, INDArray>> blockYieldEnumerable = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma);
 
 			if (blockYieldEnumerable == null)
 			{
@@ -54,6 +52,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			Logger.Debug($"Done initialising worker {this}.");
 		}
 
+		/// <inheritdoc />
 		protected override void DoWork()
 		{
 			if (_epochBlockYield == null)
@@ -96,14 +95,17 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 			Operator.PushProgress(this);
 		}
 
+		/// <inheritdoc />
 		protected override void OnPause()
 		{
 		}
 
+		/// <inheritdoc />
 		protected override void OnResume()
 		{
 		}
 
+		/// <inheritdoc />
 		protected override void OnStop()
 		{
 		}

@@ -55,7 +55,7 @@ namespace Sigma.Core.Training.Mergers
 		/// </param>
 		/// <param name="handler">
 		///     A handler can be specified optionally. If not passed (but required),
-		///     <see cref="MathAbstract.ITraceable.AssociatedHandler" /> will be used.
+		///     <see cref="ITraceable.AssociatedHandler" /> will be used.
 		/// </param>
 		public void Merge(INetwork root, IEnumerable<INetwork> networks, IComputationHandler handler = null)
 		{
@@ -106,31 +106,6 @@ namespace Sigma.Core.Training.Mergers
 				object merged = Merge(keyDataPair.Value.ToArray(), handler);
 				rootResolver.ResolveSet(keyDataPair.Key, merged);
 			}
-		}
-
-		/// <summary>
-		///     Returns from a list, from every object[], the ith index.
-		///     e.g. 3 passed objects[] => get index 2, returns an object[] with a length of 3
-		///     and from everyone the second index.
-		/// </summary>
-		/// <param name="list">The list the action will be performed on. (Normally amount of networks).</param>
-		/// <param name="index">The index we are looking for.</param>
-		/// <returns>The object[] specified previously how it is generated.</returns>
-		private object[] GetAllObjectsWithIndex(IList<object[]> list, int index)
-		{
-			object[] objectsWithIndex = new object[list.Count];
-
-			for (int i = 0; i < objectsWithIndex.Length; i++)
-			{
-				if (index >= list[i].Length)
-				{
-					return null;
-				}
-
-				objectsWithIndex[i] = list[i][index];
-			}
-
-			return objectsWithIndex;
 		}
 
 		/// <summary>

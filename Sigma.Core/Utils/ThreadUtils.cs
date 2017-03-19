@@ -21,6 +21,8 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		public class BlockingThread
 		{
+			//TODO: allow thread pooling!
+
 			/// <summary>
 			/// The <see cref="ThreadStart"/> that the newly created <see cref="Thread"/> will receive.
 			/// </summary>
@@ -86,7 +88,7 @@ namespace Sigma.Core.Utils
 		{
 			/// <summary>
 			/// Specify that action that will be executed and the lock that is required.
-			/// Once the <see cref="lockObject"/> is received, the calling thread is unlocked. 
+			/// Once the <see ref="lockObject"/> is received, the calling thread is unlocked. 
 			/// </summary>
 			/// <param name="lockObject">The object a lock will acquired on.</param>
 			/// <param name="action">The action that will be executed inside that object lock. </param>

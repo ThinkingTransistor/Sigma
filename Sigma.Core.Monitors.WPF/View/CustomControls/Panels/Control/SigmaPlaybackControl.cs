@@ -10,6 +10,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using log4net;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Operators;
 
@@ -158,19 +159,9 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				trainer.Reset();
 				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
 															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
-
-
-				//#if DEBUG
-				//				if (Control.Task != null)
-				//				{
-				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				//				}
-				//#endif
 			}
 
-			public DefaultRewind(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultRewind(SigmaPlaybackControl control) : base(control) { }
 		}
 
 		private class DefaultStep : DefaultCommand
@@ -181,6 +172,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 				Control.Running = false;
 
+				LogManager.GetLogger(typeof(DefaultStep)).Fatal("Step not yet implemented!");
+
 				//#if DEBUG
 				//				if (Control.Task != null)
 				//				{
@@ -189,9 +182,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				//#endif
 			}
 
-			public DefaultStep(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultStep(SigmaPlaybackControl control) : base(control) { }
 		}
 	}
 }

@@ -255,6 +255,8 @@
     <Compile Include="Training\Mergers\AverageNetworkMerger.cs" />
     <Compile Include="Training\Mergers\BaseNetworkMerger.cs" />
     <Compile Include="Training\Mergers\INetworkMerger.cs" />
+    <Compile Include="Training\Mergers\MaxNetworkMerger.cs" />
+    <Compile Include="Training\Mergers\MultiNetworkMerger.cs" />
     <Compile Include="Training\Mergers\WeightedNetworkMerger.cs" />
     <Compile Include="Training\Modifiers\BaseValueModifier.cs" />
     <Compile Include="Training\Modifiers\IValueModifier.cs" />
