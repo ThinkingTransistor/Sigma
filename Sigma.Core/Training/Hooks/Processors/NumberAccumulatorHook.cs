@@ -6,8 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Training.Hooks.Accumulators
 {
@@ -17,15 +17,16 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 	[Serializable]
 	public class NumberAccumulatorHook : BaseHook
 	{
-		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep, int resetInterval = 0) : this(registryEntry, registryEntry.Replace('.', '_') + "_accumulated", timeStep, resetInterval)
+		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep, int resetEvery = -1, int resetInterval = 0) : this(registryEntry, registryEntry.Replace('.', '_') + "_accumulated", timeStep, resetEvery, resetInterval)
 		{
 		}
 
-		public NumberAccumulatorHook(string registryEntry, string resultEntry, TimeStep timeStep, int resetInterval = 0) : base(timeStep, registryEntry)
+		public NumberAccumulatorHook(string registryEntry, string resultEntry, TimeStep timeStep, int resetEvery = -1, int resetInterval = 0) : base(timeStep, registryEntry)
 		{
 			ParameterRegistry["registry_entry"] = registryEntry;
 			ParameterRegistry["shared_result_entry"] = resultEntry;
 			ParameterRegistry["reset_interval"] = resetInterval;
+			ParameterRegistry["reset_every"] = resetEvery;
 		}
 
 		/// <summary>
@@ -41,7 +42,11 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 			double value = resolver.ResolveGetSingle<double>(registryEntry);
 			double accumulatedValue = resolver.ResolveGetSingleWithDefault<double>(resultEntry, 0.0);
 
-			if (HookUtils.GetCurrentInterval(registry, TimeStep.TimeScale) == ParameterRegistry.Get<int>("reset_interval"))
+			int currentInterval = HookUtils.GetCurrentInterval(registry, TimeStep.TimeScale);
+			int resetInterval = ParameterRegistry.Get<int>("reset_interval");
+			int resetEvery = ParameterRegistry.Get<int>("reset_every");
+
+			if (currentInterval == resetInterval || resetEvery > 0 && currentInterval % resetEvery == 0)
 			{
 				accumulatedValue = 0.0;
 			}

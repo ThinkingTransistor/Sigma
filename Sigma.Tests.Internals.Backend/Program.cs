@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using log4net;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -29,9 +24,13 @@ using Sigma.Core.Training.Hooks.Stoppers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -44,7 +43,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleTrainerOperatorWorkerIris();
+			SampleTrainerOperatorWorkerMnist();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -86,7 +85,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
-			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
 			//Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
 			//trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
@@ -136,13 +135,20 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("test");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(28, 28) + 2 * FullyConnectedLayer.Construct(28 * 28) + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+			trainer.Network.Architecture = InputLayer.Construct(28, 28)
+											+ FullyConnectedLayer.Construct(28 * 28)
+											+ FullyConnectedLayer.Construct(10) 
+											+ OutputLayer.Construct(10)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(20, dataset);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.25f));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+
+			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Iteration)));
+			trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(5, TimeScale.Iteration)));
 
 			sigma.Run();
 		}

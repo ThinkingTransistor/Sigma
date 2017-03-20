@@ -76,7 +76,21 @@ namespace Sigma.Core.Training.Hooks.Reporters
 				accumulatedIdentifiers[i] = GetAccumulatedIdentifier(value);
 
 				// TODO let caller decide if it's a number (double) / something else
-				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration)));
+
+				int resetEvery, resetInterval;
+
+				if (timestep.TimeScale == TimeScale.Iteration)
+				{
+					resetEvery = timestep.Interval;
+					resetInterval = -1;
+				}
+				else
+				{
+					resetEvery = -1;
+					resetInterval = 0;
+				}
+
+				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), resetEvery, resetInterval));
 
 				valueBuffer.Add(value, null);
 			}

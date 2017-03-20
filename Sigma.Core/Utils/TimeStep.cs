@@ -6,8 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Training.Hooks;
+using System;
 
 namespace Sigma.Core.Utils
 {
@@ -144,7 +144,7 @@ namespace Sigma.Core.Utils
 
 			if (otherTimeStep.TimeScale == TimeScale)
 			{
-				return otherTimeStep.Interval - Interval;
+				return Interval - otherTimeStep.Interval;
 			}
 
 			if (otherTimeStep.TimeScale == TimeScale.Indeterminate || TimeScale == TimeScale.Indeterminate)
