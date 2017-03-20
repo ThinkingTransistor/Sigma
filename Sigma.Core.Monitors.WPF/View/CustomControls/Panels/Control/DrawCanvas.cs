@@ -97,22 +97,30 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		#region RectangleBoundries
 
+		private bool _drawing;
+
 		private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (e.LeftButton == MouseButtonState.Pressed)
 			{
 				_currentPoint = e.GetPosition(this);
+				_drawing = true;
 			}
 			else if (e.RightButton == MouseButtonState.Pressed)
 			{
-				Clear();
+				_currentPoint = e.GetPosition(this);
+				_drawing = false;
 			}
 		}
 
 		private void Canvas_MouseMove(object sender, MouseEventArgs e)
 		{
-			if (e.LeftButton == MouseButtonState.Pressed)
+			if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
 			{
+				int opacity = _drawing ? 1 : 0;
+				int factor = _drawing ? 1 : -1;
+				Brush fill = _drawing ? DrawColour : null;
+
 				LineSegment line = new LineSegment
 				{
 					X1 = _currentPoint.X,
@@ -131,11 +139,11 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 						if (RectIntersectsLine(new Rect(x, y, rect.Width, rect.Height), line))
 						{
-							rect.Opacity = 1;
-							rect.Fill = DrawColour;
+							rect.Opacity = opacity;
+							rect.Fill = fill;
 							if (SoftDrawing)
 							{
-								UpdateNeighbours(GetNeighbours(_rects, row, column));
+								UpdateNeighbours(GetNeighbours(_rects, row, column), factor, fill);
 							}
 						}
 					}
@@ -202,7 +210,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			return rects;
 		}
 
-		private void UpdateNeighbours(Rectangle[] neighbours)
+		private void UpdateNeighbours(Rectangle[] neighbours, int factor, Brush fill)
 		{
 			if (neighbours.Length != 8) throw new ArgumentException("May only contain 8 elements.", nameof(neighbours));
 
@@ -212,14 +220,14 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				{
 					double currentSoft = SoftFactor;
 
-					neighbours[i].Fill = DrawColour;
+					neighbours[i].Fill = fill;
 
 					if (i % 2 == 0)
 					{
 						currentSoft *= currentSoft;
 					}
 
-					neighbours[i].Opacity = Math.Min(neighbours[i].Opacity + currentSoft, 1);
+					neighbours[i].Opacity = Math.Max(0, Math.Min(neighbours[i].Opacity + currentSoft * factor, 1));
 				}
 			}
 		}
