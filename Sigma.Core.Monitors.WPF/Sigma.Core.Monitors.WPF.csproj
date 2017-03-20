@@ -141,7 +141,9 @@
     <Compile Include="Panels\Charts\Definitions\IPointVisualiser.cs" />
     <Compile Include="Panels\Charts\TrainerChartPanel.cs" />
     <Compile Include="Panels\Controls\ControlPanel.cs" />
+    <Compile Include="Panels\Controls\DrawPanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
+    <Compile Include="Panels\IInputPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
     <Compile Include="Panels\Logging\LogTextPanel.cs" />
     <Compile Include="Panels\Parameterisation\ParameterPanel.cs" />

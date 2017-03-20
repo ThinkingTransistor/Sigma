@@ -27,6 +27,7 @@ using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF
@@ -41,11 +42,13 @@ namespace Sigma.Tests.Internals.WPF
 		{
 			SigmaEnvironment.EnableLogging();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma");
+			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma-Demo"/*, "de-DE"*/));
 			gui.AddTabs("Tab1", "Tab2");
 
-			ITrainer trainer = CreateIrisTrainer(sigma);
+			//ITrainer trainer = CreateIrisTrainer(sigma);
+			ITrainer trainer = CreateMnistTrainer(sigma);
 
 			gui.WindowDispatcher(window =>
 			{
@@ -70,7 +73,7 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.WindowDispatcher(window =>
 			{
-				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration));
 				cost.Fast();
 				window.TabControl["Tab1"].AddCumulativePanel(cost, legend: info);
 
@@ -101,9 +104,11 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
 
-				draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
-				draw.Content.UpdateRects();
-				window.TabControl["Tab1"].AddCumulativePanel(draw);
+
+				window.TabControl["Tab1"].AddCumulativePanel(new DrawPanel("Draw", 280, 280, 10), 2, 2);
+
+				//draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
+				//window.TabControl["Tab1"].AddCumulativePanel(draw);
 
 				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 
@@ -118,6 +123,37 @@ namespace Sigma.Tests.Internals.WPF
 			//Log.Warn(draw.ActualHeight + " " + draw.ActualWidth);
 
 			//Log.Warn(registry);
+		}
+
+		private static ITrainer CreateMnistTrainer(SigmaEnvironment sigma)
+		{
+			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
+			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+
+			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
+			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+
+			IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+			ITrainer trainer = sigma.CreateTrainer("test");
+
+			trainer.Network = new Network
+			{
+				Architecture = InputLayer.Construct(28, 28)
+				+ 2 * FullyConnectedLayer.Construct(28 * 28)
+				+ FullyConnectedLayer.Construct(10)
+				+ OutputLayer.Construct(10)
+				+ SoftMaxCrossEntropyCostLayer.Construct()
+			};
+			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
+			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+
+			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Iteration)));
+
+			return trainer;
 		}
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)

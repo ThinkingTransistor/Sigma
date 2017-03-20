@@ -10,6 +10,11 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
 	public class DrawCanvas : Canvas, IDisposable
 	{
+
+		public delegate void InputChangedEventHandler(DrawCanvas canvas);
+
+		public event InputChangedEventHandler InputChangedEvent;
+
 		/// <summary>
 		/// The colour that is used as drawing colour
 		/// </summary>
@@ -147,6 +152,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 							}
 						}
 					}
+
+					InputChangedEvent?.Invoke(this);
 				}
 
 				_currentPoint = e.GetPosition(this);
