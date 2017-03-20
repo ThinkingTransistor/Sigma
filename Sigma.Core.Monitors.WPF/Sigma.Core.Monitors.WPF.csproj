@@ -168,6 +168,7 @@
     <Compile Include="Utils\WindowUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />
     <Compile Include="ViewModel\Parameterisation\ParameterVisualiserManager.cs" />
+    <Compile Include="View\CustomControls\Panels\Control\DrawCanvas.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />

@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using LiveCharts.Wpf;
 using log4net;
-using LiveCharts;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -18,12 +15,13 @@ using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
+using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
-using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
@@ -68,6 +66,7 @@ namespace Sigma.Tests.Internals.WPF
 			var info2 = new StatusBarLegendInfo("");
 			gui.AddLegend(info);
 
+			XamlPanel<DrawCanvas> draw = null;
 
 			gui.WindowDispatcher(window =>
 			{
@@ -102,6 +101,10 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
 
+				draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
+				draw.Content.UpdateRects();
+				window.TabControl["Tab1"].AddCumulativePanel(draw);
+
 				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 
 				window.IsInitializing = false;
@@ -111,6 +114,8 @@ namespace Sigma.Tests.Internals.WPF
 
 			sigma.StartOperatorsOnRun = false;
 			sigma.RunAsync();
+
+			//Log.Warn(draw.ActualHeight + " " + draw.ActualWidth);
 
 			//Log.Warn(registry);
 		}
