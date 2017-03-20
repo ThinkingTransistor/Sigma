@@ -29,8 +29,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 
 			Content.UpdateRects();
 
+			double[,] oldVals = Content.GetValues();
 			double[] newVals = DrawCanvasValuesSingle(Content);
-			Values = handler.NDArray(newVals);
+			Values = handler.NDArray(newVals, oldVals.GetLength(0), oldVals.GetLength(1));
 
 			Content.InputChangedEvent += UpdateValues;
 		}
