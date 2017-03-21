@@ -5,7 +5,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 {
 	public interface IInputPanel 
 	{
-		IComputationHandler handler { get; set; }
+		IComputationHandler Handler { get; set; }
 		INDArray Values { get; }
 	}
 }

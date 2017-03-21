@@ -6,25 +6,24 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using log4net;
-using Sigma.Core.Architecture;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.Handlers;
-using Sigma.Core.Layers;
-using Sigma.Core.MathAbstract;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Initialisers;
-using Sigma.Core.Training.Operators;
-using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Optimisers;
-using Sigma.Core.Training.Providers;
-using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using log4net;
+using Sigma.Core.Architecture;
+using Sigma.Core.Data.Iterators;
+using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Modifiers;
+using Sigma.Core.Training.Operators;
+using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Providers;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training
 {
@@ -369,13 +368,7 @@ namespace Sigma.Core.Training
 		{
 			CheckInitialised();
 
-			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalInputsLayerBuffers())
-			{
-				foreach (string externalInputAlias in layerBuffer.ExternalInputs)
-				{
-					DataProvider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
-				}
-			}
+			DataProviderUtils.ProvideExternalInputData(DataProvider, localNetwork, currentBlock);
 		}
 
 		/// <summary>
@@ -385,13 +378,7 @@ namespace Sigma.Core.Training
 		/// <param name="currentBlock">The current record block.</param>
 		public void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
 		{
-			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalOutputsLayerBuffers())
-			{
-				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)
-				{
-					DataProvider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
-				}
-			}
+			DataProviderUtils.ProvideExternalOutputData(DataProvider, localNetwork, currentBlock);
 		}
 
 		/// <summary>

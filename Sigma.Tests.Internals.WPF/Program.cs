@@ -105,7 +105,7 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
 
 
-				window.TabControl["Tab1"].AddCumulativePanel(new DrawPanel("Draw", trainer.Operator.Handler, 280, 280, 10), 2, 2);
+				window.TabControl["Tab1"].AddCumulativePanel(new DrawPanel("Draw", trainer, 280, 280, 10), 2, 2);
 
 				//draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
 				//window.TabControl["Tab1"].AddCumulativePanel(draw);

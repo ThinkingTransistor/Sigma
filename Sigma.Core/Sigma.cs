@@ -645,7 +645,7 @@ namespace Sigma.Core
 				};
 				LevelRangeFilter consoleRangeFilter = new LevelRangeFilter
 				{
-					LevelMin = Level.Info,
+					LevelMin = Level.Debug,
 					LevelMax = Level.Fatal
 				};
 				console.AddFilter(consoleRangeFilter);

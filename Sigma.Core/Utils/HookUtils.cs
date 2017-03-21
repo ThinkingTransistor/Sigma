@@ -82,7 +82,8 @@ namespace Sigma.Core.Utils
 
 					if (!currentRootCopy.ContainsKey(part))
 					{
-						currentRootCopy[part] = new Registry(parent: currentRoot, tags: nextRoot.Tags.ToArray());
+						currentRootCopy[part] = new Registry(parent: currentRootCopy, tags: nextRoot.Tags.ToArray());
+						currentRootCopy = currentRootCopy.Get<IRegistry>(part);
 					}
 
 					currentRoot = nextRoot;
@@ -112,6 +113,8 @@ namespace Sigma.Core.Utils
 				string[] resolvedEntries;
 
 				registryResolver.ResolveGet<object>(registryEntry, out resolvedEntries, null);
+
+				resultAllResolvedRegistryEntries.AddRange(resolvedEntries);
 			}
 		}
 

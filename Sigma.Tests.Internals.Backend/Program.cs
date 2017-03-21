@@ -375,11 +375,11 @@ namespace Sigma.Tests.Internals.Backend
 			//Random random = new Random();
 			//INDArray array = new ADNDArray<float>(3, 1, 2, 2);
 
-			//new GaussianInitialiser(0.05, 0.05).Initialise(array, handler, random);
+			//new GaussianInitialiser(0.05, 0.05).Initialise(array, Handler, random);
 
 			//Console.WriteLine(array);
 
-			//new ConstantValueInitialiser(1).Initialise(array, handler, random);
+			//new ConstantValueInitialiser(1).Initialise(array, Handler, random);
 
 			//Console.WriteLine(array);
 

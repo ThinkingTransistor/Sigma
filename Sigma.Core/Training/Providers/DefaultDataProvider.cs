@@ -86,7 +86,7 @@ namespace Sigma.Core.Training.Providers
 			if (externalOutputAlias == null) throw new ArgumentNullException(nameof(externalOutputAlias));
 			if (linkAction == null) throw new ArgumentNullException(nameof(linkAction));
 
-			_externalInputLinks[externalOutputAlias] = linkAction;
+			_externalOutputLinks[externalOutputAlias] = linkAction;
 		}
 
 		/// <summary>
@@ -97,7 +97,7 @@ namespace Sigma.Core.Training.Providers
 		{
 			if (externalOutputAlias == null) throw new ArgumentNullException(nameof(externalOutputAlias));
 
-			_externalInputLinks.Remove(externalOutputAlias);
+			_externalOutputLinks.Remove(externalOutputAlias);
 		}
 
 		/// <summary>
