@@ -53,7 +53,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		protected virtual void UpdateValues(DrawCanvas canvas)
 		{
 			double[] newVals = DrawCanvasValuesSingle(canvas);
-
 			for (int i = 0; i < newVals.Length; i++)
 			{
 				Values.SetValue(newVals[i], NDArrayUtils.GetIndices(i, Values.Shape, Values.Strides));

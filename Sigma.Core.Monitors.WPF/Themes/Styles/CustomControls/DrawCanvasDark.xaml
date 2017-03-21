@@ -1,0 +1,10 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:control="clr-namespace:Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control">
+
+	<Style TargetType="control:DrawCanvas">
+		<Setter Property="Background" Value="Black"/>
+		<Setter Property="DrawColour" Value="White" />
+	</Style>
+
+</ResourceDictionary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -64,6 +65,22 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			set { SetValue(PointSizeProperty, value); }
 		}
 
+
+		/// <summary>
+		///  Decide if a drawcolourchange affects currently drawn shapes.
+		/// </summary>
+		public bool UpdateColours
+		{
+			get { return (bool) GetValue(UpdateColoursProperty); }
+			set { SetValue(UpdateColoursProperty, value); }
+		}
+
+		// Using a DependencyProperty as the backing store for UpdateColours.  This enables animation, styling, binding, etc...
+		public static readonly DependencyProperty UpdateColoursProperty =
+			DependencyProperty.Register("UpdateColours", typeof(bool), typeof(DrawCanvas), new PropertyMetadata(true));
+
+
+
 		// Using a DependencyProperty as the backing store for PointSize.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty PointSizeProperty =
 			DependencyProperty.Register("PointSize", typeof(int), typeof(DrawCanvas), new PropertyMetadata(0));
@@ -94,10 +111,15 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public DrawCanvas()
 		{
-			Background = Brushes.White;
-
 			MouseDown += Canvas_MouseDown;
 			MouseMove += Canvas_MouseMove;
+			DependencyPropertyDescriptor.FromProperty(DrawColourProperty, typeof(DrawCanvas)).AddValueChanged(this, OnDrawColourChanged);
+
+		}
+
+		private void OnDrawColourChanged(object sender, EventArgs eventArgs)
+		{
+			UpdateDrawnRectangles(DrawColour);
 		}
 
 		#region RectangleBoundries
@@ -346,6 +368,20 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			}
 
 			return values;
+		}
+
+		private void UpdateDrawnRectangles(Brush newColour)
+		{
+			if (UpdateColours)
+			{
+				if (_rects != null)
+				{
+					foreach (Rectangle rectangle in _rects)
+					{
+						if (rectangle.Fill != null) { rectangle.Fill = newColour; }
+					}
+				}
+			}
 		}
 
 		/// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>

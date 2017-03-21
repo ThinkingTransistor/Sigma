@@ -2,6 +2,7 @@
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
 	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="CustomControls/DrawCanvasDark.xaml" />
 		<ResourceDictionary Source="SigmaGrid/CardColoursDark.xaml" />
 		<ResourceDictionary Source="LiveCharts/AxisDark.xaml" />
 		<ResourceDictionary Source="TitleBar/MenuStyleDark.xaml" />
