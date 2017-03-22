@@ -47,8 +47,8 @@ namespace Sigma.Tests.Internals.WPF
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("Sigma-Demo"/*, "de-DE"*/));
 			gui.AddTabs("Tab1", "Tab2");
 
-			//ITrainer trainer = CreateIrisTrainer(sigma);
-			ITrainer trainer = CreateMnistTrainer(sigma);
+			ITrainer trainer = CreateIrisTrainer(sigma);
+			//ITrainer trainer = CreateMnistTrainer(sigma);
 
 			gui.WindowDispatcher(window =>
 			{
@@ -73,44 +73,48 @@ namespace Sigma.Tests.Internals.WPF
 
 			gui.WindowDispatcher(window =>
 			{
-				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Fehler", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration));
+				var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 				cost.Fast();
-				window.TabControl["Tab1"].AddCumulativePanel(cost, legend: info);
+				window.TabControl["Tab1"].AddCumulativePanel(cost);
 
+				var accuracy = new AccuracyPanel("Accuracy", trainer, null, 1, 2, 5);
+				accuracy.Fast();
+
+				window.TabControl["Tab1"].AddCumulativePanel(accuracy);
 
 				var parameterPanel = new ParameterPanel("Parameter", window.ParameterVisualiser, sigma.SynchronisationHandler);
-				//parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
-				//parameterPanel.Content.Add("String test", typeof(string), registry, "string");
-				//parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
+				////parameterPanel.Content.Add("Boolean Test", typeof(bool), registry, "boolean");
+				////parameterPanel.Content.Add("String test", typeof(string), registry, "string");
+				////parameterPanel.Content.Add("Object test", typeof(SigmaEnvironment), registry, "object");
 
-				//parameterPanel.Content.Add("Offline Learning Rate", typeof(double), registry, "learning_rate");
+				////parameterPanel.Content.Add("Offline Learning Rate", typeof(double), registry, "learning_rate");
 
-				parameterPanel.Content.Add("Learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+				//parameterPanel.Content.Add("Learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 
-				SigmaComboBox comboBox = new SigmaComboBox(new[] { "a", "b", "c" }, new object[] { 1.0, 2.0, 3.3 });
+				//SigmaComboBox comboBox = new SigmaComboBox(new[] { "a", "b", "c" }, new object[] { 1.0, 2.0, 3.3 });
 
-				parameterPanel.Content.Add(new Label { Content = "Box" }, comboBox, trainer.Operator.Registry, "optimiser.learning_rate");
+				//parameterPanel.Content.Add("Box", comboBox, trainer.Operator.Registry, "optimiser.learning_rate");
 
 
 				SigmaSlider slider = new SigmaSlider(0.000001, 1)
 				{
 					IsLogarithmic = true
 				};
-				parameterPanel.Content.Add(new Label { Content = "Learning" }, slider, trainer.Operator.Registry, "optimiser.learning_rate");
+				parameterPanel.Content.Add("Learning", slider, trainer.Operator.Registry, "optimiser.learning_rate");
 
-				//parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
-				//parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
-
-
-				window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
+				////parameterPanel.Content.Add(new Label { Content = "Awesome" }, typeof(bool));
+				////parameterPanel.Content.Add(new Label { Content = "very very long text" }, typeof(bool));
 
 
-				window.TabControl["Tab1"].AddCumulativePanel(new DrawPanel("Draw", trainer, 280, 280, 10), 2, 2);
+				//window.TabControl["Tab1"].AddCumulativePanel(parameterPanel);
 
-				//draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
-				//window.TabControl["Tab1"].AddCumulativePanel(draw);
 
-				//window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
+				//window.TabControl["Tab1"].AddCumulativePanel(new DrawPanel("Draw", trainer, 280, 280, 10), 2, 2);
+
+				////draw = new XamlPanel<DrawCanvas>("Draw") { Content = { GridHeight = 120, GridWidth = 120, PointSize = 5 } };
+				////window.TabControl["Tab1"].AddCumulativePanel(draw);
+
+				////window.TabControl["Tab2"].AddCumulativePanel(new LogTextPanel("Anleitung") { Content = { IsReadOnly = false } }, 2, 2, info);
 
 				window.IsInitializing = false;
 			});
@@ -142,10 +146,10 @@ namespace Sigma.Tests.Internals.WPF
 				+ 2 * FullyConnectedLayer.Construct(28 * 28)
 				+ FullyConnectedLayer.Construct(10)
 				+ OutputLayer.Construct(10)
-				+ SoftMaxCrossEntropyCostLayer.Construct()
+				+ SquaredDifferenceCostLayer.Construct()
 			};
 			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
-			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.2);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));

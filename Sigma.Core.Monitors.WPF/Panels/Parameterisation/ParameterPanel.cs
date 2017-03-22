@@ -6,10 +6,11 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Windows.Controls;
+using System;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Parameterisation
 {
@@ -27,5 +28,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Parameterisation
 			Content = new ParameterView(visualiserManager, synchronisationHandler);
 		}
 
+		public void Add(string name, Type type, IRegistry registry, string key)
+		{
+			Content.Add(name, type, registry, key);
+		}
+
+		public void Add(string name, object visualiserAndDisplayer, IRegistry registry, string key)
+		{
+			Content.Add(name, visualiserAndDisplayer, registry, key);
+		}
 	}
 }

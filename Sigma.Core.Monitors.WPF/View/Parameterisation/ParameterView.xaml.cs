@@ -54,6 +54,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 			Add(name, displayer, visualiser, registry, key);
 		}
 
+		public void Add(string name, object visualiserAndDisplayer, IRegistry registry, string key)
+		{
+			Add(new Label { Content = name }, visualiserAndDisplayer, registry, key);
+		}
+
 		public void Add(UIElement name, object visualiserAndDisplayer, IRegistry registry, string key)
 		{
 			UIElement displayer = visualiserAndDisplayer as UIElement;

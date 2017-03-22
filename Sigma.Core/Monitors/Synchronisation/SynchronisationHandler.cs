@@ -46,18 +46,19 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <inheritdoc />
 		public virtual void SynchroniseSet<T>(IRegistry registry, string key, T val, Action<T> onSuccess = null, Action<Exception> onError = null)
 		{
-			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
-
 			// check if the registry is from an operator
 			foreach (IOperator op in Sigma.RunningOperatorsByTrainer.Values)
 			{
 				if (ReferenceEquals(op.Registry, registry))
 				{
-					op.InvokeCommand(new SetValueCommand<T>(key, val));
+					//TODO: test if callback is called
+					op.InvokeCommand(new SetValueCommand<T>(key, val, () => onSuccess?.Invoke(val)));
 
 					return;
 				}
 			}
+
+			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
 
 			// check if at least one value has been set
 			if (resolver.ResolveSet(key, val, true, typeof(T)).Length > 0)
