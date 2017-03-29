@@ -21,7 +21,7 @@ using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 
-namespace Sigma.Tests.Internals.WPF
+namespace _01_MNIST
 {
 	internal class Program
 	{
