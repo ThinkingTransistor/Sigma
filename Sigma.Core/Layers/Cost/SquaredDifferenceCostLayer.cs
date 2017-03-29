@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
@@ -16,6 +17,7 @@ namespace Sigma.Core.Layers.Cost
 	/// <summary>
 	/// A cost layer that calculates the squared difference between predictions and targets.
 	/// </summary>
+	[Serializable]
 	public class SquaredDifferenceCostLayer : BaseCostLayer
 	{
 		public SquaredDifferenceCostLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)

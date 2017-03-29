@@ -10,19 +10,15 @@ using System.Windows.Controls;
 
 namespace Sigma.Core.Monitors.WPF.Panels.DataGrids
 {
-	public abstract class SigmaDataGridPanel : SigmaPanel
+	public abstract class SigmaDataGridPanel : GenericPanel<DataGrid>
 	{
-		public new DataGrid Content { get; }
-
-		protected SigmaDataGridPanel(string title) : base(title)
+		protected SigmaDataGridPanel(string title, object content = null) : base(title, content)
 		{
 			Content = new DataGrid
 			{
 				IsReadOnly = true,
 				ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader
 			};
-
-			base.Content = Content;
 		}
 	}
 }

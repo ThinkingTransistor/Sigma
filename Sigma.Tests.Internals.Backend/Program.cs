@@ -1,9 +1,11 @@
-﻿using Sigma.Core;
+using log4net;
+using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
+using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
@@ -13,13 +15,16 @@ using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Stoppers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
@@ -29,17 +34,18 @@ using System.Threading;
 
 namespace Sigma.Tests.Internals.Backend
 {
-	public class Program
+	public static class Program
 	{
 		public static MinibatchIterator TrainingIterator;
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging();
+			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleTrainerOperatorWorkerIris();
+			SampleTrainerOperatorWorkerMnist();
 
+			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
 		}
 
@@ -50,33 +56,67 @@ namespace Sigma.Tests.Internals.Backend
 			sigma.Prepare();
 
 			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
-			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
-			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2));
-			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
+			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
+														.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2))
+														.Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0));
 
 			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
-			IDataset trainingDataset = dataset;
-			IDataset validationDataset = dataset;
 
-			ITrainer trainer = sigma.CreateTrainer("test");
+			ITrainer trainer = sigma.CreateGhostTrainer("test");
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(4)
-											+ 5 * FullyConnectedLayer.Construct(3)
-											+ OutputLayer.Construct(3) 
-											+ SquaredDifferenceCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
-			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
+											+ FullyConnectedLayer.Construct(12)
+											+ FullyConnectedLayer.Construct(10)
+											+ FullyConnectedLayer.Construct(3)
+											+ OutputLayer.Construct(3)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.2));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
 
+			trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
+			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
+
+			//trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+
+			//Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
+			//trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
+
+			sigma.AddTrainer(trainer);
+
+			//trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
+			trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02d, () => {/* finished */}));
 
 			sigma.Run();
+		}
+
+		[Serializable]
+		private class TestCommand : BaseCommand
+		{
+			private readonly ILog _log = LogManager.GetLogger(typeof(TestCommand));
+			public TestCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(onFinish, requiredRegistryEntries)
+			{
+				_log.Info("Test command created");
+			}
+
+			/// <summary>
+			/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+			/// </summary>
+			/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+			{
+				_log.Info("Test command invoked");
+				//resolver.ResolveSet("optimiser.learning_rate", 10);
+			}
 		}
 
 		private static void SampleTrainerOperatorWorkerMnist()
@@ -95,13 +135,20 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("test");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(28, 28) + 2 * FullyConnectedLayer.Construct(28 * 28) + FullyConnectedLayer.Construct(10) + OutputLayer.Construct(10) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+			trainer.Network.Architecture = InputLayer.Construct(28, 28)
+											+ FullyConnectedLayer.Construct(28 * 28)
+											+ FullyConnectedLayer.Construct(10) 
+											+ OutputLayer.Construct(10)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(20, dataset);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.05f));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.25f));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+
+			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Iteration)));
+			trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(5, TimeScale.Iteration)));
 
 			sigma.Run();
 		}
@@ -261,7 +308,7 @@ namespace Sigma.Tests.Internals.Backend
 			INumber c = handler.Trace(handler.Add(a, b), traceTag);
 			INumber d = handler.Multiply(c, 2);
 			INumber e = handler.Add(d, handler.Add(c, 3));
-			INumber f = handler.Sqrt(e);
+			INumber f = handler.SquareRoot(e);
 
 			array = handler.Multiply(array, f);
 
@@ -328,11 +375,11 @@ namespace Sigma.Tests.Internals.Backend
 			//Random random = new Random();
 			//INDArray array = new ADNDArray<float>(3, 1, 2, 2);
 
-			//new GaussianInitialiser(0.05, 0.05).Initialise(array, handler, random);
+			//new GaussianInitialiser(0.05, 0.05).Initialise(array, Handler, random);
 
 			//Console.WriteLine(array);
 
-			//new ConstantValueInitialiser(1).Initialise(array, handler, random);
+			//new ConstantValueInitialiser(1).Initialise(array, Handler, random);
 
 			//Console.WriteLine(array);
 

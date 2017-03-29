@@ -17,8 +17,10 @@ namespace Sigma.Core.Data.Sources
 	/// A compressed data set source. Decompresses a given underlying source using a given or inferred unpacker.
 	/// During preparation the entire stream is decompressed and stored as a local file.
 	/// </summary>
+	[Serializable]
 	public class CompressedSource : IDataSource
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public bool Seekable => true;
@@ -151,7 +153,7 @@ namespace Sigma.Core.Data.Sources
 
 		private static string InferLocalUnpackPath(IDataSource source)
 		{
-			return SigmaEnvironment.Globals["datasets"] + Path.GetFileNameWithoutExtension(source.ResourceName);
+			return SigmaEnvironment.Globals["datasets_path"] + Path.GetFileNameWithoutExtension(source.ResourceName);
 		}
 
 		private static IUnpacker InferUnpacker(IDataSource source)

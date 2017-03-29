@@ -6,12 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using log4net;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using log4net;
 
 namespace Sigma.Core.Utils
 {
@@ -134,7 +134,7 @@ namespace Sigma.Core.Utils
 				customProxy.Credentials = new NetworkCredential(username, password);
 			}
 
-			Logger.Info($"Using custom proxy ({defaultProxy}) " + (credentialsProvided ? "with" : "without") + "credentials");
+			Logger.Info($"Using custom proxy ({defaultProxy}) " + (credentialsProvided ? "with" : "without") + " credentials");
 
 			return customProxy;
 		}
@@ -148,8 +148,10 @@ namespace Sigma.Core.Utils
 	/// <summary>
 	/// A custom WebClient implementation which allows downloading a file with progress reporting within the calling thread via events. 
 	/// </summary>
+	[Serializable]
 	public class BlockingWebClient : WebClient
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly int _timeoutMilliseconds;

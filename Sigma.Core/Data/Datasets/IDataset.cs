@@ -26,6 +26,13 @@ namespace Sigma.Core.Data.Datasets
 		string Name { get; }
 
 		/// <summary>
+		/// Indicate if this dataset is an online dataset (meaning new data might be added during runtime).
+		/// By default, this is assumed to be false, indicating a static dataset.
+		/// Note: Data iterators and may perform certain optimisations for static datasets, so set this to false if possible.
+		/// </summary>
+		bool Online { get; set; }
+
+		/// <summary>
 		/// The preferred per block size in records.
 		/// Note: Not every block must obey this request (e.g. the last black might very well be a different size).
 		/// </summary>

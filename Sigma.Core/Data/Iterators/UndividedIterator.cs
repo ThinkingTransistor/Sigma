@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using log4net;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Handlers;
@@ -17,8 +18,10 @@ namespace Sigma.Core.Data.Iterators
 	/// <summary>
 	/// An undivided data iterator which yields blocks from datasets as a whole.
 	/// </summary>
+	[Serializable]
 	public class UndividedIterator : BaseIterator
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
@@ -66,6 +69,11 @@ namespace Sigma.Core.Data.Iterators
 				UnderlyingDataset.FreeBlock(currentIndex, handler);
 				currentIndex++;
 			}
+		}
+
+		public override string ToString()
+		{
+			return $"undivided iterator";
 		}
 	}
 }

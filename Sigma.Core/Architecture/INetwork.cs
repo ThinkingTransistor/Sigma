@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
+using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
@@ -53,6 +54,12 @@ namespace Sigma.Core.Architecture
 		void Run(IComputationHandler handler, bool trainingPass);
 
 		/// <summary>
+		/// Reset this network to an un-initialised state, discard and remove all layers and layer buffers.
+		/// Note: ALL progress is discarded and only the network architecture and cannot be restored. Use with caution.
+		/// </summary>
+		void Reset();
+
+		/// <summary>
 		/// Get the layers of this network in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>
@@ -75,5 +82,11 @@ namespace Sigma.Core.Architecture
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers();
+
+		/// <summary>
+		/// Get a network selector for this network.
+		/// </summary>
+		/// <returns></returns>
+		INetworkSelector<INetwork> Select();
 	}
 }

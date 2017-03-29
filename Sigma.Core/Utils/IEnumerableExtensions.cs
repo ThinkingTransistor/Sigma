@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,6 +40,14 @@ namespace Sigma.Core.Utils
                     throw new ArgumentException("The array capacity is insufficient to copy all items from the source sequence");
                 array[startIndex + i] = item;
                 i++;
+            }
+        }
+
+        public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> newItems)
+        {
+            foreach (T item in newItems)
+            {
+                collection.Add(item);
             }
         }
     }

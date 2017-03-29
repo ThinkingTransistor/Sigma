@@ -61,8 +61,8 @@ namespace Sigma.Core.MathAbstract
 				}
 			}
 
-			//if it's a vector with a single dimension we convert to a matrix (row-vector) for easier and faster use
-			if (shape.Length == 1 && shape[0] > 1)
+			// if it's a scalar convert to matrix / vector scalar for easier and safer use with matrix operations (it's an ndarray)
+			if (shape.Length == 1)
 			{
 				shape = new[] { 1, shape[0] };
 			}

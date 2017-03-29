@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Modifiers;
 using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
 
@@ -48,6 +49,11 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IInitialiser> Initialisers { get; }
 
 		/// <summary>
+		/// The value modifiers attached to this trainer by identifier.
+		/// </summary>
+		IReadOnlyDictionary<string, ISet<IValueModifier>> ValueModifiers { get; }
+
+		/// <summary>
 		/// The optimiser used in this trainer (e.g. Stochastic gradient descent, momentum - one instance per trainer).
 		/// </summary>
 		IOptimiser Optimiser { get; set; }
@@ -73,7 +79,7 @@ namespace Sigma.Core.Training
 		IReadOnlyDictionary<string, IDataIterator> AdditionalNameDataIterators { get; }
 
 		/// <summary>
-		/// The hooks attached to this trainer. 
+		/// All hooks attached to this trainer. 
 		/// </summary>
 		IReadOnlyCollection<IHook> Hooks { get; }
 
@@ -101,6 +107,14 @@ namespace Sigma.Core.Training
 		void AddInitialiser(string identifier, IInitialiser initialiser);
 
 		/// <summary>
+		/// Add a numeric value modifier to this trainer which will be invoked every iteration on the local working registry.
+		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier.
+		/// </summary>
+		/// <param name="identifier">The identifier (registry resolve string).</param>
+		/// <param name="modifier">The value modifier.</param>
+		void AddValueModifier(string identifier, IValueModifier modifier);
+
+		/// <summary>
 		/// Add a secondary named data iterator to this trainer.
 		/// Note: Secondary data iterators can for example be used for model validation with separate data.
 		/// </summary>
@@ -117,13 +131,13 @@ namespace Sigma.Core.Training
 		void AddHook(IHook hook);
 
 		/// <summary>
-		/// Add an global hook to this trainer, which will be executed during runtime directly in each worker. 
+		/// Add an global hook to this trainer, which will be invoked globally by the operator (i.e. the most recent "official" state).
 		/// </summary>
 		/// <param name="hook">The global hook to add to this trainer.</param>
 		void AddGlobalHook(IHook hook);
 
 		/// <summary>
-		/// Add a local hook to this trainer, which will be executed asynchronously or in the owning monitor.
+		/// Add a local hook to this trainer, which will be invoked locally by each worker working on the training independently.
 		/// </summary>
 		/// <param name="hook">The local hook to add to this trainer.</param>
 		void AddLocalHook(IHook hook);
@@ -140,13 +154,19 @@ namespace Sigma.Core.Training
 		void Start();
 
 		/// <summary>
+		/// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator.
+		/// </summary>
+		void Reset();
+
+		/// <summary>
 		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).
 		/// Note: The network's external data inputs and outputs must already be linked and supplied. 
 		/// </summary>
 		/// <param name="localNetwork">The network to train.</param>
 		/// <param name="localOptimiser">The local optimiser to use.</param>
+		/// <param name="localRegistry">The local working registry (e.g. for per-iteration value modifiers).</param>
 		/// <param name="handler">The computation handler to use.</param>
-		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler);
+		void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IRegistry localRegistry, IComputationHandler handler);
 
 		/// <summary>
 		/// Provide the external data to a network given the current record block (typically as given by the training data iterator).

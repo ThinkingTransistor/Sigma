@@ -13,18 +13,9 @@ namespace Sigma.Core.Training.Initialisers
 	/// <summary>
 	/// A Gaussian initialiser for ndarrays with mean and standard deviation. 
 	/// </summary>
+	[Serializable]
 	public class GaussianInitialiser : BaseInitialiser
 	{
-		/// <summary>
-		/// The mean of this Gaussian initialiser.
-		/// </summary>
-		public double Mean { get; set; }
-
-		/// <summary>
-		/// The standard deviation of this Gaussian initialiser.
-		/// </summary>
-		public double StandardDeviation { get; set; }
-
 		/// <summary>
 		/// Create a Gaussian initialiser with a certain standard deviation and optional mean.
 		/// </summary>
@@ -32,19 +23,8 @@ namespace Sigma.Core.Training.Initialisers
 		/// <param name="mean">The mean.</param>
 		public GaussianInitialiser(double standardDeviation, double mean = 0.0)
 		{
-			Mean = mean;
-			StandardDeviation = standardDeviation;
-		}
-
-		/// <summary>
-		/// Create a Gaussian initialiser with a certain standard deviation and optional mean.
-		/// </summary>
-		/// <param name="standardDeviation">The standard deviation.</param>
-		/// <param name="mean">The mean.</param>
-		/// <returns>A Gaussian initialiser with the given standard deviation and mean.</returns>
-		public GaussianInitialiser Gaussian(double standardDeviation, double mean = 0.0)
-		{
-			return new GaussianInitialiser(standardDeviation, mean);
+			Registry.Set("mean", mean, typeof(double));
+			Registry.Set("standard_deviation", standardDeviation, typeof(double));
 		}
 
 		public override object GetValue(long[] indices, long[] shape, Random random)
@@ -55,7 +35,7 @@ namespace Sigma.Core.Training.Initialisers
 			double u2 = random.NextDouble();
 			double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2); 
 
-			return Mean + StandardDeviation * randStdNormal;
+			return Registry.Get<double>("mean") + Registry.Get<double>("standard_deviation") * randStdNormal;
 		}
 	}
 }

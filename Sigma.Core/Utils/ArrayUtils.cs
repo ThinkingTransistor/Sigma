@@ -9,7 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 
 namespace Sigma.Core.Utils
 {

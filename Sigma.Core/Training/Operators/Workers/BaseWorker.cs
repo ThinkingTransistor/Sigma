@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Threading;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -32,9 +31,11 @@ namespace Sigma.Core.Training.Operators.Workers
 		public IComputationHandler Handler { get; }
 		public INetwork LocalNetwork { get; set; }
 		public IDataIterator LocalTrainingDataIterator { get; set; }
-		public IOptimiser LocalOptimiser { get; set; }
+		public IOptimiser LocalOptimiser { get; set; } // TODO improve local optimiser state handling (if possible, for persistence and such)
+													   // As of now, all workers are completely thrown away when serialising and thereby also their local optimiser state.
+													   // That is probably not the way it should be because it may make restoring the state inconsistent (e.g. momentum velocities being lost).
 
-		public int LocalEpochNumber { get; protected set; }
+		public int LocalEpochNumber { get; set; }
 		public int LocalIterationNumber { get; protected set; }
 
 		/// <summary>
@@ -103,6 +104,8 @@ namespace Sigma.Core.Training.Operators.Workers
 					WorkerThread = CreateThread(Update);
 
 					WorkerThread.Start();
+
+					InvokeTimeScaleEvent(TimeScale.Start);
 				}
 			}
 			else if (State != ExecutionState.Running)
@@ -120,6 +123,8 @@ namespace Sigma.Core.Training.Operators.Workers
 					OnPause();
 
 					State = ExecutionState.Paused;
+
+					InvokeTimeScaleEvent(TimeScale.Pause);
 				}
 			}
 			else if (State != ExecutionState.Paused)
@@ -139,6 +144,8 @@ namespace Sigma.Core.Training.Operators.Workers
 					State = ExecutionState.Running;
 
 					_waitForResume.Set();
+
+					InvokeTimeScaleEvent(TimeScale.Resume);
 				}
 			}
 			else if (State != ExecutionState.Running)
@@ -164,6 +171,8 @@ namespace Sigma.Core.Training.Operators.Workers
 
 					State = ExecutionState.Stopped;
 					_waitForResume.Set();
+
+					InvokeTimeScaleEvent(TimeScale.Stop);
 				}
 			}
 		}
@@ -194,7 +203,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			}
 			else
 			{
-				ThrowBadState("started once");
+				ThrowBadState("run once");
 			}
 		}
 
@@ -246,33 +255,52 @@ namespace Sigma.Core.Training.Operators.Workers
 			_waitForResume.Reset();
 		}
 
+		/// <summary>
+		///		Indicate this worker that it will be reset and discarded.
+		///		Used for resource management and reset invocations.
+		/// </summary>
+		public void OnReset()
+		{
+			InvokeTimeScaleEvent(TimeScale.Reset);
+		}
+
 		public void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			var localHooks = Operator.AttachedLocalHooks;
-
-			Operator.EjectTimeScaleEvent(timeScale, localHooks, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
-			MarkDeadHooks(localHooks, LocalLocalHookTimeSteps);
-
-			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
-
-			ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
-			HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
-
-			foreach (IHook hook in _bufferHooksToInvoke)
+			lock (_bufferHooksToInvoke) // the lock is only needed as a safeguard against lifecycle invokes, but as it's just a marginal overhead it's better than colliding with another invoke
 			{
-				if (!hook.InvokeInBackground)
+				Operator.EjectTimeScaleEvent(timeScale, Operator.AttachedLocalHooksByTimeScale, LocalLocalHookTimeSteps, _bufferHooksToInvoke);
+
+				IRegistry bufferRegistry = GetPopulatedBufferRegistry();
+
+				ArrayUtils.SortListInPlaceIndexed(_bufferHooksToInvoke, Operator.GetLocalHookInvocationIndex);
+				HookUtils.FetchOrderedBackgroundHooks(_bufferHooksToInvoke, _bufferHooksToInvokeInBackground);
+
+				foreach (IHook hook in _bufferHooksToInvoke)
 				{
-					hook.Operator = Operator;
-					hook.Invoke(_bufferRegistry, _bufferRegistryResolver);
+					if (!hook.InvokeInBackground)
+					{
+						hook.Operator = Operator;
+						hook.Invoke(bufferRegistry, _bufferRegistryResolver);
+					}
 				}
-			}
 
-			if (_bufferHooksToInvokeInBackground.Count > 0)
-			{
-				Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, _bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				if (_bufferHooksToInvokeInBackground.Count > 0)
+				{
+					Operator.DispatchBackgroundHookInvocation(_bufferHooksToInvokeInBackground, bufferRegistry, _bufferRegistryEntries, _bufferResolvedRegistryEntries);
+				}
+
+				MarkDeadHooks(Operator.AttachedLocalHooks, LocalLocalHookTimeSteps);
 			}
 		}
 
+		protected IRegistry GetPopulatedBufferRegistry()
+		{
+			Operator.PopulateWorkerRegistry(_bufferRegistry, this);
+
+			return _bufferRegistry;
+		}
+
+		//TODO: cäsar? is it intended that the passed variables are never used?
 		private void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
 		{
 			foreach (IHook hook in _bufferHooksToInvoke)

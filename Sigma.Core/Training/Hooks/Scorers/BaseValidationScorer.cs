@@ -6,16 +6,20 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Training.Hooks.Scorers
 {
+	/// <summary>
+	/// A base implementation for validation scorers that takes care of automatically getting the final output of a and staging the scoring process.
+	/// </summary>
+	[Serializable]
 	public abstract class BaseValidationScorer : BaseHook
 	{
 		/// <summary>
@@ -53,7 +57,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		/// </summary>
 		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void Invoke(IRegistry registry, IRegistryResolver resolver)
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
 			INetwork network = resolver.ResolveGetSingle<INetwork>("network.self");
 			ITrainer trainer = resolver.ResolveGetSingle<ITrainer>("trainer.self");

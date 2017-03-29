@@ -6,9 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using ManagedCuda.NPP;
 using Sigma.Core.Training.Hooks;
+using System;
 
 namespace Sigma.Core.Utils
 {
@@ -54,6 +53,7 @@ namespace Sigma.Core.Utils
 	/// The default implementation of the <see cref="ITimeStep"/> interface.
 	/// Represents a time step which defines a time dependency for every <see cref="Interval"/> times that <see cref="TimeScale"/> happens (and all that a total of <see cref="LiveTime"/> times).
 	/// </summary>
+	[Serializable]
 	public class TimeStep : ITimeStep
 	{
 		public const int LiveTimeForever = -1;
@@ -144,7 +144,7 @@ namespace Sigma.Core.Utils
 
 			if (otherTimeStep.TimeScale == TimeScale)
 			{
-				return otherTimeStep.Interval - Interval;
+				return Interval - otherTimeStep.Interval;
 			}
 
 			if (otherTimeStep.TimeScale == TimeScale.Indeterminate || TimeScale == TimeScale.Indeterminate)
@@ -158,39 +158,50 @@ namespace Sigma.Core.Utils
 
 	/// <summary>
 	/// A time scale, the basic unit for <see cref="ITimeStep"/> (e.g. epoch or iteration).
+	/// Note: This needs to be an enumeration for clean serialisation.
 	/// </summary>
-	public class TimeScale
+	[Serializable]
+	public enum TimeScale
 	{
-		/// <summary>
-		/// The name of this time scale.
-		/// </summary>
-		public string Name { get; }
-
 		/// <summary>
 		/// A time scale for one training epoch (single forward + backward pass on the entire training data, consisting of multiple iterations).
 		/// </summary>
-		public static readonly TimeScale Epoch = new TimeScale(nameof(Epoch));
+		Epoch,
 
 		/// <summary>
 		/// A time scale for one training iteration (single forward + backward pass on iterator yield).
 		/// </summary>
-		public static readonly TimeScale Iteration = new TimeScale(nameof(Iteration));
+		Iteration,
+
+		/// <summary>
+		/// A time scale for a start training event.
+		/// Note: When the current scope was just started some components may not have been initialised yet (e.g. local networks).
+		/// </summary>
+		Start,
+
+		/// <summary>
+		/// A time scale for a stop training event.
+		/// </summary>
+		Stop,
+
+		/// <summary>
+		/// A time scale for a resume training event.
+		/// </summary>
+		Resume,
+
+		/// <summary>
+		/// A time scale for a pause training event.
+		/// </summary>
+		Pause,
+
+		/// <summary>
+		/// A time scale for a reset training event.
+		/// </summary>
+		Reset,
 
 		/// <summary>
 		/// A time scale that is managed by the callee (e.g. when only invoking once, like for <see cref="ICommand"/>).
 		/// </summary>
-		public static readonly TimeScale Indeterminate = new TimeScale(nameof(Indeterminate));
-
-		public TimeScale(string name)
-		{
-			Name = name;
-		}
-
-		/// <summary>Returns a string that represents the current object.</summary>
-		/// <returns>A string that represents the current object.</returns>
-		public override string ToString()
-		{
-			return Name;
-		}
+		Indeterminate
 	}
 }

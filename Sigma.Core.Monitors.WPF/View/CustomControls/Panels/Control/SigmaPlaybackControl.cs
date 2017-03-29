@@ -7,15 +7,19 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using log4net;
 using Sigma.Core.Training;
-using Sigma.Core.Utils;
+using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
+	/// <summary>
+	/// This "playback control" works controlling the music. Play it, pause it, rewind it.
+	/// And this all works with the trainer.
+	/// </summary>
 	public class SigmaPlaybackControl : System.Windows.Controls.Control
 	{
 		static SigmaPlaybackControl()
@@ -121,70 +125,64 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 			public event EventHandler CanExecuteChanged;
 		}
 
-#if DEBUG
-		internal ITaskObserver Task;
-#endif
-
 		private class DefaultTogglePlay : DefaultCommand
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Toggle play clicked");
-#if DEBUG
-				if (Control.Running)
+				ITrainer trainer = Control.Trainer;
+				IOperator @operator = trainer.Operator;
+
+				if (@operator.State == ExecutionState.Running)
 				{
-					Control.Task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Train, "Well, now I'm training");
+					@operator.SignalPause();
 				}
-				else
+				else if (@operator.State == ExecutionState.Paused)
 				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+					@operator.SignalResume();
 				}
-#endif
+				else if (@operator.State == ExecutionState.None)
+				{
+					@operator.Start();
+				}
 			}
 
-			public DefaultTogglePlay(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultTogglePlay(SigmaPlaybackControl control) : base(control) { }
 		}
 
 		private class DefaultRewind : DefaultCommand
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Rewind!");
+				//Debug.WriteLine("Rewind!");
 				Control.Running = false;
-#if DEBUG
-				if (Control.Task != null)
-				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				}
-#endif
+				ITrainer trainer = Control.Trainer;
+				trainer.Reset();
+				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
+															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
 			}
 
-			public DefaultRewind(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultRewind(SigmaPlaybackControl control) : base(control) { }
 		}
 
 		private class DefaultStep : DefaultCommand
 		{
 			public override void Execute(object parameter)
 			{
-				Debug.WriteLine("Step!");
+				//Debug.WriteLine("Step!");
 
 				Control.Running = false;
 
-#if DEBUG
-				if (Control.Task != null)
-				{
-					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				}
-#endif
+				LogManager.GetLogger(typeof(DefaultStep)).Fatal("Step not yet implemented!");
+
+				//#if DEBUG
+				//				if (Control.Task != null)
+				//				{
+				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
+				//				}
+				//#endif
 			}
 
-			public DefaultStep(SigmaPlaybackControl control) : base(control)
-			{
-			}
+			public DefaultStep(SigmaPlaybackControl control) : base(control) { }
 		}
 	}
 }

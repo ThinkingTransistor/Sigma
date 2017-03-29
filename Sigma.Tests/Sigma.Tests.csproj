@@ -61,6 +61,16 @@
     <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NugetBuild|AnyCPU'">
+    <OutputPath>bin\NugetBuild\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NugetBuild|x64'">
+    <OutputPath>bin\x64\NugetBuild\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.13\lib\net45\CudaBlas.dll</HintPath>
@@ -129,6 +139,7 @@
     <Compile Include="Data\Sources\TestMultiSource.cs" />
     <Compile Include="Data\Sources\TestURLSource.cs" />
     <Compile Include="Data\TestDataBuffer.cs" />
+    <Compile Include="Layers\MockLayer.cs" />
     <Compile Include="Math\TestNumber.cs" />
     <Compile Include="Training\Mergers\NetworkMergerTestUtils.cs" />
     <Compile Include="Training\Mergers\TestAverageNetworkMerger.cs" />
@@ -136,6 +147,7 @@
     <Compile Include="Training\Initialisers\TestCustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\TestGaussianInitialiser.cs" />
     <Compile Include="Training\Mergers\TestWeightedNetworkMerger.cs" />
+    <Compile Include="Training\MockTrainer.cs" />
     <Compile Include="Training\Operators\Backend\NativeCpu\TestCpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backend\NativeCpu\Workers\TestCpuWorker.cs" />
     <Compile Include="Utils\TestDiskCacheProvider.cs" />
@@ -160,7 +172,9 @@
       <Name>Sigma.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Persistence\" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

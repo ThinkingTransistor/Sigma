@@ -6,9 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Utils;
+using System;
 using System.Collections.Generic;
 using Sigma.Core.Training.Operators;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks
 {
@@ -36,6 +37,14 @@ namespace Sigma.Core.Training.Hooks
 		///			The time step of required hooks must be smaller than or equal to the dependent's time step.
 		/// </summary>
 		IReadOnlyCollection<IHook> RequiredHooks { get; }
+
+		/// <summary>
+		/// The invoke priority of this hook (i.e. invoke as first or last hook).
+		/// An invoke priority of 0 is the default, smaller than 0 means invoke earlier, larger than 0 means invoke later.
+		/// Note:	The <see cref="RequiredHooks"/> take precedence over invoke priority.
+		///			Invoke priorities are only a recommendation and cannot be guaranteed. 
+		/// </summary>
+		int InvokePriority { get; }
 
 		/// <summary>
 		/// Flag whether this hook should be invoked by the owner (worker/operator) or in a separate background thread.
@@ -77,5 +86,10 @@ namespace Sigma.Core.Training.Hooks
 	/// </summary>
 	public interface ICommand : IHook
 	{
+		/// <summary>
+		/// The callback method that will be executed when the command finishes execution.
+		/// <c>null</c> if not required.
+		/// </summary>
+		Action OnFinish { get; set; }
 	}
 }

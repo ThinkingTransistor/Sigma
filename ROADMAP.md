@@ -27,7 +27,7 @@ The never ending list of nice-to-have things by project. These lists are not mea
   * On top of HTTP / TCP monitor
   * Monitor only (no learning on phone)
   * Learning (visualisation) on phone
-* [Smonity](https://smonity.github.io/) monitor
+* [Smonity](https://smonity.github.io/) monitor (SMonitor)
   * Monitor RAM
   * Receive notifications
 

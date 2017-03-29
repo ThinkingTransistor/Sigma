@@ -82,14 +82,15 @@ namespace Sigma.Core.Utils
 
 					if (!currentRootCopy.ContainsKey(part))
 					{
-						currentRootCopy[part] = new Registry(parent: currentRoot, tags: nextRoot.Tags.ToArray());
+						currentRootCopy[part] = new Registry(parent: currentRootCopy, tags: nextRoot.Tags.ToArray());
+						currentRootCopy = currentRootCopy.Get<IRegistry>(part);
 					}
 
 					currentRoot = nextRoot;
 				}
 
 				string lastPart = parts[parts.Length - 1];
-				object copiedValue = Registry.DeepestCopy(currentRoot[lastPart]);
+				object copiedValue = RegistryUtils.DeepestCopy(currentRoot[lastPart]);
 
 				currentRootCopy[lastPart] = copiedValue;
 			}
@@ -112,6 +113,8 @@ namespace Sigma.Core.Utils
 				string[] resolvedEntries;
 
 				registryResolver.ResolveGet<object>(registryEntry, out resolvedEntries, null);
+
+				resultAllResolvedRegistryEntries.AddRange(resolvedEntries);
 			}
 		}
 
@@ -164,8 +167,7 @@ namespace Sigma.Core.Utils
 		/// Validate a hook and its dependencies.
 		/// </summary>
 		/// <param name="hook">The hook to evaluate.</param>
-		/// <param name="otherHooks">The already existing hooks to check for illegal dependencies (optional).</param>
-		public static void ValidateHook(IHook hook, IEnumerable<IHook> otherHooks = null)
+		public static void ValidateHook(IHook hook)
 		{
 			if (hook == null) throw new ArgumentNullException(nameof(hook));
 			if (hook.TimeStep == null) throw new ArgumentException($"Hook {hook} has invalid time step: null");
@@ -174,9 +176,10 @@ namespace Sigma.Core.Utils
 
 			foreach (IHook requiredHook in hook.RequiredHooks)
 			{
-				if (otherHooks != null && otherHooks.Any(existingHook => existingHook.FunctionallyEquals(requiredHook)))
+				IHook culprit;
+				if (HasCircularDependency(requiredHook, requiredHook, out culprit))
 				{
-					throw new IllegalHookDependencyException($"Hook {hook} has illegal dependencies, detected circular dependency of required hook {requiredHook}.");
+					throw new IllegalHookDependencyException($"Hook {hook} has illegal dependencies, detected circular dependency of required hook {requiredHook} via {culprit}.");
 				}
 
 				if (requiredHook.InvokeInBackground != hook.InvokeInBackground)
@@ -192,6 +195,27 @@ namespace Sigma.Core.Utils
 					                                         $" and dependent hook time step was {hook.TimeStep}.");
 				}
 			}
+		}
+
+		private static bool HasCircularDependency(IHook current, IHook root, out IHook culprit)
+		{
+			foreach (IHook requiredHook in current.RequiredHooks)
+			{
+				if (requiredHook.FunctionallyEquals(root))
+				{
+					culprit = requiredHook;
+
+					return true;
+				}
+				else if (HasCircularDependency(requiredHook, root, out culprit))
+				{
+					return true;
+				}
+			}
+
+			culprit = null;
+
+			return false;
 		}
 
 		/// <summary>

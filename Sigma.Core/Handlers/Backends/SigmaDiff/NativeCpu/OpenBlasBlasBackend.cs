@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
@@ -13,6 +14,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	/// <summary>
 	/// An OpenBLAS partial BLAS backend using external libopenblas native functions.
 	/// </summary>
+	[Serializable]
 	public class OpenBlasBlasBackend : IBlasBackend
 	{
 		public unsafe int Isamax(int* n, float* x, int* incx)

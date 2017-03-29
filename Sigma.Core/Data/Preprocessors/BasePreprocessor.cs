@@ -18,6 +18,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// <summary>
 	/// The base class for all preprocessors. Takes care of selective per section processing and simplifies implementation of new preprocessors. 
 	/// </summary>
+	[Serializable]
 	public abstract class BasePreprocessor : BaseExtractor, IRecordPreprocessor
 	{
 		/// <summary>
@@ -25,14 +26,15 @@ namespace Sigma.Core.Data.Preprocessors
 		/// </summary>
 		public IReadOnlyCollection<string> ProcessedSectionNames { get; protected set; }
 
-		public abstract bool AffectsDataShape { get; }
+	    /// <inheritdoc />
+	    public abstract bool AffectsDataShape { get; }
 
 		/// <summary>
 		/// Create a base processor with an optional array of sections to process.
 		/// If an array of section names is specified, only the sections with those names are processed. 
 		/// If no such array is specified (null or empty), all sections are processed.
 		/// </summary>
-		/// <param name="processedSectionNames"></param>
+		/// <param name="processedSectionNames">The section names to process in this preprocessor (all if null or empty).</param>
 		protected BasePreprocessor(string[] processedSectionNames = null)
 		{
 			if (processedSectionNames != null && processedSectionNames.Length == 0)
@@ -43,7 +45,8 @@ namespace Sigma.Core.Data.Preprocessors
 			ProcessedSectionNames = processedSectionNames;
 		}
 
-		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
+	    /// <inheritdoc />
+	    public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
 		{
 			Dictionary<string, INDArray> unprocessedNamedArrays = (Dictionary<string, INDArray>) readData;
 			Dictionary<string, INDArray> processedNamedArrays = new Dictionary<string, INDArray>();
@@ -80,9 +83,10 @@ namespace Sigma.Core.Data.Preprocessors
 		/// <param name="array">The ndarray to process.</param>
 		/// <param name="handler">The computation handler to do the processing with.</param>
 		/// <returns>An ndarray with the processed contents of the given array (can be the same or a new one).</returns>
-		protected abstract INDArray ProcessDirect(INDArray array, IComputationHandler handler);
+		internal abstract INDArray ProcessDirect(INDArray array, IComputationHandler handler);
 
-		public override void Dispose()
+	    /// <inheritdoc />
+	    public override void Dispose()
 		{
 			// there shouldn't be anything to dispose in a preprocessor
 		}

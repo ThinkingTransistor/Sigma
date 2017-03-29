@@ -9,22 +9,23 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
+using Sigma.Core.Data.Preprocessors.Adaptive;
 
 namespace Sigma.Core.Data.Preprocessors
 {
 	/// <summary>
 	/// A normalising preprocessor, which normalises all values in certain named sections to a given range of values.
 	/// </summary>
+	[Serializable]
 	public class NormalisingPreprocessor : BasePreprocessor
 	{
+		/// <inheritdoc />
 		public override bool AffectsDataShape => false;
 
-		public int MinInputValue { get; }
-		public int MaxInputValue { get; private set; }
-		public int MinOutputValue { get; }
-		public int MaxOutputValue { get; private set; }
-
-		private readonly double _outputScale;
+		public double MinInputValue { get; set; }
+		public double MaxInputValue { get; set; }
+		public double MinOutputValue { get; set; }
+		public double MaxOutputValue { get; set; }
 
 		/// <summary>
 		/// Create a normalising preprocessor with a certain input and an output range of [0, 1] and optionally specify for which sections this processor should be applied.
@@ -32,7 +33,7 @@ namespace Sigma.Core.Data.Preprocessors
 		/// <param name="minInputValue">The minimum input value (inclusive).</param>
 		/// <param name="maxInputValue">The maximum input value (inclusive).</param>
 		/// <param name="sectionNames">The optional section names. If specified, only the given sections are processed.</param>
-		public NormalisingPreprocessor(int minInputValue, int maxInputValue, params string[] sectionNames) : this(minInputValue, maxInputValue, 0, 1, sectionNames)
+		public NormalisingPreprocessor(double minInputValue, double maxInputValue, params string[] sectionNames) : this(minInputValue, maxInputValue, 0, 1, sectionNames)
 		{
 		}
 
@@ -44,7 +45,7 @@ namespace Sigma.Core.Data.Preprocessors
 		/// <param name="minOutputValue">The minimum output value (inclusive).</param>
 		/// <param name="maxOutputValue">The maximum output value (inclusive).</param>
 		/// <param name="sectionNames">The optional section names. If specified, only the given sections are processed.</param>
-		public NormalisingPreprocessor(int minInputValue, int maxInputValue, int minOutputValue, int maxOutputValue, params string[] sectionNames) : base(sectionNames)
+		public NormalisingPreprocessor(double minInputValue, double maxInputValue, double minOutputValue, double maxOutputValue, params string[] sectionNames) : base(sectionNames)
 		{
 			if (minInputValue >= maxInputValue)
 			{
@@ -60,16 +61,26 @@ namespace Sigma.Core.Data.Preprocessors
 			MaxInputValue = maxInputValue;
 			MinOutputValue = minOutputValue;
 			MaxOutputValue = maxOutputValue;
-
-			int inputRange = maxInputValue - minInputValue;
-			int outputRange = maxOutputValue - minOutputValue;
-			_outputScale = ((double) outputRange) / inputRange;
 		}
 
-		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
+	    /// <summary>
+	    /// Get an adaptive version of this normalising preprocessor.
+	    /// </summary>
+	    /// <param name="adaptionRate">The optional adaption rate.</param>
+	    /// <returns>An adaptive version of this normalising preprocessor.</returns>
+	    public IRecordPreprocessor Adaptive(AdaptionRate adaptionRate = AdaptionRate.Every)
+	    {
+	        return Preprocess(new AdaptiveNormalisingPreprocessor(this, adaptionRate));
+	    }
+
+		internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
+			double inputRange = MaxInputValue - MinInputValue;
+			double outputRange = MaxOutputValue - MinOutputValue;
+			double outputScale = outputRange / inputRange;
+
 			array = handler.Subtract(array, MinInputValue);
-			array = handler.Multiply(array, _outputScale);
+			array = handler.Multiply(array, outputScale);
 			array = handler.Add(array, MinOutputValue);
 
 			return array;

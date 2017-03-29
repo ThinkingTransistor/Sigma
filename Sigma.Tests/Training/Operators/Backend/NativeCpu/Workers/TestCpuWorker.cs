@@ -1,10 +1,12 @@
-﻿using System;
-using System.Threading;
-using NUnit.Framework;
-using Sigma.Core.Architecture;
+﻿using NUnit.Framework;
+using Sigma.Core;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
+using System;
+using System.IO;
+using System.Threading;
 
 namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 {
@@ -12,14 +14,32 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 	{
 		private static CpuWorker CreateCpuWorker()
 		{
-			return new CpuWorker(CreateOperator());
+			var @operator = CreateOperator();
+			var worker = new CpuWorker(@operator);
+			worker.LocalNetwork = @operator.Network;
+			worker.LocalTrainingDataIterator = @operator.Trainer.TrainingDataIterator;
+			worker.LocalOptimiser = @operator.Trainer.Optimiser;
+
+			return worker;
 		}
 
-		private static IOperator CreateOperator()
+		private static void RedirectGlobalsToTempPath()
 		{
-			IOperator @operator =new CpuMultithreadedOperator(10);
+			SigmaEnvironment.Globals["workspace_path"] = Path.GetTempPath();
+			SigmaEnvironment.Globals["cache_path"] = Path.GetTempPath() + "sigmacache";
+			SigmaEnvironment.Globals["datasets_path"] = Path.GetTempPath() + "sigmadatasets";
+		}
 
-			@operator.Network = new Network();
+		private static CpuMultithreadedOperator CreateOperator()
+		{
+			SigmaEnvironment.Clear();
+			RedirectGlobalsToTempPath();
+
+			CpuMultithreadedOperator @operator = new CpuMultithreadedOperator(new CpuFloat32Handler(), 3, ThreadPriority.Normal);
+			@operator.Trainer = new MockTrainer();
+			@operator.Trainer.Initialise(@operator.Handler);
+			@operator.Network = @operator.Trainer.Network;
+			@operator.Sigma = SigmaEnvironment.GetOrCreate("testificate-operatorcreate");
 
 			return @operator;
 		}
@@ -27,16 +47,16 @@ namespace Sigma.Tests.Training.Operators.Backend.NativeCpu.Workers
 		[TestCase]
 		public void TestCpuWorkerCreate()
 		{
-			IOperator oOperator = new CpuMultithreadedOperator(10);
-			CpuWorker worker = new CpuWorker(oOperator, oOperator.Handler, ThreadPriority.Normal);
+			IOperator @operator = new CpuMultithreadedOperator(10);
+			CpuWorker worker = new CpuWorker(@operator, @operator.Handler, ThreadPriority.Normal);
 
-			Assert.AreSame(oOperator, worker.Operator);
+			Assert.AreSame(@operator, worker.Operator);
 			Assert.AreEqual(worker.ThreadPriority, ThreadPriority.Normal);
-			Assert.AreSame(worker.Handler, oOperator.Handler);
+			Assert.AreSame(worker.Handler, @operator.Handler);
 
-			worker = new CpuWorker(oOperator);
+			worker = new CpuWorker(@operator);
 
-			Assert.AreSame(worker.Handler, oOperator.Handler);
+			Assert.AreSame(worker.Handler, @operator.Handler);
 
 			Assert.AreEqual(worker.State, ExecutionState.None);
 		}

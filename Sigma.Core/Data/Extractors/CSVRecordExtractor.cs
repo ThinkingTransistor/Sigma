@@ -20,8 +20,10 @@ namespace Sigma.Core.Data.Extractors
 	/// <summary>
 	/// A CSV record extractor, which extracts string based records as columns.
 	/// </summary>
+	[Serializable]
 	public class CsvRecordExtractor : BaseExtractor
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Dictionary<int, Dictionary<object, object>> _columnValueMappings;

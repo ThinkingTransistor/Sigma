@@ -9,15 +9,16 @@ For full license see LICENSE in the root directory of this project.
 using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using System;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
 	/// <summary>
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
 	/// </summary>
+	[Serializable]
 	public class CpuFloat32Handler : DiffSharpFloat32Handler
 	{
 		public CpuFloat32Handler() : base(new OpenBlasBlasBackend(), new OpenBlasLapackBackend())

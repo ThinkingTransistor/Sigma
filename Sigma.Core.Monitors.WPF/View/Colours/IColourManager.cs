@@ -9,8 +9,11 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using MaterialDesignColors;
 
-namespace Sigma.Core.Monitors.WPF.View.Themes
+namespace Sigma.Core.Monitors.WPF.View.Colours
 {
+	/// <summary>
+	/// A <see cref="IColourManager"/> allows to change the look and feel of the application.
+	/// </summary>
 	public interface IColourManager
 	{
 		/// <summary>
@@ -18,6 +21,9 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		/// </summary>
 		Application App { get; set; }
 
+		/// <summary>
+		/// A reference to the root window this ColourManager belongs to.
+		/// </summary>
 		Window Window { get; set; }
 
 		/// <summary>
@@ -41,7 +47,7 @@ namespace Sigma.Core.Monitors.WPF.View.Themes
 		bool Alternate { get; set; }
 
 		/// <summary>
-		///     Force an update of all values.
+		///     Force an update of all values. Normally not required.
 		/// </summary>
 		void ForceUpdate();
 	}

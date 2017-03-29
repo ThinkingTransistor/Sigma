@@ -19,6 +19,7 @@ namespace Sigma.Core.Training.Providers
 	/// <summary>
 	/// The default data provider, providing default links for default inputs and targets and optional additional input and output links.
 	/// </summary>
+	[Serializable]
 	public class DefaultDataProvider : IDataProvider
 	{
 		/// <summary>
@@ -85,7 +86,7 @@ namespace Sigma.Core.Training.Providers
 			if (externalOutputAlias == null) throw new ArgumentNullException(nameof(externalOutputAlias));
 			if (linkAction == null) throw new ArgumentNullException(nameof(linkAction));
 
-			_externalInputLinks[externalOutputAlias] = linkAction;
+			_externalOutputLinks[externalOutputAlias] = linkAction;
 		}
 
 		/// <summary>
@@ -96,7 +97,7 @@ namespace Sigma.Core.Training.Providers
 		{
 			if (externalOutputAlias == null) throw new ArgumentNullException(nameof(externalOutputAlias));
 
-			_externalInputLinks.Remove(externalOutputAlias);
+			_externalOutputLinks.Remove(externalOutputAlias);
 		}
 
 		/// <summary>

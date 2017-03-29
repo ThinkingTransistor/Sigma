@@ -21,6 +21,7 @@ namespace Sigma.Core.Utils
 	/// A collection of keys and values (similar to a dictionary) where types and keys are registered for easier inspection. 
 	/// Registries can be chained and represent a hierarchy, which can then be referred to using dot notation.
 	/// </summary>
+	[Serializable]
 	public class Registry : IRegistry
 	{
 		internal Dictionary<string, object> MappedValues;
@@ -44,25 +45,13 @@ namespace Sigma.Core.Utils
 
 		public bool IsReadOnly => false;
 
-		public IRegistry Parent
-		{
-			get; set;
-		}
+		public IRegistry Parent { get; set; }
 
-		public IRegistry Root
-		{
-			get; set;
-		}
+		public IRegistry Root { get; set; }
 
-		public ISet<string> Tags
-		{
-			get;
-		}
+		public ISet<string> Tags { get; }
 
-		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
-		{
-			get;
-		}
+		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners { get; }
 
 		/// <summary>
 		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
@@ -234,6 +223,7 @@ namespace Sigma.Core.Utils
 			}
 		}
 
+		/// <inheritdoc />
 		public T Get<T>(string identifier)
 		{
 			return (T) MappedValues[identifier];
@@ -402,37 +392,6 @@ namespace Sigma.Core.Utils
 			}
 
 			return str.ToString();
-		}
-
-		/// <summary>
-		/// Get the deepest copy of a given value (order: <see cref="IDeepCopyable.DeepCopy"/> => <see cref="ICloneable.Clone"/>).
-		/// If the value cannot be copied, the original value is returned.
-		/// </summary>
-		/// <param name="value">The value.</param>
-		/// <returns>The deepest available copy of the given value.</returns>
-		public static object DeepestCopy(object value)
-		{
-			object copiedValue;
-			IDeepCopyable deepCopyableValue = value as IDeepCopyable;
-
-			if (deepCopyableValue == null)
-			{
-				ICloneable cloneableValue = value as ICloneable;
-				if (cloneableValue != null)
-				{
-					copiedValue = cloneableValue.Clone();
-				}
-				else
-				{
-					copiedValue = value;
-				}
-			}
-			else
-			{
-				copiedValue = deepCopyableValue.DeepCopy();
-			}
-
-			return copiedValue;
 		}
 
 		/// <summary>

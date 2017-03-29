@@ -9,14 +9,21 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Initialisers
 {
 	/// <summary>
 	/// A base initialiser for simplified per value calculations.
 	/// </summary>
+	[Serializable]
 	public abstract class BaseInitialiser : IInitialiser
 	{
+		/// <summary>
+		/// The registry containing relevant parameters and information about this initialiser.
+		/// </summary>
+		public IRegistry Registry { get; } = new Registry(tags: "initialiser");
+
 		public void Initialise(INDArray array, IComputationHandler handler, Random random)
 		{
 			if (array == null) throw new ArgumentNullException(nameof(array));

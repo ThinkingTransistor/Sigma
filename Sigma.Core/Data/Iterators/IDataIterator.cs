@@ -26,7 +26,7 @@ namespace Sigma.Core.Data.Iterators
 		IDataset UnderlyingDataset { get; }
 
 		/// <summary>
-		/// A registry containing relevant parameters of this data iterator.
+		/// A registry containing relevant parameters of and information about this data iterator.
 		/// </summary>
 		IRegistry Registry { get; }
 

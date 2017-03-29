@@ -16,7 +16,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	internal static class PlatformDependentUtils
 	{
-		private static readonly ILog clazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog ClazzLogger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static bool _checkedPlatformDependentLibraries;
 
@@ -31,23 +31,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			if (pid == PlatformID.Win32NT || pid == PlatformID.Win32S || pid == PlatformID.Win32Windows || pid == PlatformID.WinCE)
 			{
-				clazzLogger.Debug("Detected Windows system, using windows libraries (.dll).");
+				ClazzLogger.Debug("Detected Windows system, using windows libraries (.dll).");
 			}
 			else if (pid == PlatformID.Unix)
 			{
-				clazzLogger.Debug("Detected Unix systemdetected, using linux libraries (.so).");
+				ClazzLogger.Debug("Detected Unix systemdetected, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.MacOSX)
 			{
-				clazzLogger.Debug("Detected MacOSX system, using linux libraries (.so).");
+				ClazzLogger.Debug("Detected MacOSX system, using linux libraries (.so).");
 			}
 			else if (pid == PlatformID.Xbox)
 			{
-				clazzLogger.Warn("Detected XBOX system. An XBOX. Really? I'm not even mad. Letting CLR decide what libraries to load.");
+				ClazzLogger.Warn("Detected XBOX system. An XBOX. Really? I'm not even mad. Letting CLR decide what libraries to load.");
 			}
 			else
 			{
-				clazzLogger.Warn($"Detected not natively supported system with platform id {pid} (potato system?). Letting CLR decide what libraries to load.");
+				ClazzLogger.Warn($"Detected not natively supported system with platform id {pid} (potato system?). Letting CLR decide what libraries to load.");
 			}
 
 			_checkedPlatformDependentLibraries = true;

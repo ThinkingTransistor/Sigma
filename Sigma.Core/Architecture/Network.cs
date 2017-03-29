@@ -13,24 +13,41 @@ using log4net;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Persistence.Selectors;
+using Sigma.Core.Persistence.Selectors.Network;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
 {
+	/// <summary>
+	/// A default implementation of the <see cref="INetwork"/> interface.
+	/// Represents a neural network consisting of interconnected neural layers and a network architecture.
+	/// </summary>
 	[Serializable]
 	public class Network : INetwork
 	{
+		/// <inheritdoc />
 		public INetworkArchitecture Architecture { get; set; }
+
+		/// <inheritdoc />
 		public string Name { get; }
+
+		/// <inheritdoc />
 		public IRegistry Registry { get; }
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
 		private List<ILayer> _orderedLayers;
 		private IComputationHandler _initialisationHandler;
+		private bool _initialised;
 
+		/// <summary>
+		/// Create a network with a certain unique name.
+		/// </summary>
+		/// <param name="name">The name.</param>
 		public Network(string name = "unnamed")
 		{
 			if (name == null) throw new ArgumentNullException(nameof(name));
@@ -42,12 +59,13 @@ namespace Sigma.Core.Architecture
 			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
 		}
 
+		/// <inheritdoc />
 		public virtual object DeepCopy()
 		{
 			Network copy = new Network(Name);
 			copy.Architecture = (INetworkArchitecture) Architecture.DeepCopy();
 
-			if (_initialisationHandler != null)
+			if (_initialised)
 			{
 				copy.Initialise(_initialisationHandler);
 
@@ -65,15 +83,8 @@ namespace Sigma.Core.Architecture
 						// copy and copy efficiently by any means possible
 						if (deepCopyableValue == null)
 						{
-							ICloneable cloneableValue = value as ICloneable;
-							if (cloneableValue != null)
-							{
-								copiedValue = cloneableValue.Clone();
-							}
-							else
-							{
-								copiedValue = value;
-							}
+						    ICloneable cloneableValue = value as ICloneable;
+						    copiedValue = cloneableValue?.Clone() ?? value;
 						}
 						else
 						{
@@ -95,6 +106,7 @@ namespace Sigma.Core.Architecture
 			return copy;
 		}
 
+		/// <inheritdoc />
 		public void Validate()
 		{
 			if (Architecture == null)
@@ -105,6 +117,7 @@ namespace Sigma.Core.Architecture
 			Architecture.Validate();
 		}
 
+		/// <inheritdoc />
 		public void Initialise(IComputationHandler handler)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
@@ -186,6 +199,8 @@ namespace Sigma.Core.Architecture
 
 			SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
+			_initialised = true;
+
 			_logger.Debug($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
 		}
 
@@ -193,6 +208,7 @@ namespace Sigma.Core.Architecture
 		{
 			Registry.Clear();
 
+			Registry["initialised"] = _initialised;
 			Registry["self"] = this;
 			Registry["name"] = Name;
 			Registry["architecture"] = Architecture?.Registry;
@@ -206,6 +222,7 @@ namespace Sigma.Core.Architecture
 			}
 		}
 
+		/// <inheritdoc />
 		public void Run(IComputationHandler handler, bool trainingPass)
 		{
 			if (handler == null) throw new ArgumentNullException(nameof(handler));
@@ -216,24 +233,52 @@ namespace Sigma.Core.Architecture
 			}
 		}
 
+		/// <inheritdoc />
+		public void Reset()
+		{
+			_logger.Debug($"Resetting network \"{Name}\" to un-initialised state...");
+
+			_orderedLayerBuffers.Clear();
+			_orderedLayers.Clear();
+			_externalInputsLayerBuffers.Clear();
+			_externalOutputsLayerBuffers.Clear();
+
+			_initialised = false;
+			_initialisationHandler = null;
+
+			UpdateRegistry();
+
+			_logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
+		}
+
+		/// <inheritdoc />
 		public IEnumerable<ILayer> YieldLayersOrdered()
 		{
 			return _orderedLayers;
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered()
 		{
 			return _orderedLayerBuffers;
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers()
 		{
 			return _externalInputsLayerBuffers;
 		}
 
+		/// <inheritdoc />
 		public IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers()
 		{
 			return _externalOutputsLayerBuffers;
+		}
+
+		/// <inheritdoc />
+		public INetworkSelector<INetwork> Select()
+		{
+			return new DefaultNetworkSelector<INetwork>(this);
 		}
 	}
 }

@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
@@ -41,6 +42,11 @@ namespace Sigma.Core.Training.Operators
 		ExecutionState State { get; }
 
 		/// <summary>
+		/// The total running time of this operator since start in milliseconds (running only when the <see cref="ExecutionState"/> is <see cref="ExecutionState.Running"/>).
+		/// </summary>
+		long RunningTimeMilliseconds { get; }
+
+		/// <summary>
 		///     The <see cref="IComputationHandler" /> used to compute everything in
 		///     this <see cref="IOperator" />. It will be automatically set by the
 		///     <see cref="ITrainer" /> if not specified.
@@ -66,14 +72,24 @@ namespace Sigma.Core.Training.Operators
 		INetworkMerger NetworkMerger { get; set; }
 
 		/// <summary>
+		///		The local hooks that are attached to this operator.
+		/// </summary>
+		IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+
+		/// <summary>
 		///		The global hooks that are attached to this operator.
 		/// </summary>
 		IReadOnlyCollection<IHook> AttachedGlobalHooks { get; }
 
 		/// <summary>
-		///		The local hooks that are attached to this operator.
+		///		All local hooks sorted by time scale.
 		/// </summary>
-		IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
+		IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedLocalHooksByTimeScale { get; }
+
+		/// <summary>
+		///		All global hooks sorted by time scale.
+		/// </summary>
+		IReadOnlyDictionary<TimeScale, ISet<IHook>> AttachedGlobalHooksByTimescale { get; }
 
 		/// <summary>
 		///     The number of <see cref="Workers.IWorker" />s (threads) used in this
@@ -164,6 +180,12 @@ namespace Sigma.Core.Training.Operators
 		uint GetGlobalHookInvocationTarget(IHook hook);
 
 		/// <summary>
+		/// Execute a given command. It is uncertain when the command is executed.
+		/// </summary>
+		/// <param name="command">The <see cref="ICommand"/> that will be executed.</param>
+		void InvokeCommand(ICommand command);
+
+		/// <summary>
 		/// Dispatch a set of hooks for background invocation. The required registry entries are automatically copied from the given local registry. 
 		/// </summary>
 		/// <param name="hooksToInvokeInBackground">The hooks to invoke in the background.</param>
@@ -176,10 +198,10 @@ namespace Sigma.Core.Training.Operators
 		/// Invoke hooks for a certain time scale with a certain worker.
 		/// </summary>
 		/// <param name="timeScale">The time scale.</param>
-		/// <param name="hooks">The hooks to check and invoke.</param>
+		/// <param name="hooksByTimescale">The hooks to check and invoke (by timescale).</param>
 		/// <param name="localHookTimeSteps">The local hook time steps to use (and populate if missing).</param>
 		/// <param name="resultHooksToInvoke">The resulting (unordered) hooks to invoke.</param>
-		void EjectTimeScaleEvent(TimeScale timeScale, IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke);
+		void EjectTimeScaleEvent(TimeScale timeScale, IReadOnlyDictionary<TimeScale, ISet<IHook>> hooksByTimescale, IDictionary<IHook, ITimeStep> localHookTimeSteps, List<IHook> resultHooksToInvoke);
 
 		/// <summary>
 		///     Push the workers current progress (e.g. local network) to the <see cref="IOperator"/>. 
@@ -220,6 +242,12 @@ namespace Sigma.Core.Training.Operators
 		void SignalStop();
 
 		/// <summary>
+		///		Signal this operator to reset as soon as possible.
+		///     This operator will be reset to the initial state (runtime data is discarded, network remains untouched, workers are kept).
+		/// </summary>
+		void SignalReset();
+
+		/// <summary>
 		///     This method blocks until the last state change has been fully performed.
 		///     Returns immediately if not implemented.
 		/// </summary>
@@ -231,5 +259,17 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="registry">The registry to populate.</param>
 		/// <param name="worker">The worker to fetch local values from.</param>
 		void PopulateWorkerRegistry(IRegistry registry, IWorker worker);
+
+		/// <summary>
+		/// Get a shallow copy of this operator, including all available runtime state.
+		/// </summary>
+		/// <returns></returns>
+		IOperator ShallowCopy();
+
+		/// <summary>
+		/// Get an operator selector for this operator.
+		/// </summary>
+		/// <returns>The selector for this operator.</returns>
+		IOperatorSelector<IOperator> Select();
 	}
 }

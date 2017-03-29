@@ -1,9 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "02-IRIS", "01-IRIS\02-IRIS.csproj", "{E520248D-A792-4A03-A0EA-65369AB234CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "01-MNIST", "01-MNIST\01-MNIST.csproj", "{C5938EEF-0E15-4554-BC7F-FDBB164462CE}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E520248D-A792-4A03-A0EA-65369AB234CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E520248D-A792-4A03-A0EA-65369AB234CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{E520248D-A792-4A03-A0EA-65369AB234CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{E520248D-A792-4A03-A0EA-65369AB234CA}.Release|x64.Build.0 = Release|Any CPU
+		{C5938EEF-0E15-4554-BC7F-FDBB164462CE}.Debug|x64.ActiveCfg = Debug|x64
+		{C5938EEF-0E15-4554-BC7F-FDBB164462CE}.Debug|x64.Build.0 = Debug|x64
+		{C5938EEF-0E15-4554-BC7F-FDBB164462CE}.Release|x64.ActiveCfg = Release|x64
+		{C5938EEF-0E15-4554-BC7F-FDBB164462CE}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

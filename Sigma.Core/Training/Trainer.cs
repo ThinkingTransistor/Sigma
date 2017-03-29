@@ -15,10 +15,10 @@ using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
-using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Initialisers;
+using Sigma.Core.Training.Modifiers;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
@@ -31,14 +31,17 @@ namespace Sigma.Core.Training
 	/// The default <see cref="ITrainer"/> implementation.
 	/// A trainer that defines how a network should be trained, denoting initialisers, optimiser, operator, custom hooks and data to apply and use. 
 	/// </summary>
+	[Serializable]
 	public class Trainer : ITrainer
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly IList<IHook> _localHooks;
 		private readonly IList<IHook> _globalHooks;
 		private readonly Dictionary<string, IDataIterator> _additionalNameDataIterators;
 		private readonly IList<IHook> _allHooks;
 		private readonly IDictionary<string, IInitialiser> _initialisers;
+		private readonly IDictionary<string, ISet<IValueModifier>> _valueModifiers;
 		private bool _initialised;
 
 		public string Name { get; }
@@ -54,11 +57,12 @@ namespace Sigma.Core.Training
 		public IReadOnlyCollection<IHook> Hooks { get; }
 		public IReadOnlyCollection<IHook> GlobalHooks { get; }
 		public IReadOnlyCollection<IHook> LocalHooks { get; }
+		public IReadOnlyDictionary<string, ISet<IValueModifier>> ValueModifiers { get; }
 		public IRegistry Registry { get; }
 
-		internal Trainer(string name)
+		public Trainer(string name)
 		{
-			if (name == null) { throw new ArgumentNullException(nameof(name)); }
+			if (name == null) throw new ArgumentNullException(nameof(name));
 
 			Name = name;
 
@@ -67,11 +71,13 @@ namespace Sigma.Core.Training
 			_globalHooks = new List<IHook>();
 			_additionalNameDataIterators = new Dictionary<string, IDataIterator>();
 			_initialisers = new Dictionary<string, IInitialiser>();
+			_valueModifiers = new Dictionary<string, ISet<IValueModifier>>();
 
 			Hooks = new ReadOnlyCollection<IHook>(_allHooks);
 			GlobalHooks = new ReadOnlyCollection<IHook>(_globalHooks);
 			LocalHooks = new ReadOnlyCollection<IHook>(_localHooks);
 			AdditionalNameDataIterators = new ReadOnlyDictionary<string, IDataIterator>(_additionalNameDataIterators);
+			ValueModifiers = new ReadOnlyDictionary<string, ISet<IValueModifier>>(_valueModifiers);
 			Initialisers = new ReadOnlyDictionary<string, IInitialiser>(_initialisers);
 			Registry = new Registry(tags: "trainer");
 			Registry["self"] = this;
@@ -95,10 +101,15 @@ namespace Sigma.Core.Training
 			if (_initialisers.ContainsKey(identifier))
 			{
 				throw new InvalidOperationException($"Cannot add duplicate identifier {identifier} for initialiser {initialiser}," +
-				                                    $" identifier is already bound to initialiser {_initialisers[identifier]}");
+													$" identifier is already bound to initialiser {_initialisers[identifier]}");
 			}
 
 			_initialisers.Add(identifier, initialiser);
+		}
+
+		public void AddValueModifier(string identifier, IValueModifier modifier)
+		{
+			_valueModifiers.TryGetValue(identifier, () => new HashSet<IValueModifier>()).Add(modifier);
 		}
 
 		public void AddHook(IHook hook)
@@ -114,8 +125,8 @@ namespace Sigma.Core.Training
 			else
 			{
 				throw new InvalidOperationException($"Ambiguous add hook call for hook {hook} with target mode {hook.DefaultTargetMode}. " +
-				                                    $"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
-				                                    $" (unable to determine where to add this hook).");
+													$"Target mode must be explicitly {nameof(TargetMode.Local)} or {nameof(TargetMode.Global)} for implicit hook add to work" +
+													$" (i.e. unable to determine where to add this hook, specify it explicitly in the caller).");
 			}
 		}
 
@@ -153,9 +164,10 @@ namespace Sigma.Core.Training
 
 			RegistryResolver networkResolver = new RegistryResolver(Network.Registry.Get<IRegistry>("layers"));
 			int initialisedNDArrayCount = 0, initialisedNumberCount = 0;
+			List<string> orderedInitialiserIdentifiers = _initialisers.Keys.ToList();
+			orderedInitialiserIdentifiers.Sort(RegistryUtils.CompareIdentifierSpecificityAscending);
 
-			// TODO maybe sort by most specific ascending?
-			foreach (string identifier in _initialisers.Keys)
+			foreach (string identifier in orderedInitialiserIdentifiers)
 			{
 				object[] values = networkResolver.ResolveGet(identifier, new object[0]);
 				IInitialiser initialiser = _initialisers[identifier];
@@ -215,6 +227,7 @@ namespace Sigma.Core.Training
 
 		protected virtual void UpdateRegistry()
 		{
+			Registry["initialised"] = _initialised;
 			Registry["name"] = Name;
 			Registry["network"] = Network?.Registry;
 			Registry["optimiser"] = Optimiser?.Registry;
@@ -276,13 +289,74 @@ namespace Sigma.Core.Training
 			Operator.Start();
 		}
 
-		public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IComputationHandler handler)
+		public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IRegistry localRegistry, IComputationHandler handler)
 		{
+			if (localNetwork == null) throw new ArgumentNullException(nameof(localNetwork));
+			if (localOptimiser == null) throw new ArgumentNullException(nameof(localOptimiser));
+			if (localRegistry == null) throw new ArgumentNullException(nameof(localRegistry));
+			if (handler == null) throw new ArgumentNullException(nameof(handler));
+
 			CheckInitialised();
 
 			localOptimiser.PrepareRun(localNetwork, handler);
 			localNetwork.Run(handler, trainingPass: true);
 			localOptimiser.Run(localNetwork, handler);
+			ApplyValueModifiers(localRegistry, handler);
+		}
+
+		private void ApplyValueModifiers(IRegistry localRegistry, IComputationHandler handler)
+		{
+			if (_valueModifiers.Count == 0)
+			{
+				return;
+			}
+
+			RegistryResolver resolver = new RegistryResolver(localRegistry);
+
+			foreach (string identifier in _valueModifiers.Keys)
+			{
+				string[] fullyResolvedIdentifiers;
+				object[] values = resolver.ResolveGet<object>(identifier, out fullyResolvedIdentifiers);
+
+				for (int i = 0; i < values.Length; i++)
+				{
+					object value = values[i];
+					INDArray asNDArray = value as INDArray;
+					INumber asNumber = value as INumber;
+
+					if (asNDArray != null)
+					{
+						foreach (IValueModifier modifier in _valueModifiers[identifier])
+						{
+							asNDArray = modifier.Modify(fullyResolvedIdentifiers[i], asNDArray, handler);
+						}
+						values[i] = asNDArray;
+					}
+					else if (asNumber != null)
+					{
+						foreach (IValueModifier modifier in _valueModifiers[identifier])
+						{
+							asNumber = modifier.Modify(fullyResolvedIdentifiers[i], asNumber, handler);
+						}
+						values[i] = asNumber;
+					}
+					else
+					{
+						double? asDouble = value as double?;
+
+						if (asDouble != null)
+						{
+							foreach (IValueModifier modifier in _valueModifiers[identifier])
+							{
+								asDouble = modifier.Modify(fullyResolvedIdentifiers[i], asDouble.Value, handler);
+							}
+							values[i] = asDouble.Value;
+						}
+					}
+
+					resolver.ResolveSet(fullyResolvedIdentifiers[i], values[i]);
+				}
+			}
 		}
 
 		/// <summary>
@@ -294,13 +368,7 @@ namespace Sigma.Core.Training
 		{
 			CheckInitialised();
 
-			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalInputsLayerBuffers())
-			{
-				foreach (string externalInputAlias in layerBuffer.ExternalInputs)
-				{
-					DataProvider.ProvideExternalInput(externalInputAlias, layerBuffer.Inputs[externalInputAlias], layerBuffer.Layer, currentBlock);
-				}
-			}
+			DataProviderUtils.ProvideExternalInputData(DataProvider, localNetwork, currentBlock);
 		}
 
 		/// <summary>
@@ -310,13 +378,35 @@ namespace Sigma.Core.Training
 		/// <param name="currentBlock">The current record block.</param>
 		public void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
 		{
-			foreach (ILayerBuffer layerBuffer in localNetwork.YieldExternalOutputsLayerBuffers())
+			DataProviderUtils.ProvideExternalOutputData(DataProvider, localNetwork, currentBlock);
+		}
+
+		/// <summary>
+		/// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator (and wait for that).
+		/// </summary>
+		public void Reset()
+		{
+			_logger.Info($"Resetting trainer \"{Name}\" to un-initialised state, discarding all progress data...");
+
+			if (Operator?.State != ExecutionState.None)
 			{
-				foreach (string externalOutputAlias in layerBuffer.ExternalOutputs)
-				{
-					DataProvider.ProvideExternalOutput(externalOutputAlias, layerBuffer.Outputs[externalOutputAlias], layerBuffer.Layer, currentBlock);
-				}
+				_logger.Info($"Signalling operator to stop and reset, waiting for state change signal to continue trainer reset...");
+
+				Operator.SignalReset();
+				Operator.WaitForStateChanged();
 			}
+
+			Network?.Reset();
+			_initialised = false;
+
+			UpdateRegistry();
+
+			_logger.Info($"Done resetting trainer \"{Name}\" to un-initialised state, discarded all progress data and stopped operator.");
+		}
+
+		public override string ToString()
+		{
+			return $"trainer \"{Name}\"";
 		}
 	}
 }

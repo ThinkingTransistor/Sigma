@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using System;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Initialisers
 {
@@ -17,6 +18,11 @@ namespace Sigma.Core.Training.Initialisers
 	/// </summary>
 	public interface IInitialiser
 	{
+		/// <summary>
+		/// The registry containing relevant parameters and information about this initialiser.
+		/// </summary>
+		IRegistry Registry { get; }
+
 		/// <summary>
 		/// Initialise a certain ndarray.
 		/// </summary>

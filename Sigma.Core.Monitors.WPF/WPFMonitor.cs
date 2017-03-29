@@ -18,53 +18,91 @@ using log4net.Core;
 using log4net.Filter;
 using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
-using Sigma.Core.Monitors.WPF.View.Themes;
+using Sigma.Core.Monitors.WPF.View.Colours;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF
 {
 	/// <summary>
-	///     This <see cref="IMonitor" /> is the default visualisation monitor shipped with the big Sigma.
-	///     The <see cref="WPFMonitor" /> is designed to run on Windows.
+	/// This <see cref="IMonitor" /> is the default visualisation monitor shipped with the big Sigma.
+	/// The <see cref="WPFMonitor" /> is designed to run on the Windows platform.
 	/// </summary>
 	// ReSharper disable once InconsistentNaming
 	public class WPFMonitor : MonitorAdapter, IAppender
 	{
 		/// <summary>
-		///     The logger.
+		/// The logger.
 		/// </summary>
 		private readonly ILog _log = LogManager.GetLogger(typeof(WPFMonitor));
 
 		/// <summary>
-		///     Actions assigned to this list will listen
-		///     to the onStart-event of the <see cref="_app" />.
-		/// </summary>
-		private readonly List<Action<object>> _onWindowStartup = new List<Action<object>>();
-
-		/// <summary>
-		///     The type of the window that will be created.
-		///     A type is passed in order to prevent generics.
-		///     (Mostly that user does not have to care about it)
+		/// The type of the window that will be created.
+		/// A type is passed in order to prevent generics.
+		/// (Mostly that user does not have to care about it)
 		/// </summary>
 		private readonly Type _windowType;
 
 		/// <summary>
-		///     The root application for all WPF interactions.
+		/// The root application for all WPF interactions.
 		/// </summary>
 		private App _app;
 
 		/// <summary>
-		///     This <see cref="bool" /> will be set to true,
-		///     as soon as all <see cref="_onWindowStartup" />
-		///     actions have been executed.
+		/// This property returns the current window.
+		/// <see cref="Window" /> is <see langword="null" /> until <see cref="SigmaEnvironment.Prepare" /> has been called.
 		/// </summary>
-		private bool _onWindowStartupExecuted;
+		public WPFWindow Window { get; set; }
 
 		/// <summary>
-		///     The title of the window.
+		/// The title of the window.
 		/// </summary>
 		private string _title;
+
+		/// <summary>
+		/// Property for the title of the window.
+		///		The title of the corresponding window is also set. 
+		/// </summary>
+		public string Title
+		{
+			get { return _title; }
+			set
+			{
+				_title = value;
+
+				Window?.Dispatcher.Invoke(() => Window.Title = _title);
+			}
+		}
+
+		/// <summary>
+		/// The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare" />.
+		///		Tabs can easily be added via <see cref="AddTabs"/> - see the documentation for additional informations on how to add tabs after prepare. 
+		/// </summary>
+		public List<string> Tabs { get; private set; }
+
+		/// <summary>
+		///		The internal mapping between a given string (displayed name of the status bar) and the actual <see cref="StatusBarLegendInfo"/>.
+		///		This is mainly used for <see cref="GetLegendInfo"/>.
+		/// </summary>
+		internal Dictionary<string, StatusBarLegendInfo> Legends { get; private set; }
+
+		/// <summary>
+		/// The <see cref="IColourManager" /> to control the look and feel of the application.
+		/// </summary>
+		public IColourManager ColourManager { get; }
+
+		/// <summary>
+		/// Actions assigned to this list will listen
+		/// to the onStart-event of the <see cref="_app" />.
+		/// </summary>
+		private readonly List<Action<object>> _onWindowStartup = new List<Action<object>>();
+
+		/// <summary>
+		/// This <see cref="bool" /> will be set to true,
+		/// as soon as all <see cref="_onWindowStartup" />
+		/// actions have been executed.
+		/// </summary>
+		private bool _onWindowStartupExecuted;
 
 		/// <summary>
 		/// The thread in which the UI runs.
@@ -72,12 +110,18 @@ namespace Sigma.Core.Monitors.WPF
 		private Thread _wpfThread;
 
 		/// <summary>
-		/// The UI culture info for all windows. 
+		/// The Priority with which the thread will be started.
+		/// The default is <see cref="ThreadPriority.Normal" />.
+		/// </summary>
+		public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
+
+		/// <summary>
+		/// The UI culture info for all windows. Changes to this variable do not update if currently running. Use <see cref="UiCultureInfo"/> instead.
 		/// </summary>
 		private CultureInfo _uiCultureInfo;
 
 		/// <summary>
-		/// The UI culture info for all windows. 
+		/// The UI culture info for all windows. Changes can be made at runtime but some UI elements may not update. (Hopefully in the future it automatically updates)
 		/// </summary>
 		public CultureInfo UiCultureInfo
 		{
@@ -97,27 +141,35 @@ namespace Sigma.Core.Monitors.WPF
 
 		/// <summary>
 		///	Every new log entry has to pass through this filter - if it passes the filter,
-		/// it will get through to the root window (<see cref="Window"/>), otherwsie it will get discarded.
-		/// The default is a <see cref="LevelRangeFilter"/> wth a <see cref="LevelRangeFilter.LevelMin"/> of <see cref="Level.Info"/>.
+		/// it will get through to the root window (<see cref="Window"/>), otherwise it will be discarded.
+		/// The default is a <see cref="LevelRangeFilter"/> with a <see cref="LevelRangeFilter.LevelMin"/> of <see cref="Level.Warn"/>.
 		/// 
 		/// If set to <c>null</c>, all messages will get passed.
 		/// </summary>
-		public IFilter LogFilter { get; set; } = new LevelRangeFilter {LevelMin = Level.Info};
+		public IFilter LogFilter { get; set; } = new LevelRangeFilter { LevelMin = Level.Warn };
 
 		/// <summary>
-		///     The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
+		/// Determine whether to close the given <see cref="SigmaEnvironment"/> when the <see cref="SignalStop"/> method
+		/// of the monitor has been called. <c>true</c> per default.
+		/// </summary>
+		public bool StopSigmaOnClose { get; set; } = true;
+
+		#region Constructor
+
+		/// <summary>
+		/// The constructor for the WPF Monitor that relies on <see cref="SigmaWindow" /> and the current 
 		///		ThreadCulture. 
-		///  </summary>
+		/// </summary>
 		/// <param name="title">The title of the new window.</param>
 		public WPFMonitor(string title) : this(title, typeof(SigmaWindow)) { }
 
 		/// <summary>
-		///     The constructor for the WPF Monitor - it uses the current <see cref="Thread.CurrentUICulture"/>.
+		/// The constructor for the WPF Monitor - it uses the current <see cref="Thread.CurrentUICulture"/>.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
 		/// <param name="window">
-		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
-		///     whit the same arguments as <see cref="WPFWindow" />.
+		/// The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
+		/// whit the same arguments as <see cref="WPFWindow" />.
 		/// </param>
 		public WPFMonitor(string title, Type window) : this(title, window, Thread.CurrentThread.CurrentUICulture) { }
 
@@ -135,23 +187,23 @@ namespace Sigma.Core.Monitors.WPF
 		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
 		public WPFMonitor(string title, CultureInfo uiCultureInfo) : this(title, typeof(SigmaWindow), uiCultureInfo) { }
 		/// <summary>
-		///     The constructor for the WPF Monitor.
+		/// The constructor for the WPF Monitor.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
 		/// <param name="window">
-		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
-		///     whit the same arguments as <see cref="WPFWindow" />.
+		/// The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
+		/// whit the same arguments as <see cref="WPFWindow" />.
 		/// </param>
 		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
 		public WPFMonitor(string title, Type window, string uiCultureInfo) : this(title, window, CultureInfo.GetCultureInfo(uiCultureInfo)) { }
 
 		/// <summary>
-		///     The constructor for the WPF Monitor.
+		/// The constructor for the WPF Monitor.
 		/// </summary>
 		/// <param name="title">The title of the new window.</param>
 		/// <param name="window">
-		///     The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
-		///     whit the same arguments as <see cref="WPFWindow" />.
+		/// The type of the <see cref="WPFWindow" /> that will be displayed. This window requires a constructor
+		/// whit the same arguments as <see cref="WPFWindow" />.
 		/// </param>
 		/// <param name="uiCultureInfo">The culture info used for the UI (language).</param>
 		public WPFMonitor(string title, Type window, CultureInfo uiCultureInfo)
@@ -173,53 +225,21 @@ namespace Sigma.Core.Monitors.WPF
 
 		}
 
-		/// <summary>
-		///     The Priority with which the thread will be started.
-		///     The default is <see cref="ThreadPriority.Normal" />.
-		/// </summary>
-		public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
-
+		#endregion Constructor
 
 		/// <summary>
-		///     This property returns the current window.
-		///     <see cref="Window" /> is <see langword="null" /> until <see cref="SigmaEnvironment.Prepare" /> has been called.
+		/// This method adds a list of given tabs to <see cref="Tabs"/>. If you want to add a tab after <see cref="SigmaEnvironment.Prepare"/> has been called,
+		/// call this method inside the window dispatcher (<see cref="WindowDispatcher"/>).
 		/// </summary>
-		public WPFWindow Window { get; set; }
-
-		/// <summary>
-		///     Property for the title of the window.
-		/// </summary>
-		public string Title
-		{
-			get { return _title; }
-			set
-			{
-				_title = value;
-
-				//TODO: title propagation
-				Window?.Dispatcher.Invoke(() => Window.Title = _title);
-			}
-		}
-
-		/// <summary>
-		///     The list of tabs that are available. These have to be set <b>before</b> <see cref="SigmaEnvironment.Prepare" />.
-		/// </summary>
-		public List<string> Tabs { get; private set; }
-
-
-		internal Dictionary<string, StatusBarLegendInfo> Legends { get; private set; }
-
-		/// <summary>
-		///     The <see cref="IColourManager" /> to control the look and feel of the application.
-		/// </summary>
-		public IColourManager ColourManager { get; }
-
+		/// <param name="tabs"></param>
 		public void AddTabs(params string[] tabs)
 		{
 			Tabs.AddRange(tabs);
 
 			_log.Debug($"Added {tabs.Length} tabs: {string.Join(", ", tabs)}.");
 		}
+
+		#region Legend
 
 		/// <summary>
 		///		Add a <see cref="StatusBarLegendInfo"/> to the UI. It will be (with a normal configuration) 
@@ -234,6 +254,10 @@ namespace Sigma.Core.Monitors.WPF
 			return GetLegendInfo(legend.Name);
 		}
 
+		/// <summary>
+		/// This method is equal to <see cref="AddLegend"/> but it adds multiple legends.
+		/// </summary>
+		/// <param name="legends"></param>
 		public void AddLegends(params StatusBarLegendInfo[] legends)
 		{
 			lock (_onWindowStartup)
@@ -247,17 +271,26 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		/// <summary>
+		/// Receive a given <see cref="StatusBarLegendInfo"/> defined by its name (<see cref="StatusBarLegendInfo.Name"/>).
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		public StatusBarLegendInfo GetLegendInfo(string name)
 		{
 			return Legends[name];
 		}
 
+		/// <summary>
+		/// Return all legends to be able to iterate through.
+		/// </summary>
+		/// <returns></returns>
 		public IEnumerable<StatusBarLegendInfo> GetLegends()
 		{
 			return Legends.Values;
 		}
 
-		private static void AddLegends(IDictionary<string, StatusBarLegendInfo> legends, StatusBarLegendInfo[] legendInfo)
+		private static void AddLegends(IDictionary<string, StatusBarLegendInfo> legends, IEnumerable<StatusBarLegendInfo> legendInfo)
 		{
 			foreach (StatusBarLegendInfo statusBarLegendInfo in legendInfo)
 			{
@@ -265,6 +298,11 @@ namespace Sigma.Core.Monitors.WPF
 			}
 		}
 
+		#endregion Legend
+
+		#region Lifecycle
+
+		/// <inheritdoc />
 		public override void Initialise()
 		{
 			base.Initialise();
@@ -275,21 +313,23 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been initialised.");
 		}
 
-		public void Reload()
-		{
-			_app.Dispatcher.Invoke(() =>
-			{
-				WPFWindow oldWindow = Window;
+		//TODO: implement
+		//public void Reload()
+		//{
+		//	_app.Dispatcher.Invoke(() =>
+		//	{
+		//		WPFWindow oldWindow = Window;
 
-				Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
-				ColourManager.Window = Window;
+		//		Window = (WPFWindow) Activator.CreateInstance(_windowType, this, _app, Title);
+		//		ColourManager.Window = Window;
 
-				_app.Dispatcher.Invoke(() => _app.Run(Window));
+		//		_app.Dispatcher.Invoke(() => _app.Run(Window));
 
-				oldWindow.Close();
-			});
-		}
+		//		oldWindow.Close();
+		//	});
+		//}
 
+		/// <inheritdoc />
 		public override void Start()
 		{
 			ThreadUtils.BlockingThread wpfThread = new ThreadUtils.BlockingThread(reset =>
@@ -329,10 +369,8 @@ namespace Sigma.Core.Monitors.WPF
 				}
 				catch (Exception e)
 				{
-					_log.Fatal("Uncaught exception in Sigma UI has been thrown. Sigma core will continue execution...", e);
-#if DEBUG
+					_log.Fatal("Uncaught exception in Sigma UI has been thrown.", e);
 					throw;
-#endif
 				}
 			});
 
@@ -349,17 +387,53 @@ namespace Sigma.Core.Monitors.WPF
 			_log.Debug($"{nameof(WPFMonitor)} has been started. The window {_windowType.Name} should now be visible. ");
 		}
 
+		/// <inheritdoc />
+		public override void SignalStop()
+		{
+			if (StopSigmaOnClose)
+			{
+				Sigma.SignalStop();
+			}
+
+			Dispose();
+		}
+
 		/// <summary>
-		///     This method allows to access the <see cref="WPFWindow" />.
-		///     All commands will be executed in the thread of the window!
-		///     If the environment has note been prepared, the function will be executed
-		///     in OnStartup function of the window.
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// </summary>
+		public override void Dispose()
+		{
+			base.Dispose();
+			Sigma.RemoveMonitor(this);
+		}
+
+		#endregion Lifecyclce
+
+		#region WindowDispatch
+		//TODO: documentation
+
+		private void InvokeWindowDispatcherAsync<T>(Action<T> action, DispatcherPriority priority) where T : WPFWindow
+		{
+			Window.Dispatcher.InvokeAsync(() => action((T) Window), priority);
+		}
+
+		private void InvokeWindowDispatcher<T>(Action<T> action, DispatcherPriority priority) where T : WPFWindow
+		{
+			Window.Dispatcher.Invoke(() => action((T) Window), priority);
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow" />.
+		/// All commands will be executed in the thread of the window!
+		/// If the environment has note been prepared, the function will be executed
+		/// in OnStartup function of the window.
 		/// 
-		///		The method will block until fully executed (if the window has already been started).
+		/// 		The method will block until fully executed (if the window has already been started).
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="invokeWindowDispatcher">The action that executes the window dispatchment (either synchronous or asynchronous).</param>
 		/// <param name="priority">The priority of the execution.</param>
-		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		private void WindowDispatcher<T>(Action<T> action, Action<Action<T>, DispatcherPriority> invokeWindowDispatcher, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
 		{
 			if (typeof(T) != _windowType)
 			{
@@ -374,7 +448,7 @@ namespace Sigma.Core.Monitors.WPF
 			{
 				try
 				{
-					Window.Dispatcher.Invoke(() => action((T) Window), priority);
+					invokeWindowDispatcher(action, priority);
 				}
 				catch (TaskCanceledException e)
 				{
@@ -385,10 +459,27 @@ namespace Sigma.Core.Monitors.WPF
 		}
 
 		/// <summary>
-		///     This method allows to access the <see cref="WPFWindow" />.
-		///     All commands will be executed in the thread of the window!
-		///     If the environment has note been prepared, the function will be executed
-		///     in OnStartup function of the window.
+		/// This method allows to access the <see cref="WPFWindow" />.
+		/// All commands will be executed in the thread of the window! (i.e. blocking until finished, use <see cref="WindowDispatcherAsync{T}(Action{T},DispatcherPriority)"/> otherwise)
+		/// If the environment has note been prepared, the function will be executed
+		/// in OnStartup function of the window.
+		/// 
+		/// The method will block until fully executed (if the window has already been started).
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcher<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		{
+			WindowDispatcher(action, InvokeWindowDispatcher, priority);
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow" />.
+		/// All commands will be executed in the thread of the window! (i.e. blocking until finished, use <see cref="WindowDispatcherAsync{T}(Action{T},DispatcherPriority)"/> otherwise)
+		/// If the environment has note been prepared, the function will be executed
+		/// in OnStartup function of the window.
+		/// 
+		/// The method will block until fully executed (if the window has already been started).
 		/// </summary>
 		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
 		/// <param name="priority">The priority of the execution.</param>
@@ -396,6 +487,38 @@ namespace Sigma.Core.Monitors.WPF
 		{
 			WindowDispatcher<SigmaWindow>(action, priority);
 		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow" />.
+		/// All commands will be executed asynchronously! (i.e. use <see cref="WindowDispatcher{T}(Action{T},DispatcherPriority)"/> otherwise)
+		/// If the environment has note been prepared, the function will be executed
+		/// in OnStartup function of the window.
+		/// 
+		/// The method will return immediately.
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcherAsync<T>(Action<T> action, DispatcherPriority priority = DispatcherPriority.Normal) where T : WPFWindow
+		{
+			WindowDispatcher(action, InvokeWindowDispatcherAsync, priority);
+		}
+
+		/// <summary>
+		/// This method allows to access the <see cref="WPFWindow" />.
+		/// All commands will be executed asynchronously! (i.e. use <see cref="WindowDispatcher{T}(Action{T},DispatcherPriority)"/> otherwise)
+		/// If the environment has note been prepared, the function will be executed
+		/// in OnStartup function of the window.
+		/// 
+		/// The method will return immediately.
+		/// </summary>
+		/// <param name="action">The action that should be executed from the <see cref="WPFWindow" />.</param>
+		/// <param name="priority">The priority of the execution.</param>
+		public void WindowDispatcherAsync(Action<SigmaWindow> action, DispatcherPriority priority = DispatcherPriority.Normal)
+		{
+			WindowDispatcherAsync<SigmaWindow>(action, priority);
+		}
+
+		#endregion WindowDispatch
 
 		#region Logging
 

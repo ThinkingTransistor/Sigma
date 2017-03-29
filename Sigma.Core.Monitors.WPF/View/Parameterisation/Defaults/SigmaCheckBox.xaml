@@ -1,0 +1,24 @@
+﻿<parameterisation:UserControlParameterVisualiser x:Class="Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults.SigmaCheckBox"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:parameterisation="clr-namespace:Sigma.Core.Monitors.WPF.View.Parameterisation"
+			 xmlns:converters="clr-namespace:Sigma.Core.Monitors.WPF.Utils.Converters"
+			 xmlns:defaults="clr-namespace:Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults"
+			 mc:Ignorable="d" 
+			 d:DesignHeight="20" d:DesignWidth="300"
+			 d:DataContext="{d:DesignInstance defaults:SigmaCheckBox}">
+
+	<parameterisation:UserControlParameterVisualiser.Resources>
+		<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+	</parameterisation:UserControlParameterVisualiser.Resources>
+	
+	<CheckBox Name="CheckBox" x:FieldModifier="public"
+			  IsChecked="{Binding IsChecked}"
+			  IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
+			  VerticalAlignment="Center"/>
+</parameterisation:UserControlParameterVisualiser>
+
+
+

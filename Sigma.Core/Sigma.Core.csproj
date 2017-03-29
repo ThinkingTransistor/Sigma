@@ -28,6 +28,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Sigma.Core.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -38,6 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x64\Debug\Sigma.Core.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -48,6 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\x64\Release\Sigma.Core.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TravisBuild|AnyCPU'">
     <OutputPath>bin\TravisBuild\</OutputPath>
@@ -58,6 +62,17 @@
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NugetBuild|AnyCPU'">
+    <OutputPath>bin\NugetBuild\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NugetBuild|x64'">
+    <OutputPath>bin\x64\NugetBuild\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
@@ -138,6 +153,8 @@
     <Compile Include="Data\Iterators\MinibatchIterator.cs" />
     <Compile Include="Data\Iterators\UndividedIterator.cs" />
     <Compile Include="Data\Iterators\UnifiedIterator.cs" />
+    <Compile Include="Data\Preprocessors\Adaptive\AdaptiveNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\Adaptive\BaseAdaptivePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
@@ -178,36 +195,73 @@
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADFloat32Number.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\NativeCpu\ADNDFloat32Array.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\ADNDArray.cs" />
-    <Compile Include="MathAbstract\Backends\DiffSharp\ADNumber.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\ADNDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
+    <Compile Include="Monitors\Synchronisation\ISynchronisationHandler.cs" />
+    <Compile Include="Monitors\Synchronisation\SetValueCommand.cs" />
+    <Compile Include="Monitors\Synchronisation\SynchronisationHandler.cs" />
+    <Compile Include="Parameterisation\IParameterisationManager.cs" />
+    <Compile Include="Parameterisation\IParameterType.cs" />
+    <Compile Include="Parameterisation\ParameterisationManager.cs" />
+    <Compile Include="Parameterisation\Types\RangedParameterType.cs" />
+    <Compile Include="Persistence\ISerialisationNotifier.cs" />
+    <Compile Include="Persistence\Selectors\INetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\IOperatorSelector.cs" />
+    <Compile Include="Persistence\Selectors\ISelector.cs" />
+    <Compile Include="Persistence\Selectors\IEnvironmentSelector.cs" />
+    <Compile Include="Persistence\Selectors\ITrainerSelector.cs" />
+    <Compile Include="Persistence\Selectors\Network\BaseNetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\Network\DefaultNetworkSelector.cs" />
+    <Compile Include="Persistence\Selectors\Operator\BaseOperatorSelector.cs" />
+    <Compile Include="Persistence\Selectors\Operator\CpuMultithreadedOperatorSelector.cs" />
+    <Compile Include="Persistence\Selectors\Operator\CpuSinglethreadedOperator.cs" />
+    <Compile Include="Persistence\Selectors\Trainer\BaseTrainerSelector.cs" />
+    <Compile Include="Persistence\Selectors\Trainer\DefaultTrainerSelector.cs" />
+    <Compile Include="Persistence\SerialisationTarget.cs" />
+    <Compile Include="Persistence\Serialisation.cs" />
+    <Compile Include="Persistence\Serialiser.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Training\Hooks\Accumulators\NumberAccumulatorHook.cs" />
+    <Compile Include="Training\Hooks\Processors\NumberAccumulatorHook.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
     <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
+    <Compile Include="Training\Hooks\HookInvokeCriteria.cs" />
+    <Compile Include="Training\Hooks\LambdaHook.cs" />
+    <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
+    <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
     <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\Stoppers\StopTrainingHook.cs" />
     <Compile Include="Training\Hooks\TargetMode.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
     <Compile Include="Training\Initialisers\CustomInitialiser.cs" />
     <Compile Include="Training\Initialisers\GaussianInitialiser.cs" />
     <Compile Include="Training\Initialisers\IInitialiser.cs" />
     <Compile Include="Training\Initialisers\BaseInitialiser.cs" />
+    <Compile Include="Training\Initialisers\XavierInitialiser.cs" />
     <Compile Include="Training\Mergers\AverageNetworkMerger.cs" />
     <Compile Include="Training\Mergers\BaseNetworkMerger.cs" />
     <Compile Include="Training\Mergers\INetworkMerger.cs" />
+    <Compile Include="Training\Mergers\MaxNetworkMerger.cs" />
+    <Compile Include="Training\Mergers\MultiNetworkMerger.cs" />
     <Compile Include="Training\Mergers\WeightedNetworkMerger.cs" />
+    <Compile Include="Training\Modifiers\BaseValueModifier.cs" />
+    <Compile Include="Training\Modifiers\IValueModifier.cs" />
+    <Compile Include="Training\Modifiers\ClipValueModifier.cs" />
+    <Compile Include="Training\Modifiers\ScaleValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
@@ -216,13 +270,18 @@
     <Compile Include="Training\Operators\ExecutionState.cs" />
     <Compile Include="Training\Operators\Workers\BaseWorker.cs" />
     <Compile Include="Training\Operators\Workers\IWorker.cs" />
-    <Compile Include="Training\Optimisers\BaseGradientOptimiser.cs" />
-    <Compile Include="Training\Optimisers\GradientDescentOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\AdadeltaOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\AdagradOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\BaseMemoryGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\MomentumGradientOptimiser.cs" />
     <Compile Include="Training\Providers\DefaultDataProvider.cs" />
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
+    <Compile Include="Utils\DataProviderUtils.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\HookUtils.cs" />
@@ -234,7 +293,10 @@
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />
     <Compile Include="Layers\ILayerBuffer.cs" />
+    <Compile Include="Utils\LoggingUtils.cs" />
     <Compile Include="Utils\PrintUtils.cs" />
+    <Compile Include="Utils\ProcessUtils.cs" />
+    <Compile Include="Utils\RegistryUtils.cs" />
     <Compile Include="Utils\SigmaException.cs" />
     <Compile Include="Utils\SystemInformationUtils.cs" />
     <Compile Include="Utils\Registry.cs" />
@@ -242,6 +304,7 @@
     <Compile Include="Utils\ITaskManager.cs" />
     <Compile Include="Utils\ThreadUtils.cs" />
     <Compile Include="Utils\TimeStep.cs" />
+    <Compile Include="Utils\TimeUnit.cs" />
     <Compile Include="Utils\WeakList.cs" />
     <Compile Include="Utils\WebUtils.cs" />
   </ItemGroup>
@@ -249,10 +312,9 @@
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
-    <Folder Include="Persistence\" />
-    <Folder Include="Training\Hooks\Modifiers\" />
+    <Folder Include="Persistence\Selectors\Environment\" />
     <Folder Include="Training\Hooks\Saviors\" />
-    <Folder Include="Training\Hooks\Stoppers\" />
+    <Folder Include="Training\Supervisors\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

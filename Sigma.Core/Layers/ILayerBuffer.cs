@@ -39,11 +39,11 @@ namespace Sigma.Core.Layers
 		/// <summary>
 		/// The alias-named inputs for a layer.
 		/// </summary>
-		IDictionary<string, IRegistry> Inputs { get; }
+		IReadOnlyDictionary<string, IRegistry> Inputs { get; }
 
 		/// <summary>
 		/// The alias-named outputs for a layer.
 		/// </summary>
-		IDictionary<string, IRegistry> Outputs { get; }
+		IReadOnlyDictionary<string, IRegistry> Outputs { get; }
 	}
 }

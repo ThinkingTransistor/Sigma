@@ -15,8 +15,16 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
+using log4net.Appender;
 using log4net.Config;
+using log4net.Core;
+using log4net.Filter;
+using log4net.Layout;
+using log4net.Repository.Hierarchy;
 using Sigma.Core.Monitors;
+using Sigma.Core.Monitors.Synchronisation;
+using Sigma.Core.Parameterisation;
+using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
@@ -27,8 +35,14 @@ namespace Sigma.Core
 	/// <summary>
 	/// A sigma environment, where all the magic happens.
 	/// </summary>
-	public class SigmaEnvironment
+	[Serializable]
+	public class SigmaEnvironment : ISerialisationNotifier
 	{
+		/// <summary>
+		/// If the <see cref="IOperator"/>s should automatically start when calling <see cref="Run"/>.
+		/// </summary>
+		public bool StartOperatorsOnRun { get; set; } = true;
+
 		/// <summary>
 		/// If the <see cref="SigmaEnvironment"/> is currently running. 
 		/// </summary>
@@ -36,22 +50,21 @@ namespace Sigma.Core
 
 		private readonly ISet<IMonitor> _monitors;
 		private readonly IDictionary<string, ITrainer> _trainersByName;
-		private readonly IDictionary<ITrainer, IOperator> _runningOperatorsByTrainer;
+		public readonly IDictionary<ITrainer, IOperator> RunningOperatorsByTrainer;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _globalHooksToAttach;
 		private readonly ConcurrentQueue<KeyValuePair<IHook, IOperator>> _localHooksToAttach;
-		private ManualResetEvent _processQueueEvent;
 		private bool _requestedStop;
 
+		[NonSerialized]
+		private ManualResetEvent _processQueueEvent;
+
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// The unique name of this environment. 
 		/// </summary>
-		public string Name
-		{
-			get;
-		}
-
+		public string Name { get; }
 		/// <summary>
 		/// The root registry of this environment where all exposed parameters are stored hierarchically.
 		/// </summary>
@@ -66,22 +79,57 @@ namespace Sigma.Core
 		/// <summary>
 		/// The random number generator to use for randomised operations for reproducibility. 
 		/// </summary>
-		public Random Random
-		{
-			get; private set;
-		}
+		public Random Random { get; private set; }
+
+		/// <summary>
+		/// The parameterisation manager which defines which values to parameterise as what (e.g. range, enumeration, check box).
+		/// </summary>
+		public IParameterisationManager ParameterisationManager { get; }
+
+		/// <summary>
+		/// The handler that is responsible for syncing the monitor with operators / workers. 
+		/// </summary>
+		public ISynchronisationHandler SynchronisationHandler { get; }
+
+		public int RandomSeed { get; private set; }
 
 		private SigmaEnvironment(string name)
 		{
 			Name = name;
 			Registry = new Registry();
 			RegistryResolver = new RegistryResolver(Registry);
-			Random = new Random();
+			ParameterisationManager = new ParameterisationManager();
+			SynchronisationHandler = new SynchronisationHandler(this);
+
+			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
+
 			_monitors = new HashSet<IMonitor>();
 			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
 			_localHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
-			_runningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
+			RunningOperatorsByTrainer = new ConcurrentDictionary<ITrainer, IOperator>();
 			_trainersByName = new ConcurrentDictionary<string, ITrainer>();
+			_processQueueEvent = new ManualResetEvent(true);
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
 			_processQueueEvent = new ManualResetEvent(true);
 		}
 
@@ -91,6 +139,9 @@ namespace Sigma.Core
 		/// <param name="seed"></param>
 		public void SetRandomSeed(int seed)
 		{
+			_logger.Debug($"Using random initial seed {seed} in sigma environment \"{Name}\".");
+
+			RandomSeed = seed;
 			Random = new Random(seed);
 		}
 
@@ -113,6 +164,21 @@ namespace Sigma.Core
 			return monitor;
 		}
 
+		public bool RemoveMonitor<TMonitor>(TMonitor monitor) where TMonitor : IMonitor
+		{
+			bool ret = _monitors.Remove(monitor);
+
+			if (ret)
+			{
+				_logger.Debug($"Removed monitor {monitor} from sigma environment \"{Name}\".");
+			}
+			else
+			{
+				_logger.Info($"Could not remove monitor {monitor} from sigma environment \"{Name}\" - probably it was not added.");
+			}
+			return ret;
+		}
+
 		/// <summary>
 		/// Prepare this environment for execution. Start all monitors.
 		/// </summary>
@@ -132,6 +198,16 @@ namespace Sigma.Core
 		public ITrainer CreateTrainer(string name)
 		{
 			return AddTrainer(new Trainer(name));
+		}
+
+		/// <summary>
+		/// Create a trainer with a certain unique name without adding it to this sigma environment.
+		/// </summary>
+		/// <param name="name">The trainer name.</param>
+		/// <returns>A new trainer with the given name.</returns>
+		public ITrainer CreateGhostTrainer(string name)
+		{
+			return new Trainer(name);
 		}
 
 		/// <summary>
@@ -168,17 +244,17 @@ namespace Sigma.Core
 				throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as it does not exist in this environment.");
 			}
 
-			if (_runningOperatorsByTrainer.ContainsKey(trainer))
+			if (RunningOperatorsByTrainer.ContainsKey(trainer))
 			{
-				if (_runningOperatorsByTrainer[trainer].State == ExecutionState.Running)
+				if (RunningOperatorsByTrainer[trainer].State == ExecutionState.Running)
 				{
-					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {_runningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
+					throw new InvalidOperationException($"Cannot remove trainer {trainer} from sigma environment \"{Name}\" as its associated operator {RunningOperatorsByTrainer[trainer]} is in execution state {nameof(ExecutionState.Running)}.");
 				}
 
-				IOperator @operator = _runningOperatorsByTrainer[trainer];
+				IOperator @operator = RunningOperatorsByTrainer[trainer];
 
-				_runningOperatorsByTrainer[trainer].Sigma = null;
-				_runningOperatorsByTrainer.Remove(trainer);
+				RunningOperatorsByTrainer[trainer].Sigma = null;
+				RunningOperatorsByTrainer.Remove(trainer);
 
 				_logger.Debug($"Removed operator {@operator} from sigma environment \"{Name}\" in association with trainer {trainer}.");
 			}
@@ -194,6 +270,8 @@ namespace Sigma.Core
 			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
+
+
 		/// <summary>
 		/// Run this environment. Execute all registered options until stop is requested.
 		/// Note: This method is blocking and executes in the calling thread. 
@@ -208,7 +286,10 @@ namespace Sigma.Core
 
 			InitialiseTrainers();
 			FetchRunningOperators();
-			StartRunningOperators();
+			if (StartOperatorsOnRun)
+			{
+				StartRunningOperators();
+			}
 
 			_logger.Info($"Started sigma environment \"{Name}\".");
 
@@ -230,7 +311,7 @@ namespace Sigma.Core
 					shouldRun = false;
 				}
 
-				_logger.Debug($"Done processing for received state change signal.");
+				_logger.Debug("Done processing for received state change signal.");
 			}
 
 			StopRunningOperators();
@@ -238,6 +319,14 @@ namespace Sigma.Core
 			Running = false;
 
 			_logger.Info($"Stopped sigma environment \"{Name}\".");
+		}
+
+		/// <summary>
+		/// Run this environment asynchronously. Execute all registered options until stop is requested.
+		/// </summary>
+		public async Task RunAsync()
+		{
+			await Task.Run(() => Run());
 		}
 
 		private void InitialiseTrainers()
@@ -259,7 +348,7 @@ namespace Sigma.Core
 
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
-				_runningOperatorsByTrainer.Add(trainer, trainer.Operator);
+				RunningOperatorsByTrainer.Add(trainer, trainer.Operator);
 
 				trainer.Operator.Sigma = this;
 			}
@@ -269,7 +358,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Starting operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperatorsByTrainer.Values)
+			foreach (IOperator op in RunningOperatorsByTrainer.Values)
 			{
 				op.Start();
 			}
@@ -279,7 +368,7 @@ namespace Sigma.Core
 		{
 			_logger.Debug($"Stopping operators from {_trainersByName.Count} trainers in environment \"{Name}\"...");
 
-			foreach (IOperator op in _runningOperatorsByTrainer.Values)
+			foreach (IOperator op in RunningOperatorsByTrainer.Values)
 			{
 				op.SignalStop();
 			}
@@ -446,7 +535,15 @@ namespace Sigma.Core
 			return RegistryResolver.ResolveSet(matchIdentifier, value, addIdentifierIfNotExists, associatedType);
 		}
 
+		/// <summary>Returns a string that represents the current environement.</summary>
+		/// <returns>A string that represents the current enviornemnt.</returns>
+		public override string ToString()
+		{
+			return Name;
+		}
+
 		// static part of SigmaEnvironment
+		#region static
 
 		/// <summary>
 		/// The task manager for this environment.
@@ -463,6 +560,12 @@ namespace Sigma.Core
 
 		static SigmaEnvironment()
 		{
+			if (!ProcessUtils.Is64BitProcess())
+			{
+				throw new NotSupportedException("Sigma can only run in 64bit mode, please change your launch configuration to match this mode. See http://sigma.rocks/installation for more details.");
+			}
+
+
 			// logging not initialised
 			SetDefaultCulture(DefaultCultureInfo);
 
@@ -495,18 +598,105 @@ namespace Sigma.Core
 		/// </summary>
 		private static void RegisterGlobals()
 		{
-			Globals.Set("workspace_path", "workspace/", typeof(string));
-			Globals.Set("cache", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
-			Globals.Set("datasets", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			SetGlobalWorkspacePath("workspace/");
 			Globals.Set("web_proxy", WebRequest.DefaultWebProxy, typeof(IWebProxy));
 		}
 
 		/// <summary>
-		/// Loads the log4net configuration from the corresponding xml file. See log4net for more details.
+		/// Set the global workspace path and re-route its subfolders (e.g. cache, datasets).
+		/// If you want to be more specific - e.g. only re-route cache folders - modify the <see cref="Globals"/> registry directly.
 		/// </summary>
-		public static void EnableLogging()
+		/// <param name="path"></param>
+		public static void SetGlobalWorkspacePath(string path)
 		{
-			XmlConfigurator.Configure();
+			Globals.Set("workspace_path", "workspace/", typeof(string));
+			Globals.Set("cache_path", Globals.Get<string>("workspace_path") + "cache/", typeof(string));
+			Globals.Set("datasets_path", Globals.Get<string>("workspace_path") + "datasets/", typeof(string));
+			Globals.Set("storage_path", Globals.Get<string>("workspace_path") + "storage/", typeof(string));
+		}
+
+		/// <summary>
+		/// Loads the log4net configuration either from the corresponding app.config file (see log4net for more details) or by
+		/// statically generating a default logger.
+		/// </summary>
+		/// <param name="xml">If <c>true</c>, the app.config file will be loaded. Otherwise, a default configuration.</param>
+		public static void EnableLogging(bool xml = false)
+		{
+			if (xml)
+			{
+				XmlConfigurator.Configure();
+			}
+			else
+			{
+				// see https://stackoverflow.com/questions/37213848/best-way-to-access-to-log4net-wrapper-app-config
+				Hierarchy hierarchy = (Hierarchy) LogManager.GetRepository();
+
+				PatternLayout patternLayout = new PatternLayout
+				{
+					ConversionPattern = "%date %level [%thread] %logger{1} - %message%newline"
+				};
+				patternLayout.ActivateOptions();
+
+				// Create a colored console appender with color mappings and level range [Info, Fatal]
+				ColoredConsoleAppender console = new ColoredConsoleAppender
+				{
+					Threshold = Level.All,
+					Layout = patternLayout
+				};
+				LevelRangeFilter consoleRangeFilter = new LevelRangeFilter
+				{
+					LevelMin = Level.Debug,
+					LevelMax = Level.Fatal
+				};
+				console.AddFilter(consoleRangeFilter);
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Debug,
+					ForeColor = ColoredConsoleAppender.Colors.White
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Info,
+					ForeColor = ColoredConsoleAppender.Colors.Green
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Warn,
+					ForeColor = ColoredConsoleAppender.Colors.Yellow | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Error,
+					ForeColor = ColoredConsoleAppender.Colors.Red | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.AddMapping(new ColoredConsoleAppender.LevelColors
+				{
+					Level = Level.Fatal,
+					ForeColor = ColoredConsoleAppender.Colors.White | ColoredConsoleAppender.Colors.HighIntensity,
+					BackColor = ColoredConsoleAppender.Colors.Red | ColoredConsoleAppender.Colors.HighIntensity
+				});
+				console.ActivateOptions();
+
+				hierarchy.Root.AddAppender(console);
+
+				// Create also an appender that writes the log to sigma.log
+				RollingFileAppender roller = new RollingFileAppender
+				{
+					AppendToFile = true,
+					File = "sigma.log",
+					Layout = patternLayout,
+					MaxSizeRollBackups = 5,
+					MaximumFileSize = "15MB",
+					RollingStyle = RollingFileAppender.RollingMode.Size,
+					StaticLogFileName = true
+				};
+				roller.ActivateOptions();
+
+				hierarchy.Root.AddAppender(roller);
+
+				hierarchy.Root.Level = Level.Debug;
+				hierarchy.Configured = true;
+			}
 		}
 
 		/// <summary>
@@ -578,5 +768,7 @@ namespace Sigma.Core
 		{
 			ActiveSigmaEnvironments.Clear();
 		}
+
+#endregion static
 	}
 }

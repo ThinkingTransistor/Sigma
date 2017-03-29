@@ -20,6 +20,7 @@ namespace Sigma.Core.Data.Iterators
 	/// <summary>
 	/// A minibatch iterator which randomly traverses a dataset in minibatches of a certain size.
 	/// </summary>
+	[Serializable]
 	public class MinibatchIterator : BaseIterator
 	{
 		/// <summary>
@@ -30,8 +31,13 @@ namespace Sigma.Core.Data.Iterators
 		/// <summary>
 		/// The minibatch size used in this minibatch iterator.
 		/// </summary>
-		public int MinibatchSize { get; }
+		public int MinibatchSize
+		{
+			get { return Registry.Get<int>("minibatch_size"); }
+			set { Registry.Set("minibatch_size", value, typeof(int)); }
+		}
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly IList<int> _currentBatchNotTraversedBlockIndices;
@@ -68,7 +74,7 @@ namespace Sigma.Core.Data.Iterators
 			_currentBlockNotTraversedSlices = new List<int>();
 			_allAvailableBlockIndices = new HashSet<int>();
 
-			MinibatchSize = minibatchSizeRecords;
+			MinibatchSize = minibatchSizeRecords; // property automatically updates parameter registry
 		}
 
 		/// <summary>
@@ -177,7 +183,7 @@ namespace Sigma.Core.Data.Iterators
 				_totalHighestTraversedBlockIndex = _currentHighestTraversedBlockIndex;
 			}
 
-			if (!_allAvailableBlockIndices.Contains(yieldedIndex))
+			if ((UnderlyingDataset.Online || _fetchedBlocks[yieldedIndex] != null) && !_allAvailableBlockIndices.Contains(yieldedIndex))
 			{
 				_allAvailableBlockIndices.Add(yieldedIndex);
 			}
@@ -212,6 +218,11 @@ namespace Sigma.Core.Data.Iterators
 			}
 
 			_logger.Debug($"Reset indices to traverse for next full batch, total of {_allAvailableBlockIndices.Count} available blocks (including last pending).");
+		}
+
+		public override string ToString()
+		{
+			return $"minibatch iterator size {MinibatchSize}";
 		}
 	}
 }

@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Utils;
 using System;
 
 namespace Sigma.Core.Handlers
@@ -18,6 +19,11 @@ namespace Sigma.Core.Handlers
 	/// </summary>
 	public interface IComputationHandler
 	{
+		/// <summary>
+		/// The registry containing relevant parameters of this computation handler. 
+		/// </summary>
+		IRegistry Registry { get; }
+
 		#region  Data (number, buffer, ndarray) creation and management
 
 		/// <summary>
@@ -182,10 +188,21 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Apply a function along the second (column) dimension of an ndarray.
 		/// </summary>
-		/// <param name="array"></param>
+		/// <param name="array">The array.</param>
 		/// <param name="function">The function to apply.</param>
 		/// <returns>An ndarray with the given function applied column-wise to the given ndarray.</returns>
 		INDArray RowWise(INDArray array, Func<INDArray, INDArray> function);
+
+		/// <summary>
+		/// Get a traceable slice of an ndarray as a matrix of a certain range.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="rowIndex">The row index (dimension 0 start).</param>
+		/// <param name="columnIndex">The column index (dimension 1 start).</param>
+		/// <param name="rowLength">The row length (dimension 0 length).</param>
+		/// <param name="columnLength">The column length (dimension 1 length).</param>
+		/// <returns>A slice of the given ndarray along the given range.</returns>
+		INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength);
 
 		#endregion
 
@@ -194,7 +211,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Add a constant value to all elements in an ndarray.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of adding value to each array element.</returns>
@@ -301,7 +318,7 @@ namespace Sigma.Core.Handlers
 		/// <summary>
 		/// Multiply a constant value with all elements in an ndarray.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of multiplying value with each array element.</returns>
@@ -348,9 +365,18 @@ namespace Sigma.Core.Handlers
 		INDArray Dot(INDArray a, INDArray b);
 
 		/// <summary>
+		/// Divide a constant value by all elements in an ndarray.
+		/// </summary>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
+		/// <param name="array">The ndarray.</param>
+		/// <param name="value">The value.</param>
+		/// <returns>The result of dividing array element by the value.</returns>
+		INDArray Divide<TOther>(TOther value, INDArray array);
+
+		/// <summary>
 		/// Divide all elements in an ndarray by a constant value.
 		/// </summary>
-		/// <typeparam name="TOther">The type of the value to add.</typeparam>
+		/// <typeparam name="TOther">The type of the value.</typeparam>
 		/// <param name="array">The ndarray.</param>
 		/// <param name="value">The value.</param>
 		/// <returns>The result of dividing array element by the value.</returns>
@@ -420,17 +446,6 @@ namespace Sigma.Core.Handlers
 		/// <returns>The result of the power of the number a to the constant b.</returns>
 		INumber Pow<TOther>(INumber a, TOther b);
 
-		/// <summary>
-		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
-		/// </summary>
-		/// <param name="activation">The activation to apply.</param>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		INumber Activation(string activation, INumber number);
-
-
-		INDArray Activation(string activation, INDArray array);
-
 		#endregion
 
 		#region Primitive unary mathematical operations
@@ -489,14 +504,14 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
 		/// <returns>The square root of the given array element-wise.</returns>
-		INDArray Sqrt(INDArray array);
+		INDArray SquareRoot(INDArray array);
 
 		/// <summary>
 		/// The square root of a traceable number.
 		/// </summary>
 		/// <param name="number">The traceable number.</param>
 		/// <returns>The square root of the given traceable number.</returns>
-		INumber Sqrt(INumber number);
+		INumber SquareRoot(INumber number);
 
 		/// <summary>
 		/// The logarithm base e of an ndarray.
@@ -628,6 +643,22 @@ namespace Sigma.Core.Handlers
 		#region Activation functions
 
 		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="number">The number.</param>
+		/// <returns>The number with the activation function applied to it.</returns>
+		INumber Activation(string activation, INumber number);
+
+		/// <summary>
+		/// Apply a certain activation function to a number (e.g. 'rel', 'sigmoid', 'tanh').
+		/// </summary>
+		/// <param name="activation">The activation to apply.</param>
+		/// <param name="array">The array.</param>
+		/// <returns>The array with the activation function applied to it.</returns>
+		INDArray Activation(string activation, INDArray array);
+
+		/// <summary>
 		/// Apply the rectified linear function to an ndarray.
 		/// </summary>
 		/// <param name="array">The ndarray.</param>
@@ -700,6 +731,15 @@ namespace Sigma.Core.Handlers
 		/// <param name="maxValue">The max value.</param>
 		/// <returns>A clipped version of the given ndarray using the given range.</returns>
 		INDArray Clip(INDArray array, INumber minValue, INumber maxValue);
+
+		/// <summary>
+		/// Fill an ndarray with a probability mask (0 or 1, with a <see cref="probability"/> chance of it being 1).
+		/// This is not a traceable operation. 
+		/// Note: This method does not return anything as not to be confused with the traceable operations that do return something.
+		/// </summary>
+		/// <param name="array">The array to fill.</param>
+		/// <param name="probability">The probability that a number will be 1.</param>
+		void FillWithProbabilityMask(INDArray array, double probability);
 
 		#endregion
 

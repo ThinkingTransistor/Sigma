@@ -6,11 +6,14 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Training.Operators.Backends.NativeCpu.Workers;
 using Sigma.Core.Training.Operators.Workers;
 using System.Threading;
+using Sigma.Core.Persistence.Selectors;
+using Sigma.Core.Persistence.Selectors.Operator;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 {
@@ -19,6 +22,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 	///     On some cases it can be useful to have separate classes.
 	///     It runs only on a single thread.
 	/// </summary>
+	[Serializable]
 	public class CpuSinglethreadedOperator : CpuMultithreadedOperator
 	{
 		/// <summary>
@@ -42,6 +46,25 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		public CpuSinglethreadedOperator(IComputationHandler handler, ThreadPriority priority = ThreadPriority.Highest) : base(handler, 1, priority)
 		{
 		}
+
+		/// <summary>
+		/// Create an instance of this operator with the same parameters.
+		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
+		/// </summary>
+		/// <returns></returns>
+		protected override BaseOperator CreateDuplicateInstance()
+		{
+			return new CpuSinglethreadedOperator(Handler, WorkerPriority);
+		}
+
+		/// <summary>
+		/// Get an operator selector for this operator.
+		/// </summary>
+		/// <returns>The selector for this operator.</returns>
+		public override IOperatorSelector<IOperator> Select()
+		{
+			return new CpuSinglethreadedOperatorSelector(this);
+		}
 	}
 
 	/// <summary>
@@ -49,6 +72,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 	///     operations on the CPU. The tasks will be executed concurrently by the
 	///     number of threads specified.
 	/// </summary>
+	[Serializable]
 	public class CpuMultithreadedOperator : BaseOperator
 	{
 		/// <summary>
@@ -99,6 +123,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			return new CpuWorker(this, Handler, WorkerPriority);
 		}
 
+		/// <inheritdoc />
 		protected override void StartWorker(IWorker worker)
 		{
 			Logger.Debug($"Starting worker {worker} in operator {this}...");
@@ -106,6 +131,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			worker.Start();
 		}
 
+		/// <inheritdoc />
 		protected override void RunWorkerOnce(IWorker worker)
 		{
 			Logger.Debug($"Running worker {worker} once in operator {this}...");
@@ -113,6 +139,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			worker.RunOnce();
 		}
 
+		/// <inheritdoc />
 		protected override void PauseWorker(IWorker worker)
 		{
 			Logger.Debug($"Signalling pause to worker {worker} in operator {this}...");
@@ -120,6 +147,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			worker.SignalPause();
 		}
 
+		/// <inheritdoc />
 		protected override void ResumeWorker(IWorker worker)
 		{
 			Logger.Debug($"Signalling resume to worker {worker} in operator {this}...");
@@ -127,11 +155,31 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 			worker.SignalResume();
 		}
 
+		/// <inheritdoc />
 		protected override void StopWorker(IWorker worker)
 		{
 			Logger.Debug($"Stopping worker {worker} in operator {this}...");
 
 			worker.SignalStop();
+		}
+
+		/// <summary>
+		/// Create an instance of this operator with the same parameters.
+		/// Used for shallow-copying state to another operator (e.g. for persistence / selection).
+		/// </summary>
+		/// <returns></returns>
+		protected override BaseOperator CreateDuplicateInstance()
+		{
+			return new CpuMultithreadedOperator(Handler, WorkerCount, WorkerPriority);
+		}
+
+		/// <summary>
+		/// Get an operator selector for this operator.
+		/// </summary>
+		/// <returns>The selector for this operator.</returns>
+		public override IOperatorSelector<IOperator> Select()
+		{
+			return new CpuMultithreadedOperatorSelector(this);
 		}
 	}
 }

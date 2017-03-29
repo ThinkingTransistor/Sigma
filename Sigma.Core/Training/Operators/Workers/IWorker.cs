@@ -57,7 +57,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		///     The current epoch number (i.e. how many epochs have been executed on this worker).
 		/// </summary>
-		int LocalEpochNumber { get; }
+		int LocalEpochNumber { get; set; }
 
 		/// <summary>
 		///		The iteration number within the current epoch (i.e. how many training iterations have been executed on this worker in the current epoch).
@@ -89,6 +89,12 @@ namespace Sigma.Core.Training.Operators.Workers
 		///     Signal this worker to stop the execution as soon as possible.
 		/// </summary>
 		void SignalStop();
+
+		/// <summary>
+		///		Indicate that this worker will be reset, discarded and completely destroyed.
+		///		Used for resource management and reset invocations.
+		/// </summary>
+		void OnReset();
 
 		/// <summary>
 		/// Invoke the local hooks that correspond to the local time scale change.

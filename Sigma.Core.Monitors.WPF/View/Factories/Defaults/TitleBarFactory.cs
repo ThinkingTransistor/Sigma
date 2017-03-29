@@ -9,13 +9,10 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Windows;
 using log4net;
 using MaterialDesignThemes.Wpf;
-using Sigma.Core.Data.Iterators;
-using Sigma.Core.Handlers;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
 using Sigma.Core.Utils;
@@ -30,14 +27,14 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 		public readonly List<Func<Application, Window, TitleBarItem>> TitleBarFuncs;
 
+		private ILog _log = LogManager.GetLogger(typeof(TitleBarFactory));
+
 		/// <summary>
 		/// The <see cref="IRegistry"/> where all required factories are contained. 
 		/// </summary>
 		public IRegistry Registry { get; set; }
 
-		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0))
-		{
-		}
+		public TitleBarFactory(IRegistry parentRegistry) : this(parentRegistry, new Thickness(0), new Thickness(0)) { }
 
 		/// <summary>
 		/// 
@@ -77,7 +74,7 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			//TODO: hack
 			if (TitleBarFuncs.Count == 0)
 			{
-				InitialiseDefaultTabs();
+				InitialiseDefaultItems();
 			}
 
 			foreach (Func<Application, Window, TitleBarItem> titleBarFunc in TitleBarFuncs)
@@ -89,62 +86,20 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			return titleBarControl;
 		}
 
-		public virtual void InitialiseDefaultTabs()
+		/// <summary>
+		/// The default item generation that will be called if no other title bar item is specified (i.e. <see cref="TitleBarFuncs"/> is empty).
+		/// </summary>
+		public virtual void InitialiseDefaultItems()
 		{
+			_log.Info("Creating default title bar items because no others have been specified.");
+
 			TitleBarFuncs.Add(
 				(app, window) =>
 					new TitleBarItem(Properties.Resources.ButtonEnvironment, Properties.Resources.MenuButtonLoad, Properties.Resources.MenuButtonSave,
 						new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 
 #if DEBUG
-			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonDebug, "Download mnist", (Action) (() =>
-				{
-					BaseIterator iterator = window.Monitor.Registry["iterator"] as BaseIterator;
-					IComputationHandler handler = window.Monitor.Registry["handler"] as IComputationHandler;
-					SigmaEnvironment environment = window.Monitor.Registry["environment"] as SigmaEnvironment;
-
-					new Thread(() => iterator?.Yield(handler, environment).First()).Start();
-				}), "10 second long task", (Action) (() =>
-				{
-					new Thread(() =>
-					{
-						ITaskObserver task = null;
-						try
-						{
-							task = SigmaEnvironment.TaskManager.BeginTask(TaskType.Download, "http://somedataset.com");
-
-							for (float i = 0; i <= 1; i += 0.0010f)
-							{
-								task.Progress = i;
-
-								Thread.Sleep(10);
-							}
-						}
-						catch (Exception)
-						{
-							// ignore
-						}
-						finally
-						{
-							SigmaEnvironment.TaskManager.EndTask(task);
-						}
-
-						ITaskObserver task2 = null;
-						try
-						{
-							task2 = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare, "Preparing");
-							Thread.Sleep(1000);
-						}
-						catch (Exception)
-						{
-							// ignore
-						}
-						finally
-						{
-							SigmaEnvironment.TaskManager.EndTask(task2);
-						}
-					}).Start();
-				}),
+			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonDebug,
 				"5 second indeterminate task",
 				(Action) (() =>
 				{
@@ -215,8 +170,8 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 			});
 		}
 
-		//TODO: remove
-		public void PrintWindow(SigmaWindow window)
+#if DEBUG
+		private static void PrintWindow(SigmaWindow window)
 		{
 			Debug.WriteLine("window: " + window + " parent: " + window.ParentWindow + $" children:{window.ChildrenReadOnly.Count}\n================");
 			foreach (SigmaWindow child in window.ChildrenReadOnly)
@@ -226,6 +181,8 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 			Debug.WriteLine("================");
 		}
+
+#endif
 
 		/// <summary>
 		///     This method ensures that the passed window is a <see cref="SigmaWindow" />.

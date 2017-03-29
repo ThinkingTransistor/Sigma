@@ -9,7 +9,9 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using Sigma.Core.Persistence;
 
 #pragma warning disable 1570
 
@@ -20,18 +22,22 @@ namespace Sigma.Core.Utils
 	/// A registry resolver that resolves layered identifiers. Implementations are expected but not required to cache all resolved identifiers for better performance.
 	/// The supported notation syntax is:
 	///		-	'.' separates registries hierarchically
-	///			Example: "trainer2.training.accuracy"
+	///			Example: "trainer2.shared.validation_accuracy"
 	///		-	'*' indicates a wild-card mask, match any name - similar to regex's '.*'
-	///			Example: "trainer*.training.accuracy" match all sub-registries whose name starts with trainer
+	///			Example: "trainer*.shared.validation_accuracy" match all sub-registries whose name starts with trainer
 	///		-	'*<tag>' conditionally matching wild-card mask, match any name if the conditional tag
 	///			Example: "*<trainer>.training.accuracy" match all sub-registries whose tags include the tag "trainer"	
 	/// </summary>
-	public class RegistryResolver : IRegistryResolver, IRegistryHierarchyChangeListener
+	[Serializable]
+	public class RegistryResolver : IRegistryResolver, IRegistryHierarchyChangeListener, ISerialisationNotifier
 	{
 		public IRegistry Root { get; }
 
-		private readonly Dictionary<string, MatchIdentifierRequestCacheEntry> _matchIdentifierCache;
-		private readonly ISet<string> _fullIdentifiersToInvalidate;
+		[NonSerialized]
+		private Dictionary<string, MatchIdentifierRequestCacheEntry> _matchIdentifierCache;
+
+		[NonSerialized]
+		private ISet<string> _fullIdentifiersToInvalidate;
 
 		/// <summary>
 		/// Create a registry resolver with a certain root registry.
@@ -60,6 +66,30 @@ namespace Sigma.Core.Utils
 			}
 
 			Root = root;
+			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>();
+			_fullIdentifiersToInvalidate = new HashSet<string>();
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			// create new, cleared cache
 			_matchIdentifierCache = new Dictionary<string, MatchIdentifierRequestCacheEntry>();
 			_fullIdentifiersToInvalidate = new HashSet<string>();
 		}
@@ -162,7 +192,6 @@ namespace Sigma.Core.Utils
 
 			return ResolveGet(matchIdentifier, out emptyArrayThrowaway, values);
 		}
-
 
 		public T[] ResolveGet<T>(string matchIdentifier, out string[] fullMatchedIdentifierArray, T[] values = null)
 		{
@@ -412,6 +441,7 @@ namespace Sigma.Core.Utils
 			return @"^\s*" + partialMatchIdentifier + @"\s*$";
 		}
 
+		[Serializable]
 		private class MatchIdentifierRequestCacheEntry
 		{
 			internal string MatchIdentifier;

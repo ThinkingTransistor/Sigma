@@ -16,6 +16,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// <summary>
 	/// A normalising preprocessor that operators per feature index.
 	/// </summary>
+	[Serializable]
 	public class PerIndexNormalisingPreprocessor : BasePreprocessor
 	{
 		public override bool AffectsDataShape => false;
@@ -36,6 +37,13 @@ namespace Sigma.Core.Data.Preprocessors
 		{
 		}
 
+		/// <summary>
+		/// Create a per index normalising preprocessor with a certain output range and index mappings (order is index, min value, max value).
+		/// </summary>
+		/// <param name="minOutputValue">The minimum output value.</param>
+		/// <param name="maxOutputValue">The maximum output value.</param>
+		/// <param name="sectionName">The section name to pre-process.</param>
+		/// <param name="perIndexMinMaxMappings">The per index min max value mappings.</param>
 		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string sectionName, IDictionary<int, double[]> perIndexMinMaxMappings) : base(new[] { sectionName })
 		{
 			if (perIndexMinMaxMappings == null) throw new ArgumentNullException(nameof(perIndexMinMaxMappings));
@@ -45,7 +53,7 @@ namespace Sigma.Core.Data.Preprocessors
 			_perIndexMinMaxMappings = perIndexMinMaxMappings;
 		}
 
-		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
+		internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
 			double outputRange = MaxOutputValue - MinOutputValue;
 

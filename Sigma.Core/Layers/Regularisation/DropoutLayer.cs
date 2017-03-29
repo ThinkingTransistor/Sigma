@@ -1,11 +1,23 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Layers.Regularisation
 {
+	/// <summary>
+	/// A standard dropout layer applying a random probability mask with a given dropout probability during training.
+	/// </summary>
+	[Serializable]
 	public class DropoutLayer : BaseLayer
 	{
 		/// <summary>
@@ -27,16 +39,24 @@ namespace Sigma.Core.Layers.Regularisation
 		/// <param name="trainingPass">Indicate whether this is run is part of a training pass.</param>
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			throw new NotImplementedException();
-
 			if (trainingPass)
 			{
-				INDArray activations = buffer.Inputs["default"].Get<INDArray>("activations");
+				INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
+				INDArray activations = handler.FlattenTimeAndFeatures(inputs);
+				INDArray dropoutMask = Parameters.Get<INDArray>("dropout_mask");
 
+				activations = handler.RowWise(activations, row =>
+				{
+					handler.FillWithProbabilityMask(dropoutMask, 1.0 - Parameters.Get<double>("dropout_probability"));
+
+					return handler.Multiply(row, dropoutMask);
+				});
+
+				buffer.Outputs["default"]["activations"] = activations.Reshape((long[]) inputs.Shape.Clone());
 			}
 			else
 			{
-				buffer.Outputs["default"] = buffer.Inputs["default"];
+				buffer.Outputs["default"]["activations"] = buffer.Inputs["default"]["activations"];
 			}
 		}
 
@@ -49,7 +69,7 @@ namespace Sigma.Core.Layers.Regularisation
 
 			LayerConstruct construct = new LayerConstruct(name, typeof(DropoutLayer));
 
-			construct.Parameters["drop_probability"] = dropoutProbability;
+			construct.Parameters["dropout_probability"] = dropoutProbability;
 
 			construct.UpdateBeforeInstantiationEvent +=
 				(sender, args) => args.Self.Parameters["size"] = args.Self.Inputs["default"].Parameters["size"];

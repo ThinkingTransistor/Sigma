@@ -17,6 +17,7 @@ namespace Sigma.Core.Training.Mergers
 	///     A <see cref="INetworkMerger" /> that specifies how important each network is.
 	///     One can specify that the second network is twice as important as the third, but half as the first etc.
 	/// </summary>
+	[Serializable]
 	public class WeightedNetworkMerger : BaseNetworkMerger
 	{
 		/// <summary>

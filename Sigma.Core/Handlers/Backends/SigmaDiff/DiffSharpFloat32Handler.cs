@@ -13,27 +13,39 @@ using log4net;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.DiffSharp.NativeCpu;
 using Sigma.Core.Utils;
 using System;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	/// <summary>
 	/// An abstract DiffSharp computation handle for 32-bit floats with dynamic Blas and Lapack backends.
 	/// </summary>
-	public abstract class DiffSharpFloat32Handler : IComputationHandler
+	[Serializable]
+	public abstract class DiffSharpFloat32Handler : IComputationHandler, ISerialisationNotifier
 	{
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		public abstract IDataType DataType { get; }
+
+		public IRegistry Registry { get; }
 
 		public IBlasBackend BlasBackend { get; }
 		public ILapackBackend LapackBackend { get; }
 
-		public abstract IDataType DataType { get; }
+		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle
+		{
+			get { return _diffsharpBackendHandle; }
+			private set { _diffsharpBackendHandle = value; }
+		}
 
-		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle { get; }
+		[NonSerialized]
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly Random _probabilityMaskRng;
 
-		private readonly long _backendTag;
+		[NonSerialized]
+		private DiffSharpBackendHandle<float> _diffsharpBackendHandle;
+		private long _backendTag;
 
 		protected DiffSharpFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend)
 		{
@@ -43,12 +55,41 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			BlasBackend = blasBackend;
 			LapackBackend = lapackBackend;
 
-			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
+			Registry = new Registry(tags: "handler");
 
+			InitialiseBackend(blasBackend, lapackBackend);
+
+			_probabilityMaskRng = new Random();
+		}
+
+		private void InitialiseBackend(IBlasBackend blasBackend, ILapackBackend lapackBackend)
+		{
+			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
 			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
-
 			DiffsharpBackendHandle.BackendTag = _backendTag;
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			InitialiseBackend(BlasBackend, LapackBackend);
 		}
 
 		protected BackendConfig<float> CreateBackendConfig()
@@ -116,7 +157,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray FlattenTimeAndFeatures(INDArray array)
 		{
-			return array.Reshape(array.Shape[0], ArrayUtils.Product(1, array.Shape));
+			return array.Reshape(array.Shape[0] * array.Shape[1], ArrayUtils.Product(2, array.Shape));
 		}
 
 		public INDArray FlattenAllButLast(INDArray array)
@@ -147,7 +188,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			ADNDFloat32Array internalArray = InternaliseArray(array);
-
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)
@@ -185,6 +225,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			return rows;
+		}
+
+		public INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			FSharpOption<int> rowStart = FSharpOption<int>.Some(rowIndex);
+			FSharpOption<int> rowEnd = FSharpOption<int>.Some(rowIndex + rowLength - 1);
+			FSharpOption<int> columnStart = FSharpOption<int>.Some(columnIndex);
+			FSharpOption<int> columnEnd = FSharpOption<int>.Some(columnIndex + columnLength - 1);
+
+			return new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(rowStart, rowEnd, columnStart, columnEnd));
 		}
 
 		public INDArray Add<TOther>(INDArray array, TOther value)
@@ -339,6 +390,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(internalA._adArrayHandle * internalB._adArrayHandle);
 		}
 
+		public INDArray Divide<TOther>(TOther value, INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
+
+			return new ADNDFloat32Array(internalValue / internalArray._adArrayHandle);
+		}
+
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -460,14 +519,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return DNDArray.MinIndex(internalArray._adArrayHandle);
 		}
 
-		public INDArray Sqrt(INDArray array)
+		public INDArray SquareRoot(INDArray array)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 
 			return new ADNDFloat32Array(DNDArray.Sqrt(internalArray._adArrayHandle));
 		}
 
-		public INumber Sqrt(INumber number)
+		public INumber SquareRoot(INumber number)
 		{
 			ADFloat32Number internalValue = InternaliseNumber(number);
 
@@ -668,19 +727,33 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
-			throw new NotImplementedException($"Clipping is currently not supported in this handler ({this}).");
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
+			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
 
-			/*
-						ADNDFloat32Array internalArray = InternaliseArray(array);
-						ADFloat32Number internalMinValue = InternaliseNumber(minValue);
-						ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
+			DNDArray lowerClipped = DNDArray.Max(internalMinValue._adNumberHandle, internalArray._adArrayHandle);
+			DNDArray clipped = DNDArray.Min(internalMaxValue._adNumberHandle, lowerClipped);
 
-						DNDArray lowerClipped = DNDArray.Max(internalArray._adArrayHandle, internalMinValue._adNumberHandle);
+			return new ADNDFloat32Array(clipped);
+		}
 
-						DNDArray clipped = DNDArray.Min(lowerClipped, internalMaxValue._adNumberHandle);
+		public void FillWithProbabilityMask(INDArray array, double probability)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+			float[] data = internalArray.Data.Data;
+			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
 
-						return new ADNDFloat32Array(clipped);
-			*/
+			for (int i = begin; i < end; i++)
+			{
+				if (_probabilityMaskRng.NextDouble() < probability)
+				{
+					data[i] = 1;
+				}
+				else
+				{
+					data[i] = 0;
+				}
+			}
 		}
 
 		public uint BeginTrace()

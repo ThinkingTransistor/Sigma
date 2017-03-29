@@ -17,6 +17,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 	/// <summary>
 	/// A debug handler that checks for various invalid operations at runtime.
 	/// </summary>
+	[Serializable]
 	public class DebugHandler : IComputationHandler
 	{
 		public IComputationHandler UnderlyingHandler { get; }
@@ -25,30 +26,43 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public IRegistry Registry { get; }
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler is enabled (does any checks).
+		/// </summary>
 		public bool Enabled
 		{
 			get { return Registry.Get<bool>("enabled"); }
 			set { Registry.Set("enabled", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should throw an exception when a bad condition is reported (or just log it).
+		/// </summary>
 		public bool ThrowExceptionOnReport
 		{
 			get { return Registry.Get<bool>("throw_exeption_on_report"); }
 			set { Registry.Set("throw_exeption_on_report", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should check for NaN values.
+		/// </summary>
 		public bool CheckNaN
 		{
 			get { return Registry.Get<bool>("check_nan"); }
 			set { Registry.Set("check_nan", value, typeof(bool)); }
 		}
 
+		/// <summary>
+		/// A boolean indicating whether this debug handler should check for infinite values.
+		/// </summary>
 		public bool CheckInfinite
 		{
 			get { return Registry.Get<bool>("check_infinite"); }
 			set { Registry.Set("check_infinite", value, typeof(bool)); }
 		}
 
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(typeof(DebugHandler));
 
 		public DebugHandler(IComputationHandler underlyingHandler, bool throwExceptionOnReport = true, bool enabled = true)
@@ -56,7 +70,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			if (underlyingHandler == null) throw new ArgumentNullException(nameof(underlyingHandler));
 
 			UnderlyingHandler = underlyingHandler;
-			Registry = new Registry();
+			Registry = new Registry(tags: "handler");
 
 			// these need to be set once so they are set initially in the registry
 			//  kind of ugly but saves me from writing more solid property handling
@@ -208,7 +222,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public INDArray NDArray<TOther>(TOther[] values, params long[] shape)
 		{
-			INDArray array = UnderlyingHandler.NDArray(shape);
+			INDArray array = UnderlyingHandler.NDArray(values, shape);
 
 			CheckNice(array);
 
@@ -271,11 +285,21 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public INDArray FlattenTime(INDArray array)
 		{
+			if (Enabled && array.Rank < 2) // two or three? technically 2 is enough ([BT]F) but 3 makes more sense
+			{
+				Report($"ndarray needs to have a rank of 2 or higher (was {array.Rank}) for {nameof(FlattenTime)} operation", array);
+			}
+
 			return CheckNice(UnderlyingHandler.FlattenTime(CheckNice(array)));
 		}
 
 		public INDArray FlattenFeatures(INDArray array)
 		{
+			if (Enabled && array.Rank < 3)
+			{
+				Report($"ndarray needs to have a rank of 3 or higher (was {array.Rank}) for {nameof(FlattenFeatures)} operation", array);
+			}
+
 			return CheckNice(UnderlyingHandler.FlattenFeatures(CheckNice(array)));
 		}
 
@@ -283,9 +307,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 		{
 			if (Enabled && array.Rank < 3)
 			{
-				// TODO urgent fix layers throwing time dimension away and causing unshaped / inproperly shaped data
-				//  (doesn't cause any issues right now but will for recurrent data)
-				//Report($"ndarray needs to have a rank of 3 or higher for flattentimeandfeatures operation", array);
+				Report($"ndarray needs to have a rank of 3 or higher (was {array.Rank}) for {nameof(FlattenTimeAndFeatures)} operation", array);
 			}
 
 			return CheckNice(UnderlyingHandler.FlattenTimeAndFeatures(CheckNice(array)));
@@ -314,6 +336,31 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			}
 
 			return CheckNice(UnderlyingHandler.RowWise(CheckNice(array), function));
+		}
+
+		public INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength)
+		{
+			if (Enabled)
+			{
+				if (rowIndex < 0 || columnIndex < 0)
+				{
+					Report($"row index and column index must be > 0, but were {rowIndex} and {columnIndex}", array, rowIndex, columnIndex);
+				}
+
+				if (rowLength <= 0 || columnLength <= 0)
+				{
+					Report($"row and column length must be > 0, but were {rowLength} and {columnLength}", array, rowLength, columnLength);
+				}
+
+				if (rowIndex + rowLength >= array.Shape[0] || columnIndex + columnLength >= array.Shape[1])
+				{
+					Report($"row index and column index must be < ndarray.shape[i], but were {rowIndex + rowLength} and {columnIndex + columnLength} (bounds were {array.Shape[0]} and {array.Shape[1]})", array, rowIndex, columnIndex, rowLength, columnLength);
+				}
+			}
+
+			CheckMatrix(array, "get slice from matrix");
+
+			return CheckNice(UnderlyingHandler.GetSlice(CheckNice(array), rowIndex, columnIndex, rowLength, columnLength));
 		}
 
 		public INDArray Add<TOther>(INDArray array, TOther value)
@@ -425,6 +472,11 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.Dot(CheckNice(a), CheckNice(b)));
 		}
 
+		public INDArray Divide<TOther>(TOther value, INDArray array)
+		{
+			return CheckNice(UnderlyingHandler.Divide(value, CheckNice(array)));
+		}
+
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
 			return CheckNice(UnderlyingHandler.Divide(CheckNice(array), value));
@@ -517,14 +569,14 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return UnderlyingHandler.MinIndex(CheckNice(array));
 		}
 
-		public INDArray Sqrt(INDArray array)
+		public INDArray SquareRoot(INDArray array)
 		{
-			return CheckNice(UnderlyingHandler.Sqrt(CheckNice(array)));
+			return CheckNice(UnderlyingHandler.SquareRoot(CheckNice(array)));
 		}
 
-		public INumber Sqrt(INumber number)
+		public INumber SquareRoot(INumber number)
 		{
-			return CheckNice(UnderlyingHandler.Sqrt(CheckNice(number)));
+			return CheckNice(UnderlyingHandler.SquareRoot(CheckNice(number)));
 		}
 
 		public INDArray Log(INDArray array)
@@ -662,6 +714,17 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
 			return CheckNice(UnderlyingHandler.Clip(CheckNice(array), CheckNice(minValue), CheckNice(maxValue)));
+		}
+
+		public void FillWithProbabilityMask(INDArray array, double probability)
+		{
+			if (Enabled && (probability < 0.0 || probability > 1.0))
+			{
+				Report($"probability for fill with probability mask should be 0.0 <= p <= 1.0 (was {probability}).");
+			}
+
+			UnderlyingHandler.FillWithProbabilityMask(CheckNice(array), probability);
+			CheckNice(array);
 		}
 
 		public uint BeginTrace()

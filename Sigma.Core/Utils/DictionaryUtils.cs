@@ -1,5 +1,15 @@
-﻿using System;
+﻿/* 
+MIT License
+
+Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
+
+For full license see LICENSE in the root directory of this project. 
+*/
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Sigma.Core.Persistence.Selectors;
 
 namespace Sigma.Core.Utils
 {
@@ -84,6 +94,35 @@ namespace Sigma.Core.Utils
 			collection.Remove(valueToRemove);
 
 			return collection.Count == 0 && dictionary.Remove(key);
+		}
+
+		/// <summary>
+		/// Add all key value pairs from another dictionary to this dictionary.
+		/// </summary>
+		/// <typeparam name="K">The key type.</typeparam>
+		/// <typeparam name="V">The value type.</typeparam>
+		/// <param name="dictionary">This dictionary (where the entries will be added to).</param>
+		/// <param name="other">The other dictionary (where the entries will be taken from).</param>
+		public static void AddAll<K, V>(this IDictionary<K, V> dictionary, IDictionary<K, V> other)
+		{
+			if (other == null) throw new ArgumentNullException(nameof(other));
+
+			foreach (var keypair in other)
+			{
+				dictionary.Add(keypair);
+			}
+		}
+
+		/// <summary>
+		/// Check if any component in an array of selector components contains a component id flag.
+		/// </summary>
+		/// <typeparam name="TComponent">The component type.</typeparam>
+		/// <param name="enumeration">The enumeration.</param>
+		/// <param name="component">The component (flag) to check for.</param>
+		/// <returns>A boolean indicating whether the enumeration contains a component with the given components id flag.</returns>
+		public static bool ContainsFlag<TComponent>(this IEnumerable<TComponent> enumeration, TComponent component) where TComponent : SelectorComponent
+		{
+			return enumeration.Any(element => (element.Id & component.Id) == component.Id);
 		}
 	}
 }

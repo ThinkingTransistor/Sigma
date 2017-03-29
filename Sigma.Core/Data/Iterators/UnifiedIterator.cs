@@ -20,8 +20,10 @@ namespace Sigma.Core.Data.Iterators
 	/// An unified data iterator, which yields the entire available dataset as one block when yielded, regardless of block size.
 	/// Note: Unified data iterators may be very performance intensive and drastically reduce system and training performance.
 	/// </summary>
+	[Serializable]
 	public class UnifiedIterator : BaseIterator
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IDictionary<string, INDArray> _unifiedBlock;
@@ -106,6 +108,11 @@ namespace Sigma.Core.Data.Iterators
 			}
 
 			return unifiedBlock;
+		}
+
+		public override string ToString()
+		{
+			return $"unified iterator";
 		}
 	}
 }

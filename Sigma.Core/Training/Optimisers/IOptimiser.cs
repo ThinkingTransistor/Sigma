@@ -15,7 +15,7 @@ namespace Sigma.Core.Training.Optimisers
 	/// <summary>
 	/// An optimiser that defines how a network (model) should be optimised by implementing a single iteration (forward and backward pass).
 	/// </summary>
-	public interface IOptimiser : IDeepCopyable
+	public interface IOptimiser : IDeepCopyable // TODO the deep copy methods are currently implemented as shallow copies and kind of abused because workers get local shallow optimiser copies
 	{
 		/// <summary>
 		/// The registry containing data about this optimiser and its last run.

@@ -16,6 +16,7 @@ using log4net;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Persistence;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Data.Datasets
@@ -24,8 +25,10 @@ namespace Sigma.Core.Data.Datasets
 	/// A default implementation of the IDataset interface. 
 	/// Provides caching of entire blocks and reader data, partial extraction, unordered extraction, automatic block sizing, smart block loading. 
 	/// </summary>
-	public class Dataset : IDataset
+	[Serializable] 
+	public class Dataset : IDataset, ISerialisationNotifier
 	{
+		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
@@ -38,28 +41,46 @@ namespace Sigma.Core.Data.Datasets
 		/// </summary>
 		public const int BlockSizeAll = -2;
 
-		public int MaxConcurrentActiveBlocks { get; } = 24; //24 seems like a good number, right?
-
-		public long MaxTotalActiveBlockSizeBytes { get; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
-
-		public IReadOnlyCollection<int> ActiveBlockIndices => _activeBlocks.Keys.ToList();
-
+		/// <inheritdoc />
 		public string Name { get; }
 
+		/// <summary>
+		/// Indicate if this dataset is an online dataset (meaning new data might be added during runtime).
+		/// By default, this is assumed to be false, indicating a static dataset.
+		/// Note: Data iterators and may perform certain optimisations for static datasets, so set this to false if possible.
+		/// </summary>
+		public bool Online { get; set; } = false;
+
+		/// <inheritdoc />
+		public int MaxConcurrentActiveBlocks { get; } = 24; //24 seems like a good number, right?
+
+		/// <inheritdoc />
+		public long MaxTotalActiveBlockSizeBytes { get; } = SystemInformationUtils.GetAvailablePhysicalMemoryBytes() / 2; //default to half the available physical memory
+
+		/// <inheritdoc />
+		public IReadOnlyCollection<int> ActiveBlockIndices => _activeBlocks.Keys.ToList();
+
+		/// <inheritdoc />
 		public int ActiveBlockRegionCount => _activeBlocks.Count;
 
+		/// <inheritdoc />
 		public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
+		/// <inheritdoc />
 		public int TargetBlockSizeRecords { get; private set; }
 
+		/// <inheritdoc />
 		public string[] SectionNames { get; private set; }
 
+		/// <inheritdoc />
 		public long TotalActiveBlockSizeBytes { get; private set; }
 
 		public long TotalActiveRecords { get; private set; }
 
+		/// <inheritdoc />
 		public int MaxBlocksInCache { get; set; } = int.MaxValue;
 
+		/// <inheritdoc />
 		public long MaxBytesInCache { get; set; } = long.MaxValue;
 
 		/// <summary>
@@ -81,8 +102,9 @@ namespace Sigma.Core.Data.Datasets
 		private bool _autoSetExternalChangeBlockSize;
 
 		// TODO fix available blocks semaphore logic
-		// the waitones/releases are inconsistent, because blocks aren't always actually allocated, such as null returns are not considered 
-		private readonly Semaphore _availableBlocksSemaphore;
+		// the waitones/releases are inconsistent, because blocks aren't always actually allocated, such as null returns are not considered
+		[NonSerialized] 
+		private Semaphore _availableBlocksSemaphore;
 		private int _availableBlocksSemaphoreState;
 
 		/// <summary>
@@ -101,7 +123,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
 		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
 		public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
-			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache") + name), true, recordExtractors)
+			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
 		{
 		}
 
@@ -135,31 +157,33 @@ namespace Sigma.Core.Data.Datasets
 				throw new ArgumentNullException(nameof(cacheProvider));
 			}
 
-			if (blockSizeRecords == BlockSizeAll)
-			{
-				//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
-				TargetBlockSizeRecords = int.MaxValue;
-			}
-			else if (blockSizeRecords == BlockSizeAuto)
-			{
-				//somewhat temporary guesstimate, should probably expose the individual parameters 
-				const long estimatedRecordSizeBytes = 1024;
-				const double memoryToConsume = 0.2f;
-				const long optimalNumberBlocks = 8;
-				const int maxBlockSizeRecords = 4096;
-				long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
+			switch (blockSizeRecords) {
+				case BlockSizeAll:
+					//just set to maximum amount of records, extracting returns the maximum available anyway and we can't know the actual availability yet
+					TargetBlockSizeRecords = int.MaxValue;
+					break;
+				case BlockSizeAuto:
+					//somewhat temporary guesstimate, should probably expose the individual parameters 
+					const long estimatedRecordSizeBytes = 1024;
+					const double memoryToConsume = 0.2f;
+					const long optimalNumberBlocks = 8;
+					const int maxBlockSizeRecords = 4096;
+					long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
-				TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
+					TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int) (availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
 
-				_autoSetBlockSize = true;
-			}
-			else if (blockSizeRecords == 0 || blockSizeRecords < -2)
-			{
-				throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
-			}
-			else
-			{
-				TargetBlockSizeRecords = blockSizeRecords;
+					_autoSetBlockSize = true;
+					break;
+				default:
+					if (blockSizeRecords == 0 || blockSizeRecords < -2)
+					{
+						throw new ArgumentException($"Block size in records must be either BLOCK_SIZE_ALL, BLOCK_SIZE_AUTO or > 0, but given block size was {blockSizeRecords}.");
+					}
+					else
+					{
+						TargetBlockSizeRecords = blockSizeRecords;
+					}
+					break;
 			}
 
 			Name = name;
@@ -182,6 +206,29 @@ namespace Sigma.Core.Data.Datasets
 
 				_logger.Debug($"Done flushing all caches for dataset \"{Name}.\"");
 			}
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			InvalidateAndClearCaches();
+			_availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockCount, MaxConcurrentActiveBlocks);
 		}
 
 		public IDataset[] SplitBlockwise(params int[] parts)
@@ -391,16 +438,16 @@ namespace Sigma.Core.Data.Datasets
 
 		/// <summary>
 		/// Invalidate and clear all caches associated with this dataset. 
-		/// WARNING: Removing cache entries may cause certain datasets to load much more slowly or incorrectly. 
-		///			 Use cases include removing cache entries for old datasets or datasets with different extractors. 
+		/// WARNING: Removing cache entries may cause certain datasets to load much more slowly or even incorrectly. 
+		///			 Legitimate use cases include removing cache entries for old datasets or changing extractors. 
 		/// </summary>
 		public void InvalidateAndClearCaches()
 		{
 			_logger.Debug("Invalidating and clearing all caches...");
 
 			_cacheProvider.RemoveAll();
-
 			_cachedBlocks.Clear();
+			_totalCachedBlockSizeBytes = 0L;
 
 			_logger.Debug("Done invalidating and clearing all caches.");
 		}
@@ -562,7 +609,7 @@ namespace Sigma.Core.Data.Datasets
 
 		private Dictionary<string, INDArray> LoadAndExtractRaw(int blockIndex, IComputationHandler handler)
 		{
-			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and risking corruption of data
+			// this cannot run concurrently as cache entries can only be read and written once without wasting resources and / or corrupting cache state
 			lock (this)
 			{
 				if (blockIndex >= _lastReadRawDataBlockIndex)
@@ -991,6 +1038,11 @@ namespace Sigma.Core.Data.Datasets
 					_firstNamedBlock = new WeakReference<INDArray>(namedBlockSections[namedBlockSections.First().Key]);
 				}
 			}
+		}
+
+		public override string ToString()
+		{
+			return $"dataset \"{Name}\"";
 		}
 	}
 }

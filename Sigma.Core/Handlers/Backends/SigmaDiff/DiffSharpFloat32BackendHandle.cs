@@ -405,13 +405,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			b = b.DeepCopy();
-			fixed (float* aref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
 				int len = b.Length;
-				int inca = 1, incb = 0;
+				int inca = 0, incb = 1;
 				float alpha = 1.0f;
 
-				BlasBackend.Saxpy(&len, &alpha, aref, &inca, &a, &incb);
+				BlasBackend.Saxpy(&len, &alpha, &a, &inca, bref, &incb);
 			}
 
 			return b;
@@ -486,6 +486,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			//}
 
 			// TODO update with blas implementation if applicable
+			//  it doesn't work like this because the result second parameter y cannot have an inc of 0 because then the result isn't actually stored
 			float[] data = b.DataBuffer.Data;
 			int offset = b.DataBuffer.Offset;
 			int len = b.DataBuffer.Length + offset;

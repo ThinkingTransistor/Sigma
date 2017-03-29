@@ -6,11 +6,11 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
+using System.Collections.Generic;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
-using System;
-using System.Collections.Generic;
 
 namespace Sigma.Core.Data.Preprocessors
 {
@@ -25,8 +25,12 @@ namespace Sigma.Core.Data.Preprocessors
 	///		an input of 7 becomes [0, 0, 0, 0, 0, 0, 1, 0, 0]
 	/// </example>
 	/// </summary>
+	[Serializable]
 	public class OneHotPreprocessor : BasePreprocessor
 	{
+		/// <summary>
+		/// This boolean decides whether the datashape is affected or not.
+		/// </summary>
 		public override bool AffectsDataShape => true;
 
 		private readonly Dictionary<object, int> _valueToIndexMapping;
@@ -55,7 +59,7 @@ namespace Sigma.Core.Data.Preprocessors
 		/// </summary>
 		/// <param name="sectionName">The optional specific this processor should be applied to.</param>
 		/// <param name="possibleValues">All possible values that this one-hot preprocessor should encode (have to be known ahead of time).</param>
-		public OneHotPreprocessor(string sectionName, params object[] possibleValues) : base(sectionName == null ? null : new[] { sectionName})
+		public OneHotPreprocessor(string sectionName, params object[] possibleValues) : base(sectionName == null ? null : new[] { sectionName })
 		{
 			if (possibleValues == null)
 			{
@@ -80,7 +84,8 @@ namespace Sigma.Core.Data.Preprocessors
 			}
 		}
 
-		protected override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
+	    /// <inheritdoc />
+	    internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
 			//BTF with single feature dimension
 			if (array.Rank != 3)
