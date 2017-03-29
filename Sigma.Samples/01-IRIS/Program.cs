@@ -10,11 +10,13 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Utils;
 
 namespace _01_IRIS
