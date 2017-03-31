@@ -11,13 +11,18 @@ using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.Monitors.WPF;
+using Sigma.Core.Monitors.WPF.Model.UI.Resources;
+using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
+using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 
@@ -33,13 +38,18 @@ namespace Sigma.Tests.Internals.WPF
 			SigmaEnvironment sigma = SigmaEnvironment.Create("Sigma-MNIST");
 
 			// create a new mnist trainer
-			ITrainer trainer = CreateMnistTrainer(sigma);
+			ITrainer trainer = CreateIrisTrainer(sigma);
 
 			// for the UI we have to activate more features
 			if (UI)
 			{
 				// create and attach a new UI framework
 				WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("MNIST"));
+
+				StatusBarLegendInfo iris = new StatusBarLegendInfo("IRIS", MaterialColour.Blue);
+				StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Yellow);
+				gui.AddLegend(iris);
+				gui.AddLegend(general);
 
 				// create a tab
 				gui.AddTabs("Overview");
@@ -50,16 +60,26 @@ namespace Sigma.Tests.Internals.WPF
 					// enable initialisation
 					window.IsInitializing = true;
 
+					window.TabControl["Overview"].GridSize.Rows -= 1;
+					window.TabControl["Overview"].GridSize.Columns -= 1;
+
 					// add a panel that controls the learning process
-					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer));
+					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
 					// create an accuracy cost that updates every iteration
-					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration));
+					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 					// improve the chart performance
 					cost.Fast();
 
+					//var accuracy = new AccuracyPanel("Accuracy", trainer, null, 1, 2, 3);
+					//accuracy.Fast();
+
 					// add the newly created panel
-					window.TabControl["Overview"].AddCumulativePanel(cost);
+					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 2, iris);
+
+					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
+
+					window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
 
 					// finish initialisation
 					window.IsInitializing = false;
@@ -72,6 +92,42 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.Prepare();
 
 			sigma.Run();
+		}
+
+		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
+		{
+			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
+			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica");
+			irisExtractor = irisExtractor.Preprocess(new OneHotPreprocessor(sectionName: "targets", minValue: 0, maxValue: 2));
+			irisExtractor = irisExtractor.Preprocess(new PerIndexNormalisingPreprocessor(0, 1, "inputs", 0, 4.3, 7.9, 1, 2.0, 4.4, 2, 1.0, 6.9, 3, 0.1, 2.5));
+
+			IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
+			IDataset trainingDataset = dataset;
+			IDataset validationDataset = dataset;
+
+			ITrainer trainer = sigma.CreateTrainer("test");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(4)
+										   + FullyConnectedLayer.Construct(10)
+										   + FullyConnectedLayer.Construct(20)
+										   + FullyConnectedLayer.Construct(10)
+										   + FullyConnectedLayer.Construct(3)
+										   + OutputLayer.Construct(3)
+										   + SquaredDifferenceCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, trainingDataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(validationDataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.002);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.4));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
+
+			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+
+			return trainer;
 		}
 
 		/// <summary>
