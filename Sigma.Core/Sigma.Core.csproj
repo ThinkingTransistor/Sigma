@@ -195,6 +195,7 @@
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\ArrayPool.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADNDFloat32Array.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
