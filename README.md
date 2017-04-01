@@ -53,7 +53,13 @@ Contribution guidelines, issue tracking, versioning (?), style requirements, als
 
 ## Acknowledgements 
 
-Special thanks to xyz
+The completion of this project would not have been possible without the assistance and support of many generous people. We cannot express enough thanks and gratefully acknowledge their contributions. In particular, we would like to express our deep gratitude and appreciation to the following: 
+
+- Prof. Dr. Patrick van der Smagt, thank you. Thank you for your continued support and never-ending assistance. Thank you for your heartfelt encouragement and inspirational enthusiasm. Thank you for helping us out at midnight on a Saturday evening---we deeply appreciate your time, kindness, and efforts as our advisor. 
+
+-	To our family, friends, and loved ones, we thank you for your support and gratefully acknowledge your assistance in making this project become a reality. 
+	
+*We thank you.*
 
 ## Used libraries
 
