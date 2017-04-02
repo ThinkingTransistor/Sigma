@@ -117,7 +117,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			Data = new DataBuffer<T>(Length);
 		}
 
-		public virtual object DeepCopy()
+	    /// <inheritdoc />
+	    public virtual object DeepCopy()
 		{
 			return new ADNDArray<T>((IDataBuffer<T>) Data.DeepCopy(), (long[]) Shape.Clone()).SetAssociatedHandler(AssociatedHandler);
 		}
