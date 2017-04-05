@@ -76,8 +76,8 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			//  kind of ugly but saves me from writing more solid property handling
 			ThrowExceptionOnReport = throwExceptionOnReport;
 			Enabled = enabled;
-			CheckNaN = false;
-			CheckInfinite = false;
+			CheckNaN = enabled;
+			CheckInfinite = enabled;
 		}
 
 		private void Report(string message, params object[] values)
@@ -108,12 +108,12 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 					Report($"ndarray {paramName} has inconsistent rank ({array.Rank}) / shape (length {array.Length}).", array);
 				}
 
-				if (CheckNaN && !UnderlyingHandler.IsNaN(array))
+				if (CheckNaN && UnderlyingHandler.IsNaN(array))
 				{
 					Report($"ndarray {paramName} contains NaN values.", array);
 				}
 
-				if (CheckInfinite && !UnderlyingHandler.IsNotFinite(array))
+				if (CheckInfinite && UnderlyingHandler.IsNotFinite(array))
 				{
 					Report($"ndarray {paramName} contains infinite values.", array);
 				}
@@ -135,12 +135,12 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			}
 			else
 			{
-				if (CheckNaN && !UnderlyingHandler.IsNaN(number))
+				if (CheckNaN && UnderlyingHandler.IsNaN(number))
 				{
 					Report($"number {paramName} is a NaN value.", number);
 				}
 
-				if (CheckInfinite && !UnderlyingHandler.IsNotFinite(number))
+				if (CheckInfinite && UnderlyingHandler.IsNotFinite(number))
 				{
 					Report($"number {paramName} is an infinite value.", number);
 				}

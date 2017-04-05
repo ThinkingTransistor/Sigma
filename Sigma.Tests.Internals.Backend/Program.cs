@@ -139,14 +139,17 @@ namespace Sigma.Tests.Internals.Backend
 											+ FullyConnectedLayer.Construct(28 * 28)
 											+ FullyConnectedLayer.Construct(10) 
 											+ OutputLayer.Construct(10)
-											+ SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(20, dataset);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
-			trainer.Operator = new CpuSinglethreadedOperator();
+											+ SquaredDifferenceCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+		    trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler(), enabled: false));
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.25f));
+			trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 5));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));
+			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
+			trainer.AddHook(new RunningTimeReporter(TimeStep.Every(5, TimeScale.Iteration)));
 			trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Iteration)));
 			trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(5, TimeScale.Iteration)));
 

@@ -668,6 +668,51 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return transposed;
 		}
 
+		private bool _InternalOptimisedMapOp_F_M(MapOp mapOp, ref ShapedDataBufferView<float> a)
+		{
+			if (mapOp.IsExp)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = a.DataBuffer.Data[i] * a.DataBuffer.Data[i];
+				}
+
+				return true;
+			}
+			else if (mapOp.IsSqrt)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+				    a.DataBuffer.Data[i] = (float) Math.Sqrt(a.DataBuffer.Data[i]);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool _InternalOptimisedMapOp_F_S_M(float other, MapOp mapOp, ref ShapedDataBufferView<float> a)
+		{
+			if (mapOp.IsDiv)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = other / a.DataBuffer.Data[i];
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_M"/>
 		public override ShapedDataBufferView<float> Map_F_M(MapOp mapOp, FSharpFunc<float, float> f, ShapedDataBufferView<float> a)
 		{
@@ -675,6 +720,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
+
+		    if (_InternalOptimisedMapOp_F_M(mapOp, ref a))
+		    {
+		        return a;
+		    }
 
 			a = a.DeepCopy();
 
@@ -690,6 +740,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_S_M"/>
 		public override ShapedDataBufferView<float> Map_F_S_M(float other, MapOp mapOp, FSharpFunc<float, float> function, ShapedDataBufferView<float> value)
 		{
+		    if (_InternalOptimisedMapOp_F_S_M(other, mapOp, ref value))
+		    {
+		        return value;
+		    }
+
 			return Map_F_M(mapOp, function, value);
 		}
 
@@ -702,7 +757,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			b = b.DeepCopy();
-
 			for (int i = 0; i < a.Length; i++)
 			{
 				b.DataBuffer.Data[i] = f.Invoke(a.DataBuffer.Data[i + a.DataBuffer.Offset]).Invoke(b.DataBuffer.Data[i + b.DataBuffer.Offset]);

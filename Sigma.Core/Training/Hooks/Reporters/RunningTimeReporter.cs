@@ -27,7 +27,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="timeStep">The time step.</param>
 		/// <param name="averageSpan">The interval span to average over.</param>
-		public RunningTimeReporter(TimeStep timeStep, int averageSpan = 4) : base(Utils.TimeStep.Every(1, timeStep.TimeScale))
+		public RunningTimeReporter(TimeStep timeStep, int averageSpan = 4) : base(timeStep)
 		{
 			DefaultTargetMode = TargetMode.Global;
 
