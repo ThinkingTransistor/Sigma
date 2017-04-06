@@ -99,23 +99,23 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 			if (array == null)
 			{
-				Report($"ndarray {paramName} is null.");
+				Report($"ndarray \"{paramName}\" is null.");
 			}
 			else
 			{
 				if (array.Rank != array.Shape.Length)
 				{
-					Report($"ndarray {paramName} has inconsistent rank ({array.Rank}) / shape (length {array.Length}).", array);
+					Report($"ndarray \"{paramName}\" has inconsistent rank ({array.Rank}) / shape (length {array.Length}).", array);
 				}
 
 				if (CheckNaN && UnderlyingHandler.IsNaN(array))
 				{
-					Report($"ndarray {paramName} contains NaN values.", array);
+					Report($"ndarray \"{paramName}\" contains NaN values.", array);
 				}
 
 				if (CheckInfinite && UnderlyingHandler.IsNotFinite(array))
 				{
-					Report($"ndarray {paramName} contains infinite values.", array);
+					Report($"ndarray \"{paramName}\" contains infinite values.", array);
 				}
 			}
 
