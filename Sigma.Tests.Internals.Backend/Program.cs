@@ -71,11 +71,11 @@ namespace Sigma.Tests.Internals.Backend
                                             + FullyConnectedLayer.Construct(10)
                                             + FullyConnectedLayer.Construct(3)
                                             + OutputLayer.Construct(3)
-                                            + SoftMaxCrossEntropyCostLayer.Construct();
+                                            + SquaredDifferenceCostLayer.Construct();
             trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
-            trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+            trainer.Operator = new CpuMultithreadedOperator(workerCount: 2);
 
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.2));
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));

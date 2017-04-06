@@ -377,11 +377,10 @@ namespace Sigma.Core.Data.Datasets
                 return;
             }
 
-            RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0],
-                handler.GetSizeBytes(block.Values.ToArray()), handler)
+            RecordBlock recordBlock = new RecordBlock(block, blockIndex, firstNamedBlock.Shape[0], handler.GetSizeBytes(block.Values.ToArray()), handler)
             { Loaded = true, Active = true };
 
-            lock (this)
+            lock (_activeBlocks)
             {
                 TotalActiveBlockSizeBytes += recordBlock.EstimatedSizeBytes;
                 TotalActiveRecords += recordBlock.NumberRecords;
@@ -745,17 +744,17 @@ namespace Sigma.Core.Data.Datasets
 
         public void FreeBlock(int blockIndex, IComputationHandler handler)
         {
-            if (!_activeBlocks.ContainsKey(blockIndex))
+            lock (_activeBlocks)
             {
-                _logger.Debug($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
+                if (!_activeBlocks.ContainsKey(blockIndex))
+                {
+                    _logger.Debug($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
 
-                return;
-            }
+                    return;
+                }
 
-            RecordBlock toRemove = null;
+                RecordBlock toRemove = null;
 
-            lock (this)
-            {
                 foreach (RecordBlock block in _activeBlocks[blockIndex])
                 {
                     if (ReferenceEquals(block.Handler, handler))
@@ -772,14 +771,15 @@ namespace Sigma.Core.Data.Datasets
                         goto FoundBlock;
                     }
                 }
+
+                _logger.Debug($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
+
+                FoundBlock:
+
+                DeregisterActiveBlock(toRemove);
+                _logger.Debug($"Done freeing block with index {blockIndex} for handler {handler}.");
+
             }
-
-            _logger.Debug($"Unable to free block with index {blockIndex} for handler {handler} because no block with that information is currently active.");
-
-            FoundBlock:
-
-            DeregisterActiveBlock(toRemove);
-            _logger.Debug($"Done freeing block with index {blockIndex} for handler {handler}.");
         }
 
         private void CacheBlockConstrained(Dictionary<string, INDArray> block, int blockIndex, IComputationHandler handler)
