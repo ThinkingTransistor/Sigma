@@ -44,7 +44,7 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleTrainerOperatorWorkerIris();
+            SampleTrainerOperatorWorkerMnist();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
@@ -144,7 +144,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
-            trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler(), enabled: false));
+            trainer.Operator = new CpuMultithreadedOperator(workerCount: 2);
 
             trainer.AddInitialiser("*.weights", new XavierInitialiser(scale: 5));
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01f, mean: 0.03f));

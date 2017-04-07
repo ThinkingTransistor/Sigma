@@ -1,4 +1,5 @@
-﻿using LiveCharts.Wpf;
+﻿using System;
+using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
