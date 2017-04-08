@@ -35,8 +35,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle
 		{
-			get { return _diffsharpBackendHandle; }
-			private set { _diffsharpBackendHandle = value; }
+			get => _diffsharpBackendHandle;
+		    private set => _diffsharpBackendHandle = value;
 		}
 
 		[NonSerialized]
