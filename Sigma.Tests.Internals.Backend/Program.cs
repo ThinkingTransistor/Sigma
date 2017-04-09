@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Sigma.Core.Training.Hooks.Saviors;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -44,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleTrainerOperatorWorkerMnist();
+            SampleTrainerOperatorWorkerIris();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
@@ -85,6 +86,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
             trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
             trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
+            trainer.AddHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", "iris.sgnet"));
 
             //trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
@@ -94,7 +96,7 @@ namespace Sigma.Tests.Internals.Backend
             sigma.AddTrainer(trainer);
 
             //trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
-            trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02d, () => {/* finished */}));
+            trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02, () => {/* finished */}));
 
             sigma.Run();
         }
@@ -137,7 +139,7 @@ namespace Sigma.Tests.Internals.Backend
 
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(28, 28)
-                                            + FullyConnectedLayer.Construct(28 * 28)
+                                            + 2 * FullyConnectedLayer.Construct(28 * 28)
                                             + FullyConnectedLayer.Construct(10)
                                             + OutputLayer.Construct(10)
                                             + SquaredDifferenceCostLayer.Construct();

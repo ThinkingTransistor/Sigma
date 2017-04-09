@@ -114,6 +114,17 @@ namespace Sigma.Core.Training.Hooks
 			ParameterRegistry = new Registry();
 		}
 
+        /// <summary>
+        /// Set this hook to be invoked in a background thread.
+        /// </summary>
+        /// <returns></returns>
+	    public BaseHook SetInvokeInBackground()
+	    {
+	        InvokeInBackground = true;
+
+	        return this;
+	    }
+
 		/// <summary>
 		/// Invoke this hook only when a certain hook invoke criteria is satisfied.
 		/// </summary>

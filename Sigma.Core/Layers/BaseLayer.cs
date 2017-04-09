@@ -15,6 +15,7 @@ namespace Sigma.Core.Layers
 	/// <summary>
 	/// A basic base layer to simplify custom layer implementations of the ILayer interface. 
 	/// </summary>
+	[Serializable]
 	public abstract class BaseLayer : ILayer
 	{
 		public string Name { get; }

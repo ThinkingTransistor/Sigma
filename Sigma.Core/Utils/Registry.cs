@@ -372,7 +372,12 @@ namespace Sigma.Core.Utils
 			return MappedValues.Values.GetEnumerator();
 		}
 
-		public override string ToString()
+	    public override string ToString()
+	    {
+	        return $"registry tagged as {(Tags.Count == 0 ? "<none>" : string.Join("", Tags))} with {MappedValues.Count} entries";
+	    }
+
+		public string FancyToString()
 		{
 			StringBuilder str = new StringBuilder();
 

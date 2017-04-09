@@ -41,6 +41,8 @@ namespace Sigma.Core.Architecture
 		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
 		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
 		private List<ILayer> _orderedLayers;
+
+        [NonSerialized]
 		private IComputationHandler _initialisationHandler;
 		private bool _initialised;
 

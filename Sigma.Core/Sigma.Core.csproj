@@ -243,6 +243,7 @@
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Saviors\DiskSaviorHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
     <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
     <Compile Include="Training\Hooks\Stoppers\StopTrainingHook.cs" />
@@ -314,7 +315,6 @@
     <Folder Include="Layers\Normalisation\" />
     <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
-    <Folder Include="Training\Hooks\Saviors\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>
   <ItemGroup>
