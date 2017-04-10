@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using log4net;
 using log4net.Core;
+using Sigma.Core.Parameterisation;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence
@@ -36,7 +37,7 @@ namespace Sigma.Core.Persistence
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
 		public static void WriteBinaryFile(object obj, string filename, bool verbose = true)
 		{
-			Write(obj, Target.FileByName(filename), Serialisers.BinarySerialiser, verbose);
+			Write(obj, Target.FileByName(filename), Serialisers.BinarySerialiser, verbose: verbose);
 		}
 
 		/// <summary>
@@ -63,7 +64,8 @@ namespace Sigma.Core.Persistence
 		/// <param name="serialiser">The serialiser.</param>
 		/// <param name="autoClose">Optionally indicate if the stream should be automatically closed.</param>
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
-		public static void Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true, bool verbose = true)
+		/// <returns>The number of bytes written (if exposed by the used target stream).</returns>
+		public static long Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true, bool verbose = true)
 		{
 			if (obj == null) throw new ArgumentNullException(nameof(obj));
 			if (target == null) throw new ArgumentNullException(nameof(target));
@@ -75,7 +77,7 @@ namespace Sigma.Core.Persistence
 			long beforePosition = target.Position;
 
 			TraverseObjectGraph(obj, new HashSet<object>(), (p, f, o) => (o as ISerialisationNotifier)?.OnSerialising());
-			serialiser.Write(obj, target);
+		    serialiser.Write(obj, target);
 			TraverseObjectGraph(obj, new HashSet<object>(), (p, f, o) => (o as ISerialisationNotifier)?.OnSerialised());
 
 			target.Flush();
@@ -86,6 +88,8 @@ namespace Sigma.Core.Persistence
 
 			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Done writing {obj.GetType().Name} {obj} to target stream {target} using serialiser {serialiser}, " +
 						  $"wrote {(bytesWritten / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.", ClazzLogger);
+
+		    return bytesWritten;
 		}
 
 		/// <summary>
@@ -145,7 +149,7 @@ namespace Sigma.Core.Persistence
 			do
 			{
 				FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
+                // hierarchy change listeners..
 				// for every type check all fields for relevance
 				foreach (FieldInfo field in fields)
 				{
@@ -158,11 +162,11 @@ namespace Sigma.Core.Persistence
 
 					if (value != null)
 					{
-						// TODO smarter optimisation than checking for system namespace, maybe build cache with type information?
+                        // Note: I am completely aware how awful this "optimisation" is, but it works and there currently is no time to implement a better system.
 						string ns = value.GetType().Namespace;
-						bool boringSystemType = ns.StartsWith("System") && !ns.StartsWith("System.Collections");
+						bool boringType = ns.StartsWith("System") && !ns.StartsWith("System.Collections") || ns.StartsWith("log4net");
 
-						if (!boringSystemType && !traversedObjects.Contains(value))
+						if (!boringType && !traversedObjects.Contains(value) && !Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
 						{
 							TraverseObjectGraph(value, traversedObjects, action);
 

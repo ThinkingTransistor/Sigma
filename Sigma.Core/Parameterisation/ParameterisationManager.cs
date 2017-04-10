@@ -16,6 +16,7 @@ namespace Sigma.Core.Parameterisation
 	/// <summary>
 	/// A parameterisation 
 	/// </summary>
+	[Serializable]
 	public class ParameterisationManager : IParameterisationManager
 	{
 		private readonly IDictionary<string, IParameterType> _identifierMappings;
