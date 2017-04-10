@@ -43,9 +43,13 @@ namespace Sigma.Core.Training.Hooks.Saviors
         /// <param name="verbose">Indicate whether or not to report when the specified object was serialised.</param>
         public DiskSaviorHook(ITimeStep timestep, string registryEntryToSave, string fileName, Func<T, T> selectFunction, bool verbose = true) : base(timestep, registryEntryToSave)
         {
-            ParameterRegistry["registry_entry_to_save"] = registryEntryToSave ?? throw new ArgumentNullException(nameof(registryEntryToSave));
-            ParameterRegistry["file_name"] = fileName ?? throw new ArgumentNullException(nameof(fileName));
-            ParameterRegistry["select_function"] = selectFunction ?? throw new ArgumentNullException(nameof(selectFunction));
+            if (registryEntryToSave == null) throw new ArgumentNullException(nameof(registryEntryToSave));
+            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (selectFunction == null) throw new ArgumentNullException(nameof(selectFunction));
+
+            ParameterRegistry["registry_entry_to_save"] = registryEntryToSave;
+            ParameterRegistry["file_name"] = fileName;
+            ParameterRegistry["select_function"] = selectFunction;
             ParameterRegistry["verbose"] = verbose;
 
             DefaultTargetMode = TargetMode.Global;

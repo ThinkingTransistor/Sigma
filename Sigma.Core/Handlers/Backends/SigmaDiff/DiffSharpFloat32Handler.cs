@@ -35,9 +35,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle
 		{
-			get => _diffsharpBackendHandle;
-		    private set => _diffsharpBackendHandle = value;
-		}
+		    get { return _diffsharpBackendHandle; }
+		    private set { _diffsharpBackendHandle = value; }
+        }
 
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
