@@ -73,6 +73,8 @@ namespace Sigma.Tests.Internals.Backend
                                             + FullyConnectedLayer.Construct(3)
                                             + OutputLayer.Construct(3)
                                             + SquaredDifferenceCostLayer.Construct();
+            trainer.Network = Serialisation.ReadFromBinaryFileIfExists<INetwork>("iris.sgnet", trainer.Network);
+
             trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);

@@ -77,7 +77,7 @@ namespace Sigma.Core.Persistence
 			long beforePosition = target.Position;
 
 			TraverseObjectGraph(obj, new HashSet<object>(), (p, f, o) => (o as ISerialisationNotifier)?.OnSerialising());
-		    serialiser.Write(obj, target);
+			serialiser.Write(obj, target);
 			TraverseObjectGraph(obj, new HashSet<object>(), (p, f, o) => (o as ISerialisationNotifier)?.OnSerialised());
 
 			target.Flush();
@@ -89,7 +89,7 @@ namespace Sigma.Core.Persistence
 			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Done writing {obj.GetType().Name} {obj} to target stream {target} using serialiser {serialiser}, " +
 						  $"wrote {(bytesWritten / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.", ClazzLogger);
 
-		    return bytesWritten;
+			return bytesWritten;
 		}
 
 		/// <summary>
@@ -135,6 +135,38 @@ namespace Sigma.Core.Persistence
 		}
 
 		/// <summary>
+		/// Attempt to read and validate certain object from a binary file, return the original value if unsuccessful.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="fileName">The file name.</param>
+		/// <param name="originalValue">The original value.</param>
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		/// <param name="validationFunction">The optional validation function to validate the read object with (if false, the original value is returned).</param>
+		/// <returns>The read (i.e. existing) if successfully read and validated, otherwise the original value.</returns>
+		public static T ReadFromBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
+		{
+			try
+			{
+				T existing = ReadBinaryFile<T>(fileName, verbose);
+
+				if (validationFunction == null || validationFunction.Invoke(existing))
+				{
+					LoggingUtils.Log(verbose ? Level.Info :  Level.Debug, $"Read and validation of type {typeof(T)} successful, returning existing value.", ClazzLogger);
+
+					return existing;
+				}
+
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} successful, validation failed, returning default value.", ClazzLogger);
+			}
+			catch (Exception e)
+			{
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with {e}, returning default value.", ClazzLogger);
+			}
+
+			return originalValue;
+		}
+
+		/// <summary>
 		/// Traverse the object graph of a given object (i.e. all related and referenced objects, recursively).
 		/// </summary>
 		/// <param name="root">The root object (or current parent, depending on call depth).</param>
@@ -149,7 +181,7 @@ namespace Sigma.Core.Persistence
 			do
 			{
 				FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                // hierarchy change listeners..
+				// hierarchy change listeners..
 				// for every type check all fields for relevance
 				foreach (FieldInfo field in fields)
 				{
@@ -162,7 +194,7 @@ namespace Sigma.Core.Persistence
 
 					if (value != null)
 					{
-                        // Note: I am completely aware how awful this "optimisation" is, but it works and there currently is no time to implement a better system.
+						// Note: I am completely aware how awful this "optimisation" is, but it works and there currently is no time to implement a better system.
 						string ns = value.GetType().Namespace;
 						bool boringType = ns.StartsWith("System") && !ns.StartsWith("System.Collections") || ns.StartsWith("log4net");
 
