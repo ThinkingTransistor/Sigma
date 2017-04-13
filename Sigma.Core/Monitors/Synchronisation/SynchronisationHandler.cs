@@ -77,5 +77,25 @@ namespace Sigma.Core.Monitors.Synchronisation
 			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
 			return resolver.ResolveGetSingleWithDefault(key, default(T));
 		}
+
+
+		/// <summary>
+		///	Update a value with a given action if it has changed (<see cref="object.Equals(object)"/>).
+		/// </summary>
+		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
+		/// <param name="registry">The registry in which the entry will be set.</param>
+		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
+		/// <param name="currentVal">The current value of the object.</param>
+		/// <param name="update">The method that will be called if the parameter has to be updated.</param>
+		public void SynchroniseUpdate<T>(IRegistry registry, string key, T currentVal, Action<T> update)
+		{
+			if (update == null) throw new ArgumentNullException(nameof(update));
+
+			T newObj = SynchroniseGet<T>(registry, key);
+			if (newObj != null && currentVal == null || newObj != null && !newObj.Equals(currentVal))
+			{
+				update(newObj);
+			}
+		}
 	}
 }

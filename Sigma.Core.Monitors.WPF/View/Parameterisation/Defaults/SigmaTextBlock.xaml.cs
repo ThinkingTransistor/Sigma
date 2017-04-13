@@ -18,17 +18,20 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 	[ParameterVisualiser(typeof(object), Priority = VisualiserPriority.Lower)]
 	public partial class SigmaTextBlock
 	{
-		private object _object;
+		/// <summary>
+		/// The object that is currently being displayed (without updating the displayed information)
+		/// </summary>
+		protected object _Object;
 
 		/// <summary>
 		/// The object that is being displayed (toString is called).
 		/// </summary>
-		public object Object
+		public virtual object Object
 		{
-			get { return _object; }
+			get { return _Object; }
 			set
 			{
-				_object = value;
+				_Object = value;
 				TextBlock.Text = value?.ToString() ?? "null";
 			}
 		}
@@ -37,7 +40,6 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// The text that is visualised. 
 		/// </summary>
 		public string Text => TextBlock.Text;
-
 
 		/// <summary>
 		/// The fully resolved key to access the synchandler.
@@ -86,7 +88,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override void Read()
 		{
-			Object = SynchronisationHandler.SynchroniseGet<object>(Registry, Key);
+			SynchronisationHandler.SynchroniseUpdate(Registry, Key, Object, newObj => Dispatcher.Invoke(() => Object = newObj));
 		}
 
 		/// <summary>

@@ -168,6 +168,7 @@
     <Compile Include="Utils\AttributeUtils.cs" />
     <Compile Include="Utils\ChartPanelPerformance.cs" />
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
+    <Compile Include="ViewModel\Parameterisation\PollParameterHook.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />
     <Compile Include="ViewModel\Parameterisation\ParameterVisualiserManager.cs" />
@@ -233,6 +234,7 @@
     </Compile>
     <Compile Include="ViewModel\Parameterisation\IParameterLabel.cs" />
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserInfo.cs" />
+    <Compile Include="View\Parameterisation\Defaults\SigmaTimeBlock.cs" />
     <Compile Include="View\Parameterisation\ParameterLabel.cs" />
     <Compile Include="View\Parameterisation\ParameterView.xaml.cs">
       <DependentUpon>ParameterView.xaml</DependentUpon>

@@ -6,9 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Windows.Controls;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation
@@ -62,5 +65,29 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
 		/// </summary>
 		public abstract void Write();
+
+		/// <summary>
+		/// The currently active poll hook that is responsible for updating values. 
+		/// </summary>
+		protected PollParameterHook ActiveHook;
+
+		/// <summary>
+		/// Enables the automatic polling of values (call Read on every TimeStep). 
+		/// <c>null</c> if no automatic polling should be enabled.
+		/// </summary>
+		/// <param name="trainer">The trainer on which the poll will be performed.</param>
+		/// <param name="step">The TimeStep on when the parameter should update.</param>
+		public virtual void AutoPollValues(ITrainer trainer, ITimeStep step)
+		{
+			if (ActiveHook != null)
+			{
+					trainer.Operator.DetachGlobalHook(ActiveHook);
+
+			}
+
+			ActiveHook = new PollParameterHook(step, this);
+
+			trainer.AddGlobalHook(ActiveHook);
+		}
 	}
 }

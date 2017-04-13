@@ -44,7 +44,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		/// <summary>
 		/// The default constructor.
 		/// </summary>
-		/// <param name="autoAssign">If <c>true</c> it will automatically add all classes marked with the attribute <see cref="ParameterVisualiserAttribute"/>.</param>
+		/// <param name="autoAssign">If <c>true</c>, it will automatically add all classes marked with the attribute <see cref="ParameterVisualiserAttribute"/>.</param>
 		public ParameterVisualiserManager(bool autoAssign = true)
 		{
 			TypeMapping = new Dictionary<Type, Type>();
@@ -116,7 +116,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 					return false;
 				}
 
-				_log.Info($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
+				_log.Debug($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
 			}
 
 			TypeMapping[parameterInfo.Type] = visualiserClass;

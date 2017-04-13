@@ -41,5 +41,15 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
 		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
 		T SynchroniseGet<T>(IRegistry registry, string key);
+
+		/// <summary>
+		///	Update a value with a given action if it has changed (not <see cref="object.Equals(object)"/>).
+		/// </summary>
+		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
+		/// <param name="registry">The registry in which the entry will be set.</param>
+		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
+		/// <param name="currentVal">The current value of the object.</param>
+		/// <param name="update">The method that will be called if the parameter has to be updated.</param>
+		void SynchroniseUpdate<T>(IRegistry registry, string key, T currentVal,Action<T> update);
 	}
 }

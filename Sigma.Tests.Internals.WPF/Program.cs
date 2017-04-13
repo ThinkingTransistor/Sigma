@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Controls;
 using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -17,9 +18,12 @@ using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
+using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
+using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -76,7 +80,18 @@ namespace Sigma.Tests.Internals.WPF
 					//accuracy.Fast();
 
 					// add the newly created panel
-					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 2, iris);
+					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 1, iris);
+
+					IRegistry regTest = new Registry();
+					regTest.Add("test", DateTime.Now);
+
+					var parameter = new ParameterPanel("Parameters", sigma, window);
+					parameter.Add("Time", typeof(DateTime), regTest, "test");
+					var costBlock = new SigmaTimeBlock();
+					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+					parameter.Content.Add(new Label { Content = "Time" }, costBlock, trainer.Operator.Registry, "optimiser.learning_rate");
+
+					window.TabControl["Overview"].AddCumulativePanel(parameter);
 
 					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
 
