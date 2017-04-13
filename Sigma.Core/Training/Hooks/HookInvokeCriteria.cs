@@ -370,6 +370,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// An extrema criteria that fires when a value has reached a new extrema (min / max).
 	/// </summary>
+	[Serializable]
 	public class ExtremaCriteria : HookInvokeCriteria
 	{
 		/// <summary>

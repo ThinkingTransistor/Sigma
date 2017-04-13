@@ -7,14 +7,16 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.IO;
 using log4net;
-using log4net.Core;
 using Sigma.Core.Persistence;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Saviors
 {
+    /// <summary>
+    /// A disk savior hook for selectively storing certain objects on disk on certain conditions / at certain intervals.
+    /// </summary>
+    /// <typeparam name="T">The type of object to store.</typeparam>
     [Serializable]
     public class DiskSaviorHook<T> : BaseHook
     {
@@ -27,9 +29,31 @@ namespace Sigma.Core.Training.Hooks.Saviors
         /// <param name="timestep">The time step.</param>
         /// <param name="registryEntryToSave"></param>
         /// <param name="fileName">The file name to store to disk as.</param>
-        /// <param name="selectFunction">The select function to apply.</param>
+        /// <param name="verbose">Indicate whether or not to report when the specified object was serialised.</param>
+        public DiskSaviorHook(string registryEntryToSave, string fileName, bool verbose = true) : this(Utils.TimeStep.Every(1, TimeScale.Iteration), registryEntryToSave, fileName, verbose)
+        {
+        }
+
+        /// <summary>
+        /// Create a savior hook that will automatically serialise a certain registry entry.
+        /// </summary>
+        /// <param name="timestep">The time step.</param>
+        /// <param name="registryEntryToSave"></param>
+        /// <param name="fileName">The file name to store to disk as.</param>
         /// <param name="verbose">Indicate whether or not to report when the specified object was serialised.</param>
         public DiskSaviorHook(ITimeStep timestep, string registryEntryToSave, string fileName, bool verbose = true) : this(timestep, registryEntryToSave, fileName, o => o, verbose)
+        {
+        }
+
+        /// <summary>
+        /// Create a savior hook that will automatically serialise a certain registry entry.
+        /// </summary>
+        /// <param name="timestep">The time step.</param>
+        /// <param name="registryEntryToSave"></param>
+        /// <param name="fileName">The file name to store to disk as.</param>
+        /// <param name="selectFunction">The select function to apply.</param>
+        /// <param name="verbose">Indicate whether or not to report when the specified object was serialised.</param>
+        public DiskSaviorHook(string registryEntryToSave, string fileName, Func<T, T> selectFunction, bool verbose = true) : this(Utils.TimeStep.Every(1, TimeScale.Iteration), registryEntryToSave, fileName, selectFunction, verbose)
         {
         }
 
@@ -70,11 +94,14 @@ namespace Sigma.Core.Training.Hooks.Saviors
 
             toSerialise = selectFunction.Invoke((T) toSerialise);
 
-            Serialisation.WriteBinaryFile(toSerialise, fileName, verbose: false);
+            lock (fileName)
+            {
+                Serialisation.WriteBinaryFile(toSerialise, fileName, verbose: false);
+            }
 
             if (verbose)
             {
-                _logger.Info($"Saved \"{registryEntryToSave}\" to \"{SigmaEnvironment.Globals.Get<string>("storage_path")}/{fileName}\".");
+                _logger.Info($"Saved \"{registryEntryToSave}\" to \"{SigmaEnvironment.Globals.Get<string>("storage_path")}{fileName}\".");
             }
         }
     }
