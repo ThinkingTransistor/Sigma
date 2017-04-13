@@ -28,10 +28,10 @@ namespace Sigma.Core.Utils
 		internal Dictionary<string, object> MappedValues;
 		internal Dictionary<string, Type> AssociatedTypes;
 
-        [NonSerialized]
-	    private ISet<IRegistryHierarchyChangeListener> _hierarchyChangeListeners;
+		[NonSerialized]
+		private ISet<IRegistryHierarchyChangeListener> _hierarchyChangeListeners;
 
-	    public bool CheckTypes
+		public bool CheckTypes
 		{
 			get; set;
 		} = true;
@@ -55,17 +55,17 @@ namespace Sigma.Core.Utils
 
 		public ISet<string> Tags { get; }
 
-	    public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
-	    {
-	        get { return _hierarchyChangeListeners; }
-	    }
+		public ISet<IRegistryHierarchyChangeListener> HierarchyChangeListeners
+		{
+			get { return _hierarchyChangeListeners; }
+		}
 
-	    /// <summary>
-	    /// Create a registry with a certain (optional) parent and an (optional) list of tags.
-	    /// </summary>
-	    /// <param name="parent">The optional parent to this registry.</param>
-	    /// <param name="tags">The optional tags to this registry.</param>
-	    public Registry(IRegistry parent = null, params string[] tags)
+		/// <summary>
+		/// Create a registry with a certain (optional) parent and an (optional) list of tags.
+		/// </summary>
+		/// <param name="parent">The optional parent to this registry.</param>
+		/// <param name="tags">The optional tags to this registry.</param>
+		public Registry(IRegistry parent = null, params string[] tags)
 		{
 			Parent = parent;
 			Root = Parent?.Root ?? Parent;
@@ -379,10 +379,10 @@ namespace Sigma.Core.Utils
 			return MappedValues.Values.GetEnumerator();
 		}
 
-	    public override string ToString()
-	    {
-	        return $"registry tagged as {(Tags.Count == 0 ? "<none>" : string.Join("", Tags))} with {MappedValues.Count} entries";
-	    }
+		public override string ToString()
+		{
+			return $"registry tagged as {(Tags.Count == 0 ? "<none>" : string.Join("", Tags))} with {MappedValues.Count} entries";
+		}
 
 		public string FancyToString()
 		{
@@ -416,27 +416,27 @@ namespace Sigma.Core.Utils
 			return other != null && MappedValues.Count == other.Count && MappedValues.Keys.All(k => other.ContainsKey(k) && Equals(MappedValues[k], other[k]));
 		}
 
-	    /// <summary>
-	    /// Called before this object is serialised.
-	    /// </summary>
-	    public void OnSerialising()
-	    {
-	    }
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
 
-	    /// <summary>
-	    /// Called after this object was serialised.
-	    /// </summary>
-	    public void OnSerialised()
-	    {
-	    }
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
 
-	    /// <summary>
-	    /// Called after this object was de-serialised. 
-	    /// </summary>
-	    public void OnDeserialised()
-	    {
-            _hierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
-	    }
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			_hierarchyChangeListeners = new HashSet<IRegistryHierarchyChangeListener>();
+		}
 	}
 
 	/// <summary>

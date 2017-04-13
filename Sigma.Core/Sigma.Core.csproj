@@ -208,6 +208,7 @@
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Monitors\Synchronisation\ISynchronisationHandler.cs" />
+    <Compile Include="Monitors\Synchronisation\ISynchronisationSource.cs" />
     <Compile Include="Monitors\Synchronisation\SetValueCommand.cs" />
     <Compile Include="Monitors\Synchronisation\SynchronisationHandler.cs" />
     <Compile Include="Parameterisation\IParameterisationManager.cs" />

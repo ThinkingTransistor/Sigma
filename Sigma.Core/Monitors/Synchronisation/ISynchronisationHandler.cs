@@ -22,6 +22,19 @@ namespace Sigma.Core.Monitors.Synchronisation
 		SigmaEnvironment Sigma { get; }
 
 		/// <summary>
+		/// Add an additional source that will be used if the values cannot be found. 
+		/// </summary>
+		/// <param name="source">The source that will be added.</param>
+		void AddSynchronisationSource(ISynchronisationSource source);
+
+		/// <summary>
+		/// Remove an additional source.
+		/// </summary>
+		/// <param name="source">The source that will be removed.</param>
+		/// <returns><c>True</c> if teh source could be removed, <c>false</c> otherwise.</returns>
+		bool RemoveSynchronisationSource(ISynchronisationSource source);
+
+		/// <summary>
 		/// Indicate that a value has changed and synchronise it with the given <see cref="SigmaEnvironment"/>.
 		/// 
 		/// This method returns immediately - callbacks should be used if required.

@@ -17,7 +17,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 	/// The default synchronisation handler for Sigma. It is responsible for syncing values between monitors 
 	/// and the environment itself.
 	/// </summary>
-	public class SynchronisationHandler : ISynchronisationHandler
+	public class SynchronisationHandler : ISynchronisationHandler, ISynchronisationSource
 	{
 		/// <summary>
 		/// The environment this handler is associated with.
@@ -30,6 +30,11 @@ namespace Sigma.Core.Monitors.Synchronisation
 		protected Dictionary<IRegistry, IRegistryResolver> RegistryResolvers { get; }
 
 		/// <summary>
+		/// The assigned synchronisation sources.
+		/// </summary>
+		protected List<ISynchronisationSource> Sources;
+
+		/// <summary>
 		/// Default constructor for <see cref="ISynchronisationHandler"/>. 
 		/// </summary>
 		/// <param name="sigma">The <see cref="SigmaEnvironment"/> this <see cref="ISynchronisationHandler"/> is
@@ -39,8 +44,23 @@ namespace Sigma.Core.Monitors.Synchronisation
 			if (sigma == null) throw new ArgumentNullException(nameof(sigma));
 
 			RegistryResolvers = new Dictionary<IRegistry, IRegistryResolver>();
+			Sources = new List<ISynchronisationSource>();
 
 			Sigma = sigma;
+		}
+
+		/// <inheritdoc />
+		public void AddSynchronisationSource(ISynchronisationSource source)
+		{
+			if (source == null) throw new ArgumentNullException(nameof(source));
+			Sources.Add(source);
+		}
+
+		/// <inheritdoc />
+		public bool RemoveSynchronisationSource(ISynchronisationSource source)
+		{
+			if (source == null) throw new ArgumentNullException(nameof(source));
+			return Sources.Remove(source);
 		}
 
 		/// <inheritdoc />
@@ -52,6 +72,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 				if (ReferenceEquals(op.Registry, registry))
 				{
 					//TODO: test if callback is called
+					//TODO: on error check sources for other to set the value
 					op.InvokeCommand(new SetValueCommand<T>(key, val, () => onSuccess?.Invoke(val)));
 
 					return;
@@ -75,9 +96,27 @@ namespace Sigma.Core.Monitors.Synchronisation
 		public virtual T SynchroniseGet<T>(IRegistry registry, string key)
 		{
 			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
-			return resolver.ResolveGetSingleWithDefault(key, default(T));
-		}
+			//return resolver.ResolveGetSingle<>()
+			string[] emptyArrayThrowaway;
 
+			T[] result = resolver.ResolveGet<T>(key, out emptyArrayThrowaway);
+
+			if (result.Length != 0)
+			{
+				return result[0];
+			}
+
+			foreach (ISynchronisationSource source in Sources)
+			{
+				T res;
+				if (source.TryGet(key, out res))
+				{
+					return res;
+				}
+			}
+
+			return default(T);
+		}
 
 		/// <summary>
 		///	Update a value with a given action if it has changed (<see cref="object.Equals(object)"/>).
@@ -96,6 +135,18 @@ namespace Sigma.Core.Monitors.Synchronisation
 			{
 				update(newObj);
 			}
+		}
+
+		/// <inheritdoc />
+		bool ISynchronisationSource.TryGet<T>(string key, out T val)
+		{
+			throw new NotImplementedException("Get currently not implemented as no registry is passed");
+		}
+
+		/// <inheritdoc />
+		bool ISynchronisationSource.TrySet<T>(string key, T val)
+		{
+			throw new NotImplementedException("Set currently not implemented as there is no error");
 		}
 	}
 }

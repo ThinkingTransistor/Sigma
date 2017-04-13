@@ -81,8 +81,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		{
 			if (ActiveHook != null)
 			{
-					trainer.Operator.DetachGlobalHook(ActiveHook);
-
+				trainer.Operator.DetachGlobalHook(ActiveHook);
 			}
 
 			ActiveHook = new PollParameterHook(step, this);

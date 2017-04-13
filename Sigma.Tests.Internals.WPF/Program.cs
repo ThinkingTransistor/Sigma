@@ -20,10 +20,8 @@ using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
-using Sigma.Core.Monitors.WPF.View.CustomControls.StatusBar;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
-using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -90,6 +88,10 @@ namespace Sigma.Tests.Internals.WPF
 					var costBlock = new SigmaTimeBlock();
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 					parameter.Content.Add(new Label { Content = "Time" }, costBlock, trainer.Operator.Registry, "optimiser.learning_rate");
+
+					var heeBlock = new SigmaTimeBlock();
+					heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+					parameter.Content.Add(new Label { Content = "Cost" }, heeBlock, trainer.Operator.Registry, "optimiser.cost_total");
 
 					window.TabControl["Overview"].AddCumulativePanel(parameter);
 
