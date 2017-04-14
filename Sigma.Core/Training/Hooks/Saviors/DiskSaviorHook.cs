@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Reflection;
 using log4net;
 using Sigma.Core.Persistence;
 using Sigma.Core.Utils;
@@ -21,7 +22,7 @@ namespace Sigma.Core.Training.Hooks.Saviors
     public class DiskSaviorHook<T> : BaseHook
     {
         [NonSerialized]
-        private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly ILog _logger = LogManager.GetLogger(Assembly.GetCallingAssembly(), typeof(DiskSaviorHook<T>).Namespace + typeof(DiskSaviorHook<T>).Name);
 
         /// <summary>
         /// Create a savior hook that will automatically serialise a certain registry entry.

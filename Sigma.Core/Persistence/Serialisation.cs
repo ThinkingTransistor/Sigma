@@ -122,7 +122,7 @@ namespace Sigma.Core.Persistence
 				// automatically restore all logger instances
 				if (field.FieldType == typeof(ILog))
 				{
-					field.SetValue(parent, LogManager.GetLogger(parent.GetType()));
+					field.SetValue(parent, LogManager.GetLogger(Assembly.GetCallingAssembly(), parent.GetType().Namespace + "." + parent.GetType().Name));
 				}
 
 				(obj as ISerialisationNotifier)?.OnDeserialised();
