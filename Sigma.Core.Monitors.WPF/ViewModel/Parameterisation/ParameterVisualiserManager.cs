@@ -111,15 +111,19 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			// if the mapping has already been added 
 			if (TypeMapping.TryGetValue(parameterInfo.Type, out storedClass) && AttributeMapping.TryGetValue(parameterInfo.Type, out storedAttribte))
 			{
-				// if the new values have a lower priority, we return false
-				if (parameterInfo.Priority <= storedAttribte.Priority)
+				// if the a differnt type is being represented (necessarry for generics)
+				if (!ReferenceEquals(visualiserClass, storedClass))
 				{
-					_log.Warn($"{parameterInfo.Type} is currently visualised by {storedClass.Name}; {visualiserClass.Name} tried to be the visualiser but has a lower priority ({parameterInfo.Priority} <= {storedAttribte.Priority}).");
+					// if the new values have a lower priority, we return false
+					if (parameterInfo.Priority <= storedAttribte.Priority)
+					{
+						_log.Warn($"{parameterInfo.Type} is currently visualised by {storedClass.Name}; {visualiserClass.Name} tried to be the visualiser but has a lower priority ({parameterInfo.Priority} <= {storedAttribte.Priority}).");
 
-					return false;
+						return false;
+					}
+
+					_log.Debug($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
 				}
-
-				_log.Debug($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
 			}
 
 			TypeMapping[parameterInfo.Type] = visualiserClass;
