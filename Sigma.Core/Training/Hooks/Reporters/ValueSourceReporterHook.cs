@@ -122,10 +122,22 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			{
 				object oVal;
 
-				bool ret = values.TryGetValue(key, out oVal);
-				val = (T) oVal;
+				if (values.TryGetValue(key, out oVal))
+				{
+					if (oVal == null)
+					{
+						val = default(T);
+					}
+					else
+					{
+						val = (T) oVal;
+					}
 
-				return ret;
+					return true;
+				}
+
+				val = default(T);
+				return false;
 			}
 		}
 

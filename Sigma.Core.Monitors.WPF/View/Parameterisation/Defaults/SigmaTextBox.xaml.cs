@@ -15,110 +15,6 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 {
-	//[ParameterVisualiser(typeof(float), Priority = VisualiserPriority.Lower)]
-	//internal class SigmaFloatBox : DynamicConverterBox
-	//{ }
-
-	//[ParameterVisualiser(typeof(double), Priority = VisualiserPriority.Lower)]
-	//internal class SigmaDoubleBox : DynamicConverterBox
-	//{ }
-
-	///// <summary>
-	///// Sigmas way of converting a string to given value (e.g. double)
-	///// </summary>
-	//public class SigmaConverterBox<T> : SigmaTextBox
-	//{
-	//	/// <summary>
-	//	/// The converter that converts the given type for the registry
-	//	/// </summary>
-	//	protected readonly TypeConverter Converter;
-
-	//	public SigmaConverterBox()
-	//	{
-	//		Converter = TypeDescriptor.GetConverter(typeof(T));
-	//	}
-
-	//	/// <summary>
-	//	/// Force the visualiser to update its value (i.e. display the value that is stored).
-	//	/// </summary>
-	//	public override void Read()
-	//	{
-	//		Text = SynchronisationHandler.SynchroniseGet<T>(Registry, Key).ToString();
-	//	}
-
-	//	/// <summary>
-	//	/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
-	//	/// </summary>
-	//	public override void Write()
-	//	{
-	//		try
-	//		{
-	//			T num = (T) Converter.ConvertFromString(Text);
-	//			Pending = true;
-	//			SynchronisationHandler.SynchroniseSet(Registry, Key, num, val => Pending = false, e => Errored = true);
-	//		}
-	//		catch (Exception)
-	//		{
-	//			Errored = true;
-	//		}
-	//	}
-	//}
-	[ParameterVisualiser(typeof(float), Priority = VisualiserPriority.Lower)]
-	[ParameterVisualiser(typeof(double), Priority = VisualiserPriority.Lower)]
-	[ParameterVisualiser(typeof(long), Priority = VisualiserPriority.Lower)]
-	[ParameterVisualiser(typeof(int), Priority = VisualiserPriority.Lower)]
-	[ParameterVisualiser(typeof(short), Priority = VisualiserPriority.Lower)]
-	public class DynamicConverterBox : SigmaTextBox
-	{
-		/// <summary>
-		/// The converter that converts the given type for the registry
-		/// </summary>
-		public TypeConverter Converter { get; protected set; }
-
-		public object CurrentValue { get; protected set; }
-
-		/// <summary>
-		/// Force the visualiser to update its value (i.e. display the value that is stored).
-		/// </summary>
-		public override void Read()
-		{
-			object obj = SynchronisationHandler.SynchroniseGet<object>(Registry, Key);
-
-			if (Converter == null && obj != null)
-			{
-				Converter = TypeDescriptor.GetConverter(obj.GetType());
-			}
-
-			if (obj != null)
-			{
-				CurrentValue = obj;
-				Text = obj.ToString();
-			}
-		}
-
-		/// <summary>
-		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
-		/// </summary>
-		public override void Write()
-		{
-			try
-			{
-				object convertedVal = Converter.ConvertFromString(Text);
-				Pending = true;
-				SynchronisationHandler.SynchroniseSet(Registry, Key, convertedVal, val => Pending = false, e => Errored = true);
-			}
-			catch (Exception)
-			{
-				Errored = true;
-
-#if DEBUG
-				//TODO: such an ugly hack only for testing
-				Read();
-#endif
-			}
-		}
-	}
-
 	/// <summary>
 	/// Sigmas way of displaying strings. 
 	/// </summary>
@@ -151,7 +47,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		public string Text
 		{
 			get { return TextBox.Text; }
-			set { TextBox.Text = value; }
+			set { Dispatcher.Invoke(() => TextBox.Text = value); }
 		}
 
 		/// <summary>
@@ -181,7 +77,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override void Read()
 		{
-			Text = SynchronisationHandler.SynchroniseGet<string>(Registry, Key);
+			SynchronisationHandler.SynchroniseUpdate(Registry, Key, Text, newVal => Text = newVal);
 		}
 
 		/// <summary>

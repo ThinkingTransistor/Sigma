@@ -68,14 +68,15 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// <param name="type">The type that will be displayed.</param>
 		/// <param name="registry">The registry which contains the value that should be displayed.</param>
 		/// <param name="key">The key to access the exact value required.</param>
-		public void Add(string name, Type type, IRegistry registry, string key)
+		public IParameterVisualiser Add(string name, Type type, IRegistry registry, string key)
 		{
-			Add(new Label {Content = name}, type, registry, key);
+			return Add(new Label {Content = name}, type, registry, key);
 		}
 
-		public void Add(UIElement name, Type visualiserType, IRegistry registry, string key)
+		public IParameterVisualiser Add(UIElement name, Type visualiserType, IRegistry registry, string key)
 		{
-			UIElement displayer = (UIElement) Activator.CreateInstance(Manager.VisualiserType(visualiserType));
+			//UIElement displayer = (UIElement) Activator.CreateInstance(Manager.VisualiserType(visualiserType));
+			UIElement displayer = (UIElement) Manager.InstantiateVisualiser(visualiserType);
 			IParameterVisualiser visualiser = displayer as IParameterVisualiser;
 
 			if (visualiser == null)
@@ -84,6 +85,8 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 			}
 
 			Add(name, displayer, visualiser, registry, key);
+
+			return visualiser;
 		}
 
 		public void Add(string name, object visualiserAndDisplayer, IRegistry registry, string key)

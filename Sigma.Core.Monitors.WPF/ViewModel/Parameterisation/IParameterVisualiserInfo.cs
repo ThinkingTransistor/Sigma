@@ -50,6 +50,13 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		Type Type { get; }
 
 		/// <summary>
+		/// Determinse whether the given visualiser is generic or not.
+		/// 
+		/// More specifically, if the given visualiser should be passed the visualisation type as generic type or not.
+		/// </summary>
+		bool IsGeneric { get; }
+
+		/// <summary>
 		/// The priority of the <see cref="IParameterVisualiserInfo"/>. If another priority with a lower priority has already been added, the
 		/// higher priority will override the settings. 
 		/// </summary>

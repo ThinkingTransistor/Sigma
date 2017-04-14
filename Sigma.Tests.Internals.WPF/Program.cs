@@ -19,6 +19,7 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Reporters;
@@ -30,6 +31,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Tests.Internals.WPF
 {
+
 	internal class Program
 	{
 		private const bool UI = true;
@@ -89,9 +91,14 @@ namespace Sigma.Tests.Internals.WPF
 					trainer.AddLocalHook(valueHook);
 					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
-					var costBlock = new SigmaTimeBlock();
+					var costBlock = (UserControlParameterVisualiser) parameter.Content.Add("Cost", typeof(double), trainer.Operator.Registry, "optimiser.cost_total");
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-					parameter.Content.Add(new Label { Content = "Cost" }, costBlock, trainer.Operator.Registry, "optimiser.cost_total");
+
+					var learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+
+					learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
 					//var heeBlock = new SigmaTimeBlock();
 					//heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
