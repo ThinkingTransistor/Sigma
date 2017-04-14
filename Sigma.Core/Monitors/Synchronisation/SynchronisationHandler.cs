@@ -95,15 +95,18 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <inheritdoc />
 		public virtual T SynchroniseGet<T>(IRegistry registry, string key)
 		{
-			IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
-			//return resolver.ResolveGetSingle<>()
-			string[] emptyArrayThrowaway;
-
-			T[] result = resolver.ResolveGet<T>(key, out emptyArrayThrowaway);
-
-			if (result.Length != 0)
+			if (registry != null)
 			{
-				return result[0];
+				IRegistryResolver resolver = RegistryResolvers.TryGetValue(registry, () => new RegistryResolver(registry));
+				//return resolver.ResolveGetSingle<>()
+				string[] emptyArrayThrowaway;
+
+				T[] result = resolver.ResolveGet<T>(key, out emptyArrayThrowaway);
+
+				if (result.Length != 0)
+				{
+					return result[0];
+				}
 			}
 
 			foreach (ISynchronisationSource source in Sources)

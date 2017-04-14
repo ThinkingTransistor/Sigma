@@ -17,7 +17,6 @@ using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
-using Sigma.Core.Monitors.WPF.Panels.Logging;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
@@ -85,19 +84,24 @@ namespace Sigma.Tests.Internals.WPF
 
 					var parameter = new ParameterPanel("Parameters", sigma, window);
 					parameter.Add("Time", typeof(DateTime), regTest, "test");
+
+					ValueSourceReporterHook valueHook = new ValueSourceReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+					trainer.AddLocalHook(valueHook);
+					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
+
 					var costBlock = new SigmaTimeBlock();
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-					parameter.Content.Add(new Label { Content = "Time" }, costBlock, trainer.Operator.Registry, "optimiser.learning_rate");
+					parameter.Content.Add(new Label { Content = "Cost" }, costBlock, trainer.Operator.Registry, "optimiser.cost_total");
 
-					var heeBlock = new SigmaTimeBlock();
-					heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-					parameter.Content.Add(new Label { Content = "Cost" }, heeBlock, trainer.Operator.Registry, "optimiser.cost_total");
+					//var heeBlock = new SigmaTimeBlock();
+					//heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+					//parameter.Content.Add(new Label { Content = "Cost" }, heeBlock, null, "optimiser.cost_total");
 
 					window.TabControl["Overview"].AddCumulativePanel(parameter);
 
 					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
 
-					window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
+					//window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
 
 					// finish initialisation
 					window.IsInitializing = false;

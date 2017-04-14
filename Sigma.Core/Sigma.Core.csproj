@@ -244,6 +244,7 @@
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueSourceReporterHook.cs" />
     <Compile Include="Training\Hooks\Saviors\DiskSaviorHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
     <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
