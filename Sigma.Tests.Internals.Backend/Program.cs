@@ -68,37 +68,38 @@ namespace Sigma.Tests.Internals.Backend
 
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(4)
+                                            + FullyConnectedLayer.Construct(24)
                                             + FullyConnectedLayer.Construct(12)
-                                            + FullyConnectedLayer.Construct(10)
                                             + FullyConnectedLayer.Construct(3)
                                             + OutputLayer.Construct(3)
                                             + SquaredDifferenceCostLayer.Construct();
-            trainer.Network = Serialisation.ReadFromBinaryFileIfExists<INetwork>("iris.sgnet", trainer.Network);
+            trainer.Network = Serialisation.ReadFromBinaryFileIfExists("iris.sgnet", trainer.Network);
 
             trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
-            trainer.Operator = new CpuMultithreadedOperator(workerCount: 2);
+            trainer.Optimiser = new AdagradOptimiser(0.01);
+            trainer.Operator = new CpuSinglethreadedOperator();
 
-            trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.2));
-            trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1, mean: 0.0));
+            trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
+            trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1));
 
-            trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
+            //trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
             //trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
-            trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-            trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
-            trainer.AddHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
-            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "iris.sgnet").On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
-            //trainer.AddGlobalHook(new CurrentEpochIterationReporter(TimeStep.Every(1, TimeScale.Epoch)));
+            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true)
+                .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "iris.sgnet", verbose: false)
+                .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+            trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+            trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.95)));
 
             Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
             trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
 
             sigma.AddTrainer(trainer);
 
-            //trainer.Operator.InvokeCommand(new TestCommand(() => { throw new NotImplementedException(); }, "optimiser.learning_rate"));
-            trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02, () => {/* finished */}));
+            //trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02, () => {/* finished */}));
 
             sigma.Run();
         }

@@ -92,7 +92,10 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// Note: By default, this method writes to the logger. If you want to report to anywhere else, overwrite this method.
 		/// </summary>
 		/// <param name="valuesByIdentifier">The values by their identifier.</param>
-		protected override void ReportValues(IDictionary<string, object> valuesByIdentifier)
+		/// <param name="reportEpochIteration">A boolean indicating whether or not to report the current epoch / iteration.</param>
+		/// <param name="epoch">The current epoch.</param>
+		/// <param name="iteration">The current iteration.</param>
+		protected override void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
 		{
 			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
 

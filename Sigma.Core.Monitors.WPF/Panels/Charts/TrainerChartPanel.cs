@@ -127,7 +127,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// Report the values for a certain epoch / iteration to a passed ChartPanel. 
 			/// </summary>
 			/// <param name="valuesByIdentifier">The values by their identifier.</param>
-			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier)
+			/// <param name="reportEpochIteration">A boolean indicating whether or not to report the current epoch / iteration.</param>
+			/// <param name="epoch">The current epoch.</param>
+			/// <param name="iteration">The current iteration.</param>
+			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
 			{
 				ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel = (ChartPanel<TChart, TSeries, TChartValues, TData>) ParameterRegistry[ChartPanelIdentifier];
 				chartPanel.Add((TData) valuesByIdentifier.Values.First());
