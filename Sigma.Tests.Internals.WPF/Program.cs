@@ -19,6 +19,7 @@ using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.View.Graphing;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
@@ -109,6 +110,8 @@ namespace Sigma.Tests.Internals.WPF
 					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
 
 					//window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
+
+					window.TabControl["Overview"].AddCumulativePanel(new ArchitectureGraphPanel("test"));
 
 					// finish initialisation
 					window.IsInitializing = false;

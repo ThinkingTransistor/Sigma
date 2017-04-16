@@ -220,8 +220,8 @@
     <Compile Include="Panels\SigmaPanel.cs" />
     <Compile Include="ViewModel\Tabs\TabUI.cs" />
     <Compile Include="ViewModel\TitleBar\TitleBarItem.cs" />
-    <Compile Include="View\Graphing\GraphPanel.cs" />
-    <Compile Include="View\Graphing\GraphView.cs" />
+    <Compile Include="View\Graphing\ArchitectureGraphPanel.cs" />
+    <Compile Include="View\Graphing\ArchitectureGraphView.cs" />
     <Compile Include="View\Parameterisation\Defaults\SigmaComboBox.xaml.cs">
       <DependentUpon>SigmaComboBox.xaml</DependentUpon>
     </Compile>
