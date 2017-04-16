@@ -104,7 +104,7 @@ namespace Sigma.Core.Training
 		bool ForceInitialisation { get; set; }
 
 		/// <summary>
-		/// Add an initialiser by registry resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
+		/// Add an initialiser by registry resolve string (e.g. fc*.weights, *.weights, layer1.biases, layer2.*).
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
 		/// <param name="identifier">The identifier (registry resolve string).</param>

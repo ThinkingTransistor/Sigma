@@ -143,7 +143,7 @@ namespace Sigma.Core.Persistence
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
 		/// <param name="validationFunction">The optional validation function to validate the read object with (if false, the original value is returned).</param>
 		/// <returns>The read (i.e. existing) if successfully read and validated, otherwise the original value.</returns>
-		public static T ReadFromBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
+		public static T ReadBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
 		{
 			try
 			{

@@ -32,8 +32,18 @@ namespace Sigma.Core.Data.Preprocessors.Adaptive
         /// Create a base adaptive preprocessor with a certain underlying preprocessor (that will be adapted).
         /// </summary>
         /// <param name="underlyingPreprocessor">The underlying preprocessor.</param>
+        /// <param name="sectionNames">The section names to process in this preprocessor (all if null or empty).</param>
+        protected BaseAdaptivePreprocessor(TPreprocessor underlyingPreprocessor, params string[] sectionNames) : this(underlyingPreprocessor, AdaptionRate.Initial, sectionNames)
+        {
+        }
+
+        /// <summary>
+        /// Create a base adaptive preprocessor with a certain underlying preprocessor (that will be adapted).
+        /// </summary>
+        /// <param name="underlyingPreprocessor">The underlying preprocessor.</param>
         /// <param name="adaptionRate">The adaption rate.</param>
-        protected BaseAdaptivePreprocessor(TPreprocessor underlyingPreprocessor, AdaptionRate adaptionRate = AdaptionRate.Every)
+        /// <param name="sectionNames">The section names to process in this preprocessor (all if null or empty).</param>
+        protected BaseAdaptivePreprocessor(TPreprocessor underlyingPreprocessor, AdaptionRate adaptionRate, params string[] sectionNames) : base(sectionNames)
         {
             if (underlyingPreprocessor == null) throw new ArgumentNullException(nameof(underlyingPreprocessor));
             if (!Enum.IsDefined(typeof(AdaptionRate), adaptionRate)) throw new InvalidEnumArgumentException(nameof(adaptionRate), (int) adaptionRate, typeof(AdaptionRate));
