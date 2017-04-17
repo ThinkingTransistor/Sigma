@@ -123,6 +123,18 @@ namespace Sigma.Core.Data.Datasets
         /// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
         /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
         public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
+            : this(name, blockSizeRecords, true, recordExtractors)
+        {
+        }
+
+        /// <summary>
+        /// Create a dataset with a certain unique name, target block size in records and the record extractors to use.
+        /// </summary>
+        /// <param name="name">The unique dataset name.</param>
+        /// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
+        /// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
+        /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
+        public Dataset(string name, int blockSizeRecords, bool flushCache, params IRecordExtractor[] recordExtractors)
             : this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
         {
         }

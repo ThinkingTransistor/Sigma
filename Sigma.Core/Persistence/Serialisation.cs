@@ -175,6 +175,7 @@ namespace Sigma.Core.Persistence
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
 			Type type = root.GetType();
+
 			traversedObjects.Add(root);
 
 			// traverse all types up to object base type for all relevant fields in the graph

@@ -46,8 +46,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
             INDArray currentAccumulatedGradient = handler.Add(handler.Multiply(previousAccumulatedGradient, decayRate), currentGradientDecayed);
 
             // compute previous accumulated gradient root mean squared (rms) and previous accumulated update rms
-            INDArray previousUpdateRms = RootMeanSquaredSmoothed(previousAccumulatedUpdate, smoothing, handler);
-            INDArray gradientRms = RootMeanSquaredSmoothed(gradient, smoothing, handler);
+            INDArray previousUpdateRms = SquareRootSmoothed(previousAccumulatedUpdate, smoothing, handler);
+            INDArray gradientRms = SquareRootSmoothed(currentAccumulatedGradient, smoothing, handler);
 
             // compute parameter update using previous accumulated gradient / update rms
             INDArray update = handler.Multiply(handler.Multiply(handler.Divide(previousUpdateRms, gradientRms), gradient), -1.0);
@@ -64,9 +64,9 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
             return handler.Add(parameter, update);
         }
 
-        private INDArray RootMeanSquaredSmoothed(INDArray array, double smoothing, IComputationHandler handler)
+        private INDArray SquareRootSmoothed(INDArray array, double smoothing, IComputationHandler handler)
         {
-            return handler.SquareRoot(handler.Add(handler.Multiply(array, array), smoothing));
+            return handler.SquareRoot(handler.Add(array, smoothing));
         }
 
         /// <inheritdoc />

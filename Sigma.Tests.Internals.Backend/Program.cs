@@ -55,7 +55,7 @@ namespace Sigma.Tests.Internals.Backend
         private static void SampleIris()
         {
             SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
-            sigma.SetRandomSeed(1337);
+            sigma.SetRandomSeed(137);
 
             sigma.Prepare();
 
@@ -65,22 +65,22 @@ namespace Sigma.Tests.Internals.Backend
                                                         .Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
                                                         .Preprocess(new ShufflePreprocessor());
 
-            IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, irisExtractor);
+            IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, false, irisExtractor);
 
             ITrainer trainer = sigma.CreateGhostTrainer("test");
 
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(4)
-                                            + FullyConnectedLayer.Construct(24)
-                                            + FullyConnectedLayer.Construct(24)
+                                            + FullyConnectedLayer.Construct(4)
+                                            + 2 * FullyConnectedLayer.Construct(24)
                                             + FullyConnectedLayer.Construct(3)
                                             + OutputLayer.Construct(3)
                                             + SoftMaxCrossEntropyCostLayer.Construct();
             //trainer.Network = Serialisation.ReadBinaryFileIfExists("iris.sgnet", trainer.Network);
 
-            trainer.TrainingDataIterator = new MinibatchIterator(25, dataset);
+            trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.92);
+            trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
             trainer.Operator = new CpuSinglethreadedOperator();
 
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
@@ -90,9 +90,9 @@ namespace Sigma.Tests.Internals.Backend
             //trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
 
             trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
-                //.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-            //trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "iris.sgnet", verbose: true)
-            //    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+            //.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "iris.sgnet", verbose: true)
+                .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
             trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
             trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.95)));
@@ -102,30 +102,7 @@ namespace Sigma.Tests.Internals.Backend
 
             sigma.AddTrainer(trainer);
 
-            //trainer.Operator.InvokeCommand(new SetValueCommand("optimiser.learning_rate", 0.02, () => {/* finished */}));
-
             sigma.Run();
-        }
-
-        [Serializable]
-        private class TestCommand : BaseCommand
-        {
-            private readonly ILog _log = LogManager.GetLogger(typeof(TestCommand));
-            public TestCommand(Action onFinish = null, params string[] requiredRegistryEntries) : base(onFinish, requiredRegistryEntries)
-            {
-                _log.Info("Test command created");
-            }
-
-            /// <summary>
-            /// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
-            /// </summary>
-            /// <param name="registry">The registry containing the required values for this hook's execution.</param>
-            /// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-            public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
-            {
-                _log.Info("Test command invoked");
-                //resolver.ResolveSet("optimiser.learning_rate", 10);
-            }
         }
 
         private static void SampleMnist()
@@ -140,33 +117,35 @@ namespace Sigma.Tests.Internals.Backend
             ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
             IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-            IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+            IDataset dataset = new Dataset("mnist", Dataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
             ITrainer trainer = sigma.CreateTrainer("test");
 
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(28, 28)
                                             + FullyConnectedLayer.Construct(28 * 28)
-                                            + FullyConnectedLayer.Construct(100)
                                             + FullyConnectedLayer.Construct(10)
                                             + OutputLayer.Construct(10)
                                             + SoftMaxCrossEntropyCostLayer.Construct();
             trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
-            trainer.TrainingDataIterator = new MinibatchIterator(8, dataset);
+            trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.92);
+            trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
             trainer.Operator = new CpuSinglethreadedOperator();
 
-            trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.02));
-            trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01));
+            trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
+            trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
-                .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "mnist.sgnet", verbose: false)
+            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+            //trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+            //    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "mnist.sgnet", verbose: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
             var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
+
             trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: 1));
             trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.5), validationTimeStep));
+            trainer.AddHook(new StopTrainingHook(atEpoch: 500));
 
             sigma.Run();
         }

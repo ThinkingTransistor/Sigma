@@ -1155,6 +1155,7 @@ namespace Sigma.Core.Training.Operators
 			registry["trainer"] = Trainer.Registry;
 			registry["epoch"] = localEpochNumber;
 			registry["iteration"] = localIterationNumber;
+		    registry["runtime_millis"] = RunningTimeMilliseconds;
 
 			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
 			{

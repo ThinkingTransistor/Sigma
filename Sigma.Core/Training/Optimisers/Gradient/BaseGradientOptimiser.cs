@@ -7,7 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using log4net;
+using System.Collections.Generic;
+using System.Linq;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
@@ -33,8 +34,6 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// </summary>
 		protected readonly string ExternalCostAlias;
 
-		[NonSerialized]
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private bool _prepared;
 		private uint _traceTag;
 
@@ -133,10 +132,32 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 					layerBuffer.Parameters[trainableParameter] = handler.ClearTrace(layerBuffer.Parameters.Get<ITraceable>(trainableParameter));
 				}
+
+				// outputs might have a trace as well, clear everything
+			    _InternalClearAllTraces(layerBuffer.Inputs, handler);
+			    _InternalClearAllTraces(layerBuffer.Outputs, handler);
 			}
 		}
 
-		/// <summary>
+	    private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
+	    {
+	        foreach (string output in layerExternalBuffer.Keys.ToArray())
+	        {
+	            IRegistry registry = layerExternalBuffer[output];
+
+	            foreach (string parameter in registry.Keys.ToArray())
+	            {
+	                ITraceable traceable = registry[parameter] as ITraceable;
+
+	                if (traceable != null)
+	                {
+	                    registry[parameter] = handler.ClearTrace(traceable);
+	                }
+	            }
+	        }
+	    }
+
+	    /// <summary>
 		/// Get the total cost from a certain network using a certain computation handler and put the relevant information in the cost registry (total, partial, importances).
 		/// </summary>
 		/// <param name="network">The network to get the costs from.</param>
