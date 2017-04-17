@@ -91,7 +91,7 @@ namespace Sigma.Tests.Internals.Backend
 
             trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
             //.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "iris.sgnet", verbose: true)
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("iris_epoch{0}.sgnet", "epoch"), verbose: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
             trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
