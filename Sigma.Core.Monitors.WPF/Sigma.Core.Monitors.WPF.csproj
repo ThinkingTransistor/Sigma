@@ -135,6 +135,33 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NetView\AdornedControls\AdornedControl.cs" />
+    <Compile Include="NetView\AdornedControls\AdornerEventArgs.cs" />
+    <Compile Include="NetView\NetworkModel\ConnectionViewModel.cs" />
+    <Compile Include="NetView\NetworkModel\ConnectorType.cs" />
+    <Compile Include="NetView\NetworkModel\ConnectorViewModel.cs" />
+    <Compile Include="NetView\NetworkModel\NetworkViewModel.cs" />
+    <Compile Include="NetView\NetworkModel\NodeViewModel.cs" />
+    <Compile Include="NetView\NetworkUIs\ConnectionDragEvents.cs" />
+    <Compile Include="NetView\NetworkUIs\ConnectorItem.cs" />
+    <Compile Include="NetView\NetworkUIs\ConnectorItemDragEvents.cs" />
+    <Compile Include="NetView\NetworkUIs\NetworkView.cs" />
+    <Compile Include="NetView\NetworkUIs\NetworkView_ConnectionDragging.cs" />
+    <Compile Include="NetView\NetworkUIs\NetworkView_DragSelection.cs" />
+    <Compile Include="NetView\NetworkUIs\NetworkView_NodeDragging.cs" />
+    <Compile Include="NetView\NetworkUIs\NodeDragEvents.cs" />
+    <Compile Include="NetView\NetworkUIs\NodeItem.cs" />
+    <Compile Include="NetView\NetworkUIs\NodeItemsControl.cs" />
+    <Compile Include="NetView\PositionManagement\AnimationHelper.cs" />
+    <Compile Include="NetView\PositionManagement\ZoomAndPanControl.cs" />
+    <Compile Include="NetView\PositionManagement\ZoomAndPanControl_IScrollInfo.cs" />
+    <Compile Include="NetView\Utils\AbstractModelBase.cs" />
+    <Compile Include="NetView\Utils\AdornerPlacement.cs" />
+    <Compile Include="NetView\Utils\CollectionItemsChangedEventArgs.cs" />
+    <Compile Include="NetView\Utils\CollectionItemsEventArgs.cs" />
+    <Compile Include="NetView\Utils\FrameworkElementAdorner.cs" />
+    <Compile Include="NetView\Utils\ImpObservableCollection.cs" />
+    <Compile Include="NetView\Utils\WpfUtils.cs" />
     <Compile Include="Panels\Charts\AccuracyPanel.cs" />
     <Compile Include="Panels\Charts\CartesianChartPanel.cs" />
     <Compile Include="Panels\Charts\ChartPanel.cs" />
@@ -445,6 +472,7 @@
   <ItemGroup>
     <Resource Include="Resources\icons\sigma_256x256.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
