@@ -11,6 +11,7 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
@@ -21,6 +22,7 @@ using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
@@ -42,6 +44,10 @@ namespace Sigma.Tests.Internals.WPF
 
 			// create a new mnist trainer
 			ITrainer trainer = CreateIrisTrainer(sigma);
+
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.network_weights_average"));
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.StandardDeviation(a), "shared.network_weights_stddev"));
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.optimiser_updates_average"));
 
 			// for the UI we have to activate more features
 			if (UI)
@@ -70,15 +76,21 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
 					// create an accuracy cost that updates every iteration
-					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
 					// improve the chart performance
 					cost.Fast();
 
+					var weightAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Average of weights / Epoch", trainer, "shared.network_weights_average", TimeStep.Every(10, TimeScale.Epoch));
+					weightAverage.Fast();
+
+					var weightStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard deviation of weights / Epoch", trainer, "shared.network_weights_stddev", TimeStep.Every(10, TimeScale.Epoch));
+					weightStddev.Fast();
+
+					var updateAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Average of parameter updates / Epoch", trainer, "shared.optimiser_updates_average", TimeStep.Every(10, TimeScale.Epoch));
+					updateAverage.Fast();
+
 					//var accuracy = new AccuracyPanel("Accuracy", trainer, null, 1, 2, 3);
 					//accuracy.Fast();
-
-					// add the newly created panel
-					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 1, iris);
 
 					IRegistry regTest = new Registry();
 					regTest.Add("test", DateTime.Now);
@@ -97,11 +109,9 @@ namespace Sigma.Tests.Internals.WPF
 					var costBlock = (UserControlParameterVisualiser) parameter.Content.Add("Cost", typeof(double), trainer.Operator.Registry, "optimiser.cost_total");
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-					var learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+					var learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-					learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
-					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
 					var timeBox = (SigmaTextBlock) parameter.Content.Add("Running time", typeof(object), trainer.Operator.Registry, "runtime_millis");
 					timeBox.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
@@ -119,8 +129,11 @@ namespace Sigma.Tests.Internals.WPF
 					//heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 					//parameter.Content.Add(new Label { Content = "Cost" }, heeBlock, null, "optimiser.cost_total");
 
+					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 1, iris);
+					window.TabControl["Overview"].AddCumulativePanel(updateAverage, 1, 1, iris);
 					window.TabControl["Overview"].AddCumulativePanel(parameter);
-
+					window.TabControl["Overview"].AddCumulativePanel(weightStddev, 1, 1, iris);
+					window.TabControl["Overview"].AddCumulativePanel(weightAverage, 1, 1, iris);
 					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
 
 					//window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
