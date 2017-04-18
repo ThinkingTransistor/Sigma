@@ -60,6 +60,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
             SetMemory(memoryIdentifierGradient, currentAccumulatedGradient);
             SetMemory(memoryIdentifierUpdate, currentAccumulatedUpdate);
 
+            ExposeParameterUpdate(paramIdentifier, update);
+
             // compute optimised parameter using computed update
             return handler.Add(parameter, update);
         }

@@ -47,6 +47,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
+			Registry["updates"] = new Dictionary<string, INDArray>();
 		}
 
 		/// <summary>
@@ -134,30 +135,43 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 				}
 
 				// outputs might have a trace as well, clear everything
-			    _InternalClearAllTraces(layerBuffer.Inputs, handler);
-			    _InternalClearAllTraces(layerBuffer.Outputs, handler);
+				_InternalClearAllTraces(layerBuffer.Inputs, handler);
+				_InternalClearAllTraces(layerBuffer.Outputs, handler);
 			}
 		}
 
-	    private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
-	    {
-	        foreach (string output in layerExternalBuffer.Keys.ToArray())
-	        {
-	            IRegistry registry = layerExternalBuffer[output];
+		private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
+		{
+			foreach (string output in layerExternalBuffer.Keys.ToArray())
+			{
+				IRegistry registry = layerExternalBuffer[output];
 
-	            foreach (string parameter in registry.Keys.ToArray())
-	            {
-	                ITraceable traceable = registry[parameter] as ITraceable;
+				foreach (string parameter in registry.Keys.ToArray())
+				{
+					ITraceable traceable = registry[parameter] as ITraceable;
 
-	                if (traceable != null)
-	                {
-	                    registry[parameter] = handler.ClearTrace(traceable);
-	                }
-	            }
-	        }
-	    }
+					if (traceable != null)
+					{
+						registry[parameter] = handler.ClearTrace(traceable);
+					}
+				}
+			}
+		}
 
-	    /// <summary>
+		/// <summary>
+		/// Expose a parameter update to the outside through the gradient optimiser utilities.
+		/// </summary>
+		/// <param name="parameterIdentifier">The parameter identifier.</param>
+		/// <param name="update">The update.</param>
+		protected void ExposeParameterUpdate(string parameterIdentifier, INDArray update)
+		{
+			if (parameterIdentifier == null) throw new ArgumentNullException(nameof(parameterIdentifier));
+			if (update == null) throw new ArgumentNullException(nameof(update));
+
+			Registry.Get<IDictionary<string, INDArray>>("updates")[parameterIdentifier] = update;
+		}
+
+		/// <summary>
 		/// Get the total cost from a certain network using a certain computation handler and put the relevant information in the cost registry (total, partial, importances).
 		/// </summary>
 		/// <param name="network">The network to get the costs from.</param>

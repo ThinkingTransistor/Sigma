@@ -44,7 +44,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 			SetMemory(paramIdentifier, velocity);
 
-			return handler.Subtract(velocity, parameter);
+			INDArray update = handler.Multiply(velocity, -1.0);
+
+			ExposeParameterUpdate(paramIdentifier, update);
+
+			return handler.Add(parameter, update);
 		}
 
 		/// <inheritdoc />
