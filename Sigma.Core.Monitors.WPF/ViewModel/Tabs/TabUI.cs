@@ -17,6 +17,7 @@ using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Monitors.WPF.View;
+using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.CustomControls;
 using WPFGrid = System.Windows.Controls.Grid;
 
@@ -40,16 +41,23 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		private GridSize _gridSize;
 
 		/// <summary>
+		/// The monitor this tab is assigned to.
+		/// </summary>
+		protected WPFMonitor Monitor;
+
+		/// <summary>
 		///     Create a new <see cref="TabUI" /> - this basically is a
 		///     <see cref="TabItem" /> with additional control.
 		/// </summary>
+		/// <param name="monitor">The monitor this tab is assigned to.</param>
 		/// <param name="header">The header of the tab (name in the <see cref="TabControl" />)</param>
 		/// <param name="gridsize">
-		///     The <see cref="GridSize" />. Use
-		///     <see cref="View.Windows.SigmaWindow.DefaultGridSize" />.
+		/// The <see cref="GridSize" />. Use
+		/// <see cref="SigmaWindow.DefaultGridSize" />.
 		/// </param>
-		public TabUI(string header, GridSize gridsize)
+		public TabUI(WPFMonitor monitor, string header, GridSize gridsize)
 		{
+			Monitor = monitor;
 			Content.Header = header;
 			GridSize = gridsize;
 		}
@@ -205,8 +213,10 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		public void AddCumulativePanel(SigmaPanel panel, int rowSpan = 1, int columnSpan = 1,
 			StatusBarLegendInfo legend = null)
 		{
+			panel.Monitor = Monitor;
 			AddCumulativeElement(panel, rowSpan, columnSpan);
 			ApplyLegend(panel, legend);
+			panel.Initialise(Monitor.Window);
 		}
 
 		/// <summary>
@@ -266,8 +276,10 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Tabs
 		public void AddPanel(SigmaPanel panel, int row, int column, int rowSpan = 1, int columnSpan = 1,
 			StatusBarLegendInfo legend = null)
 		{
+			panel.Monitor = Monitor;
 			AddElement(panel, row, column, rowSpan, columnSpan);
 			ApplyLegend(panel, legend);
+			panel.Initialise(Monitor.Window);
 		}
 
 		/// <summary>

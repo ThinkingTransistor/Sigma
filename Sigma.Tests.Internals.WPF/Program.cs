@@ -98,7 +98,7 @@ namespace Sigma.Tests.Internals.WPF
 					var parameter = new ParameterPanel("Parameters", sigma, window);
 					parameter.Add("Time", typeof(DateTime), regTest, "test");
 
-					ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total", "runtime_millis");
+					ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
 					trainer.AddGlobalHook(valueHook);
 					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
@@ -113,15 +113,7 @@ namespace Sigma.Tests.Internals.WPF
 					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
 
-					var timeBox = (SigmaTextBlock) parameter.Content.Add("Running time", typeof(object), trainer.Operator.Registry, "runtime_millis");
-					timeBox.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-					timeBox.Postfix = " ms";
-
-					var epochBox = (UserControlParameterVisualiser) parameter.Content.Add("Current epoch", typeof(object), trainer.Operator.Registry, "epoch");
-					epochBox.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-
-					var iterationBox = (UserControlParameterVisualiser) parameter.Content.Add("Current iteration", typeof(object), trainer.Operator.Registry, "iteration");
-					iterationBox.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Iteration));
+					
 
 					//trainer.AddGlobalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 

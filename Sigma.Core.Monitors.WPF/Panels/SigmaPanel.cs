@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -37,6 +38,11 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		///     The content that will be inside the contentGrid.
 		/// </summary>
 		private UIElement _content;
+
+		/// <summary>
+		/// Currently responsible monitor - it will be automatically set when adding a new panel. (<c>null</c> until <see cref="Initialise"/>)
+		/// </summary>
+		public WPFMonitor Monitor { get; set; }
 
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -99,7 +105,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 				}
 				else
 				{
-					_content = value as UIElement ?? new Label { Content = value.ToString() };
+					_content = value as UIElement ?? new Label {Content = value.ToString()};
 					ContentGrid.Children.Add(_content);
 				}
 			}
@@ -143,10 +149,10 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid header = new Grid();
 
-			header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
-			header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+			header.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Auto)});
+			header.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Auto)});
 
-			Label headerContent = new Label { Content = content };
+			Label headerContent = new Label {Content = content};
 			header.Children.Add(headerContent);
 
 			header.SetResourceReference(BackgroundProperty, "SigmaPanelHeaderBackground");
@@ -174,10 +180,45 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid grid = new Grid();
 
-			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+			grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Star)});
+			grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)});
 
 			return grid;
+		}
+
+		/// <summary>
+		/// This method invokes the initialisation of the panel (after it has been addded).
+		/// </summary>
+		public void Initialise(WPFWindow window)
+		{
+			if (window is SigmaWindow)
+			{
+				OnInitialise((SigmaWindow)window);
+			}
+			else
+			{
+				OnInitialise(window);
+			}
+		}
+
+		/// <summary>
+		/// This method will be called once the window is initialising (after it has been added).
+		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
+		/// </summary>
+		/// <param name="window">The wpf window this panel will be added to.</param>
+		protected virtual void OnInitialise(WPFWindow window)
+		{
+			
+		}
+
+		/// <summary>
+		/// This method will be called once the window is initialising (after it has been added).
+		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
+		/// </summary>
+		/// <param name="window">The wpf window this panel will be added to.</param>
+		protected virtual void OnInitialise(SigmaWindow window)
+		{
+			
 		}
 
 		/// <summary>
@@ -186,7 +227,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <returns>The newly create <see cref="DockPanel" />.</returns>
 		protected virtual DockPanel CreateDockPanel()
 		{
-			return new DockPanel { LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0) };
+			return new DockPanel {LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0)};
 		}
 	}
 }

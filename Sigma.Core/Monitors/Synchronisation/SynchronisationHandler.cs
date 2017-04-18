@@ -8,6 +8,8 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using log4net;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
 
@@ -23,6 +25,8 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// The environment this handler is associated with.
 		/// </summary>
 		public SigmaEnvironment Sigma { get; }
+
+		private readonly ILog _logger = LogManager.GetLogger(typeof(SigmaEnvironment));
 
 		/// <summary>
 		/// Map every registry to a resolver for that registry. 
@@ -53,6 +57,24 @@ namespace Sigma.Core.Monitors.Synchronisation
 		public void AddSynchronisationSource(ISynchronisationSource source)
 		{
 			if (source == null) throw new ArgumentNullException(nameof(source));
+
+			if (source.Keys != null)
+			{
+				foreach (string key in source.Keys)
+				{
+					foreach (ISynchronisationSource savedSource in Sources)
+					{
+						if (savedSource.Keys != null)
+						{
+							if (savedSource.Keys.Contains(key))
+							{
+								_logger.Warn($"The key {key} is added to a synchronisation handler by {source.GetType()} but is already provided by {savedSource.GetType()}. It is uncertain which key will be taken (possible performance decrease).");
+							}
+						}
+					}
+				}
+			}
+
 			Sources.Add(source);
 		}
 
@@ -151,8 +173,17 @@ namespace Sigma.Core.Monitors.Synchronisation
 			}
 		}
 
+		public string[] Keys { get; }
+
 		/// <inheritdoc />
 		bool ISynchronisationSource.TryGet<T>(string key, out T val)
+		{
+			throw new NotImplementedException("Get currently not implemented as no registry is passed");
+		}
+
+
+		/// <inheritdoc />
+		bool ISynchronisationSource.Contains(string key)
 		{
 			throw new NotImplementedException("Get currently not implemented as no registry is passed");
 		}
@@ -162,5 +193,6 @@ namespace Sigma.Core.Monitors.Synchronisation
 		{
 			throw new NotImplementedException("Set currently not implemented as there is no error");
 		}
+
 	}
 }

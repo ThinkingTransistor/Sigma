@@ -28,7 +28,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueSourceReporterHook(ITimeStep timestep, params  string[] valueIdentifiers) : base(timestep, valueIdentifiers)
+		public ValueSourceReporterHook(ITimeStep timestep, params string[] valueIdentifiers) : base(timestep, valueIdentifiers)
 		{
 			Initialise(valueIdentifiers);
 		}
@@ -47,6 +47,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			Initialise();
 			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
 			values.Add(valueIdentifier, null);
+			Keys = new[] {valueIdentifier};
 		}
 
 		/// <summary>
@@ -62,6 +63,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			{
 				values.Add(identifier, null);
 			}
+			Keys = valueIdentifiers;
 		}
 
 
@@ -131,5 +133,24 @@ namespace Sigma.Core.Training.Hooks.Reporters
 				}
 			}
 		}
+
+		/// <summary>
+		/// Determine whether a given key is contained / manged by this source.
+		/// </summary>
+		/// <param name="key">The key that will be checked.</param>
+		/// <returns><c>True</c> if given key can be accessed with get / set, <c>false</c> otherwise.</returns>
+		public bool Contains(string key)
+		{
+			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
+
+			return values.ContainsKey(key);
+		}
+
+		/// <summary>
+		/// This is a list of keys this source provides. It is <b>completely</b> optional, although it is recommended to implement it.
+		/// 
+		/// Once a new source is added, the keys of the sources are checked against to determine double entries which makes debugging for users easier (as log entries are produced autoamtically).
+		/// </summary>
+		public string[] Keys { get; private set; }
 	}
 }

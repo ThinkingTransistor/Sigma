@@ -6,10 +6,17 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
+using Sigma.Core.Monitors.WPF.View.Parameterisation;
+using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
+using Sigma.Core.Monitors.WPF.View.Windows;
+using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
-using Sigma.Core.Training;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -19,7 +26,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 	/// </summary>
 	public class ControlPanel : GenericPanel<StackPanel>
 	{
-		private readonly SigmaPlaybackControl _playbackControl;
+		private SigmaPlaybackControl _playbackControl;
+		private ParameterView _parameterView;
 
 		private ITrainer _trainer;
 
@@ -36,6 +44,18 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 		}
 
+		/// <summary>
+		/// This list stores all trainers that have been initialised.
+		/// Required to only add one hook per trainer.
+		/// </summary>
+		private static readonly IList<ITrainer> Trainers;
+
+		static ControlPanel()
+		{
+			Trainers = new List<ITrainer>();
+		}
+
+
 		public ControlPanel(string title, object content = null) : this(title, null, content) { }
 
 		public ControlPanel(string title, ITrainer trainer, object content = null) : base(title, content)
@@ -49,10 +69,57 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				HorizontalAlignment = HorizontalAlignment.Center,
 				Margin = new Thickness(0, 20, 0, 0)
 			};
+		}
 
-			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer };
+		/// <summary>
+		/// This method will be called once the window is initialising (after it has been added).
+		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
+		/// </summary>
+		/// <param name="window">The wpf window this panel will be added to.</param>
+		protected override void OnInitialise(WPFWindow window)
+		{
+			throw new InvalidOperationException($"{nameof(ControlPanel)} is only compatible with {nameof(SigmaWindow)}s.");
+		}
+
+		/// <summary>
+		/// This method will be called after the panel has been added (window, monitor set...)
+		/// </summary>
+		protected override void OnInitialise(SigmaWindow window)
+		{
+			if (!Trainers.Contains(Trainer))
+			{
+				ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "runtime_millis");
+				_trainer.AddGlobalHook(valueHook);
+				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
+				Trainers.Add(Trainer);
+			}
+
+			//TODO: style?
+			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20) };
 
 			Content.Children.Add(_playbackControl);
+
+			_parameterView = new ParameterView(Monitor.Sigma, window);
+
+			//TODO: language support
+
+			SigmaTextBlock timeBox = (SigmaTextBlock) _parameterView.Add("Running time", typeof(object), _trainer.Operator.Registry, "runtime_millis");
+			timeBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
+			timeBox.Postfix = " ms";
+
+			UserControlParameterVisualiser epochBox = (UserControlParameterVisualiser) _parameterView.Add("Current epoch", typeof(object), _trainer.Operator.Registry, "epoch");
+			epochBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
+
+			UserControlParameterVisualiser iterationBox = (UserControlParameterVisualiser) _parameterView.Add("Current iteration", typeof(object), _trainer.Operator.Registry, "iteration");
+			iterationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Iteration));
+
+			IRegistry registry = new Registry
+			{
+				{ "op", Trainer.Operator.GetType().Name }
+			};
+			_parameterView.Add("Current operator", typeof(object), registry, "op");
+
+			Content.Children.Add(_parameterView);
 		}
 	}
 }

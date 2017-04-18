@@ -24,5 +24,19 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <param name="val">The value itself that will be assigned if it applicable.</param>
 		/// <returns><c>True</c> if the source could set given key, <c>false</c> otherwise.</returns>
 		bool TrySet<T>(string key, T val);
+
+		/// <summary>
+		/// Determine whether a given key is contained / manged by this source.
+		/// </summary>
+		/// <param name="key">The key that will be checked.</param>
+		/// <returns><c>True</c> if given key can be accessed with get / set, <c>false</c> otherwise.</returns>
+		bool Contains(string key);
+
+		/// <summary>
+		/// This is a list of keys this source provides. It is <b>completely</b> optional, although it is recommended to implement it.
+		/// 
+		/// Once a new source is added, the keys of the sources are checked against to determine double entries which makes debugging for users easier (as log entries are produced autoamtically).
+		/// </summary>
+		string[] Keys { get; }
 	}
 }
