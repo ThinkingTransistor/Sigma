@@ -155,6 +155,8 @@
     <Compile Include="NetView\PositionManagement\AnimationHelper.cs" />
     <Compile Include="NetView\PositionManagement\ZoomAndPanControl.cs" />
     <Compile Include="NetView\PositionManagement\ZoomAndPanControl_IScrollInfo.cs" />
+    <Compile Include="NetView\Shapes\Arrow.cs" />
+    <Compile Include="NetView\Shapes\CurvedArrow.cs" />
     <Compile Include="NetView\Utils\AbstractModelBase.cs" />
     <Compile Include="NetView\Utils\AdornerPlacement.cs" />
     <Compile Include="NetView\Utils\CollectionItemsChangedEventArgs.cs" />
