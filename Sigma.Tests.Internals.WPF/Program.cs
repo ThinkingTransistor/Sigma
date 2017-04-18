@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Controls;
 using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
@@ -87,7 +86,7 @@ namespace Sigma.Tests.Internals.WPF
 					var parameter = new ParameterPanel("Parameters", sigma, window);
 					parameter.Add("Time", typeof(DateTime), regTest, "test");
 
-					ValueSourceReporterHook valueHook = new ValueSourceReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+					ValueSourceReporterHook valueHook = new ValueSourceReporterHook( TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total", "runtime_millis");
 					trainer.AddLocalHook(valueHook);
 					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
@@ -99,6 +98,12 @@ namespace Sigma.Tests.Internals.WPF
 
 					learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("learning", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+
+					var timeBox = (SigmaTextBlock) parameter.Content.Add("Running time", typeof(object), trainer.Operator.Registry, "runtime_millis");
+					timeBox.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
+					timeBox.Postfix = " ms";
+
+					//trainer.AddGlobalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
 					//var heeBlock = new SigmaTimeBlock();
 					//heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));

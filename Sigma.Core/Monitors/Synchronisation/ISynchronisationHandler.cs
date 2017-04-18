@@ -35,6 +35,13 @@ namespace Sigma.Core.Monitors.Synchronisation
 		bool RemoveSynchronisationSource(ISynchronisationSource source);
 
 		/// <summary>
+		/// Check if a source is contained.
+		/// </summary>
+		/// <param name="source">The source that will be checked.</param>
+		/// <returns><c>True</c>, if the handler contains the source - <c>false</c> otherwise</returns>
+		bool ContainsSynchronisationSoruce(ISynchronisationSource source);
+
+		/// <summary>
 		/// Indicate that a value has changed and synchronise it with the given <see cref="SigmaEnvironment"/>.
 		/// 
 		/// This method returns immediately - callbacks should be used if required.

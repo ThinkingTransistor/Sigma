@@ -7,7 +7,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	/// <summary>
 	/// A hook that stores given values and can provide them to a <see cref="ISynchronisationHandler"/> as a source.
 	/// </summary>
-	public class ValueSourceReporterHook : ValueReporterHook, ISynchronisationSource
+	public class ValueSourceReporterHook : BaseHook, ISynchronisationSource
 	{
 		private const string ValueIdentifier = "values";
 		//private readonly IDictionary<string, object> _values = new Dictionary<string, object>();
@@ -17,41 +17,18 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueSourceReporterHook(string valueIdentifier, ITimeStep timestep) : base(valueIdentifier, timestep)
+		public ValueSourceReporterHook(TimeStep timestep, string valueIdentifier) : base(timestep, valueIdentifier)
 		{
 			Initialise(valueIdentifier);
 		}
 
-		/// <summary>
-		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
-		/// </summary>
-		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
-		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		/// <param name="target">The extrema criteria target.</param>
-		public ValueSourceReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : base(valueIdentifier, timestep, target)
-		{
-			Initialise(valueIdentifier);
-		}
-
-		/// <summary>
-		/// Create a hook that conditionally (threshold criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
-		/// </summary>
-		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
-		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		/// <param name="threshold">The threshold to compare against.</param>
-		/// <param name="target">The threshold criteria comparison target.</param>
-		/// <param name="fireContinously">If the value should be reported every time step the criteria is satisfied (or just once).</param>
-		public ValueSourceReporterHook(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : base(valueIdentifier, timestep, threshold, target, fireContinously)
-		{
-			Initialise(valueIdentifier);
-		}
 
 		/// <summary>
 		///	Create a hook that fetches a given amount of values (i.e. registry identifiers) at a given <see cref="ITimeStep"/>.
 		/// </summary>
 		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueSourceReporterHook(string[] valueIdentifiers, ITimeStep timestep) : base(valueIdentifiers, timestep)
+		public ValueSourceReporterHook(ITimeStep timestep, params  string[] valueIdentifiers) : base(timestep, valueIdentifiers)
 		{
 			Initialise(valueIdentifiers);
 		}
@@ -87,27 +64,6 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			}
 		}
 
-		/// <summary>
-		/// Report the values for a certain epoch / iteration.
-		/// Note: By default, this method writes to the logger. If you want to report to anywhere else, overwrite this method.
-		/// </summary>
-		/// <param name="valuesByIdentifier">The values by their identifier.</param>
-		/// <param name="reportEpochIteration">A boolean indicating whether or not to report the current epoch / iteration.</param>
-		/// <param name="epoch">The current epoch.</param>
-		/// <param name="iteration">The current iteration.</param>
-		protected override void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
-		{
-			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
-
-			//TODO: validate lock requirement, probably it is required
-			lock (values)
-			{
-				foreach (KeyValuePair<string, object> valuePair in valuesByIdentifier)
-				{
-					values[valuePair.Key] = valuePair.Value;
-				}
-			}
-		}
 
 		/// <summary>
 		/// Try to retrieve a value from this source (if existent).
@@ -155,6 +111,25 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		{
 			// a set is not supported
 			return false;
+		}
+
+		/// <summary>
+		/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+		{
+			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
+
+			//TODO: validate lock requirement, probably it is required
+			lock (values)
+			{
+				foreach (KeyValuePair<string, object> valuePair in registry)
+				{
+					values[valuePair.Key] = valuePair.Value;
+				}
+			}
 		}
 	}
 }

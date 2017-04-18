@@ -63,6 +63,17 @@ namespace Sigma.Core.Monitors.Synchronisation
 			return Sources.Remove(source);
 		}
 
+
+		/// <summary>
+		/// Check if a source is contained.
+		/// </summary>
+		/// <param name="source">The source that will be checked.</param>
+		/// <returns><c>True</c>, if the handler contains the source - <c>false</c> otherwise</returns>
+		public bool ContainsSynchronisationSoruce(ISynchronisationSource source)
+		{
+			return Sources.Contains(source);
+		}
+
 		/// <inheritdoc />
 		public virtual void SynchroniseSet<T>(IRegistry registry, string key, T val, Action<T> onSuccess = null, Action<Exception> onError = null)
 		{
