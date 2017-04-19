@@ -10,6 +10,8 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	public class ValueSourceReporterHook : BaseHook, ISynchronisationSource
 	{
 		private const string ValueIdentifier = "values";
+		private const string RegistryResolver = "resolver";
+
 		//private readonly IDictionary<string, object> _values = new Dictionary<string, object>();
 
 		/// <summary>
@@ -35,7 +37,10 @@ namespace Sigma.Core.Training.Hooks.Reporters
 
 		private void Initialise()
 		{
-			ParameterRegistry.Add(ValueIdentifier, new Dictionary<string, object>());
+			IRegistry reg = new Registry();
+			reg.Add(RegistryResolver, new RegistryResolver(reg));
+
+			ParameterRegistry.Add(ValueIdentifier, reg);
 		}
 
 		/// <summary>
@@ -45,7 +50,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		protected void Initialise(string valueIdentifier)
 		{
 			Initialise();
-			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
+			IRegistry values = (IRegistry) ParameterRegistry[ValueIdentifier];
 			values.Add(valueIdentifier, null);
 			Keys = new[] {valueIdentifier};
 		}
@@ -57,7 +62,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		protected void Initialise(string[] valueIdentifiers)
 		{
 			Initialise();
-			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
+			IRegistry values = (IRegistry) ParameterRegistry[ValueIdentifier];
 
 			foreach (string identifier in valueIdentifiers)
 			{
@@ -76,24 +81,17 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <returns><c>True</c> if the source could retrieve given key, <c>false</c> otherwise.</returns>
 		public bool TryGet<T>(string key, out T val)
 		{
-			IDictionary<string, object> values = (IDictionary<string, object>) ParameterRegistry[ValueIdentifier];
+			IRegistry values = (IRegistry) ParameterRegistry[ValueIdentifier];
+			IRegistryResolver resolver = values.Get<IRegistryResolver>(RegistryResolver);
 
 			//TODO: validate lock requirement, probably it is required
 			lock (values)
 			{
-				object oVal;
+				T[] vals = resolver.ResolveGet<T>(key);
 
-				if (values.TryGetValue(key, out oVal))
+				if (vals.Length > 0)
 				{
-					if (oVal == null)
-					{
-						val = default(T);
-					}
-					else
-					{
-						val = (T) oVal;
-					}
-
+					val = vals[0];
 					return true;
 				}
 

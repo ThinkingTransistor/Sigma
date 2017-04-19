@@ -98,21 +98,14 @@ namespace Sigma.Tests.Internals.WPF
 					parameter.Add("Time", typeof(DateTime), regTest, "test");
 
 					ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
-					trainer.AddGlobalHook(valueHook);
-					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
-
-					valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Iteration), "iteration");
 					trainer.AddLocalHook(valueHook);
 					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
-					var costBlock = (UserControlParameterVisualiser) parameter.Content.Add("Cost", typeof(double), trainer.Operator.Registry, "optimiser.cost_total");
+					var costBlock = (UserControlParameterVisualiser) parameter.Content.Add("Cost", typeof(object), trainer.Operator.Registry, "optimiser.cost_total");
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
 					var learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
-
-
-					
 
 					//trainer.AddGlobalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
 
