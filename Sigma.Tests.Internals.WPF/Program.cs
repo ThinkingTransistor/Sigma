@@ -1,5 +1,4 @@
-﻿using System;
-using LiveCharts.Wpf;
+﻿using LiveCharts.Wpf;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
@@ -20,7 +19,6 @@ using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
-using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Reporters;
@@ -29,6 +27,7 @@ using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -76,7 +75,7 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
 					// create an accuracy cost that updates every iteration
-					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch));
+					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(10, TimeScale.Epoch));
 					// improve the chart performance
 					cost.Fast();
 
