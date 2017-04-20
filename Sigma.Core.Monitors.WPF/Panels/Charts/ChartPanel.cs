@@ -13,13 +13,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Windows.Data;
 using LiveCharts;
-using LiveCharts.Configurations;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Monitors.WPF.Annotations;
-using Sigma.Core.Monitors.WPF.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
@@ -225,7 +222,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The accumulating amount of added points.
 		/// </summary>
-		protected int AddedPoints { get; set; }
+		protected Dictionary<TChartValues, int> AddedPoints { get; }
 
 		#endregion Axis
 
@@ -248,6 +245,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 				//Zoom = ZoomingOptions.Xy,
 				//ScrollMode = ScrollMode.XY
 			};
+
+			AddedPoints = new Dictionary<TChartValues, int>();
 
 			//TODO: make style and don't do that in code!!
 
@@ -319,7 +318,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public void Add(TData data, TChartValues values)
 		{
 			values.Add(data);
-			AddedPoints++;
+			AddedPoints[values]++;
 
 			KeepValuesInRange(values);
 		}
@@ -372,7 +371,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 			values.AddRange(dataO);
 
-			AddedPoints += prevLength - valICollection.Count;
+			AddedPoints[values] += prevLength - valICollection.Count;
 
 			KeepValuesInRange(values);
 		}
@@ -383,31 +382,31 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// Maintain (i.e. eventually remove points) the point list for a given <see cref="MaxPoints"/> and chart values.
 		/// </summary>
 		/// <param name="chartValues">The chart values that will be maintained.</param>
-		private void KeepValuesInRange(ICollection<TData> chartValues)
+		private void KeepValuesInRange(TChartValues chartValues)
 		{
-			SetAxisLimits();
-			
 			//TODO: IMPORTANT: EVERY OTHER KEYWORD: Remove unused points!!! Add new values to correct position (not at 0), use a mapper
-			//if (MaxPoints > 0)
-			//{
-			//	IEnumerator<TData> enumerator = chartValues.AsEnumerable().GetEnumerator();
-			//	while (chartValues.Count > MaxPoints)
-			//	{
-			//		chartValues.Remove(enumerator.Current);
-			//		enumerator.MoveNext();
-			//	}
+			if (MaxPoints > 0)
+			{
+				SetAxisLimits(chartValues);
 
-			//	enumerator.Dispose();
-			//}
+				//	IEnumerator<TData> enumerator = chartValues.AsEnumerable().GetEnumerator();
+				//	while (chartValues.Count > MaxPoints)
+				//	{
+				//		chartValues.Remove(enumerator.Current);
+				//		enumerator.MoveNext();
+				//	}
+
+				//	enumerator.Dispose();
+			}
 		}
 
-		protected void SetAxisLimits()
+		protected void SetAxisLimits(TChartValues chartValues)
 		{
 			// TODO: do not use dispatcher, use bindings axis min axis max
 			Dispatcher.InvokeAsync(() =>
 			{
-				AxisX.MinValue = Math.Max(0, AddedPoints - MaxPoints);
-				AxisX.MaxValue = AddedPoints - 1;
+				AxisX.MinValue = Math.Max(0, AddedPoints[chartValues] - MaxPoints);
+				AxisX.MaxValue = AddedPoints[chartValues] - 1;
 			});
 		}
 
@@ -419,6 +418,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			foreach (TChartValues chartValues in ChartValues)
 			{
 				((ICollection<TData>) chartValues).Clear();
+				KeepValuesInRange(chartValues);
 			}
 		}
 
@@ -446,6 +446,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		{
 			TChartValues chartValues = new TChartValues();
 			ChartValues.Add(chartValues);
+			AddedPoints.Add(chartValues, 0);
 
 			series.Values = chartValues;
 			//series.Fill = Brushes.Transparent;
@@ -494,6 +495,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		}
 
 		#endregion
+
 
 		~ChartPanel()
 		{
