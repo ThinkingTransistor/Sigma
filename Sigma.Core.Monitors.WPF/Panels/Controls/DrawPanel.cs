@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
@@ -12,8 +15,14 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
+	public class Guess
+	{
+		public int Zahl { get; set; }
+		public string Wahrscheinlichkeit { get; set; }
+	}
+
 	//TODO: move to own class
-	public class NumberPanel : GenericPanel<TextBox>, IOutputPanel
+	public class NumberPanel : SimpleDataGridPanel<Guess>, IOutputPanel
 	{
 		public ITrainer Trainer { get; }
 
@@ -32,18 +41,26 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// the title will be used.</param>
 		public NumberPanel(string title, ITrainer trainer, object headerContent = null) : base(title, headerContent)
 		{
+			Content.Padding = new Thickness(20, 0, 20, 0);
+			Content.FontSize = 25;
 			Handler = trainer.Operator.Handler;
 
-			//TODO: style
-			Content = new TextBox();
-
-			Content.FontSize = 72;
-			Content.Text = "?";
 			Trainer = trainer;
+			_guesses = new List<Guess>(10);
 		}
+
+		private List<Guess> _guesses;
 
 		public void SetInputReference(INDArray values)
 		{
+			Items.Clear();
+			for (int i = 0; i < 10; i++)
+			{
+				Guess guess = new Guess();
+				_guesses.Add(guess);
+				Items.Add(guess);
+			}
+			Values = values;
 			//TODO: check if hook already added, remove if...
 			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
 			block.Add("inputs", Values);
@@ -51,24 +68,30 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			Trainer.AddGlobalHook(new PassNetworkHook(this, block));
 		}
 
+
+
 		public void SetOutput(INDArray output)
 		{
 			output = Handler.SoftMax(output);
+			KeyValuePair<double, int>[] sorted = output.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).ToArray();
 
-			double max = double.NegativeInfinity;
-			int maxNum = -1;
-			Console.WriteLine(output);
-			for (int i = 0; i < 10; i++)
+			string text = "";
+
+			for (int i = 0; i < sorted.Length; i++)
 			{
-				double current = output.GetValue<double>(i);
-				if (current > max)
-				{
-					max = current;
-					maxNum = i;
-				}
+				double confidence = Math.Round(sorted[i].Key * 10000) / 100;
+				int number = sorted[i].Value;
+				_guesses[i].Wahrscheinlichkeit = $"{confidence:00.00}";
+				_guesses[i].Zahl = number;
+				//guesses.Add(new Guess { Accuracy = Math.Round(accuracy.Key * 100), Number = accuracy.Value });
 			}
 
-			Content.Text = maxNum.ToString();
+			Content.Dispatcher.Invoke(() =>
+			{
+				Items.Clear();
+				Items.AddRange(_guesses);
+			});
+
 		}
 
 		private class PassNetworkHook : BaseHook
@@ -127,6 +150,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				if (_outputPanel != null)
 				{
 					_outputPanel.Input = this;
+					_outputPanel.SetInputReference(Values);
 				}
 			}
 		}
@@ -141,7 +165,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		public DrawPanel(string title, ITrainer trainer, int drawWidth, int drawHeight, int drawSize, IOutputPanel outputPanel = null, object headerContent = null) : base(title, headerContent)
 		{
 			Handler = trainer.Operator.Handler;
-			OutputPanel = outputPanel;
 
 			Content = new DrawCanvas
 			{
@@ -155,6 +178,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			double[,] oldVals = Content.GetValues();
 			double[] newVals = DrawCanvasValuesSingle(Content);
 			Values = Handler.NDArray(newVals, 1, 1, oldVals.GetLength(0), oldVals.GetLength(1));
+
+			OutputPanel = outputPanel;
 
 			Content.InputChangedEvent += UpdateValues;
 		}
@@ -182,8 +207,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				{
 					Values.SetValue(newVals[i], NDArrayUtils.GetIndices(i, Values.Shape, Values.Strides));
 				}
-
-				OutputPanel?.UpdateValues(Values);
 			}
 		}
 
