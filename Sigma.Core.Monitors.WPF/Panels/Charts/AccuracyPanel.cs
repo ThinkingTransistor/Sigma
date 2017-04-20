@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Collections.Generic;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -42,15 +43,30 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
 		/// <param name="tops"></param>
-		public AccuracyPanel(string title, ITrainer trainer, object headerContent = null, params int[] tops) : base(title, headerContent)
+		public AccuracyPanel(string title, ITrainer trainer, object headerContent = null, params int[] tops) : this(title, trainer, TimeStep.Every(1, TimeScale.Epoch), headerContent, tops)
 		{
+		}
+
+		/// <summary>
+		/// Create an AccuracyPanel with a given title. It displays given accuracies per epoch.
+		/// If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
+		/// </summary>
+		/// <param name="title">The given tile.</param>
+		/// <param name="trainer"></param>
+		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
+		/// the title will be used.</param>
+		/// <param name="tops"></param>
+		public AccuracyPanel(string title, ITrainer trainer, ITimeStep timeStep, object headerContent = null, params int[] tops) : base(title, headerContent)
+		{
+			if (timeStep == null) throw new ArgumentNullException(nameof(timeStep));
+
 			// skip the first since its automatically generated
 			for (int i = 1; i < tops.Length; i++)
 			{
 				AddSeries(new LineSeries());
 			}
 
-			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", TimeStep.Every(1, TimeScale.Epoch), tops));
+			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", timeStep, tops));
 
 			AxisY.MinValue = 0;
 			AxisY.MaxValue = 100;

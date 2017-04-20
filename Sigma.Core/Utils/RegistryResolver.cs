@@ -344,7 +344,7 @@ namespace Sigma.Core.Utils
 
 			bool noneMatched = true;
 
-			foreach (string identifier in currentRootAtLevel.Keys)
+			foreach (string identifier in currentRootAtLevel.Keys.ToArray()) // TODO ugly hack, toarray is inefficient and is just to prevent "random" concurrent modification exception
 			{
 				if (regex.IsMatch(identifier))
 				{
