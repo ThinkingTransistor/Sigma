@@ -110,16 +110,12 @@ namespace Sigma.Tests.Internals.WPF
 
                     IRegistry regTest = new Registry();
                     regTest.Add("test", DateTime.Now);
-
+					
                     var parameter = new ParameterPanel("Parameters", sigma, window);
                     parameter.Add("Time", typeof(DateTime), regTest, "test");
 
                     ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
                     trainer.AddGlobalHook(valueHook);
-                    sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
-
-                    valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Iteration), "iteration");
-                    trainer.AddLocalHook(valueHook);
                     sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
                     var costBlock = (UserControlParameterVisualiser)parameter.Content.Add("Cost", typeof(double), trainer.Operator.Registry, "optimiser.cost_total");

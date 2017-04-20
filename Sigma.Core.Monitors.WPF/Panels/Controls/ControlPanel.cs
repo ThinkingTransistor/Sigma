@@ -92,10 +92,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				_trainer.AddGlobalHook(valueHook);
 				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 				Trainers.Add(Trainer);
+
+				valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Iteration), "iteration");
+				_trainer.AddLocalHook(valueHook);
+				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 			}
 
 			//TODO: style?
-			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20) };
+			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20), HorizontalAlignment = HorizontalAlignment.Center};
 
 			Content.Children.Add(_playbackControl);
 
