@@ -28,8 +28,9 @@ using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
-using System.Linq;
-using LiveCharts.Geared;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Training.Modifiers;
+
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -48,7 +49,10 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.network_weights_average"));
 			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.StandardDeviation(a), "shared.network_weights_stddev"));
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.biases", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.network_biases_average"));
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.biases", (a, h) => h.StandardDeviation(a), "shared.network_biases_stddev"));
 			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.optimiser_updates_average"));
+			trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.StandardDeviation(a), "shared.optimiser_updates_stddev"));
 
 			// for the UI we have to activate more features
 			if (UI)
@@ -62,7 +66,7 @@ namespace Sigma.Tests.Internals.WPF
 				gui.AddLegend(general);
 
 				// create a tab
-				gui.AddTabs("Overview");
+				gui.AddTabs("Overview", "Metrics", "Validation");
 
 				// access the window inside the ui thread
 				gui.WindowDispatcher(window =>
@@ -70,51 +74,71 @@ namespace Sigma.Tests.Internals.WPF
 					// enable initialisation
 					window.IsInitializing = true;
 
+					window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
+					window.TabControl["Validation"].GridSize = new GridSize(1, 2);
+
 					window.TabControl["Overview"].GridSize.Rows -= 1;
 					window.TabControl["Overview"].GridSize.Columns -= 1;
 
 					// add a panel that controls the learning process
 					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
-					// create an accuracy cost that updates every iteration
-					var cost = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(10, TimeScale.Epoch));
-					// improve the chart performance
+					ITimeStep reportTimeStep = TimeStep.Every(10, TimeScale.Epoch);
+
+					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
 					cost.Fast();
 					cost.Linearify();
-					cost.MaxPoints = 10;
+					cost.MaxPoints = 15;
 
-					var weightAverage = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Average of weights / Epoch", trainer, "shared.network_weights_average", TimeStep.Every(10, TimeScale.Epoch));
+					var weightAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Weights / Epoch", trainer, "shared.network_weights_average", reportTimeStep, averageMode: true);
 					weightAverage.Fast();
 					weightAverage.Linearify();
 					weightAverage.MaxPoints = 15;
 
-					var weightStddev = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Standard deviation of weights / Epoch", trainer, "shared.network_weights_stddev", TimeStep.Every(10, TimeScale.Epoch));
+					var weightStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Weights / Epoch", trainer, "shared.network_weights_stddev", reportTimeStep, averageMode: true);
 					weightStddev.Fast();
 					weightStddev.Linearify();
 					weightStddev.MaxPoints = 15;
 
-					var updateAverage = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Average of parameter updates / Epoch", trainer, "shared.optimiser_updates_average", TimeStep.Every(10, TimeScale.Epoch));
+					var biasesAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Biases / Epoch", trainer, "shared.network_biases_average", reportTimeStep, averageMode: true);
+					biasesAverage.Fast();
+					biasesAverage.Linearify();
+					biasesAverage.MaxPoints = 15;
+
+					var biasesStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Biases / Epoch", trainer, "shared.network_biases_stddev", reportTimeStep, averageMode: true);
+					biasesStddev.Fast();
+					biasesStddev.Linearify();
+					biasesStddev.MaxPoints = 15;
+
+					var updateAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_average", reportTimeStep, averageMode: true);
 					updateAverage.Fast();
 					updateAverage.Linearify();
 					updateAverage.MaxPoints = 15;
+				
+					var updateStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_stddev", reportTimeStep, averageMode: true);
+					updateStddev.Fast();
+					updateStddev.Linearify();
+					updateStddev.MaxPoints = 15;
 
-					//var accuracy = new AccuracyPanel("Accuracy", trainer, null, 1, 2, 3);
-					//accuracy.Fast();
+					var accuracy = new AccuracyPanel("Validation Accuracy", trainer, reportTimeStep, null, 1, 2);
+					accuracy.Fast();
+					accuracy.Linearify();
+					//accuracy.MaxPoints = 15;
 
 					IRegistry regTest = new Registry();
 					regTest.Add("test", DateTime.Now);
-
+					
 					var parameter = new ParameterPanel("Parameters", sigma, window);
 					parameter.Add("Time", typeof(DateTime), regTest, "test");
 
 					ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
-					trainer.AddLocalHook(valueHook);
+					trainer.AddGlobalHook(valueHook);
 					sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
-					var costBlock = (UserControlParameterVisualiser) parameter.Content.Add("Cost", typeof(object), trainer.Operator.Registry, "optimiser.cost_total");
+					var costBlock = (UserControlParameterVisualiser)parameter.Content.Add("Cost", typeof(double), trainer.Operator.Registry, "optimiser.cost_total");
 					costBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-					var learningBlock = (UserControlParameterVisualiser) parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
+					var learningBlock = (UserControlParameterVisualiser)parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 					learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
 					//trainer.AddGlobalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch)));
@@ -123,12 +147,18 @@ namespace Sigma.Tests.Internals.WPF
 					//heeBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 					//parameter.Content.Add(new Label { Content = "Cost" }, heeBlock, null, "optimiser.cost_total");
 
-					window.TabControl["Overview"].AddCumulativePanel(cost, 1, 1, iris);
-					window.TabControl["Overview"].AddCumulativePanel(updateAverage, 1, 1, iris);
+					//window.TabControl["Overview"].AddCumulativePanel(cost, 1, 2, legend: iris);
 					window.TabControl["Overview"].AddCumulativePanel(parameter);
-					window.TabControl["Overview"].AddCumulativePanel(weightStddev, 1, 1, iris);
-					window.TabControl["Overview"].AddCumulativePanel(weightAverage, 1, 1, iris);
-					//window.TabControl["Overview"].AddCumulativePanel(accuracy);
+					//window.TabControl["Overview"].AddCumulativePanel(accuracy, 1, 2, legend: iris);
+
+					window.TabControl["Metrics"].AddCumulativePanel(cost, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(accuracy, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(weightStddev, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
+					window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
 
 					//window.TabControl["Overview"].AddCumulativePanel(new LogDataGridPanel("Log"), 1, 3, general);
 
@@ -173,6 +203,9 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.4));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.01, mean: 0.05));
+
+			trainer.AddValueModifier("network.layers.*.weights", new ClipValueModifier());
+			trainer.AddValueModifier("network.layers.*.bias*", new ClipValueModifier());
 
 			trainer.AddHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
