@@ -28,6 +28,8 @@ using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
+using System.Linq;
+using LiveCharts.Geared;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -75,18 +77,26 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
 					// create an accuracy cost that updates every iteration
-					var cost = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(10, TimeScale.Epoch));
+					var cost = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(10, TimeScale.Epoch));
 					// improve the chart performance
 					cost.Fast();
+					cost.Linearify();
+					cost.MaxPoints = 10;
 
-					var weightAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Average of weights / Epoch", trainer, "shared.network_weights_average", TimeStep.Every(10, TimeScale.Epoch));
+					var weightAverage = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Average of weights / Epoch", trainer, "shared.network_weights_average", TimeStep.Every(10, TimeScale.Epoch));
 					weightAverage.Fast();
+					weightAverage.Linearify();
+					weightAverage.MaxPoints = 15;
 
-					var weightStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard deviation of weights / Epoch", trainer, "shared.network_weights_stddev", TimeStep.Every(10, TimeScale.Epoch));
+					var weightStddev = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Standard deviation of weights / Epoch", trainer, "shared.network_weights_stddev", TimeStep.Every(10, TimeScale.Epoch));
 					weightStddev.Fast();
+					weightStddev.Linearify();
+					weightStddev.MaxPoints = 15;
 
-					var updateAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Average of parameter updates / Epoch", trainer, "shared.optimiser_updates_average", TimeStep.Every(10, TimeScale.Epoch));
+					var updateAverage = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Average of parameter updates / Epoch", trainer, "shared.optimiser_updates_average", TimeStep.Every(10, TimeScale.Epoch));
 					updateAverage.Fast();
+					updateAverage.Linearify();
+					updateAverage.MaxPoints = 15;
 
 					//var accuracy = new AccuracyPanel("Accuracy", trainer, null, 1, 2, 3);
 					//accuracy.Fast();

@@ -82,8 +82,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			/// <summary>
 			/// Create a hook with a certain time step and a set of required global registry entries. 
 			/// </summary>
-			/// <param name="timestep">The time step.</param>
-			/// <param name="requiredRegistryEntries">The required global registry entries.</param>
 			public PassNetworkHook(IDictionary<string, INDArray> block) : base(Core.Utils.TimeStep.Every(1, TimeScale.Iteration), "network.self")
 			{
 				ParameterRegistry[DataIdentifier] = block;

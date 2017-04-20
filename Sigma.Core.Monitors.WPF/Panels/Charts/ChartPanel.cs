@@ -7,14 +7,19 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Windows.Data;
 using LiveCharts;
+using LiveCharts.Configurations;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
+using Sigma.Core.Monitors.WPF.Annotations;
+using Sigma.Core.Monitors.WPF.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Charts
 {
@@ -96,8 +101,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <typeparam name="TChart">The type of the chart that is being used.</typeparam>
 	/// <typeparam name="TSeries">The type of series that is used to illustrate the points.</typeparam>
 	/// <typeparam name="TData">The data that will be displayed in the chart. See <a href="https://lvcharts.net/App/examples/v1/wpf/Types%20and%20Configuration">Types and Configuration</a>.</typeparam>
-	public class ChartPanel<TChart, TSeries, TChartValues, TData> : GenericPanel<TChart> where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IChartValues, ICollection<TData>, new()
+	public class ChartPanel<TChart, TSeries, TChartValues, TData> : GenericPanel<TChart>, INotifyPropertyChanged
+		where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IChartValues, ICollection<TData>, new()
 	{
+
 		/// <summary>
 		/// The <see cref="SeriesCollection"/> containing the <see cref="Series"/> (of the type <see ref="TSeries"/>). 
 		/// </summary>
@@ -113,6 +120,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		public List<TChartValues> ChartValues { get; }
 
+		#region Axis
+
 		/// <summary>
 		/// A reference to the x-axis.
 		/// </summary>
@@ -122,11 +131,103 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		public Axis AxisY { get; }
 
+		///// <summary>
+		///// The min value of the x-axis. Changing this will not affect the UI.
+		///// </summary>
+		//private double _axisXMin;
+
+		///// <summary>
+		///// The max value of the x-axis. Changing this will not affect the UI.
+		///// </summary>
+		//private double _axisXMax;
+
+		///// <summary>
+		///// The min value of the y-axis. Changing this will not affect the UI.
+		///// </summary>
+		//private double _axisYMin;
+
+		///// <summary>
+		///// The max value of the y-axis. Changing this will not affect the UI.
+		///// </summary>
+		//private double _axisYMax;
+
+		///// <summary>
+		///// The max value of the x-axis bound with the UI. (set from any thread)
+		///// </summary>
+		//public double AxisXMax
+		//{
+		//	get { return _axisXMax; }
+		//	set
+		//	{
+		//		_axisXMax = value;
+		//		OnPropertyChanged(nameof(AxisXMax));
+		//	}
+		//}
+
+		///// <summary>
+		///// The max value of the y-axis bound with the UI. (set from any thread)
+		///// </summary>
+		//public double AxisYMax
+		//{
+		//	get { return _axisYMax; }
+		//	set
+		//	{
+		//		_axisYMax = value;
+		//		OnPropertyChanged(nameof(AxisYMax));
+		//	}
+		//}
+
+		///// <summary>
+		///// The min value of the x-axis bound with the UI. (set from any thread)
+		///// </summary>
+		//public double AxisXMin
+		//{
+		//	get { return _axisXMin; }
+		//	set
+		//	{
+		//		_axisXMin = value;
+		//		OnPropertyChanged(nameof(AxisXMin));
+		//	}
+		//}
+
+		///// <summary>
+		///// The min value of the y-axis bound with the UI. (set from any thread)
+		///// </summary>
+		//public double AxisYMin
+		//{
+		//	get { return _axisYMin; }
+		//	set
+		//	{
+		//		_axisYMin = value;
+		//		OnPropertyChanged(nameof(AxisYMin));
+		//	}
+		//}
+
+		/// <summary>
+		/// The amount of maximum points visible at once.
+		/// </summary>
+		private int _maxPoints = -1;
+
 		/// <summary>
 		/// The maximum of points visible at once (others get removed). This number is only considered when calling Add and AddRange.
 		/// If negative (or zero), all points are displayed.
 		/// </summary>
-		public int MaxPoints { get; set; } = -1;
+		public int MaxPoints
+		{
+			get { return _maxPoints; }
+			set
+			{
+				_maxPoints = value;
+				AxisX.MaxRange = _maxPoints > 0 ? MaxPoints : double.NaN;
+			}
+		}
+
+		/// <summary>
+		/// The accumulating amount of added points.
+		/// </summary>
+		protected int AddedPoints { get; set; }
+
+		#endregion Axis
 
 		/// <summary>
 		/// Create a ChartPanel with a given title.
@@ -137,9 +238,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// the title will be used.</param>
 		public ChartPanel(string title, object headerContent = null) : base(title, headerContent)
 		{
+
+			//CartesianMapper<TData> mapper = Mappers.Xy<TData>().X(data => 1).Y(data => 1);
+			//Charting.For<TData>(mapper);
+
+
 			Content = new TChart
 			{
-				Zoom = ZoomingOptions.Xy,
+				//Zoom = ZoomingOptions.Xy,
 				//ScrollMode = ScrollMode.XY
 			};
 
@@ -163,12 +269,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 			Content.Series = SeriesCollection;
 
-			AxisY = new Axis();
+
 			AxisX = new Axis();
+			AxisY = new Axis();
 
 			Content.AxisX.Add(AxisX);
 			Content.AxisY.Add(AxisY);
 		}
+
 
 		#region PointManagement
 
@@ -211,6 +319,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		public void Add(TData data, TChartValues values)
 		{
 			values.Add(data);
+			AddedPoints++;
 
 			KeepValuesInRange(values);
 		}
@@ -255,7 +364,15 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="values">The chart values the data will be added to.</param>
 		public void AddRange(IEnumerable<TData> data, TChartValues values)
 		{
-			values.AddRange(data.Cast<object>());
+			IEnumerable<object> dataO = data.Cast<object>();
+			ICollection<TData> valICollection = values;
+
+			// we cannot iterate the passed data twice, therefore we have to add the difference in points
+			int prevLength = valICollection.Count;
+
+			values.AddRange(dataO);
+
+			AddedPoints += prevLength - valICollection.Count;
 
 			KeepValuesInRange(values);
 		}
@@ -268,17 +385,30 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="chartValues">The chart values that will be maintained.</param>
 		private void KeepValuesInRange(ICollection<TData> chartValues)
 		{
-			if (MaxPoints > 0)
-			{
-				IEnumerator<TData> enumerator = chartValues.AsEnumerable().GetEnumerator();
-				while (chartValues.Count > MaxPoints)
-				{
-					chartValues.Remove(enumerator.Current);
-					enumerator.MoveNext();
-				}
+			SetAxisLimits();
+			
+			//TODO: IMPORTANT: EVERY OTHER KEYWORD: Remove unused points!!! Add new values to correct position (not at 0), use a mapper
+			//if (MaxPoints > 0)
+			//{
+			//	IEnumerator<TData> enumerator = chartValues.AsEnumerable().GetEnumerator();
+			//	while (chartValues.Count > MaxPoints)
+			//	{
+			//		chartValues.Remove(enumerator.Current);
+			//		enumerator.MoveNext();
+			//	}
 
-				enumerator.Dispose();
-			}
+			//	enumerator.Dispose();
+			//}
+		}
+
+		protected void SetAxisLimits()
+		{
+			// TODO: do not use dispatcher, use bindings axis min axis max
+			Dispatcher.InvokeAsync(() =>
+			{
+				AxisX.MinValue = Math.Max(0, AddedPoints - MaxPoints);
+				AxisX.MaxValue = AddedPoints - 1;
+			});
 		}
 
 		/// <summary>
@@ -372,6 +502,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 				IDisposable disposable = chartValues as IDisposable;
 				disposable?.Dispose();
 			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		[NotifyPropertyChangedInvocator]
+		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }
