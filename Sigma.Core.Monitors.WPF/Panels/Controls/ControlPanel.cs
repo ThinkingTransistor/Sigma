@@ -99,29 +99,32 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 
 			//TODO: style?
-			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20), HorizontalAlignment = HorizontalAlignment.Center};
+			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20), HorizontalAlignment = HorizontalAlignment.Center };
 
 			Content.Children.Add(_playbackControl);
 
 			_parameterView = new ParameterView(Monitor.Sigma, window);
 
-			//TODO: language support
-
-			SigmaTextBlock timeBox = (SigmaTextBlock) _parameterView.Add("Running time", typeof(object), _trainer.Operator.Registry, "runtime_millis");
+			SigmaTextBlock timeBox = (SigmaTextBlock) _parameterView.Add(Properties.Resources.RunningTime, typeof(object), _trainer.Operator.Registry, "runtime_millis");
 			timeBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
 			timeBox.Postfix = " ms";
 
-			UserControlParameterVisualiser epochBox = (UserControlParameterVisualiser) _parameterView.Add("Current epoch", typeof(object), _trainer.Operator.Registry, "epoch");
+			UserControlParameterVisualiser epochBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentEpoch, typeof(object), _trainer.Operator.Registry, "epoch");
 			epochBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-			UserControlParameterVisualiser iterationBox = (UserControlParameterVisualiser) _parameterView.Add("Current iteration", typeof(object), _trainer.Operator.Registry, "iteration");
+			UserControlParameterVisualiser iterationBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentIteration, typeof(object), _trainer.Operator.Registry, "iteration");
 			iterationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Iteration));
 
 			IRegistry registry = new Registry
 			{
-				{ "op", Trainer.Operator.GetType().Name }
+				{ "operator", Trainer.Operator.GetType().Name },
+				{ "optimiser", Trainer.Optimiser.GetType().Name }
 			};
-			_parameterView.Add("Current operator", typeof(object), registry, "op");
+			_parameterView.Add(Properties.Resources.CurrentOperator, typeof(object), registry, "operator");
+			_parameterView.Add(Properties.Resources.CurrentOptimiser, typeof(object), registry, "optimiser");
+			//TODO: completely hardcoded activation function
+			UserControlParameterVisualiser activationBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentActivationFunction, typeof(object), _trainer.Operator.Registry, "network.layers.2-fullyconnected.activation");
+			activationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Start));
 
 			Content.Children.Add(_parameterView);
 		}
