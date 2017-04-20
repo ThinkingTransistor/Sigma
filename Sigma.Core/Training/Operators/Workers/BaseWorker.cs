@@ -300,7 +300,7 @@ namespace Sigma.Core.Training.Operators.Workers
 			return _bufferRegistry;
 		}
 
-		//TODO: cäsar? is it intended that the passed variables are never used?
+		//TODO: cäsar? is it intended that the passed variables are never used? - no, but I might break something - will fix later
 		private void MarkDeadHooks(IEnumerable<IHook> hooks, IDictionary<IHook, ITimeStep> localTimeSteps)
 		{
 			foreach (IHook hook in _bufferHooksToInvoke)

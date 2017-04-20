@@ -108,30 +108,45 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			return "shared." + value.Replace('.', '_') + "_accumulated";
 		}
 
-		/// <summary>
-		/// Invoke this hook with a certain parameter registry.
-		/// </summary>
-		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
-		{
-			string[] accumulatedIdentifiers = ParameterRegistry.Get<string[]>("accumulated_identifiers");
-			string[] valueIdentifiers = ParameterRegistry.Get<string[]>("value_identifiers");
+	    /// <summary>
+	    /// Invoke this hook with a certain parameter registry.
+	    /// </summary>
+	    /// <param name="registry">The registry containing the required values for this hook's execution.</param>
+	    /// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+	    public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+	    {
+	        string[] accumulatedIdentifiers = ParameterRegistry.Get<string[]>("accumulated_identifiers");
+	        string[] valueIdentifiers = ParameterRegistry.Get<string[]>("value_identifiers");
 
-			IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
+	        IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
 
-			for (int i = 0; i < valueIdentifiers.Length; i++)
-			{
-				// TODO let callee decide if it's a number (double) / something else
-				object value = resolver.ResolveGetSingle<double>(accumulatedIdentifiers[i]);
+	        string missingIdentifier = null;
 
-				valuesByIdentifier[valueIdentifiers[i]] = value;
-			}
+	        for (int i = 0; i < valueIdentifiers.Length; i++)
+	        {
+	            // TODO let callee decide if it's a number (double) / something else
+	            double value = resolver.ResolveGetSingleWithDefault<double>(accumulatedIdentifiers[i], double.NaN);
 
-			ReportValues(valuesByIdentifier, ParameterRegistry.Get<bool>("report_epoch_iteration"), registry.Get<int>("epoch"), registry.Get<int>("iteration"));
-		}
+	            if (double.IsNaN(value))
+	            {
+	                missingIdentifier = valueIdentifiers[i];
+	                break;
+	            }
 
-		/// <summary>
+	            valuesByIdentifier[valueIdentifiers[i]] = value;
+	        }
+
+	        if (missingIdentifier == null)
+	        {
+	            ReportValues(valuesByIdentifier, ParameterRegistry.Get<bool>("report_epoch_iteration"), registry.Get<int>("epoch"), registry.Get<int>("iteration"));
+	        }
+	        else
+	        {
+                _logger.Debug($"Attempted to report missing value with identifier \"{missingIdentifier}\".");
+	        }
+	    }
+
+	    /// <summary>
 		/// Report the values for a certain epoch / iteration.
 		/// Note: By default, this method writes to the logger. If you want to report to anywhere else, overwrite this method.
 		/// </summary>
