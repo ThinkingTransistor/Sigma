@@ -13,6 +13,7 @@ using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Utils;
 
@@ -37,7 +38,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The hook that is attached to the Trainer (see <see cref="Trainer"/>). 
 		/// </summary>
-		protected VisualValueReporterHook AttachedHook;
+		protected IHook AttachedHook;
 
 		///  <summary>
 		///  Create a TrainerChartPanel with a given title.
@@ -93,12 +94,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		/// <param name="trainer">The trainer that will be set.</param>
 		/// <param name="hook">The hook that will be applied.</param>
-		private void Init(ITrainer trainer, VisualValueReporterHook hook)
+		protected virtual void Init(ITrainer trainer, IHook hook)
 		{
 			Trainer = trainer;
 
 			AttachedHook = hook;
 			Trainer.AddHook(hook);
+			Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Stop), (registry, resolver) => Clear()));
 
 			// TODO: is a formatter the best solution?
 			AxisX.LabelFormatter = number => (number * hook.TimeStep.Interval).ToString(CultureInfo.InvariantCulture);
