@@ -89,12 +89,12 @@ namespace Sigma.Core.Data.Datasets
 
 		public IDataset[] SplitBlockwise(params int[] parts)
 		{
-			return Dataset.SplitBlockwise(this, parts);
+			return ExtractedDataset.SplitBlockwise(this, parts);
 		}
 
 		public IDataset[] SplitRecordwise(params double[] parts)
 		{
-			return Dataset.SplitRecordwise(this, parts);
+			return ExtractedDataset.SplitRecordwise(this, parts);
 		}
 
 		public bool TrySetBlockSize(int blockSizeRecords)

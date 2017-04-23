@@ -48,7 +48,7 @@ namespace Sigma.Tests.Data.Datasets
 			CreateCsvTempFile(filename);
 
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename)).Extractor("inputs", 1, 2, "targets", 3);
-			Dataset dataset = new Dataset("name", Dataset.BlockSizeAuto, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("name", ExtractedDataset.BlockSizeAuto, extractor);
 
 			Assert.Throws<ArgumentNullException>(() => new DatasetBlockwiseSlice(null, 0, 0, 1));
 			Assert.Throws<ArgumentException>(() => new DatasetBlockwiseSlice(dataset, 0, 0, 0));
@@ -82,7 +82,7 @@ namespace Sigma.Tests.Data.Datasets
 			CreateCsvTempFile(filename);
 
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename)).Extractor("inputs", 0, "targets", 3);
-			Dataset dataset = new Dataset("name", 1, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("name", 1, extractor);
 			DatasetBlockwiseSlice slice = new DatasetBlockwiseSlice(dataset, 1, 2, 3);
 
 			Assert.AreEqual(new float[] { 4.9f }, slice.FetchBlock(0, new CpuFloat32Handler())["inputs"].GetDataAs<float>().GetValuesArrayAs<float>(0, 1));

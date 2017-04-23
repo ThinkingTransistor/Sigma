@@ -176,7 +176,7 @@ namespace Sigma.Tests.Internals.WPF
                 .Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
                 .Preprocess(new ShufflePreprocessor());
 
-            IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, false, irisExtractor);
+            IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
 
             ITrainer trainer = sigma.CreateTrainer("test");
 
@@ -212,7 +212,7 @@ namespace Sigma.Tests.Internals.WPF
             ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
             IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-            IDataset dataset = new Dataset("mnist", Dataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+            IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
             ITrainer trainer = sigma.CreateTrainer("test");
 
             trainer.Network = new Network

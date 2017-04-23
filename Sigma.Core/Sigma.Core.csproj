@@ -138,10 +138,11 @@
     <Compile Include="Architecture\Linear\Parallel.cs" />
     <Compile Include="Architecture\Network.cs" />
     <Compile Include="Data\DataBuffer.cs" />
-    <Compile Include="Data\Datasets\Dataset.cs" />
+    <Compile Include="Data\Datasets\ExtractedDataset.cs" />
     <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\DatasetRecordwiseSlice.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
+    <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
     <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />

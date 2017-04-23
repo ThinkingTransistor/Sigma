@@ -66,7 +66,7 @@ namespace Sigma.Tests.Internals.Backend
                                                         .Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
                                                         .Preprocess(new ShufflePreprocessor());
 
-            IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, false, irisExtractor);
+            IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
 
             ITrainer trainer = sigma.CreateGhostTrainer("test");
 
@@ -118,7 +118,7 @@ namespace Sigma.Tests.Internals.Backend
             ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
             IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-            IDataset dataset = new Dataset("mnist", Dataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+            IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
             ITrainer trainer = sigma.CreateTrainer("test");
 
             trainer.Network = new Network();
@@ -160,7 +160,7 @@ namespace Sigma.Tests.Internals.Backend
             ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
             IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
-            IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
+            IDataset dataset = new ExtractedDataset("mnist-training", ExtractedDataset.BlockSizeAuto, mnistImageExtractor);
             IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
             IDataset trainingData = slices[0];
 
@@ -350,7 +350,7 @@ namespace Sigma.Tests.Internals.Backend
 
             IComputationHandler handler = new CpuFloat32Handler();
 
-            Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+            ExtractedDataset dataset = new ExtractedDataset("mnist-training", ExtractedDataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
             IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
             IDataset trainingData = slices[0];
             IDataset validationData = slices[1];
