@@ -11,8 +11,10 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
@@ -101,6 +103,15 @@ namespace Sigma.Core.Data.Datasets
 
 
         /// <summary>
+        /// Create a raw dataset with a certain name and an internal cpu handler with 32-bit float precision.
+        /// </summary>
+        /// <param name="name">The globally unique name of this dataset.</param>
+        /// <param name="internalHandler">The internal handler to use for data management.</param>
+        public RawDataset(string name) : this(name, new CpuFloat32Handler())
+        {
+        }
+
+        /// <summary>
         /// Create a raw dataset with a certain name and computation handler.
         /// </summary>
         /// <param name="name">The globally unique name of this dataset.</param>
@@ -117,22 +128,22 @@ namespace Sigma.Core.Data.Datasets
             _rawData = new ConcurrentDictionary<IComputationHandler, IDictionary<string, INDArray>>();
         }
 
-        public void AddRecord<T>(string block, params T[] record)
+        public void AddRecord<T>(string blockName, params T[] record)
         {
-            AddRecords<T>(block, new long[] { record.Length }, new[] { record });
+            AddShapedRecords<T>(blockName, new long[] { record.Length }, new[] { record });
         }
 
-        public void AddRecord<T>(string block, long[] featureShape, params T[][] records)
+        public void AddRecord<T>(string blockName, long[] featureShape, params T[][] records)
         {
-            AddRecords<T>(block, featureShape, records);
+            AddShapedRecords<T>(blockName, featureShape, records);
         }
 
-        public void AddRecords<T>(string block, T[][] records)
+        public void AddRecords<T>(string blockName, params T[][] records)
         {
-            AddRecords<T>(block, new long[] { records[0].Length }, records);
+            AddShapedRecords<T>(blockName, new long[] { records[0].Length }, records);
         }
 
-        public void AddRecords<T>(string block, long[] featureShape, T[][] records)
+        public void AddShapedRecords<T>(string blockName, long[] featureShape, params T[][] records)
         {
             if (records.Length == 0)
             {
@@ -141,17 +152,51 @@ namespace Sigma.Core.Data.Datasets
 
             lock (_internalWorkingData)
             {
-                long[] shape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
+                long featureLength = ArrayUtils.Product(featureShape);
+                long[] insertedShape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
+                long[] newShape = (long[])insertedShape.Clone();
+                bool previousBlockExists = _internalWorkingData.ContainsKey(blockName);
 
-                if (_internalWorkingData.ContainsKey(block))
+                if (previousBlockExists)
                 {
-                    shape[0] += _internalWorkingData[block].Shape[0]; // append to record end
+                    insertedShape[0] += _internalWorkingData[blockName].Shape[0]; // append new record to end
                 }
 
-                INDArray newBlock = _internalHandler.NDArray(shape);
+                INDArray newBlock = _internalHandler.NDArray(newShape);
 
-                // TODO finish this
-                throw new NotImplementedException("to be completed another time");
+                long[] destinationBegin = new long[newBlock.Rank];
+
+                if (previousBlockExists)
+                {
+                    INDArray oldBlock = _internalWorkingData[blockName];
+
+                    long[] previousSourceBegin = new long[oldBlock.Shape.Rank];
+                    long[] previousSourceEnd = oldBlock.Shape.Select(i => i - 1).ToArray();
+
+                    _internalHandler.Fill(oldBlock, newBlock, previousSourceBegin, previousSourceEnd, previousSourceBegin, previousSourceEnd);
+
+                    destinationBegin[0] = oldBlock.Shape[0];
+                }
+
+                long[] destinationEnd = newShape.Select(i => i - 1).ToArray();
+                destinationEnd[0] = destinationBegin[0];
+
+                for (int i = 0; i < records.Length; i++)
+                {
+                    _internalHandler.Fill(records[i], newBlock, destinationBegin, destinationEnd);
+
+                    destinationBegin[0]++;
+                    destinationEnd[0]++;
+                } // values aren't set correctly, shifted around and just wrong - TODO fix
+
+                if (previousBlockExists)
+                {
+                    _internalWorkingData[blockName] = newBlock;
+                }
+                else
+                {
+                    _internalWorkingData.Add(blockName, newBlock);
+                }
             }
         }
 
