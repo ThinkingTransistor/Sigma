@@ -153,9 +153,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	        IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
 	        int sourceOffset = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceBeginIndices);
-            int destinationOffset = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices);
-	        int sourceLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-            int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices);
+	        int sourceLength = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices) - sourceOffset + 1; // +1 because end is inclusive
+	        int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
+            int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // same here
 
             if (sourceLength < 0) throw new ArgumentOutOfRangeException($"Source begin indices must be smaller than source end indices, but source length was {sourceLength}.");
             if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
@@ -170,7 +170,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	        IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
 	        int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-	        int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset;
+	        int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
 
 	        if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
 

@@ -153,13 +153,13 @@ namespace Sigma.Core.Data.Datasets
             lock (_internalWorkingData)
             {
                 long featureLength = ArrayUtils.Product(featureShape);
-                long[] insertedShape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
-                long[] newShape = (long[])insertedShape.Clone();
+                long[] newShape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
+                long[] insertedShape = (long[]) newShape.Clone();
                 bool previousBlockExists = _internalWorkingData.ContainsKey(blockName);
 
                 if (previousBlockExists)
                 {
-                    insertedShape[0] += _internalWorkingData[blockName].Shape[0]; // append new record to end
+                    newShape[0] += _internalWorkingData[blockName].Shape[0]; // append new record to end
                 }
 
                 INDArray newBlock = _internalHandler.NDArray(newShape);
@@ -170,7 +170,15 @@ namespace Sigma.Core.Data.Datasets
                 {
                     INDArray oldBlock = _internalWorkingData[blockName];
 
-                    long[] previousSourceBegin = new long[oldBlock.Shape.Rank];
+                    for (int i = 1; i < oldBlock.Shape.Length; i++)
+                    {
+                        if (newShape[i] != oldBlock.Shape[i])
+                        {
+                            throw new InvalidOperationException($"Shape mismatch: already existing block for \"{blockName}\" has shape {ArrayUtils.ToString(oldBlock.Shape)} but new block has shape {ArrayUtils.ToString(newShape)}");
+                        }
+                    }
+
+                    long[] previousSourceBegin = new long[oldBlock.Rank];
                     long[] previousSourceEnd = oldBlock.Shape.Select(i => i - 1).ToArray();
 
                     _internalHandler.Fill(oldBlock, newBlock, previousSourceBegin, previousSourceEnd, previousSourceBegin, previousSourceEnd);
@@ -178,7 +186,7 @@ namespace Sigma.Core.Data.Datasets
                     destinationBegin[0] = oldBlock.Shape[0];
                 }
 
-                long[] destinationEnd = newShape.Select(i => i - 1).ToArray();
+                long[] destinationEnd = insertedShape.Select(i => i - 1).ToArray();
                 destinationEnd[0] = destinationBegin[0];
 
                 for (int i = 0; i < records.Length; i++)
@@ -187,7 +195,7 @@ namespace Sigma.Core.Data.Datasets
 
                     destinationBegin[0]++;
                     destinationEnd[0]++;
-                } // values aren't set correctly, shifted around and just wrong - TODO fix
+                }
 
                 if (previousBlockExists)
                 {

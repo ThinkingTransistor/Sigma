@@ -47,10 +47,21 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleIris();
+            SampleXOR();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
+        }
+
+        private static void SampleXOR()
+        {
+            SigmaEnvironment sigma = SigmaEnvironment.Create("xor");
+            RawDataset dataset = new RawDataset("xor");
+
+            dataset.AddRecords("inputs", new[] { 0, 1 }, new[] { 2, 3 }, new[] { 4, 5 }, new[] { 6, 7 });
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
+            dataset.AddRecords("inputs", new[] { 8, 9 });
+            dataset.AddRecords("targets", new[] { 1 });
         }
 
         private static void SampleIris()
