@@ -64,7 +64,7 @@ namespace Sigma.Core.Data.Datasets
         public int ActiveBlockRegionCount => _activeBlocks.Count;
 
         /// <inheritdoc />
-        public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
+        public int ActiveIndividualBlockRegionCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
         /// <inheritdoc />
         public int TargetBlockSizeRecords { get; private set; }
@@ -241,7 +241,7 @@ namespace Sigma.Core.Data.Datasets
         public void OnDeserialised()
         {
             InvalidateAndClearCaches();
-            _availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockCount, MaxConcurrentActiveBlocks);
+            _availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockRegionCount, MaxConcurrentActiveBlocks);
         }
 
         public IDataset[] SplitBlockwise(params int[] parts)
@@ -494,7 +494,7 @@ namespace Sigma.Core.Data.Datasets
 
         private Dictionary<string, INDArray> FetchBlockConstrained(int blockIndex, IComputationHandler handler)
         {
-            if (ActiveIndividualBlockCount >= MaxConcurrentActiveBlocks)
+            if (ActiveIndividualBlockRegionCount >= MaxConcurrentActiveBlocks)
             {
                 _logger.Debug($"Unable to fetch block due to MaxConcurrentActiveBlocks constraint of {MaxConcurrentActiveBlocks}.");
 

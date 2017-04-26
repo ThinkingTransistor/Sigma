@@ -84,12 +84,12 @@ namespace Sigma.Core.Data.Datasets
         /// <summary>
         /// The number of currently active and loaded record blocks, with different block formats counting as different blocks. 
         /// </summary>
-        public int ActiveIndividualBlockCount { get; }
+        public int ActiveIndividualBlockRegionCount => _rawData.Count;
 
         /// <summary>
         /// The number of currently active and loaded record blocks, with different block formats of the same region counting as one active block index.
         /// </summary>
-        public int ActiveBlockRegionCount { get; }
+        public int ActiveBlockRegionCount => _rawData.Count & 0b1; // can only be 1 active block
 
         /// <summary>
         /// The current working data that can be edited and is "flushed" to the public raw data with the next <see cref="FetchBlock"/> call.
@@ -101,12 +101,10 @@ namespace Sigma.Core.Data.Datasets
         /// </summary>
         private readonly IDictionary<IComputationHandler, IDictionary<string, INDArray>> _rawData;
 
-
         /// <summary>
         /// Create a raw dataset with a certain name and an internal cpu handler with 32-bit float precision.
         /// </summary>
         /// <param name="name">The globally unique name of this dataset.</param>
-        /// <param name="internalHandler">The internal handler to use for data management.</param>
         public RawDataset(string name) : this(name, new CpuFloat32Handler())
         {
         }
@@ -124,25 +122,55 @@ namespace Sigma.Core.Data.Datasets
             Name = name;
             _internalHandler = internalHandler;
 
-            _internalWorkingData = new Dictionary<string, INDArray>();
+            _internalWorkingData = new ConcurrentDictionary<string, INDArray>();
             _rawData = new ConcurrentDictionary<IComputationHandler, IDictionary<string, INDArray>>();
         }
 
+        /// <summary>
+        /// Add a record to a certain block.
+        /// Note: Feature shape is length of record, no time dimension, auto batch dimension.
+        /// </summary>
+        /// <typeparam name="T">The record data type (must be primitive data type).</typeparam>
+        /// <param name="blockName">The block name (e.g. "inputs").</param>
+        /// <param name="record">The record.</param>
         public void AddRecord<T>(string blockName, params T[] record)
         {
             AddShapedRecords<T>(blockName, new long[] { record.Length }, new[] { record });
         }
 
-        public void AddRecord<T>(string blockName, long[] featureShape, params T[][] records)
+        /// <summary>
+        /// Add a record with a certain feature shape to a certain block.
+        /// Note: Feature shape is as specified, no time dimension, auto batch dimension.
+        /// </summary>
+        /// <typeparam name="T">The record data type (must be primitive data type).</typeparam>
+        /// <param name="blockName">The block name (e.g. "inputs").</param>
+        /// <param name="featureShape">The feature shape.</param>
+        /// <param name="record">The record.</param>
+        public void AddRecord<T>(string blockName, long[] featureShape, params T[] record)
         {
-            AddShapedRecords<T>(blockName, featureShape, records);
+            AddShapedRecords<T>(blockName, featureShape, record);
         }
 
+        /// <summary>
+        /// Add records to a certain block.
+        /// Note: Feature shape is length of record, no time dimension, auto batch dimension.
+        /// </summary>
+        /// <typeparam name="T">The record data type (must be primitive data type).</typeparam>
+        /// <param name="blockName">The block name (e.g. "inputs").</param>
+        /// <param name="records">The records.</param>
         public void AddRecords<T>(string blockName, params T[][] records)
         {
             AddShapedRecords<T>(blockName, new long[] { records[0].Length }, records);
         }
 
+        /// <summary>
+        /// Add records with a certain feature shape to a certain block.
+        /// Note: Feature shape is as specified, no time dimension, auto batch dimension.
+        /// </summary>
+        /// <typeparam name="T">The record data type (must be primitive data type).</typeparam>
+        /// <param name="blockName">The block name (e.g. "inputs").</param>
+        /// <param name="featureShape">The feature shape.</param>
+        /// <param name="records">The records.</param>
         public void AddShapedRecords<T>(string blockName, long[] featureShape, params T[][] records)
         {
             if (records.Length == 0)
@@ -150,80 +178,102 @@ namespace Sigma.Core.Data.Datasets
                 return;
             }
 
-            lock (_internalWorkingData)
+            long featureLength = ArrayUtils.Product(featureShape);
+            long[] newShape = ArrayUtils.Concatenate(new long[] {records.Length, 1}, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
+            long[] insertedShape = (long[]) newShape.Clone();
+            bool previousBlockExists = _internalWorkingData.ContainsKey(blockName);
+
+            if (previousBlockExists)
             {
-                long featureLength = ArrayUtils.Product(featureShape);
-                long[] newShape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
-                long[] insertedShape = (long[]) newShape.Clone();
-                bool previousBlockExists = _internalWorkingData.ContainsKey(blockName);
+                newShape[0] += _internalWorkingData[blockName].Shape[0]; // append new record to end
+            }
 
-                if (previousBlockExists)
+            INDArray newBlock = _internalHandler.NDArray(newShape);
+
+            long[] destinationBegin = new long[newBlock.Rank];
+
+            if (previousBlockExists)
+            {
+                INDArray oldBlock = _internalWorkingData[blockName];
+
+                for (int i = 1; i < oldBlock.Shape.Length; i++)
                 {
-                    newShape[0] += _internalWorkingData[blockName].Shape[0]; // append new record to end
-                }
-
-                INDArray newBlock = _internalHandler.NDArray(newShape);
-
-                long[] destinationBegin = new long[newBlock.Rank];
-
-                if (previousBlockExists)
-                {
-                    INDArray oldBlock = _internalWorkingData[blockName];
-
-                    for (int i = 1; i < oldBlock.Shape.Length; i++)
+                    if (newShape[i] != oldBlock.Shape[i])
                     {
-                        if (newShape[i] != oldBlock.Shape[i])
-                        {
-                            throw new InvalidOperationException($"Shape mismatch: already existing block for \"{blockName}\" has shape {ArrayUtils.ToString(oldBlock.Shape)} but new block has shape {ArrayUtils.ToString(newShape)}");
-                        }
+                        throw new InvalidOperationException($"Shape mismatch: already existing block for \"{blockName}\" has shape {ArrayUtils.ToString(oldBlock.Shape)} but new block has shape {ArrayUtils.ToString(newShape)}");
                     }
-
-                    long[] previousSourceBegin = new long[oldBlock.Rank];
-                    long[] previousSourceEnd = oldBlock.Shape.Select(i => i - 1).ToArray();
-
-                    _internalHandler.Fill(oldBlock, newBlock, previousSourceBegin, previousSourceEnd, previousSourceBegin, previousSourceEnd);
-
-                    destinationBegin[0] = oldBlock.Shape[0];
                 }
 
-                long[] destinationEnd = insertedShape.Select(i => i - 1).ToArray();
-                destinationEnd[0] = destinationBegin[0];
+                long[] previousSourceBegin = new long[oldBlock.Rank];
+                long[] previousSourceEnd = oldBlock.Shape.Select(i => i - 1).ToArray();
 
-                for (int i = 0; i < records.Length; i++)
-                {
-                    _internalHandler.Fill(records[i], newBlock, destinationBegin, destinationEnd);
+                _internalHandler.Fill(oldBlock, newBlock, previousSourceBegin, previousSourceEnd, previousSourceBegin, previousSourceEnd);
 
-                    destinationBegin[0]++;
-                    destinationEnd[0]++;
-                }
+                destinationBegin[0] = oldBlock.Shape[0];
+            }
 
-                if (previousBlockExists)
-                {
-                    _internalWorkingData[blockName] = newBlock;
-                }
-                else
-                {
-                    _internalWorkingData.Add(blockName, newBlock);
-                }
+            long[] destinationEnd = insertedShape.Select(i => i - 1).ToArray();
+            destinationEnd[0] = destinationBegin[0];
+
+            for (int i = 0; i < records.Length; i++)
+            {
+                _internalHandler.Fill(records[i], newBlock, destinationBegin, destinationEnd);
+
+                destinationBegin[0]++;
+                destinationEnd[0]++;
+            }
+
+            if (previousBlockExists)
+            {
+                _internalWorkingData[blockName] = newBlock;
+            }
+            else
+            {
+                _internalWorkingData.Add(blockName, newBlock);
             }
         }
 
         /// <inheritdoc />
         public IDictionary<string, INDArray> FetchBlock(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
         {
-            throw new NotImplementedException();
+            if (blockIndex != 0 || _internalWorkingData.Count == 0)
+            {
+                return null; // there is only 1 block in this raw dataset implementation (so if there's no data, there's no block)
+            }
+
+            if (IsBlockActive(blockIndex, handler))
+            {
+                return _rawData[handler];
+            }
+
+            if (handler.CanConvert(_internalWorkingData.Values.First(), _internalHandler))
+            {
+                IDictionary<string, INDArray> convertedBlock = new Dictionary<string, INDArray>();
+
+                foreach (string blockName in _internalWorkingData.Keys)
+                {
+                    convertedBlock[blockName] = handler.Convert(_internalWorkingData[blockName], _internalHandler);
+                }
+
+                return convertedBlock;
+            }
+
+            return null;
         }
 
         /// <inheritdoc />
-        public Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
+        public async Task<IDictionary<string, INDArray>> FetchBlockAsync(int blockIndex, IComputationHandler handler, bool shouldWaitUntilAvailable = true)
         {
-            throw new NotImplementedException();
+            return await Task.Run(() => FetchBlock(blockIndex, handler, shouldWaitUntilAvailable));
         }
 
         /// <inheritdoc />
         public void FreeBlock(int blockIndex, IComputationHandler handler)
         {
-            throw new NotImplementedException();
+            if (IsBlockActive(blockIndex, handler))
+            {
+                _rawData.Remove(handler);
+            }
         }
 
         /// <inheritdoc />
@@ -277,7 +327,6 @@ namespace Sigma.Core.Data.Datasets
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
         {
-
         }
     }
 }

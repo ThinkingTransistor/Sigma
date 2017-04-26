@@ -48,7 +48,7 @@ namespace Sigma.Core.Data.Datasets
 		}
 		public string[] SectionNames => UnderlyingDataset.SectionNames;
 		public IReadOnlyCollection<int> ActiveBlockIndices => UnderlyingDataset.ActiveBlockIndices;
-		public int ActiveIndividualBlockCount => UnderlyingDataset.ActiveIndividualBlockCount;
+		public int ActiveIndividualBlockRegionCount => UnderlyingDataset.ActiveIndividualBlockRegionCount;
 		public int ActiveBlockRegionCount => UnderlyingDataset.ActiveBlockRegionCount;
 
 		/// <summary>
