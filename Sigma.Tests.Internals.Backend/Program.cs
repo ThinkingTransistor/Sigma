@@ -56,12 +56,25 @@ namespace Sigma.Tests.Internals.Backend
         private static void SampleXOR()
         {
             SigmaEnvironment sigma = SigmaEnvironment.Create("xor");
-            RawDataset dataset = new RawDataset("xor");
+            sigma.Prepare();
 
-            dataset.AddRecords("inputs", new[] { 0, 1 }, new[] { 2, 3 }, new[] { 4, 5 }, new[] { 6, 7 });
+            RawDataset dataset = new RawDataset("xor");
+            dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
             dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
-            dataset.AddRecords("inputs", new[] { 8, 9 });
-            dataset.AddRecords("targets", new[] { 1 });
+
+            ITrainer trainer = sigma.CreateTrainer("xor-trainer");
+
+            trainer.Network = new Network();
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
+            trainer.Operator = new CpuSinglethreadedOperator();
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+
+            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+
+            sigma.Run();
         }
 
         private static void SampleIris()

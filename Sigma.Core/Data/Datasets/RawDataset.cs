@@ -23,6 +23,7 @@ namespace Sigma.Core.Data.Datasets
     /// <summary>
     /// A raw in-system-memory dataset which can be manually 
     /// </summary>
+    [Serializable]
     public class RawDataset : IDataset
     {
         private readonly IComputationHandler _internalHandler;
@@ -89,7 +90,7 @@ namespace Sigma.Core.Data.Datasets
         /// <summary>
         /// The number of currently active and loaded record blocks, with different block formats of the same region counting as one active block index.
         /// </summary>
-        public int ActiveBlockRegionCount => _rawData.Count & 0b1; // can only be 1 active block
+        public int ActiveBlockRegionCount => _rawData.Count & 0x1; // can only be 1 active block
 
         /// <summary>
         /// The current working data that can be edited and is "flushed" to the public raw data with the next <see cref="FetchBlock"/> call.
@@ -179,8 +180,8 @@ namespace Sigma.Core.Data.Datasets
             }
 
             long featureLength = ArrayUtils.Product(featureShape);
-            long[] newShape = ArrayUtils.Concatenate(new long[] {records.Length, 1}, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
-            long[] insertedShape = (long[]) newShape.Clone();
+            long[] newShape = ArrayUtils.Concatenate(new long[] { records.Length, 1 }, featureShape); // BatchTimeFeatures shape order, time dimension is not supported at the moment
+            long[] insertedShape = (long[])newShape.Clone();
             bool previousBlockExists = _internalWorkingData.ContainsKey(blockName);
 
             if (previousBlockExists)
@@ -246,19 +247,21 @@ namespace Sigma.Core.Data.Datasets
                 return _rawData[handler];
             }
 
-            if (handler.CanConvert(_internalWorkingData.Values.First(), _internalHandler))
+            if (!handler.CanConvert(_internalWorkingData.Values.First(), _internalHandler))
             {
-                IDictionary<string, INDArray> convertedBlock = new Dictionary<string, INDArray>();
-
-                foreach (string blockName in _internalWorkingData.Keys)
-                {
-                    convertedBlock[blockName] = handler.Convert(_internalWorkingData[blockName], _internalHandler);
-                }
-
-                return convertedBlock;
+                return null;
             }
 
-            return null;
+            IDictionary<string, INDArray> convertedBlock = new Dictionary<string, INDArray>();
+
+            foreach (string blockName in _internalWorkingData.Keys)
+            {
+                convertedBlock[blockName] = handler.Convert(_internalWorkingData[blockName], _internalHandler);
+            }
+
+            _rawData.Add(handler, convertedBlock);
+
+            return convertedBlock;
         }
 
         /// <inheritdoc />
