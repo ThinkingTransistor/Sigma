@@ -76,7 +76,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <summary>
 		/// The number of currently active and loaded record blocks, with different block formats counting as different blocks. 
 		/// </summary>
-		int ActiveIndividualBlockCount { get; }
+		int ActiveIndividualBlockRegionCount { get; }
 
 		/// <summary>
 		/// The number of currently active and loaded record blocks, with different block formats of the same region counting as one active block index.

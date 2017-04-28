@@ -19,266 +19,284 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Architecture
 {
-	/// <summary>
-	/// A default implementation of the <see cref="INetwork"/> interface.
-	/// Represents a neural network consisting of interconnected neural layers and a network architecture.
-	/// </summary>
-	[Serializable]
-	public class Network : INetwork
-	{
-		/// <inheritdoc />
-		public INetworkArchitecture Architecture { get; set; }
+    /// <summary>
+    /// A default implementation of the <see cref="INetwork"/> interface.
+    /// Represents a neural network consisting of interconnected neural layers and a network architecture.
+    /// </summary>
+    [Serializable]
+    public class Network : INetwork
+    {
+        /// <inheritdoc />
+        public INetworkArchitecture Architecture { get; set; }
 
-		/// <inheritdoc />
-		public string Name { get; }
+        /// <inheritdoc />
+        public string Name { get; }
 
-		/// <inheritdoc />
-		public IRegistry Registry { get; }
+        /// <inheritdoc />
+        public IRegistry Registry { get; }
 
-		[NonSerialized]
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
-		private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
-		private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
-		private List<ILayer> _orderedLayers;
-		private IComputationHandler _initialisationHandler;
-		private bool _initialised;
+        /// <summary>
+        /// The computation handler associated with this network, which is used for initialisation and copy operations.
+        /// Note: Set this 
+        /// </summary>
+        public IComputationHandler AssociatedHandler
+        {
+            get { return _associatedHandler; }
+            set { _associatedHandler = value; }
+        }
 
-		/// <summary>
-		/// Create a network with a certain unique name.
-		/// </summary>
-		/// <param name="name">The name.</param>
-		public Network(string name = "unnamed")
-		{
-			if (name == null) throw new ArgumentNullException(nameof(name));
+        /// <inheritdoc />
+        public bool Initialised { get { return _initialised; } }
 
-			Name = name;
-			Registry = new Registry(tags: "network");
-			_orderedLayerBuffers = new List<InternalLayerBuffer>();
-			_externalInputsLayerBuffers = new List<InternalLayerBuffer>();
-			_externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
-		}
+        [NonSerialized]
+        private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly List<InternalLayerBuffer> _orderedLayerBuffers;
+        private readonly List<InternalLayerBuffer> _externalInputsLayerBuffers;
+        private readonly List<InternalLayerBuffer> _externalOutputsLayerBuffers;
+        private List<ILayer> _orderedLayers;
 
-		/// <inheritdoc />
-		public virtual object DeepCopy()
-		{
-			Network copy = new Network(Name);
-			copy.Architecture = (INetworkArchitecture) Architecture.DeepCopy();
+        [NonSerialized]
+        private IComputationHandler _associatedHandler;
+        private bool _initialised;
+        
+        /// <summary>
+        /// Create a network with a certain unique name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public Network(string name = "unnamed")
+        {
+            if (name == null) throw new ArgumentNullException(nameof(name));
 
-			if (_initialised)
-			{
-				copy.Initialise(_initialisationHandler);
+            Name = name;
+            Registry = new Registry(tags: "network");
+            _orderedLayerBuffers = new List<InternalLayerBuffer>();
+            _externalInputsLayerBuffers = new List<InternalLayerBuffer>();
+            _externalOutputsLayerBuffers = new List<InternalLayerBuffer>();
+        }
 
-				for (int i = 0; i < _orderedLayerBuffers.Count; i++)
-				{
-					InternalLayerBuffer originalBuffer = _orderedLayerBuffers[i];
-					InternalLayerBuffer copyBuffer = copy._orderedLayerBuffers[i];
+        /// <inheritdoc />
+        public virtual object DeepCopy()
+        {
+            Network copy = new Network(Name);
+            copy.Architecture = (INetworkArchitecture) Architecture.DeepCopy();
 
-					foreach (string parameterIdentifier in originalBuffer.Parameters.Keys.ToArray())
-					{
-						object value = originalBuffer.Parameters[parameterIdentifier];
-						IDeepCopyable deepCopyableValue = value as IDeepCopyable;
-						object copiedValue;
+            if (_initialised)
+            {
+                copy.Initialise(_associatedHandler);
 
-						// copy and copy efficiently by any means possible
-						if (deepCopyableValue == null)
-						{
-						    ICloneable cloneableValue = value as ICloneable;
-						    copiedValue = cloneableValue?.Clone() ?? value;
-						}
-						else
-						{
-							INDArray asNDArray = value as INDArray;
+                for (int i = 0; i < _orderedLayerBuffers.Count; i++)
+                {
+                    InternalLayerBuffer originalBuffer = _orderedLayerBuffers[i];
+                    InternalLayerBuffer copyBuffer = copy._orderedLayerBuffers[i];
 
-							if (asNDArray != null)
-							{
-								_initialisationHandler.Fill(asNDArray, copyBuffer.Parameters.Get<INDArray>(parameterIdentifier));
-							}
+                    foreach (string parameterIdentifier in originalBuffer.Parameters.Keys.ToArray())
+                    {
+                        object value = originalBuffer.Parameters[parameterIdentifier];
+                        IDeepCopyable deepCopyableValue = value as IDeepCopyable;
+                        object copiedValue;
 
-							copiedValue = deepCopyableValue.DeepCopy();
-						}
+                        // copy and copy efficiently by any means possible
+                        if (deepCopyableValue == null)
+                        {
+                            ICloneable cloneableValue = value as ICloneable;
+                            copiedValue = cloneableValue?.Clone() ?? value;
+                        }
+                        else
+                        {
+                            INDArray asNDArray = value as INDArray;
 
-						copyBuffer.Parameters[parameterIdentifier] = copiedValue;
-					}
-				}
-			}
+                            if (asNDArray != null)
+                            {
+                                _associatedHandler.Fill(asNDArray, copyBuffer.Parameters.Get<INDArray>(parameterIdentifier));
+                                copiedValue = copyBuffer.Parameters.Get<INDArray>(parameterIdentifier);
+                            }
+                            else
+                            {
+                                copiedValue = deepCopyableValue.DeepCopy();
+                            }
+                        }
 
-			return copy;
-		}
+                        copyBuffer.Parameters[parameterIdentifier] = copiedValue;
+                    }
+                }
+            }
 
-		/// <inheritdoc />
-		public void Validate()
-		{
-			if (Architecture == null)
-			{
-				throw new InvalidOperationException("Cannot validate network before assigning a network architecture.");
-			}
+            return copy;
+        }
 
-			Architecture.Validate();
-		}
+        /// <inheritdoc />
+        public void Validate()
+        {
+            if (Architecture == null)
+            {
+                throw new InvalidOperationException("Cannot validate network before assigning a network architecture.");
+            }
 
-		/// <inheritdoc />
-		public void Initialise(IComputationHandler handler)
-		{
-			if (handler == null) throw new ArgumentNullException(nameof(handler));
+            Architecture.Validate();
+        }
 
-			if (Architecture == null)
-			{
-				throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
-			}
+        /// <inheritdoc />
+        public void Initialise(IComputationHandler handler)
+        {
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
 
-			_logger.Debug($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
+            if (Architecture == null)
+            {
+                throw new InvalidOperationException("Cannot initialise network before assigning a network architecture.");
+            }
 
-			_initialisationHandler = handler;
+            _logger.Debug($"Initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers...");
 
-			ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare);
+            _associatedHandler = handler;
 
-			Architecture.ResolveAllNames();
+            ITaskObserver prepareTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Prepare);
 
-			_orderedLayerBuffers.Clear();
-			_externalInputsLayerBuffers.Clear();
-			_externalOutputsLayerBuffers.Clear();
+            Architecture.ResolveAllNames();
 
-			Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry> mappedRegistriesByInOutputs = new Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry>();
+            _orderedLayerBuffers.Clear();
+            _externalInputsLayerBuffers.Clear();
+            _externalOutputsLayerBuffers.Clear();
 
-			foreach (LayerConstruct layerConstruct in Architecture.YieldLayerConstructsOrdered())
-			{
-				ILayer layer = layerConstruct.InstantiateLayer(handler);
+            Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry> mappedRegistriesByInOutputs = new Dictionary<Tuple<LayerConstruct, LayerConstruct>, IRegistry>();
 
-				Dictionary<string, IRegistry> inputs = new Dictionary<string, IRegistry>();
+            foreach (LayerConstruct layerConstruct in Architecture.YieldLayerConstructsOrdered())
+            {
+                ILayer layer = layerConstruct.InstantiateLayer(handler);
 
-				foreach (string externalInputAlias in layerConstruct.ExternalInputs)
-				{
-					inputs[externalInputAlias] = new Registry(tags: "external_input");
-				}
+                Dictionary<string, IRegistry> inputs = new Dictionary<string, IRegistry>();
 
-				foreach (string inputAlias in layerConstruct.Inputs.Keys)
-				{
-					inputs[inputAlias] = mappedRegistriesByInOutputs[new Tuple<LayerConstruct, LayerConstruct>(layerConstruct.Inputs[inputAlias], layerConstruct)];
-				}
+                foreach (string externalInputAlias in layerConstruct.ExternalInputs)
+                {
+                    inputs[externalInputAlias] = new Registry(tags: "external_input");
+                }
 
-				Dictionary<string, IRegistry> outputs = new Dictionary<string, IRegistry>();
+                foreach (string inputAlias in layerConstruct.Inputs.Keys)
+                {
+                    inputs[inputAlias] = mappedRegistriesByInOutputs[new Tuple<LayerConstruct, LayerConstruct>(layerConstruct.Inputs[inputAlias], layerConstruct)];
+                }
 
-				foreach (string externalOutputAlias in layerConstruct.ExternalOutputs)
-				{
-					outputs[externalOutputAlias] = new Registry(tags: "external_output");
-				}
+                Dictionary<string, IRegistry> outputs = new Dictionary<string, IRegistry>();
 
-				foreach (string outputAlias in layerConstruct.Outputs.Keys)
-				{
-					LayerConstruct outputConstruct = layerConstruct.Outputs[outputAlias];
+                foreach (string externalOutputAlias in layerConstruct.ExternalOutputs)
+                {
+                    outputs[externalOutputAlias] = new Registry(tags: "external_output");
+                }
 
-					Tuple<LayerConstruct, LayerConstruct> inOuTuple = new Tuple<LayerConstruct, LayerConstruct>(layerConstruct, outputConstruct);
+                foreach (string outputAlias in layerConstruct.Outputs.Keys)
+                {
+                    LayerConstruct outputConstruct = layerConstruct.Outputs[outputAlias];
 
-					Registry outRegistry = new Registry(tags: "internal");
+                    Tuple<LayerConstruct, LayerConstruct> inOuTuple = new Tuple<LayerConstruct, LayerConstruct>(layerConstruct, outputConstruct);
 
-					mappedRegistriesByInOutputs.Add(inOuTuple, outRegistry);
+                    Registry outRegistry = new Registry(tags: "internal");
 
-					outputs[outputAlias] = outRegistry;
-				}
+                    mappedRegistriesByInOutputs.Add(inOuTuple, outRegistry);
 
-				InternalLayerBuffer layerBuffer = new InternalLayerBuffer(layer, layerConstruct.Parameters, inputs, outputs,
-					layerConstruct.ExternalInputs, layerConstruct.ExternalOutputs);
+                    outputs[outputAlias] = outRegistry;
+                }
 
-				_orderedLayerBuffers.Add(layerBuffer);
+                InternalLayerBuffer layerBuffer = new InternalLayerBuffer(layer, layerConstruct.Parameters, inputs, outputs,
+                    layerConstruct.ExternalInputs, layerConstruct.ExternalOutputs);
 
-				if (layerConstruct.ExternalInputs.Length > 0)
-				{
-					_externalInputsLayerBuffers.Add(layerBuffer);
-				}
+                _orderedLayerBuffers.Add(layerBuffer);
 
-				if (layerConstruct.ExternalOutputs.Length > 0)
-				{
-					_externalOutputsLayerBuffers.Add(layerBuffer);
-				}
-			}
+                if (layerConstruct.ExternalInputs.Length > 0)
+                {
+                    _externalInputsLayerBuffers.Add(layerBuffer);
+                }
 
-			_orderedLayers = _orderedLayerBuffers.ConvertAll(buffer => buffer.Layer);
+                if (layerConstruct.ExternalOutputs.Length > 0)
+                {
+                    _externalOutputsLayerBuffers.Add(layerBuffer);
+                }
+            }
 
-			UpdateRegistry();
+            _orderedLayers = _orderedLayerBuffers.ConvertAll(buffer => buffer.Layer);
 
-			SigmaEnvironment.TaskManager.EndTask(prepareTask);
+            UpdateRegistry();
 
-			_initialised = true;
+            SigmaEnvironment.TaskManager.EndTask(prepareTask);
 
-			_logger.Debug($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
-		}
+            _initialised = true;
 
-		protected virtual void UpdateRegistry()
-		{
-			Registry.Clear();
+            _logger.Debug($"Done initialising network \"{Name}\" for handler {handler} containing {Architecture.LayerCount} layers.");
+        }
 
-			Registry["initialised"] = _initialised;
-			Registry["self"] = this;
-			Registry["name"] = Name;
-			Registry["architecture"] = Architecture?.Registry;
+        protected virtual void UpdateRegistry()
+        {
+            Registry.Clear();
 
-			Registry layersRegistry = new Registry(Registry);
-			Registry["layers"] = layersRegistry;
+            Registry["initialised"] = _initialised;
+            Registry["self"] = this;
+            Registry["name"] = Name;
+            Registry["architecture"] = Architecture?.Registry;
 
-			foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
-			{
-				layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
-			}
-		}
+            Registry layersRegistry = new Registry(Registry);
+            Registry["layers"] = layersRegistry;
 
-		/// <inheritdoc />
-		public void Run(IComputationHandler handler, bool trainingPass)
-		{
-			if (handler == null) throw new ArgumentNullException(nameof(handler));
+            foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
+            {
+                layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
+            }
+        }
 
-			foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
-			{
-				layerBuffer.Layer.Run(layerBuffer, handler, trainingPass);
-			}
-		}
+        /// <inheritdoc />
+        public void Run(IComputationHandler handler, bool trainingPass)
+        {
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
 
-		/// <inheritdoc />
-		public void Reset()
-		{
-			_logger.Debug($"Resetting network \"{Name}\" to un-initialised state...");
+            foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
+            {
+                layerBuffer.Layer.Run(layerBuffer, handler, trainingPass);
+            }
+        }
 
-			_orderedLayerBuffers.Clear();
-			_orderedLayers.Clear();
-			_externalInputsLayerBuffers.Clear();
-			_externalOutputsLayerBuffers.Clear();
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _logger.Debug($"Resetting network \"{Name}\" to un-initialised state...");
 
-			_initialised = false;
-			_initialisationHandler = null;
+            _orderedLayerBuffers.Clear();
+            _orderedLayers.Clear();
+            _externalInputsLayerBuffers.Clear();
+            _externalOutputsLayerBuffers.Clear();
 
-			UpdateRegistry();
+            _initialised = false;
+            _associatedHandler = null;
 
-			_logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
-		}
+            UpdateRegistry();
 
-		/// <inheritdoc />
-		public IEnumerable<ILayer> YieldLayersOrdered()
-		{
-			return _orderedLayers;
-		}
+            _logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
+        }
 
-		/// <inheritdoc />
-		public IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered()
-		{
-			return _orderedLayerBuffers;
-		}
+        /// <inheritdoc />
+        public IEnumerable<ILayer> YieldLayersOrdered()
+        {
+            return _orderedLayers;
+        }
 
-		/// <inheritdoc />
-		public IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers()
-		{
-			return _externalInputsLayerBuffers;
-		}
+        /// <inheritdoc />
+        public IEnumerable<ILayerBuffer> YieldLayerBuffersOrdered()
+        {
+            return _orderedLayerBuffers;
+        }
 
-		/// <inheritdoc />
-		public IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers()
-		{
-			return _externalOutputsLayerBuffers;
-		}
+        /// <inheritdoc />
+        public IEnumerable<ILayerBuffer> YieldExternalInputsLayerBuffers()
+        {
+            return _externalInputsLayerBuffers;
+        }
 
-		/// <inheritdoc />
-		public INetworkSelector<INetwork> Select()
-		{
-			return new DefaultNetworkSelector<INetwork>(this);
-		}
-	}
+        /// <inheritdoc />
+        public IEnumerable<ILayerBuffer> YieldExternalOutputsLayerBuffers()
+        {
+            return _externalOutputsLayerBuffers;
+        }
+
+        /// <inheritdoc />
+        public INetworkSelector<INetwork> Select()
+        {
+            return new DefaultNetworkSelector<INetwork>(this);
+        }
+    }
 }

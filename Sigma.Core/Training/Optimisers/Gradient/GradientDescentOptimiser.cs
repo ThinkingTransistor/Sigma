@@ -32,7 +32,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
 		{
-			return handler.Add(parameter, handler.Multiply(gradient, -Registry.Get<double>("learning_rate")));
+			INDArray update = handler.Multiply(gradient, -Registry.Get<double>("learning_rate"));
+
+			ExposeParameterUpdate(paramIdentifier, update);
+
+			return handler.Add(parameter, update);
 		}
 
 		/// <summary>

@@ -21,7 +21,7 @@ using Sigma.Core.MathAbstract;
 
 namespace Sigma.Tests.Data.Datasets
 {
-	public class TestDataset : BaseLocaleTest
+	public class TestExtractedDataset : BaseLocaleTest
 	{
 		private static void RedirectGlobalsToTempPath()
 		{
@@ -53,20 +53,20 @@ namespace Sigma.Tests.Data.Datasets
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename)).Extractor("inputs", 1, 2, "targets", 3);
 			CsvRecordExtractor clashingExtractor = new CsvRecordReader(new FileSource(filename)).Extractor("inputs", 1, 2);
 
-			Assert.Throws<ArgumentNullException>(() => new Dataset(null, null));
-			Assert.Throws<ArgumentNullException>(() => new Dataset("name", null));
-			Assert.Throws<ArgumentNullException>(() => new Dataset("name", 10, null));
-			Assert.Throws<ArgumentNullException>(() => new Dataset("name", 10, null, extractor));
+			Assert.Throws<ArgumentNullException>(() => new ExtractedDataset(null, null));
+			Assert.Throws<ArgumentNullException>(() => new ExtractedDataset("name", null));
+			Assert.Throws<ArgumentNullException>(() => new ExtractedDataset("name", 10, null));
+			Assert.Throws<ArgumentNullException>(() => new ExtractedDataset("name", 10, null, extractor));
 
-			Assert.Throws<ArgumentException>(() => new Dataset("name", 10));
-			Assert.Throws<ArgumentException>(() => new Dataset("name", -3, extractor));
-			Assert.Throws<ArgumentException>(() => new Dataset("name"));
-			Assert.Throws<ArgumentException>(() => new Dataset("name", extractor, clashingExtractor));
+			Assert.Throws<ArgumentException>(() => new ExtractedDataset("name", 10));
+			Assert.Throws<ArgumentException>(() => new ExtractedDataset("name", -3, extractor));
+			Assert.Throws<ArgumentException>(() => new ExtractedDataset("name"));
+			Assert.Throws<ArgumentException>(() => new ExtractedDataset("name", extractor, clashingExtractor));
 
-			Assert.AreEqual("name", new Dataset("name", extractor).Name);
+			Assert.AreEqual("name", new ExtractedDataset("name", extractor).Name);
 
-			Assert.Greater(new Dataset("name", extractor).TargetBlockSizeRecords, 0);
-			Assert.Greater(new Dataset("name", Dataset.BlockSizeAuto, extractor).TargetBlockSizeRecords, 0);
+			Assert.Greater(new ExtractedDataset("name", extractor).TargetBlockSizeRecords, 0);
+			Assert.Greater(new ExtractedDataset("name", ExtractedDataset.BlockSizeAuto, extractor).TargetBlockSizeRecords, 0);
 
 			DeleteTempFile(filename);
 		}
@@ -81,7 +81,7 @@ namespace Sigma.Tests.Data.Datasets
 			CreateCsvTempFile(filename);
 
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename, Path.GetTempPath())).Extractor("inputs", 1, 2, "targets", 3);
-			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
+			ExtractedDataset dataset = new ExtractedDataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
 			CpuFloat32Handler handler = new CpuFloat32Handler();
 
 			IDictionary<string, INDArray> namedArrays = dataset.FetchBlock(0, handler, false);
@@ -122,7 +122,7 @@ namespace Sigma.Tests.Data.Datasets
 			CreateCsvTempFile(filename);
 
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename, Path.GetTempPath())).Extractor("inputs", 1, 2, "targets", 3);
-			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
+			ExtractedDataset dataset = new ExtractedDataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
 			CpuFloat32Handler handler = new CpuFloat32Handler();
 
 			var block0 = dataset.FetchBlockAsync(0, handler);
@@ -160,7 +160,7 @@ namespace Sigma.Tests.Data.Datasets
 			CreateCsvTempFile(filename);
 
 			CsvRecordExtractor extractor = new CsvRecordReader(new FileSource(filename, Path.GetTempPath())).Extractor("inputs", 1, 2, "targets", 3);
-			Dataset dataset = new Dataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
+			ExtractedDataset dataset = new ExtractedDataset(name: "name", blockSizeRecords: 1, recordExtractors: extractor);
 			CpuFloat32Handler handler = new CpuFloat32Handler();
 
 			dataset.FetchBlock(0, handler, false);

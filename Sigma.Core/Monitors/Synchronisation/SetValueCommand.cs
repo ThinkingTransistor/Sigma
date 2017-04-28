@@ -110,6 +110,7 @@ namespace Sigma.Core.Monitors.Synchronisation
 
 			for (int i = 0; i < keys.Length; i++)
 			{
+				//TODO: validate if successfully set and call error otherwise (for each key?)
 				resolver.ResolveSet(keys[i], values[i], AddItentifierIfNotExists, typeof(T));
 			}
 		}

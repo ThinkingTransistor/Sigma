@@ -35,7 +35,7 @@ namespace Sigma.Core.Training.Hooks
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
-			var action = ParameterRegistry.Get<Action<IRegistry, IRegistryResolver>>("invoke_action");
+			Action<IRegistry, IRegistryResolver> action = ParameterRegistry.Get<Action<IRegistry, IRegistryResolver>>("invoke_action");
 			action.Invoke(registry, resolver);
 		}
 	}

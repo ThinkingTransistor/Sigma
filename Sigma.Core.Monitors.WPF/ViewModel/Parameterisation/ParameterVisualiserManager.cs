@@ -40,11 +40,10 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		/// </summary>
 		protected readonly Dictionary<Type, IParameterVisualiserInfo> AttributeMapping;
 
-
 		/// <summary>
 		/// The default constructor.
 		/// </summary>
-		/// <param name="autoAssign">If <c>true</c> it will automatically add all classes marked with the attribute <see cref="ParameterVisualiserAttribute"/>.</param>
+		/// <param name="autoAssign">If <c>true</c>, it will automatically add all classes marked with the attribute <see cref="ParameterVisualiserAttribute"/> or <see cref="GenericParameterVisualiserAttribute"/>.</param>
 		public ParameterVisualiserManager(bool autoAssign = true)
 		{
 			TypeMapping = new Dictionary<Type, Type>();
@@ -53,25 +52,29 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			if (autoAssign)
 			{
 				// ReSharper disable once VirtualMemberCallInConstructor
-				AssignMarkedClasses();
+				AssignMarkedClasses(typeof(ParameterVisualiserAttribute), typeof(GenericParameterVisualiserAttribute));
 			}
 		}
 
 		/// <summary>
-		/// Assign all classes that are marked with <see cref="ParameterVisualiserAttribute"/>. 
+		/// Assign all classes that are marked with the given attributes (marker attributes).
+		/// These attributes have to be an <see cref="IParameterVisualiserInfo"/>.
 		/// </summary>
-		protected virtual void AssignMarkedClasses()
+		protected virtual void AssignMarkedClasses(params Type[] markerTypes)
 		{
-			// get all classes that have the custom attribute
-			IEnumerable<Type> classes = AttributeUtils.GetTypesWithAttribute(typeof(ParameterVisualiserAttribute));
-
-			foreach (Type @class in classes)
+			foreach (Type type in markerTypes)
 			{
-				ParameterVisualiserAttribute[] visualisers = (ParameterVisualiserAttribute[])Attribute.GetCustomAttributes(@class, typeof(ParameterVisualiserAttribute));
+				// get all classes that have the custom attribute
+				IEnumerable<Type> classes = AttributeUtils.GetTypesWithAttribute(type);
 
-				foreach (ParameterVisualiserAttribute visualiser in visualisers)
+				foreach (Type @class in classes)
 				{
-					Add(@class, visualiser);
+					IParameterVisualiserInfo[] visualisers = (IParameterVisualiserInfo[]) Attribute.GetCustomAttributes(@class, type);
+
+					foreach (IParameterVisualiserInfo visualiser in visualisers)
+					{
+						Add(@class, visualiser);
+					}
 				}
 			}
 		}
@@ -108,15 +111,19 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			// if the mapping has already been added 
 			if (TypeMapping.TryGetValue(parameterInfo.Type, out storedClass) && AttributeMapping.TryGetValue(parameterInfo.Type, out storedAttribte))
 			{
-				// if the new values have a lower priority, we return false
-				if (parameterInfo.Priority <= storedAttribte.Priority)
+				// if the a differnt type is being represented (necessarry for generics)
+				if (!ReferenceEquals(visualiserClass, storedClass))
 				{
-					_log.Warn($"{parameterInfo.Type} is currently visualised by {storedClass.Name}; {visualiserClass.Name} tried to be the visualiser but has a lower priority ({parameterInfo.Priority} <= {storedAttribte.Priority}).");
+					// if the new values have a lower priority, we return false
+					if (parameterInfo.Priority <= storedAttribte.Priority)
+					{
+						_log.Warn($"{parameterInfo.Type} is currently visualised by {storedClass.Name}; {visualiserClass.Name} tried to be the visualiser but has a lower priority ({parameterInfo.Priority} <= {storedAttribte.Priority}).");
 
-					return false;
+						return false;
+					}
+
+					_log.Debug($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
 				}
-
-				_log.Info($"{parameterInfo.Type} was visualised by {storedClass.Name}; {visualiserClass.Name} has a higher priority and is therefore the new visualiser ({parameterInfo.Priority} > {storedAttribte.Priority}).");
 			}
 
 			TypeMapping[parameterInfo.Type] = visualiserClass;
@@ -189,6 +196,21 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 			}
 
 			return VisualiserType(obj.GetType());
+		}
+
+
+		/// <inheritdoc />
+		public IParameterVisualiser InstantiateVisualiser(Type type)
+		{
+			Type visualiserType = VisualiserType(type);
+			IParameterVisualiserInfo info = AttributeMapping[type];
+
+			if (info.IsGeneric)
+			{
+				return (IParameterVisualiser) Activator.CreateInstance(visualiserType.MakeGenericType(type));
+			}
+
+			return (IParameterVisualiser) Activator.CreateInstance(visualiserType);
 		}
 	}
 }

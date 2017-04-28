@@ -35,6 +35,16 @@ namespace Sigma.Core.Architecture
 		IRegistry Registry { get; }
 
 		/// <summary>
+		/// The computation handler associated with this network, which is used for initialisation and copy operations.
+		/// </summary>
+		IComputationHandler AssociatedHandler { get; set; }
+
+		/// <summary>
+		/// Indicate if this network was already initialised.
+		/// </summary>
+		bool Initialised { get; }
+
+		/// <summary>
 		/// Validate this network (e.g. ensure all connections are correctly assigned and compatible). 
 		/// </summary>
 		void Validate();

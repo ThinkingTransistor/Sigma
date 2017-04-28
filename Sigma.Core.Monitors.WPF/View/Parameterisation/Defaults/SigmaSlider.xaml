@@ -26,7 +26,7 @@
 				IsEnabled="{Binding IsReadOnly, Converter={StaticResource InverseBooleanConverter}}"
 				VerticalAlignment="Center"/>
 
-		<defaults:DynamicConverterBox x:Name="TextBox" x:FieldModifier="public"
+		<defaults:SigmaDynamicGenericBox x:Name="TextBox" x:FieldModifier="public"
 									  Grid.Column="1"
 									  Margin="5,0,0,0"
 									  VerticalAlignment="Center"/>

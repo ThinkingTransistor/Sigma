@@ -29,7 +29,8 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep) : this(new[] { valueIdentifier }, timestep) { }
+		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
+		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, reportEpochIteration: reportEpochIteration) { }
 
 		/// <summary>
 		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
@@ -55,12 +56,13 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			On(new ThresholdCriteria(GetAccumulatedIdentifier(valueIdentifier), target, threshold, fireContinously));
 		}
 
-		/// <summary>
-		///	Create a hook that fetches a given amount of values (i.e. registry identifiers) at a given <see cref="ITimeStep"/>.
-		/// </summary>
-		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
-		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueReporterHook(string[] valueIdentifiers, ITimeStep timestep) : base(timestep, valueIdentifiers)
+		///  <summary>
+		/// 	Create a hook that fetches a given amount of values (i.e. registry identifiers) at a given <see cref="ITimeStep"/>.
+		///  </summary>
+		///  <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
+		///  <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
+		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
+		public ValueReporterHook(string[] valueIdentifiers, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : base(timestep, valueIdentifiers)
 		{
 			if (valueIdentifiers.Length == 0) throw new ArgumentException("Value identifiers cannot be empty (it's the whole point of this hook).");
 
@@ -90,7 +92,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 					resetInterval = 0;
 				}
 
-				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), resetEvery, resetInterval));
+				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), averageValues, resetEvery, resetInterval));
 
 				valueBuffer.Add(value, null);
 			}
@@ -98,6 +100,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			ParameterRegistry["value_identifiers"] = valueIdentifiers;
 			ParameterRegistry["accumulated_identifiers"] = accumulatedIdentifiers;
 			ParameterRegistry["value_buffer"] = valueBuffer;
+			ParameterRegistry["report_epoch_iteration"] = reportEpochIteration;
 		}
 
 		private static string GetAccumulatedIdentifier(string value)
@@ -125,7 +128,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 				valuesByIdentifier[valueIdentifiers[i]] = value;
 			}
 
-			ReportValues(valuesByIdentifier);
+			ReportValues(valuesByIdentifier, ParameterRegistry.Get<bool>("report_epoch_iteration"), registry.Get<int>("epoch"), registry.Get<int>("iteration"));
 		}
 
 		/// <summary>
@@ -133,9 +136,14 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// Note: By default, this method writes to the logger. If you want to report to anywhere else, overwrite this method.
 		/// </summary>
 		/// <param name="valuesByIdentifier">The values by their identifier.</param>
-		protected virtual void ReportValues(IDictionary<string, object> valuesByIdentifier)
+		/// <param name="reportEpochIteration">A boolean indicating whether or not to report the current epoch / iteration.</param>
+		/// <param name="epoch">The current epoch.</param>
+		/// <param name="iteration">The current iteration.</param>
+		protected virtual void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
 		{
-			_logger.Info(string.Join(", ", valuesByIdentifier.Select(pair => $"{pair.Key} = {pair.Value}")));
+			string formattedValues = string.Join(", ", valuesByIdentifier.Select(pair => $"{pair.Key} = {pair.Value}"));
+
+			_logger.Info((reportEpochIteration ? $"epoch {epoch} / iteration {iteration}: " : "") + formattedValues);
 		}
 	}
 }

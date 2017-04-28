@@ -48,7 +48,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 
 			INDArray adaptedLearningRate = handler.Divide(learningRate, handler.SquareRoot(handler.Add(squaredGradientSum, smoothing)));
 
-			return handler.Add(parameter, handler.Multiply(gradient, handler.Multiply(adaptedLearningRate, -1.0)));
+			INDArray update = handler.Multiply(gradient, handler.Multiply(adaptedLearningRate, -1.0));
+
+			ExposeParameterUpdate(paramIdentifier, update);
+
+			return handler.Add(parameter, update);
 		}
 
 		/// <summary>

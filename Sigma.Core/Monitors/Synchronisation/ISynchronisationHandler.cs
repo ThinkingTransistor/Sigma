@@ -22,6 +22,26 @@ namespace Sigma.Core.Monitors.Synchronisation
 		SigmaEnvironment Sigma { get; }
 
 		/// <summary>
+		/// Add an additional source that will be used if the values cannot be found. 
+		/// </summary>
+		/// <param name="source">The source that will be added.</param>
+		void AddSynchronisationSource(ISynchronisationSource source);
+
+		/// <summary>
+		/// Remove an additional source.
+		/// </summary>
+		/// <param name="source">The source that will be removed.</param>
+		/// <returns><c>True</c> if teh source could be removed, <c>false</c> otherwise.</returns>
+		bool RemoveSynchronisationSource(ISynchronisationSource source);
+
+		/// <summary>
+		/// Check if a source is contained.
+		/// </summary>
+		/// <param name="source">The source that will be checked.</param>
+		/// <returns><c>True</c>, if the handler contains the source - <c>false</c> otherwise</returns>
+		bool ContainsSynchronisationSoruce(ISynchronisationSource source);
+
+		/// <summary>
 		/// Indicate that a value has changed and synchronise it with the given <see cref="SigmaEnvironment"/>.
 		/// 
 		/// This method returns immediately - callbacks should be used if required.
@@ -41,5 +61,15 @@ namespace Sigma.Core.Monitors.Synchronisation
 		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
 		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
 		T SynchroniseGet<T>(IRegistry registry, string key);
+
+		/// <summary>
+		///	Update a value with a given action if it has changed (not <see cref="object.Equals(object)"/>).
+		/// </summary>
+		/// <typeparam name="T">The type of the value that will be gathered.</typeparam>
+		/// <param name="registry">The registry in which the entry will be set.</param>
+		/// <param name="key">The fully resolved identifier for the parameter that will be received.</param>
+		/// <param name="currentVal">The current value of the object.</param>
+		/// <param name="update">The method that will be called if the parameter has to be updated.</param>
+		void SynchroniseUpdate<T>(IRegistry registry, string key, T currentVal,Action<T> update);
 	}
 }

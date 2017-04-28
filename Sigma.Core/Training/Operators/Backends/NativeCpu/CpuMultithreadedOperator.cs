@@ -81,7 +81,20 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		/// </summary>
 		public ThreadPriority WorkerPriority { get; }
 
-		/// <summary>
+	    /// <summary>
+	    ///     Create a new <see cref="CpuMultithreadedOperator" /> using the default <see cref="IComputationHandler" /> (<see cref="CpuFloat32Handler"/>).
+	    ///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
+	    /// </summary>
+	    public CpuMultithreadedOperator(double useAvailablePower = 0.5) : this(_InternalGetOptimalCpuWorkerCount(useAvailablePower))
+	    {
+	    }
+
+	    private static int _InternalGetOptimalCpuWorkerCount(double useAvailablePower)
+	    {
+	        return (int) (Environment.ProcessorCount * useAvailablePower);
+	    }
+
+	    /// <summary>
 		///     Create a new <see cref="CpuMultithreadedOperator" /> using the default <see cref="IComputationHandler" /> (<see cref="CpuFloat32Handler"/>).
 		///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
 		/// </summary>

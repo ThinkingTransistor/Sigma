@@ -99,7 +99,12 @@ namespace Sigma.Core.Training
 		IRegistry Registry { get; }
 
 		/// <summary>
-		/// Add an initialiser by registry resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
+		/// Force (re-) initialisation of this trainer's <see cref="Network"/>, ignoring whether it has already been initialised or not.
+		/// </summary>
+		bool ForceInitialisation { get; set; }
+
+		/// <summary>
+		/// Add an initialiser by registry resolve string (e.g. fc*.weights, *.weights, layer1.biases, layer2.*).
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
 		/// <param name="identifier">The identifier (registry resolve string).</param>
@@ -143,7 +148,8 @@ namespace Sigma.Core.Training
 		void AddLocalHook(IHook hook);
 
 		/// <summary>
-		/// Initialise this trainer and the network to be trained using the set initialisers. Set up all handlers and constructs used to run the trainer. 
+		/// Initialise this trainer and the network to be trained using the set initialisers (if the network is not already initialised or force initialisation is set). 
+		/// Set up all handlers and constructs used to run the trainer. 
 		/// </summary>
 		/// <param name="handler">The computation handler to initialise for (must be the interchangeable with the one used for running the network).</param>
 		void Initialise(IComputationHandler handler);

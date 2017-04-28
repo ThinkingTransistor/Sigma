@@ -48,9 +48,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public TrainerChartPanel(string title, ITrainer trainer, string hookedValue, ITimeStep timestep, object headerContent = null) : base(title, headerContent)
+		public TrainerChartPanel(string title, ITrainer trainer, string hookedValue, ITimeStep timestep, bool averageMode = false, object headerContent = null) : base(title, headerContent)
 		{
-			VisualValueReporterHook hook = new VisualValueReporterHook(this, new[] { hookedValue }, timestep);
+			VisualValueReporterHook hook = new VisualValueReporterHook(this, new[] { hookedValue }, timestep, averageMode);
 			Init(trainer, hook);
 		}
 
@@ -65,9 +65,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public TrainerChartPanel(string title, ITrainer trainer, ITimeStep timestep, object headerContent = null, params string[] hookedValues) : base(title, headerContent)
+		public TrainerChartPanel(string title, ITrainer trainer, ITimeStep timestep, bool averageMode = false, object headerContent = null, params string[] hookedValues) : base(title, headerContent)
 		{
-			VisualValueReporterHook hook = new VisualValueReporterHook(this, hookedValues, timestep);
+			VisualValueReporterHook hook = new VisualValueReporterHook(this, hookedValues, timestep, averageMode);
 			Init(trainer, hook);
 		}
 
@@ -118,7 +118,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="chartPanel">The chartpanel to which points will get added.</param>
 			/// <param name="valueIdentifiers">The identifiers for the <see cref="ValueReporterHook"/>; these values will get plotted.</param>
 			/// <param name="timestep">The <see cref="TimeStep"/> for the hook (i.e. execution definition).</param>
-			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep) : base(valueIdentifiers, timestep)
+			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep, bool averageMode = false) : base(valueIdentifiers, timestep, averageMode, false)
 			{
 				ParameterRegistry[ChartPanelIdentifier] = chartPanel;
 			}
@@ -127,7 +127,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// Report the values for a certain epoch / iteration to a passed ChartPanel. 
 			/// </summary>
 			/// <param name="valuesByIdentifier">The values by their identifier.</param>
-			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier)
+			/// <param name="reportEpochIteration">A boolean indicating whether or not to report the current epoch / iteration.</param>
+			/// <param name="epoch">The current epoch.</param>
+			/// <param name="iteration">The current iteration.</param>
+			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
 			{
 				ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel = (ChartPanel<TChart, TSeries, TChartValues, TData>) ParameterRegistry[ChartPanelIdentifier];
 				chartPanel.Add((TData) valuesByIdentifier.Values.First());

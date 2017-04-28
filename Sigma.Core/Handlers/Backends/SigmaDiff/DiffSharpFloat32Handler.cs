@@ -35,9 +35,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		internal DiffSharpBackendHandle<float> DiffsharpBackendHandle
 		{
-			get { return _diffsharpBackendHandle; }
-			private set { _diffsharpBackendHandle = value; }
-		}
+		    get { return _diffsharpBackendHandle; }
+		    private set { _diffsharpBackendHandle = value; }
+        }
 
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -117,22 +117,39 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return array;
 		}
 
-		// IComputationHandler stuff that is probably different for each diffsharp handler implementation
+        // IComputationHandler stuff that is probably different for each diffsharp handler implementation
+	    /// <inheritdoc />
 		public abstract void InitAfterDeserialisation(INDArray array);
+	    /// <inheritdoc />
 		public abstract long GetSizeBytes(params INDArray[] array);
+	    /// <inheritdoc />
 		public abstract bool IsInterchangeable(IComputationHandler otherHandler);
+	    /// <inheritdoc />
 		public abstract INDArray NDArray(params long[] shape);
+	    /// <inheritdoc />
 		public abstract INDArray NDArray<TOther>(TOther[] values, params long[] shape);
+	    /// <inheritdoc />
 		public abstract INumber Number(object value);
+	    /// <inheritdoc />
 		public abstract IDataBuffer<T> DataBuffer<T>(T[] values);
+	    /// <inheritdoc />
 		public abstract INDArray AsNDArray(INumber number);
+	    /// <inheritdoc />
 		public abstract INumber AsNumber(INDArray array, params long[] indices);
+	    /// <inheritdoc />
 		public abstract bool CanConvert(INDArray array, IComputationHandler otherHandler);
+	    /// <inheritdoc />
 		public abstract INDArray Convert(INDArray array, IComputationHandler otherHandler);
+	    /// <inheritdoc />
 		public abstract void Fill(INDArray filler, INDArray arrayToFill);
-		public abstract void Fill<TOther>(TOther value, INDArray arrayToFill);
+	    /// <inheritdoc />
+	    public abstract void Fill<TOther>(TOther value, INDArray arrayToFill);
+        /// <inheritdoc />
+        public abstract void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices);
+	    /// <inheritdoc />
+	    public abstract void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices);
 
-		protected ADNDFloat32Array ConvertInternal(INDArray array)
+	    protected ADNDFloat32Array ConvertInternal(INDArray array)
 		{
 			return new ADNDFloat32Array(_backendTag, array.GetDataAs<float>(), array.Shape);
 		}

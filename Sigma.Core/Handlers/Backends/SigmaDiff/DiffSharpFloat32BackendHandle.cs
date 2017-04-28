@@ -7,9 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Linq;
+using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
-using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
@@ -22,18 +21,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <summary>
 		/// Create a DiffSharpFloat32BackendHandle with a certain BLAS and LAPACK backend and an associated handle tag. 
 		/// </summary>
-		/// <param name="blasBackend"></param>
-		/// <param name="lapackBackend"></param>
-		/// <param name="backendTag"></param>
+		/// <param name="blasBackend">The BLAS backend to use (must use 32-bit floats).</param>
+		/// <param name="lapackBackend">The LAPACK backend to use (must use 32-bit floats).</param>
+		/// <param name="backendTag">The backend tag to use.</param>
 		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(blasBackend, lapackBackend, backendTag)
 		{
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CreateDataBuffer"/>
 		public override ISigmaDiffDataBuffer<float> CreateDataBuffer(float[] values)
 		{
 			return new SigmaDiffDataBuffer<float>(values, backendTag: BackendTag);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.L1Norm_V"/>
 		public override float L1Norm_V(ISigmaDiffDataBuffer<float> value)
 		{
 			if (value.Length == 0)
@@ -50,6 +51,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.L2Norm_V"/>
 		public override float L2Norm_V(ISigmaDiffDataBuffer<float> value)
 		{
 			if (value.Length == 0)
@@ -66,6 +68,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.SupNorm_V"/>
 		public override float SupNorm_V(ISigmaDiffDataBuffer<float> value)
 		{
 			if (value.Length == 0)
@@ -84,6 +87,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sum_V"/>
 		public override float Sum_V(ISigmaDiffDataBuffer<float> value)
 		{
 			if (value.Length == 0)
@@ -102,11 +106,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return sum;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sum_M"/>
 		public override float Sum_M(ISigmaDiffDataBuffer<float> value)
 		{
 			return Sum_V(value);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_V_V"/>
 		public override ISigmaDiffDataBuffer<float> Add_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (a.Length == 0)
@@ -132,6 +138,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_S_V"/>
 		public override ISigmaDiffDataBuffer<float> Add_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (b.Length == 0)
@@ -152,6 +159,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_V_V"/>
 		public override ISigmaDiffDataBuffer<float> Sub_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (a.Length == 0)
@@ -177,6 +185,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_S_V"/>
 		public override ISigmaDiffDataBuffer<float> Sub_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (b.Length == 0)
@@ -197,6 +206,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_V_S"/>
 		public override ISigmaDiffDataBuffer<float> Sub_V_S(ISigmaDiffDataBuffer<float> a, float b)
 		{
 			if (a.Length == 0)
@@ -217,6 +227,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return a;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_S_V"/>
 		public override ISigmaDiffDataBuffer<float> Mul_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (b.Length == 0)
@@ -236,6 +247,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_M_V"/>
 		public override ISigmaDiffDataBuffer<float> Mul_M_V(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (a.Length * b.Length == 0)
@@ -260,16 +272,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return z;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_M_V_Add_V"/>
 		public override ISigmaDiffDataBuffer<float> Mul_M_V_Add_V(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b, ISigmaDiffDataBuffer<float> obj2)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Dot_V_V"/>
 		public override float Mul_Dot_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> n)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_V_M"/>
 		public override ISigmaDiffDataBuffer<float> Mul_V_M(ISigmaDiffDataBuffer<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length * b.Length == 0)
@@ -294,22 +309,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return z;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Solve_M_V"/>
 		public override FSharpOption<ISigmaDiffDataBuffer<float>> Solve_M_V(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.SolveSymmetric_M_V"/>
 		public override FSharpOption<ISigmaDiffDataBuffer<float>> SolveSymmetric_M_V(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Diagonal_M"/>
 		public override ISigmaDiffDataBuffer<float> Diagonal_M(ShapedDataBufferView<float> a)
 		{
 			throw new NotImplementedException();
 		}
 
-		public override ISigmaDiffDataBuffer<float> Map_F_V(FSharpFunc<float, float> a, ISigmaDiffDataBuffer<float> b)
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_V"/>
+		public override ISigmaDiffDataBuffer<float> Map_F_V(MapOp mapOp, FSharpFunc<float, float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (b.Length == 0)
 			{
@@ -327,27 +346,35 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
-		public override ISigmaDiffDataBuffer<float> Map2_F_V_V(FSharpFunc<float, FSharpFunc<float, float>> f, ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_S_V"/>
+		public override ISigmaDiffDataBuffer<float> Map_F_S_V(float other, MapOp mapOp, FSharpFunc<float, float> function, ISigmaDiffDataBuffer<float> value)
+		{
+			return Map_F_V(mapOp, function, value);
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map2_F_V_V"/>
+		public override ISigmaDiffDataBuffer<float> Map2_F_V_V(MapOp mapOp, FSharpFunc<float, FSharpFunc<float, float>> function, ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (a.Length == 0)
 			{
-				return Map2_F_V_V(f, CreateDataBuffer(new float[b.Length]), b);
+				return Map2_F_V_V(mapOp, function, CreateDataBuffer(new float[b.Length]), b);
 			}
 			if (b.Length == 0)
 			{
-				return Map2_F_V_V(f, a, CreateDataBuffer(new float[a.Length]));
+				return Map2_F_V_V(mapOp, function, a, CreateDataBuffer(new float[a.Length]));
 			}
 
 			b = b.DeepCopy();
 
 			for (int i = 0; i < a.Length; i++)
 			{
-				b.Data[i] = f.Invoke(a.Data[i + a.Offset]).Invoke(b.Data[i + b.Offset]);
+				b.Data[i] = function.Invoke(a.Data[i + a.Offset]).Invoke(b.Data[i + b.Offset]);
 			}
 
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Out_V_V"/>
 		public override ShapedDataBufferView<float> Mul_Out_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
 			if (a.Length * b.Length == 0)
@@ -372,6 +399,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ShapedDataBufferView<float>(z, m, n);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_M_M"/>
 		public override ShapedDataBufferView<float> Add_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
@@ -397,6 +425,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_S_M"/>
 		public override ShapedDataBufferView<float> Add_S_M(float a, ShapedDataBufferView<float> b)
 		{
 			if (b.Length == 0)
@@ -417,11 +446,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_V_MCols"/>
 		public override ShapedDataBufferView<float> Add_V_MCols(ISigmaDiffDataBuffer<float> a, ShapedDataBufferView<float> b)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_M_M"/>
 		public override ShapedDataBufferView<float> Sub_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
@@ -447,6 +478,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return a;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_M_S"/>
 		public override ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)
 		{
 			if (a.Length == 0)
@@ -467,6 +499,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return a;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_S_M"/>
 		public override ShapedDataBufferView<float> Sub_S_M(float a, ShapedDataBufferView<float> b)
 		{
 			if (b.Length == 0)
@@ -499,6 +532,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_M_M"/>
 		public override ShapedDataBufferView<float> Mul_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length * b.Length == 0)
@@ -522,6 +556,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ShapedDataBufferView<float>(z, a.Rows, b.Cols);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_S_M"/>
 		public override ShapedDataBufferView<float> Mul_S_M(float a, ShapedDataBufferView<float> b)
 		{
 			if (b.Length == 0)
@@ -541,11 +576,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_M_M_Add_V_MCols"/>
 		public override ShapedDataBufferView<float> Mul_M_M_Add_V_MCols(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b, ISigmaDiffDataBuffer<float> c)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Had_M_M"/>
 		public override ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
@@ -571,11 +608,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Inverse_M"/>
 		public override FSharpOption<ShapedDataBufferView<float>> Inverse_M(ShapedDataBufferView<float> a)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Det_M"/>
 		public override FSharpOption<float> Det_M(ShapedDataBufferView<float> a)
 		{
 			if (a.Length == 0)
@@ -611,6 +650,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return FSharpOption<float>.Some(det);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Transpose_M"/>
 		public override ShapedDataBufferView<float> Transpose_M(ShapedDataBufferView<float> a)
 		{
 			if (a.Length == 0)
@@ -628,11 +668,62 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return transposed;
 		}
 
-		public override ShapedDataBufferView<float> Map_F_M(FSharpFunc<float, float> f, ShapedDataBufferView<float> a)
+		private bool _InternalOptimisedMapOp_F_M(MapOp mapOp, ref ShapedDataBufferView<float> a)
+		{
+			if (mapOp.IsExp)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = (float) Math.Exp(a.DataBuffer.Data[i]);
+				}
+
+				return true;
+			}
+			else if (mapOp.IsSqrt)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = (float) Math.Sqrt(a.DataBuffer.Data[i]);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private bool _InternalOptimisedMapOp_F_S_M(float other, MapOp mapOp, ref ShapedDataBufferView<float> a)
+		{
+			if (mapOp.IsDiv)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = other / a.DataBuffer.Data[i];
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_M"/>
+		public override ShapedDataBufferView<float> Map_F_M(MapOp mapOp, FSharpFunc<float, float> f, ShapedDataBufferView<float> a)
 		{
 			if (a.Length == 0)
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			if (_InternalOptimisedMapOp_F_M(mapOp, ref a))
+			{
+				return a;
 			}
 
 			a = a.DeepCopy();
@@ -646,7 +737,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return a;
 		}
 
-		public override ShapedDataBufferView<float> Map2_F_M_M(FSharpFunc<float, FSharpFunc<float, float>> f, ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_S_M"/>
+		public override ShapedDataBufferView<float> Map_F_S_M(float other, MapOp mapOp, FSharpFunc<float, float> function, ShapedDataBufferView<float> value)
+		{
+			if (_InternalOptimisedMapOp_F_S_M(other, mapOp, ref value))
+			{
+				return value;
+			}
+
+			return Map_F_M(mapOp, function, value);
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map2_F_M_M"/>
+		public override ShapedDataBufferView<float> Map2_F_M_M(MapOp mapOp, FSharpFunc<float, FSharpFunc<float, float>> f, ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
 			{
@@ -654,7 +757,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			b = b.DeepCopy();
-
 			for (int i = 0; i < a.Length; i++)
 			{
 				b.DataBuffer.Data[i] = f.Invoke(a.DataBuffer.Data[i + a.DataBuffer.Offset]).Invoke(b.DataBuffer.Data[i + b.DataBuffer.Offset]);
@@ -663,6 +765,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return a;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.ReshapeCopy_MRows_V"/>
 		public override ISigmaDiffDataBuffer<float> ReshapeCopy_MRows_V(ShapedDataBufferView<float> value)
 		{
 			if (value.Length == 0)
@@ -673,6 +776,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return value.DataBuffer.DeepCopy();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.ReshapeCopy_V_MRows"/>
 		public override ShapedDataBufferView<float> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)
 		{
 			if (value.Length == 0)
@@ -685,11 +789,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ShapedDataBufferView<float>(value.DeepCopy(), rows, n);
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.RepeatReshapeCopy_V_MRows"/>
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.RepeatReshapeCopy_V_MCols"/>
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<float> value)
 		{
 			throw new NotImplementedException();

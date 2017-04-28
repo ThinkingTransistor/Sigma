@@ -108,7 +108,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				});
 
 				DataProviderUtils.ProvideExternalInputData(provider, network, block);
-				network.Run(Operator.Handler, false);
+				network.Run(Operator.Handler, trainingPass: false);
 				DataProviderUtils.ProvideExternalOutputData(provider, network, block);
 			}
 		}

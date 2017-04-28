@@ -48,11 +48,13 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 
 		/// <summary>
 		/// Force the visualiser to update its value (i.e. display the value that is stored).
+		/// This function may be called from an arbitrary thread.
 		/// </summary>
 		void Read();
 
 		/// <summary>
 		/// Force the visualiser to store its value (i.e. write the value that is displayed to the registry).
+		/// This function may be called from an arbitrary thread.
 		/// </summary>
 		void Write();
 	}

@@ -17,16 +17,19 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 	[Serializable]
 	public class NumberAccumulatorHook : BaseHook
 	{
-		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep, int resetEvery = -1, int resetInterval = 0) : this(registryEntry, registryEntry.Replace('.', '_') + "_accumulated", timeStep, resetEvery, resetInterval)
+		public NumberAccumulatorHook(string registryEntry, TimeStep timeStep, bool averageMode = false, int resetEvery = -1, int resetInterval = 0) : this(registryEntry, registryEntry.Replace('.', '_') + "_accumulated", timeStep, averageMode, resetEvery, resetInterval)
 		{
 		}
 
-		public NumberAccumulatorHook(string registryEntry, string resultEntry, TimeStep timeStep, int resetEvery = -1, int resetInterval = 0) : base(timeStep, registryEntry)
+		public NumberAccumulatorHook(string registryEntry, string resultEntry, TimeStep timeStep, bool averageMode = false, int resetEvery = -1, int resetInterval = 0) : base(timeStep, registryEntry)
 		{
 			ParameterRegistry["registry_entry"] = registryEntry;
 			ParameterRegistry["shared_result_entry"] = resultEntry;
+			ParameterRegistry["accumulated_value"] = 0.0;
 			ParameterRegistry["reset_interval"] = resetInterval;
 			ParameterRegistry["reset_every"] = resetEvery;
+			ParameterRegistry["average_mode"] = averageMode;
+			ParameterRegistry["count_since_reset"] = 0;
 		}
 
 		/// <summary>
@@ -40,18 +43,31 @@ namespace Sigma.Core.Training.Hooks.Accumulators
 			string resultEntry = ParameterRegistry.Get<string>("shared_result_entry");
 
 			double value = resolver.ResolveGetSingle<double>(registryEntry);
-			double accumulatedValue = resolver.ResolveGetSingleWithDefault<double>(resultEntry, 0.0);
+			double previousAccumulatedValue = ParameterRegistry.Get<double>("accumulated_value");
 
 			int currentInterval = HookUtils.GetCurrentInterval(registry, TimeStep.TimeScale);
 			int resetInterval = ParameterRegistry.Get<int>("reset_interval");
 			int resetEvery = ParameterRegistry.Get<int>("reset_every");
+			int countSinceReset = ParameterRegistry.Get<int>("count_since_reset");
 
 			if (currentInterval == resetInterval || resetEvery > 0 && currentInterval % resetEvery == 0)
 			{
-				accumulatedValue = 0.0;
+				previousAccumulatedValue = 0.0;
+				countSinceReset = 0;
 			}
 
-			resolver.ResolveSet(resultEntry, value + accumulatedValue, addIdentifierIfNotExists: true);
+		    countSinceReset++;
+
+			double result = value + previousAccumulatedValue;
+
+			if (ParameterRegistry.Get<bool>("average_mode"))
+			{
+			    result /= countSinceReset;
+			}
+
+			ParameterRegistry["count_since_reset"] = countSinceReset;
+			ParameterRegistry["accumulated_value"] = value + previousAccumulatedValue;
+			resolver.ResolveSet(resultEntry, result, addIdentifierIfNotExists: true);
 		}
 	}
 }

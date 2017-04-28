@@ -57,7 +57,7 @@ namespace Sigma.Core.Training.Hooks
 		/// Set this to true if performance intensive operations (e.g. storing to disk, processing large arrays) are used in this hook.
 		/// Note: When invoked in background, hooks received a complete copy of all required registry entries and can therefore not directly modify the parameters of a worker/operator.
 		/// </summary>
-		public bool InvokeInBackground { get; protected set; } = false;
+		public bool InvokeInBackground { get; protected set; }
 
 		/// <summary>
 		/// The operator that owns this hook and dispatched it for execution. 
@@ -112,6 +112,17 @@ namespace Sigma.Core.Training.Hooks
 			RequiredRegistryEntries = new ReadOnlyCollection<string>(_requiredRegistryEntries);
 			RequiredHooks = new ReadOnlyCollection<IHook>(_requiredHooks);
 			ParameterRegistry = new Registry();
+		}
+
+		/// <summary>
+		/// Set this hook to be invoked in a background thread.
+		/// </summary>
+		/// <returns></returns>
+		public BaseHook SetInvokeInBackground()
+		{
+			InvokeInBackground = true;
+
+			return this;
 		}
 
 		/// <summary>

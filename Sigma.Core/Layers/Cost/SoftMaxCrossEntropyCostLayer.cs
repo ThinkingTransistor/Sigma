@@ -36,7 +36,7 @@ namespace Sigma.Core.Layers.Cost
 			INDArray a = handler.Multiply(targets, logPredictions);
 
 			INDArray inverseTargets = handler.Subtract(1, targets);
-			INDArray inversePredictions = handler.Subtract(1, predictions);
+			INDArray inversePredictions = handler.Subtract(1 + 1e-6, predictions);
 			INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
 
 			INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -predictions.Shape[0]);

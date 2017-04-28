@@ -18,25 +18,24 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 	/// </summary>
 	public class ParameterVisualiserInfo : IParameterVisualiserInfo
 	{
-		/// <summary>
-		/// The type this visualiser visualises.
-		/// </summary>
+		/// <inheritdoc />
 		public Type Type { get; }
 
-		/// <summary>
-		/// The priority of the <see cref="IParameterVisualiserInfo"/>. If another priority with a lower priority has already been added, the
-		/// higher priority will override the settings. 
-		/// </summary>
+		/// <inheritdoc />
 		public VisualiserPriority Priority { get; set; }
+
+		/// <inheritdoc />
+		public bool IsGeneric { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IParameterVisualiserInfo" /> class.
 		/// </summary>
 		/// <param name="type">The type the <see cref="IParameterVisualiser"/> is responsible for.</param>
 		/// <param name="priority">The priority of the info. (higher prioriuty overrides lower ones).</param>
+		/// <param name="isGeneric">Determinse whether the given visualiser is generic or not.</param>
 		/// <exception cref="InvalidEnumArgumentException">If bad enum is passed.</exception>
 		/// <exception cref="ArgumentNullException">If <see ref="type"/> is <c>null</c>.</exception>
-		public ParameterVisualiserInfo([NotNull] Type type, VisualiserPriority priority = VisualiserPriority.Normal)
+		public ParameterVisualiserInfo([NotNull] Type type, VisualiserPriority priority = VisualiserPriority.Normal, bool isGeneric = false)
 		{
 			if (type == null) throw new ArgumentNullException(nameof(type));
 			if (!Enum.IsDefined(typeof(VisualiserPriority), priority))
@@ -46,6 +45,9 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 
 			Type = type;
 			Priority = priority;
+			IsGeneric = isGeneric;
 		}
+
+		
 	}
 }

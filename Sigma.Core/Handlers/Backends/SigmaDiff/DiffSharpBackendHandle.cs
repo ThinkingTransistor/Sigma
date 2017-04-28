@@ -53,9 +53,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract FSharpOption<ISigmaDiffDataBuffer<T>> Solve_M_V(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract FSharpOption<ISigmaDiffDataBuffer<T>> SolveSymmetric_M_V(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ISigmaDiffDataBuffer<T> Diagonal_M(ShapedDataBufferView<T> a);
-		public abstract ISigmaDiffDataBuffer<T> Map_F_V(FSharpFunc<T, T> a, ISigmaDiffDataBuffer<T> b);
-		public abstract ISigmaDiffDataBuffer<T> Map2_F_V_V(FSharpFunc<T, FSharpFunc<T, T>> a, ISigmaDiffDataBuffer<T> b, ISigmaDiffDataBuffer<T> obj2);
-		public abstract ISigmaDiffDataBuffer<T> ReshapeCopy_MRows_V(ShapedDataBufferView<T> value);
+	    public abstract ISigmaDiffDataBuffer<T> ReshapeCopy_MRows_V(ShapedDataBufferView<T> value);
 		public abstract ShapedDataBufferView<T> Mul_Out_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ShapedDataBufferView<T> Add_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Add_S_M(T a, ShapedDataBufferView<T> b);
@@ -70,10 +68,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract FSharpOption<ShapedDataBufferView<T>> Inverse_M(ShapedDataBufferView<T> a);
 		public abstract FSharpOption<T> Det_M(ShapedDataBufferView<T> a);
 		public abstract ShapedDataBufferView<T> Transpose_M(ShapedDataBufferView<T> a);
-		public abstract ShapedDataBufferView<T> Map_F_M(FSharpFunc<T, T> a, ShapedDataBufferView<T> b);
-		public abstract ShapedDataBufferView<T> Map2_F_M_M(FSharpFunc<T, FSharpFunc<T, T>> a, ShapedDataBufferView<T> b, ShapedDataBufferView<T> obj2);
 		public abstract ShapedDataBufferView<T> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);
+	    public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
+	    public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
+	    public abstract ISigmaDiffDataBuffer<T> Map2_F_V_V(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
+	    public abstract ShapedDataBufferView<T> Map_F_M(MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
+	    public abstract ShapedDataBufferView<T> Map_F_S_M(T other, MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
+	    public abstract ShapedDataBufferView<T> Map2_F_M_M(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 	}
 }

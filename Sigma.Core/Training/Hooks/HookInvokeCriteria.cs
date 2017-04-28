@@ -306,6 +306,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// A threshold criteria that fires when a certain threshold is reached (once or continuously as specified). 
 	/// </summary>
+	[Serializable]
 	public class ThresholdCriteria : HookInvokeCriteria
 	{
 		/// <summary>
@@ -369,6 +370,7 @@ namespace Sigma.Core.Training.Hooks
 	/// <summary>
 	/// An extrema criteria that fires when a value has reached a new extrema (min / max).
 	/// </summary>
+	[Serializable]
 	public class ExtremaCriteria : HookInvokeCriteria
 	{
 		/// <summary>

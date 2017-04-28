@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using log4net;
 using log4net.Core;
+using Sigma.Core.Parameterisation;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Persistence
@@ -36,7 +37,7 @@ namespace Sigma.Core.Persistence
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
 		public static void WriteBinaryFile(object obj, string filename, bool verbose = true)
 		{
-			Write(obj, Target.FileByName(filename), Serialisers.BinarySerialiser, verbose);
+			Write(obj, Target.FileByName(filename), Serialisers.BinarySerialiser, verbose: verbose);
 		}
 
 		/// <summary>
@@ -63,7 +64,8 @@ namespace Sigma.Core.Persistence
 		/// <param name="serialiser">The serialiser.</param>
 		/// <param name="autoClose">Optionally indicate if the stream should be automatically closed.</param>
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
-		public static void Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true, bool verbose = true)
+		/// <returns>The number of bytes written (if exposed by the used target stream).</returns>
+		public static long Write(object obj, Stream target, ISerialiser serialiser, bool autoClose = true, bool verbose = true)
 		{
 			if (obj == null) throw new ArgumentNullException(nameof(obj));
 			if (target == null) throw new ArgumentNullException(nameof(target));
@@ -86,6 +88,8 @@ namespace Sigma.Core.Persistence
 
 			LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Done writing {obj.GetType().Name} {obj} to target stream {target} using serialiser {serialiser}, " +
 						  $"wrote {(bytesWritten / 1024.0):#.#}kB, took {stopwatch.ElapsedMilliseconds}ms.", ClazzLogger);
+
+			return bytesWritten;
 		}
 
 		/// <summary>
@@ -118,7 +122,7 @@ namespace Sigma.Core.Persistence
 				// automatically restore all logger instances
 				if (field.FieldType == typeof(ILog))
 				{
-					field.SetValue(parent, LogManager.GetLogger(parent.GetType()));
+					field.SetValue(parent, LogManager.GetLogger(Assembly.GetCallingAssembly(), parent.GetType().Namespace + "." + parent.GetType().Name));
 				}
 
 				(obj as ISerialisationNotifier)?.OnDeserialised();
@@ -131,6 +135,38 @@ namespace Sigma.Core.Persistence
 		}
 
 		/// <summary>
+		/// Attempt to read and validate certain object from a binary file, return the original value if unsuccessful.
+		/// </summary>
+		/// <typeparam name="T">The object type.</typeparam>
+		/// <param name="fileName">The file name.</param>
+		/// <param name="originalValue">The original value.</param>
+		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
+		/// <param name="validationFunction">The optional validation function to validate the read object with (if false, the original value is returned).</param>
+		/// <returns>The read (i.e. existing) if successfully read and validated, otherwise the original value.</returns>
+		public static T ReadBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
+		{
+			try
+			{
+				T existing = ReadBinaryFile<T>(fileName, verbose);
+
+				if (validationFunction == null || validationFunction.Invoke(existing))
+				{
+					LoggingUtils.Log(verbose ? Level.Info :  Level.Debug, $"Read and validation of type {typeof(T)} successful, returning existing value.", ClazzLogger);
+
+					return existing;
+				}
+
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} successful, validation failed, returning default value.", ClazzLogger);
+			}
+			catch (Exception e)
+			{
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with {e}, returning default value.", ClazzLogger);
+			}
+
+			return originalValue;
+		}
+
+		/// <summary>
 		/// Traverse the object graph of a given object (i.e. all related and referenced objects, recursively).
 		/// </summary>
 		/// <param name="root">The root object (or current parent, depending on call depth).</param>
@@ -139,13 +175,14 @@ namespace Sigma.Core.Persistence
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
 			Type type = root.GetType();
+
 			traversedObjects.Add(root);
 
 			// traverse all types up to object base type for all relevant fields in the graph
 			do
 			{
 				FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
+				// hierarchy change listeners..
 				// for every type check all fields for relevance
 				foreach (FieldInfo field in fields)
 				{
@@ -158,11 +195,11 @@ namespace Sigma.Core.Persistence
 
 					if (value != null)
 					{
-						// TODO smarter optimisation than checking for system namespace, maybe build cache with type information?
+						// Note: I am completely aware how awful this "optimisation" is, but it works and there currently is no time to implement a better system.
 						string ns = value.GetType().Namespace;
-						bool boringSystemType = ns.StartsWith("System") && !ns.StartsWith("System.Collections");
+						bool boringType = ns.StartsWith("System") && !ns.StartsWith("System.Collections") || ns.StartsWith("log4net");
 
-						if (!boringSystemType && !traversedObjects.Contains(value))
+						if (!boringType && !traversedObjects.Contains(value) && !Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
 						{
 							TraverseObjectGraph(value, traversedObjects, action);
 

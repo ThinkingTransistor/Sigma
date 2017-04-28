@@ -33,10 +33,33 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation
 		/// <summary>
 		/// Define that the class visualises given type. 
 		/// </summary>
-		/// <param name="type"></param>
+		/// <param name="type">The type that is being represented.</param>
 		public ParameterVisualiserAttribute(Type type)
 		{
 			Type = type;
+		}
+
+		/// <summary>
+		/// Determinse whether the given visualiser is generic or not.
+		/// </summary>
+		public bool IsGeneric { get; protected set; }
+	}
+
+	/// <summary>
+	/// This marks an <see cref="IParameterVisualiser"/>. It contains information which type this visualiser implements
+	/// and reduces the amount of work required to define a new type. Differently from <see cref="ParameterVisualiserAttribute"/>, the class implementing this
+	/// attribute has to be a generic class with a single attribute, which will be the given type.
+	/// Multiple attributes can be specified (to display <c>string</c>s and <c>object</c>s for example).
+	/// </summary>
+	public class GenericParameterVisualiserAttribute : ParameterVisualiserAttribute
+	{
+		/// <summary>
+		/// Define that the class visualises given type. 
+		/// </summary>
+		/// <param name="type">The type that is being represented.</param>
+		public GenericParameterVisualiserAttribute(Type type) : base(type)
+		{
+			IsGeneric = true;
 		}
 	}
 }

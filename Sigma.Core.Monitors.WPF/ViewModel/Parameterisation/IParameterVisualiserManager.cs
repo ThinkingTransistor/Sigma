@@ -8,7 +8,6 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using Sigma.Core.Monitors.WPF.Annotations;
-using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults;
 
 namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
@@ -50,5 +49,11 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		/// <returns>The closest type for visualisation. <c>null</c> if not found.</returns>
 		Type VisualiserTypeByReference([NotNull] object obj);
 
+		/// <summary>
+		/// Instantiate a visualiser that can represent given type.
+		/// </summary>
+		/// <param name="type">The type that will be visualies</param>
+		/// <returns>An instance of a visualiser.</returns>
+		IParameterVisualiser InstantiateVisualiser(Type type);
 	}
 }

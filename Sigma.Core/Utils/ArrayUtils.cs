@@ -18,6 +18,25 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public static class ArrayUtils
 	{
+        /// <summary>
+        /// Concatenate two given arrays into one result array (b is appended after a).
+        /// </summary>
+        /// <typeparam name="T">The array element type.</typeparam>
+        /// <param name="a">The first array.</param>
+        /// <param name="b">The second array.</param>
+        /// <returns>A concatenated array of a and b.</returns>
+	    public static T[] Concatenate<T>(T[] a, T[] b)
+	    {
+            if (a == null) throw new ArgumentNullException(nameof(a));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+
+	        T[] result = new T[a.Length + b.Length];
+            a.CopyTo(result, 0);
+            b.CopyTo(result, a.Length);
+
+	        return result;
+	    }
+
 		/// <summary>
 		/// The product of an integer array (i.e. all values multiplied with each other).
 		/// </summary>

@@ -76,8 +76,8 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			//  kind of ugly but saves me from writing more solid property handling
 			ThrowExceptionOnReport = throwExceptionOnReport;
 			Enabled = enabled;
-			CheckNaN = false;
-			CheckInfinite = false;
+			CheckNaN = enabled;
+			CheckInfinite = enabled;
 		}
 
 		private void Report(string message, params object[] values)
@@ -99,23 +99,23 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 			if (array == null)
 			{
-				Report($"ndarray {paramName} is null.");
+				Report($"ndarray \"{paramName}\" is null.");
 			}
 			else
 			{
 				if (array.Rank != array.Shape.Length)
 				{
-					Report($"ndarray {paramName} has inconsistent rank ({array.Rank}) / shape (length {array.Length}).", array);
+					Report($"ndarray \"{paramName}\" has inconsistent rank ({array.Rank}) / shape (length {array.Length}).", array);
 				}
 
-				if (CheckNaN && !UnderlyingHandler.IsNaN(array))
+				if (CheckNaN && UnderlyingHandler.IsNaN(array))
 				{
-					Report($"ndarray {paramName} contains NaN values.", array);
+					Report($"ndarray \"{paramName}\" contains NaN values.", array);
 				}
 
-				if (CheckInfinite && !UnderlyingHandler.IsNotFinite(array))
+				if (CheckInfinite && UnderlyingHandler.IsNotFinite(array))
 				{
-					Report($"ndarray {paramName} contains infinite values.", array);
+					Report($"ndarray \"{paramName}\" contains infinite values.", array);
 				}
 			}
 
@@ -135,12 +135,12 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			}
 			else
 			{
-				if (CheckNaN && !UnderlyingHandler.IsNaN(number))
+				if (CheckNaN && UnderlyingHandler.IsNaN(number))
 				{
 					Report($"number {paramName} is a NaN value.", number);
 				}
 
-				if (CheckInfinite && !UnderlyingHandler.IsNotFinite(number))
+				if (CheckInfinite && UnderlyingHandler.IsNotFinite(number))
 				{
 					Report($"number {paramName} is an infinite value.", number);
 				}
@@ -278,10 +278,24 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public void Fill<TOther>(TOther value, INDArray arrayToFill)
 		{
-			UnderlyingHandler.Fill(value, CheckNice(arrayToFill));
+			UnderlyingHandler.Fill(value, arrayToFill);
 
 			CheckNice(arrayToFill);
 		}
+
+	    public void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices)
+	    {
+            UnderlyingHandler.Fill(CheckNice(filler), CheckNice(arrayToFill), sourceBeginIndices, sourceEndIndices, destinationBeginIndices, destinationEndIndices);
+
+	        CheckNice(arrayToFill);
+	    }
+
+	    public void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices)
+	    {
+	        UnderlyingHandler.Fill(filler, CheckNice(arrayToFill), destinationBeginIndices, destinationEndIndices);
+
+	        CheckNice(arrayToFill);
+	    }
 
 		public INDArray FlattenTime(INDArray array)
 		{

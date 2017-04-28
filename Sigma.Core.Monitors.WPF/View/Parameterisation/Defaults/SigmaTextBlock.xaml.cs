@@ -6,6 +6,8 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Windows;
+using System.Windows.Controls;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Utils;
@@ -18,18 +20,22 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 	[ParameterVisualiser(typeof(object), Priority = VisualiserPriority.Lower)]
 	public partial class SigmaTextBlock
 	{
-		private object _object;
+		/// <summary>
+		/// The object that is currently being displayed (without updating the displayed information)
+		/// </summary>
+		protected object _Object;
 
 		/// <summary>
 		/// The object that is being displayed (toString is called).
 		/// </summary>
-		public object Object
+		public virtual object Object
 		{
-			get { return _object; }
+			get { return _Object; }
 			set
 			{
-				_object = value;
-				TextBlock.Text = value?.ToString() ?? "null";
+				_Object = value;
+				string text = value?.ToString() ?? "null";
+				TextBlock.Text = Prefix + text + Postfix;
 			}
 		}
 
@@ -38,6 +44,29 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public string Text => TextBlock.Text;
 
+		/// <summary>
+		/// This string will be added before the displayed string.
+		/// </summary>
+		public string Prefix
+		{
+			get { return (string) GetValue(PrefixProperty); }
+			set { SetValue(PrefixProperty, value); }
+		}
+
+		public static readonly DependencyProperty PrefixProperty =
+			DependencyProperty.Register("Prefix", typeof(string), typeof(SigmaTextBox), new PropertyMetadata(""));
+
+		/// <summary>
+		/// This string will be added after the displayed string.
+		/// </summary>
+		public string Postfix
+		{
+			get { return (string) GetValue(PostfixProperty); }
+			set { SetValue(PostfixProperty, value); }
+		}
+
+		public static readonly DependencyProperty PostfixProperty =
+			DependencyProperty.Register("Postfix", typeof(string), typeof(SigmaTextBox), new PropertyMetadata(""));
 
 		/// <summary>
 		/// The fully resolved key to access the synchandler.
@@ -86,7 +115,7 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override void Read()
 		{
-			Object = SynchronisationHandler.SynchroniseGet<object>(Registry, Key);
+			SynchronisationHandler.SynchroniseUpdate(Registry, Key, Object, newObj => Dispatcher.Invoke(() => Object = newObj));
 		}
 
 		/// <summary>
