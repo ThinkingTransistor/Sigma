@@ -28,20 +28,40 @@ using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
-using System.Threading;
 using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Hooks.Saviors;
-using Sigma.Core.Training.Hooks.Stoppers;
-using Sigma.Core.Training.Modifiers;
 
 namespace Sigma.Tests.Internals.WPF
 {
-
     internal class Program
     {
-        private const bool SampleMnist = true;
+        internal class DemoType
+        {
+            internal readonly string Name;
+            internal readonly string Language;
+            internal readonly bool Slow;
+
+            private readonly Func<SigmaEnvironment, ITrainer> _createTrainerFunction;
+
+            public DemoType(string name, string language, bool slow, Func<SigmaEnvironment, ITrainer> createTrainerFunction)
+            {
+                Name = name;
+                Language = language;
+                Slow = slow;
+                _createTrainerFunction = createTrainerFunction;
+            }
+
+            internal ITrainer CreateTrainer(SigmaEnvironment sigma)
+            {
+                return _createTrainerFunction.Invoke(sigma);
+            }
+
+            internal static readonly DemoType Mnist = new DemoType("MNIST", "de-DE", true, CreateMnistTrainer);
+            internal static readonly DemoType Iris = new DemoType("IRIS", "en-EN", false, CreateIrisTrainer);
+            internal static readonly DemoType Xor = new DemoType("XOR", "en-EN", false, CreateXorTrainer);
+        }
+
+        private static readonly DemoType DemoMode = DemoType.Xor;
 
         private static void Main()
         {
@@ -49,8 +69,8 @@ namespace Sigma.Tests.Internals.WPF
             SigmaEnvironment sigma = SigmaEnvironment.Create("sigma_demo");
 
             // create a new mnist trainer
-            string name = SampleMnist ? "MNIST" : "IRIS";
-            ITrainer trainer = SampleMnist ? CreateMnistTrainer(sigma) : CreateIrisTrainer(sigma);
+            string name = DemoMode.Name;
+            ITrainer trainer = DemoMode.CreateTrainer(sigma);
 
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.network_weights_average"));
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.weights", (a, h) => h.StandardDeviation(a), "shared.network_weights_stddev"));
@@ -60,8 +80,8 @@ namespace Sigma.Tests.Internals.WPF
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.StandardDeviation(a), "shared.optimiser_updates_stddev"));
 
             // create and attach a new UI framework
-            WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, SampleMnist ? "de-DE" : "en-EN"));
-            gui.ColourManager.Dark = !SampleMnist;
+            WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
+            gui.ColourManager.Dark = DemoMode != DemoType.Iris;
 
             StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
             StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
@@ -86,7 +106,7 @@ namespace Sigma.Tests.Internals.WPF
                 // add a panel that controls the learning process
                 window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
-                ITimeStep reportTimeStep = SampleMnist ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(10, TimeScale.Epoch);
+                ITimeStep reportTimeStep = DemoMode.Slow ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(10, TimeScale.Epoch);
 
                 var cost1 = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
                 cost1.Fast();
@@ -111,9 +131,9 @@ namespace Sigma.Tests.Internals.WPF
                 var updateStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_stddev", reportTimeStep, averageMode: true);
                 updateStddev.Fast();
 
-                var accuracy1 = new AccuracyPanel("Validation Accuracy", trainer, SampleMnist ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
+                var accuracy1 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
                 accuracy1.Fast();
-                var accuracy2 = new AccuracyPanel("Validation Accuracy", trainer, SampleMnist ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
+                var accuracy2 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
                 accuracy2.Fast();
 
                 IRegistry regTest = new Registry();
@@ -151,11 +171,6 @@ namespace Sigma.Tests.Internals.WPF
                 window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
                 window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
 
-                if (SampleMnist)
-                {
-                    // TODO validation panel
-                }
-
                 // finish initialisation
                 window.IsInitializing = false;
             });
@@ -166,6 +181,28 @@ namespace Sigma.Tests.Internals.WPF
             sigma.Prepare();
 
             sigma.Run();
+        }
+
+        private static ITrainer CreateXorTrainer(SigmaEnvironment sigma)
+        {
+            RawDataset dataset = new RawDataset("xor");
+            dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
+
+            ITrainer trainer = sigma.CreateTrainer("xor-trainer");
+
+            trainer.Network = new Network();
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
+            trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+            trainer.Operator = new CpuSinglethreadedOperator();
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+
+            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+
+            return trainer;
         }
 
         private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)

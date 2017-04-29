@@ -355,7 +355,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 
 			StringBuilder builder = new StringBuilder();
 
-			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ":\n ");
+			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ": ");
 
 			for (long i = 0; i < length; i++)
 			{

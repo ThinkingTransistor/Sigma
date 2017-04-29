@@ -16,10 +16,10 @@ using System.Linq;
 namespace Sigma.Core.Training.Hooks.Reporters
 {
 	/// <summary>
-	/// A hook that logs the current value(s) of a certain identifier.
+	/// A hook that logs the accumulated / averaged value(s) of a certain identifier.
 	/// </summary>
 	[Serializable]
-	public class ValueReporterHook : BaseHook
+	public class AccumulatedValueReporterHook : BaseHook
 	{
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, reportEpochIteration: reportEpochIteration) { }
+		public AccumulatedValueReporterHook(string valueIdentifier, ITimeStep timestep, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, reportEpochIteration: reportEpochIteration) { }
 
 		/// <summary>
 		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
@@ -38,9 +38,9 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="target">The extrema criteria target.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
+		public AccumulatedValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
 		{
-			On(new ExtremaCriteria(valueIdentifier, target));
+			On(new ExtremaCriteria(GetAccumulatedIdentifier(valueIdentifier), target));
 		}
 
 		/// <summary>
@@ -51,9 +51,9 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="threshold">The threshold to compare against.</param>
 		/// <param name="target">The threshold criteria comparison target.</param>
 		/// <param name="fireContinously">If the value should be reported every time step the criteria is satisfied (or just once).</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : this(new[] { valueIdentifier }, timestep)
+		public AccumulatedValueReporterHook(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : this(new[] { valueIdentifier }, timestep)
 		{
-			On(new ThresholdCriteria(valueIdentifier, target, threshold, fireContinously));
+			On(new ThresholdCriteria(GetAccumulatedIdentifier(valueIdentifier), target, threshold, fireContinously));
 		}
 
 		///  <summary>
@@ -62,22 +62,50 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		///  <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
 		///  <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
-		public ValueReporterHook(string[] valueIdentifiers, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : base(timestep, valueIdentifiers)
+		public AccumulatedValueReporterHook(string[] valueIdentifiers, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : base(timestep, valueIdentifiers)
 		{
 			if (valueIdentifiers.Length == 0) throw new ArgumentException("Value identifiers cannot be empty (it's the whole point of this hook).");
 
 			DefaultTargetMode = TargetMode.Local;
 
+			string[] accumulatedIdentifiers = new string[valueIdentifiers.Length];
 			Dictionary<string, object> valueBuffer = new Dictionary<string, object>(valueIdentifiers.Length);
 
-			foreach (string identifier in valueIdentifiers)
+			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
-			    valueBuffer.Add(identifier, null);
+				string value = valueIdentifiers[i];
+
+				accumulatedIdentifiers[i] = GetAccumulatedIdentifier(value);
+
+				// TODO let caller decide if it's a number (double) / something else
+
+				int resetEvery, resetInterval;
+
+				if (timestep.TimeScale == TimeScale.Iteration)
+				{
+					resetEvery = timestep.Interval;
+					resetInterval = -1;
+				}
+				else
+				{
+					resetEvery = -1;
+					resetInterval = 0;
+				}
+
+				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), averageValues, resetEvery, resetInterval));
+
+				valueBuffer.Add(value, null);
 			}
 
 			ParameterRegistry["value_identifiers"] = valueIdentifiers;
+			ParameterRegistry["accumulated_identifiers"] = accumulatedIdentifiers;
 			ParameterRegistry["value_buffer"] = valueBuffer;
 			ParameterRegistry["report_epoch_iteration"] = reportEpochIteration;
+		}
+
+		private static string GetAccumulatedIdentifier(string value)
+		{
+			return "shared." + value.Replace('.', '_') + "_accumulated";
 		}
 
 		/// <summary>
@@ -87,13 +115,15 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
+			string[] accumulatedIdentifiers = ParameterRegistry.Get<string[]>("accumulated_identifiers");
 			string[] valueIdentifiers = ParameterRegistry.Get<string[]>("value_identifiers");
 
 			IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
 
 			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
-				object value = resolver.ResolveGetSingle<object>(valueIdentifiers[i]);
+				// TODO let callee decide if it's a number (double) / something else
+				object value = resolver.ResolveGetSingle<double>(accumulatedIdentifiers[i]);
 
 				valuesByIdentifier[valueIdentifiers[i]] = value;
 			}

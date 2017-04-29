@@ -67,6 +67,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		{
 			int[] tops = ParameterRegistry.Get<int[]>("tops");
 
+		    // TODO this kind of max comparision for scoring doesn't make sense - maybe scoring mode enum?
 			predictions = handler.RowWise(handler.FlattenTimeAndFeatures(predictions), handler.SoftMax);
 			var perRowTopPredictions = handler.RowWiseTransform(predictions, 
 				row => row.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).Select(p => p.Value).ToArray()).ToList();

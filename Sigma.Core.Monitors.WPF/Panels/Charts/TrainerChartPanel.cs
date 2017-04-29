@@ -20,7 +20,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <summary>
 	/// This generic <see cref="SigmaPanel"/> (should) work with every chart from LiveCharts.
 	/// Depending on the generics, it plots a given chart with given data and a given amount of parameters.
-	/// These parameters are automatically fetched at a given <see cref="TimeStep"/> via a <see cref="ValueReporterHook"/>.
+	/// These parameters are automatically fetched at a given <see cref="TimeStep"/> via a <see cref="AccumulatedValueReporterHook"/>.
 	/// </summary>
 	/// <typeparam name="TChart">The <see cref="Chart"/> that is used.</typeparam>
 	/// <typeparam name="TSeries">The <see cref="Series"/> that is used.</typeparam>
@@ -35,7 +35,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The hook that is attached to the Trainer (see <see cref="Trainer"/>). 
 		/// </summary>
-		protected VisualValueReporterHook AttachedHook;
+		protected VisualAccumulatedValueReporterHook AttachedHook;
 
 		///  <summary>
 		///  Create a TrainerChartPanel with a given title.
@@ -44,13 +44,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		///  </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer">The trainer to attach the hook to.</param>
-		/// <param name="hookedValue">The value that will get hooked (i.e. the value identifier of <see cref="ValueReporterHook"/>).</param>
+		/// <param name="hookedValue">The value that will get hooked (i.e. the value identifier of <see cref="AccumulatedValueReporterHook"/>).</param>
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
 		public TrainerChartPanel(string title, ITrainer trainer, string hookedValue, ITimeStep timestep, bool averageMode = false, object headerContent = null) : base(title, headerContent)
 		{
-			VisualValueReporterHook hook = new VisualValueReporterHook(this, new[] { hookedValue }, timestep, averageMode);
+			VisualAccumulatedValueReporterHook hook = new VisualAccumulatedValueReporterHook(this, new[] { hookedValue }, timestep, averageMode);
 			Init(trainer, hook);
 		}
 
@@ -61,13 +61,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		///  </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer">The trainer to attach the hook to.</param>
-		/// <param name="hookedValues">The values that will get hooked (i.e. the value identifiers of <see cref="ValueReporterHook"/>).</param>
+		/// <param name="hookedValues">The values that will get hooked (i.e. the value identifiers of <see cref="AccumulatedValueReporterHook"/>).</param>
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
 		public TrainerChartPanel(string title, ITrainer trainer, ITimeStep timestep, bool averageMode = false, object headerContent = null, params string[] hookedValues) : base(title, headerContent)
 		{
-			VisualValueReporterHook hook = new VisualValueReporterHook(this, hookedValues, timestep, averageMode);
+			VisualAccumulatedValueReporterHook hook = new VisualAccumulatedValueReporterHook(this, hookedValues, timestep, averageMode);
 			Init(trainer, hook);
 		}
 
@@ -81,7 +81,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <param name="hook">The hook (that is responsible for getting the desired value) which will be attached to the trainer. </param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		protected TrainerChartPanel(string title, ITrainer trainer, VisualValueReporterHook hook, object headerContent = null) : base(title, headerContent)
+		protected TrainerChartPanel(string title, ITrainer trainer, VisualAccumulatedValueReporterHook hook, object headerContent = null) : base(title, headerContent)
 		{
 			Init(trainer, hook);
 		}
@@ -91,7 +91,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		/// <param name="trainer">The trainer that will be set.</param>
 		/// <param name="hook">The hook that will be applied.</param>
-		private void Init(ITrainer trainer, VisualValueReporterHook hook)
+		private void Init(ITrainer trainer, VisualAccumulatedValueReporterHook hook)
 		{
 			Trainer = trainer;
 
@@ -102,7 +102,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The hook reports values to a given <see ref="ChartPanel"/>.
 		/// </summary>
-		protected class VisualValueReporterHook : ValueReporterHook
+		protected class VisualAccumulatedValueReporterHook : AccumulatedValueReporterHook
 		{
 			/// <summary>
 			/// The identifier for the parameter registry that keeps a reference to the chartpanel
@@ -116,9 +116,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// Create a new <see ref="VisualValueReportHook"/> fully prepared to report values.
 			/// </summary>
 			/// <param name="chartPanel">The chartpanel to which points will get added.</param>
-			/// <param name="valueIdentifiers">The identifiers for the <see cref="ValueReporterHook"/>; these values will get plotted.</param>
+			/// <param name="valueIdentifiers">The identifiers for the <see cref="AccumulatedValueReporterHook"/>; these values will get plotted.</param>
 			/// <param name="timestep">The <see cref="TimeStep"/> for the hook (i.e. execution definition).</param>
-			public VisualValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep, bool averageMode = false) : base(valueIdentifiers, timestep, averageMode, false)
+			public VisualAccumulatedValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep, bool averageMode = false) : base(valueIdentifiers, timestep, averageMode, false)
 			{
 				ParameterRegistry[ChartPanelIdentifier] = chartPanel;
 			}
