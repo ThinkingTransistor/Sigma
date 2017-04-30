@@ -28,6 +28,9 @@ using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
+using System.Collections.Generic;
+using LiveCharts;
+using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 
@@ -108,28 +111,15 @@ namespace Sigma.Tests.Internals.WPF
 
                 ITimeStep reportTimeStep = DemoMode.Slow ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(10, TimeScale.Epoch);
 
-                var cost1 = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
-                cost1.Fast();
-                //var cost2 = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
-                //cost2.Fast();
+                var cost1 = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
+                //var cost2 = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);
 
-                var weightAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Weights / Epoch", trainer, "shared.network_weights_average", reportTimeStep, averageMode: true);
-                weightAverage.Fast();
-
-                var weightStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Weights / Epoch", trainer, "shared.network_weights_stddev", reportTimeStep, averageMode: true);
-                weightStddev.Fast();
-
-                var biasesAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Biases / Epoch", trainer, "shared.network_biases_average", reportTimeStep, averageMode: true);
-                biasesAverage.Fast();
-
-                var biasesStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Biases / Epoch", trainer, "shared.network_biases_stddev", reportTimeStep, averageMode: true);
-                biasesStddev.Fast();
-
-                var updateAverage = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_average", reportTimeStep, averageMode: true);
-                updateAverage.Fast();
-
+                var weightAverage = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Weights / Epoch", trainer, "shared.network_weights_average", reportTimeStep, averageMode: true);
+                var weightStddev = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Weights / Epoch", trainer, "shared.network_weights_stddev", reportTimeStep, averageMode: true);
+                var biasesAverage = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Biases / Epoch", trainer, "shared.network_biases_average", reportTimeStep, averageMode: true);
+                var biasesStddev = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Biases / Epoch", trainer, "shared.network_biases_stddev", reportTimeStep, averageMode: true);
+                var updateAverage = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_average", reportTimeStep, averageMode: true);
                 var updateStddev = new TrainerChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_stddev", reportTimeStep, averageMode: true);
-                updateStddev.Fast();
 
                 var accuracy1 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
                 accuracy1.Fast();
@@ -270,6 +260,15 @@ namespace Sigma.Tests.Internals.WPF
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
 
             return trainer;
+        }
+
+        private static TrainerChartPanel<TChart, TSeries, TChartValues, TData> CreateChartPanel<TChart, TSeries, TChartValues, TData>(string title, ITrainer trainer, string hookedValue, ITimeStep timestep, bool averageMode = false) where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IList<TData>, IChartValues, new()
+        {
+            var panel = new TrainerChartPanel<TChart, TSeries, TChartValues, TData>(title, trainer, hookedValue, timestep, averageMode);
+
+            panel.Fast();
+
+            return panel;
         }
     }
 }

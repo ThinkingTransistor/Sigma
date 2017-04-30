@@ -70,11 +70,6 @@ namespace Sigma.Core.Training.Hooks.Reporters
 
 			Dictionary<string, object> valueBuffer = new Dictionary<string, object>(valueIdentifiers.Length);
 
-			foreach (string identifier in valueIdentifiers)
-			{
-			    valueBuffer.Add(identifier, null);
-			}
-
 			ParameterRegistry["value_identifiers"] = valueIdentifiers;
 			ParameterRegistry["value_buffer"] = valueBuffer;
 			ParameterRegistry["report_epoch_iteration"] = reportEpochIteration;
@@ -91,12 +86,18 @@ namespace Sigma.Core.Training.Hooks.Reporters
 
 			IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
 
+            valuesByIdentifier.Clear();
+
 			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
-				object value = resolver.ResolveGetSingle<object>(valueIdentifiers[i]);
+			    string[] resolvedIdentifiers;
+				object[] values = resolver.ResolveGet<object>(valueIdentifiers[i], out resolvedIdentifiers);
 
-				valuesByIdentifier[valueIdentifiers[i]] = value;
-			}
+			    for (int y = 0; y < resolvedIdentifiers.Length; y++)
+			    {
+			        valuesByIdentifier.Add(resolvedIdentifiers[y], values[y]);
+                }
+            }
 
 			ReportValues(valuesByIdentifier, ParameterRegistry.Get<bool>("report_epoch_iteration"), registry.Get<int>("epoch"), registry.Get<int>("iteration"));
 		}
