@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
-		public AccumulatedValueReporterHook(string valueIdentifier, ITimeStep timestep, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, reportEpochIteration: reportEpochIteration) { }
+		public AccumulatedValueReporterHook(string valueIdentifier, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, averageValues: averageValues, reportEpochIteration: reportEpochIteration) { }
 
 		/// <summary>
 		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.

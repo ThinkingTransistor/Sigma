@@ -65,15 +65,15 @@ namespace Sigma.Tests.Internals.Backend
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network();
-            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-            trainer.TrainingDataIterator = new UndividedIterator(dataset);
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
 
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
-            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-            trainer.AddLocalHook(new ValueReporterHook("network.layers.*.weights", TimeStep.Every(1, TimeScale.Epoch)));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
             trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
 
             sigma.Run();
