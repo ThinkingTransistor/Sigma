@@ -121,6 +121,8 @@ namespace Sigma.Core.Architecture
                 }
             }
 
+            copy.UpdateRegistry();
+
             return copy;
         }
 
@@ -247,7 +249,6 @@ namespace Sigma.Core.Architecture
                 foreach (string output in layerBuffer.Outputs.Keys)
                 {
                     exposedOutputs[output] = layerBuffer.Outputs[output];
-                    layerBuffer.Outputs[output]["test"] = "test";
                 }
 
                 layerBuffer.Layer.Parameters["_inputs"] = exposedInputs;
