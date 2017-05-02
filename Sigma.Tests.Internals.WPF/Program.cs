@@ -123,9 +123,9 @@ namespace Sigma.Tests.Internals.WPF
 				updateStddev.Fast();
 
                 var accuracy1 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
-                accuracy1.Fast();	accuracy1.Linearify();
+                accuracy1.Fast().Linearify();
                 var accuracy2 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
-                accuracy2.Fast();	accuracy2.Linearify();
+                accuracy2.Fast().Linearify();
 
                 IRegistry regTest = new Registry();
                 regTest.Add("test", DateTime.Now);
