@@ -167,6 +167,7 @@
     </Compile>
     <Compile Include="Utils\AttributeUtils.cs" />
     <Compile Include="Utils\ChartPanelPerformance.cs" />
+    <Compile Include="Utils\ChartPanelVisualisation.cs" />
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="ViewModel\Parameterisation\PollParameterHook.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
