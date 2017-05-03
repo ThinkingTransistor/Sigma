@@ -68,7 +68,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
             trainer.TrainingDataIterator = new UndividedIterator(dataset);
             trainer.Operator = new CpuSinglethreadedOperator();
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 

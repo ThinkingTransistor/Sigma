@@ -205,23 +205,19 @@ namespace Sigma.Tests.Internals.WPF
 
             IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
 
-            ITrainer trainer = sigma.CreateTrainer("test");
+            ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network();
-            trainer.Network.Architecture = InputLayer.Construct(4)
-                                           + FullyConnectedLayer.Construct(4)
-                                           + FullyConnectedLayer.Construct(24)
-                                           + FullyConnectedLayer.Construct(3)
-                                           + OutputLayer.Construct(3)
-                                           + SoftMaxCrossEntropyCostLayer.Construct();
-
-            trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
-            trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new UndividedIterator(dataset);
             trainer.Operator = new CpuSinglethreadedOperator();
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 
-            trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.3));
-            trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1));
+            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
+            trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
 
             return trainer;
         }

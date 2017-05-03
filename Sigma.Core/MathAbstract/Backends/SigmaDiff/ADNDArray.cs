@@ -337,7 +337,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		/// Constructs a string representing the contents of this ndarray, formatted properly and somewhat customisable. 
 		/// </summary>
 		/// <returns>A fancy string representing the contents of this ndarray.</returns>
-		public string ToString(ToStringElement toStringElement, int dimensionNewLine = 1, bool printSeperator = true)
+		public string ToString(ToStringElement toStringElement, int dimensionNewLine = 2, bool printSeperator = true)
 		{
 			if (toStringElement == null)
 			{

@@ -287,7 +287,7 @@ namespace Sigma.Core.Utils
 		/// <param name="maxDimensionNewLine"></param>
 		/// <param name="printSeperator"></param>
 		/// <returns></returns>
-		public static string ToString<T>(INDArray array, ADNDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 1, bool printSeperator = true)
+		public static string ToString<T>(INDArray array, ADNDArray<T>.ToStringElement toStringElement = null, int maxDimensionNewLine = 2, bool printSeperator = true)
 		{
 			return ((ADNDArray<T>) array).ToString(toStringElement, maxDimensionNewLine, printSeperator);
 		}
