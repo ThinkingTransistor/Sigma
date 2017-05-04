@@ -177,13 +177,13 @@ namespace Sigma.Tests.Internals.WPF
         {
             RawDataset dataset = new RawDataset("xor");
             dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
-            dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
+            trainer.TrainingDataIterator = new UndividedIterator(dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
@@ -191,6 +191,7 @@ namespace Sigma.Tests.Internals.WPF
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
 
             return trainer;
         }
@@ -211,7 +212,7 @@ namespace Sigma.Tests.Internals.WPF
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
             trainer.TrainingDataIterator = new UndividedIterator(dataset);
             trainer.Operator = new CpuSinglethreadedOperator();
-            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+            trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
