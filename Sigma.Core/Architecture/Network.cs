@@ -253,6 +253,17 @@ namespace Sigma.Core.Architecture
 
                 layerBuffer.Layer.Parameters["_inputs"] = exposedInputs;
                 layerBuffer.Layer.Parameters["_outputs"] = exposedOutputs;
+
+                if (layerBuffer.ExternalInputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_input");
+                }
+
+                if (layerBuffer.ExternalOutputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_output");
+                }
+
                 layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
             }
         }

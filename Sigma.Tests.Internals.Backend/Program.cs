@@ -73,7 +73,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
-            trainer.AddLocalHook(new ValueReporterHook("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
             trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
 
             sigma.Run();
