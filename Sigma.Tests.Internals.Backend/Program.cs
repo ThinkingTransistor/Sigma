@@ -59,22 +59,24 @@ namespace Sigma.Tests.Internals.Backend
             sigma.Prepare();
 
             RawDataset dataset = new RawDataset("xor");
-            dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
+            dataset.AddRecords("inputs", new[] { 1, 1 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 0, 0 });
             dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network();
-            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-            trainer.TrainingDataIterator = new UndividedIterator(dataset);
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset); // why does the iterator change the learning behavior so significantly?
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 
-            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
-            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
-            trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
-            trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
+            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 1000));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Stop), averageValues: true));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Stop)));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.weights", TimeStep.Every(1, TimeScale.Stop)));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.biases", TimeStep.Every(1, TimeScale.Stop)));
 
             sigma.Run();
         }
