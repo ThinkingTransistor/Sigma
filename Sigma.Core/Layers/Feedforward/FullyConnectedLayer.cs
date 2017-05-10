@@ -45,7 +45,7 @@ namespace Sigma.Core.Layers.Feedforward
 			buffer.Outputs["default"]["activations"] = output.Reshape(input.Shape[0], input.Shape[1], Parameters.Get<int>("size"));
 		}
 
-		public static LayerConstruct Construct(int size, string activation = "tanh", string name = "#-fullyconnected")
+		public static LayerConstruct Construct(int size, string activation = "sigmoid", string name = "#-fullyconnected")
 		{
 			LayerConstruct construct = new LayerConstruct(name, typeof(FullyConnectedLayer));
 

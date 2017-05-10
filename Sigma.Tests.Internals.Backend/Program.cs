@@ -55,18 +55,19 @@ namespace Sigma.Tests.Internals.Backend
 
         private static void SampleXOR()
         {
-            SigmaEnvironment sigma = SigmaEnvironment.Create("xor");
+            SigmaEnvironment sigma = SigmaEnvironment.Create("logical");
+            sigma.SetRandomSeed(0);
             sigma.Prepare();
 
-            RawDataset dataset = new RawDataset("xor");
-            dataset.AddRecords("inputs", new[] { 1, 1 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 0, 0 });
-            dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
+            RawDataset dataset = new RawDataset("and");
+            dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network();
-            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset); // why does the iterator change the learning behavior so significantly?
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 
