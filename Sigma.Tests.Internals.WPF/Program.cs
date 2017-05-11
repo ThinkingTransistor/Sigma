@@ -81,6 +81,7 @@ namespace Sigma.Tests.Internals.WPF
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*.biases", (a, h) => h.StandardDeviation(a), "shared.network_biases_stddev"));
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.optimiser_updates_average"));
             trainer.AddLocalHook(new MetricProcessorHook<INDArray>("optimiser.updates", (a, h) => h.StandardDeviation(a), "shared.optimiser_updates_stddev"));
+            trainer.AddLocalHook(new MetricProcessorHook<INDArray>("network.layers.*<external_output>._outputs.default.activations", (a, h) => h.Divide(h.Sum(a), a.Length), "shared.network_activations_mean"));
 
             // create and attach a new UI framework
             WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
@@ -121,6 +122,8 @@ namespace Sigma.Tests.Internals.WPF
                 var updateAverage = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_average", reportTimeStep, averageMode: true).Linearify();
                 var updateStddev = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Standard Deviation of Parameter Updates / Epoch", trainer, "shared.optimiser_updates_stddev", reportTimeStep, averageMode: true).Linearify();
 
+                var outputActivationsMean = CreateChartPanel<CartesianChart, LineSeries, TickChartValues<double>, double>("Mean of Output Activations", trainer, "shared.network_activations_mean", reportTimeStep, averageMode: true).Linearify();
+
                 var accuracy1 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
                 accuracy1.Fast().Linearify();
                 var accuracy2 = new AccuracyPanel("Validation Accuracy", trainer, DemoMode.Slow ? TimeStep.Every(1, TimeScale.Epoch) : reportTimeStep, null, 1, 2);
@@ -160,6 +163,7 @@ namespace Sigma.Tests.Internals.WPF
                 window.TabControl["Metrics"].AddCumulativePanel(weightStddev, legend: iris);
                 window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
                 window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
+                window.TabControl["Metrics"].AddCumulativePanel(outputActivationsMean, legend: iris);
 
                 // finish initialisation
                 window.IsInitializing = false;
@@ -211,6 +215,7 @@ namespace Sigma.Tests.Internals.WPF
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
             trainer.TrainingDataIterator = new UndividedIterator(dataset);
+            trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 
