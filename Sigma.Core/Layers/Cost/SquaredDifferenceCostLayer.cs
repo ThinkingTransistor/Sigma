@@ -27,8 +27,7 @@ namespace Sigma.Core.Layers.Cost
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
 			INDArray difference = handler.Subtract(predictions, targets);
-			INumber cost = handler.Divide(handler.Sum(handler.Pow(difference, 2)), predictions.Shape[0]);
-            // something wrong with predictions * predictions / pow predictions 2 -> wrong result / gradient? maybe with more than one item? see locals debug
+			INumber cost = handler.Sum(handler.Pow(difference, 2));
 
 			return cost;
 		}
