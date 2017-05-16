@@ -123,7 +123,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BaseLocaleTest.cs" />
-    <Compile Include="Data\Datasets\TestDataset.cs" />
+    <Compile Include="Data\Datasets\TestExtractedDataset.cs" />
     <Compile Include="Data\Datasets\TestDatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\TestDatasetRecordwiseSlice.cs" />
     <Compile Include="Data\Extractors\TestByteRecordExtractor.cs" />

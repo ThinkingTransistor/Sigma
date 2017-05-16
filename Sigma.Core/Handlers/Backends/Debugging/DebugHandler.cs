@@ -278,10 +278,24 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public void Fill<TOther>(TOther value, INDArray arrayToFill)
 		{
-			UnderlyingHandler.Fill(value, CheckNice(arrayToFill));
+			UnderlyingHandler.Fill(value, arrayToFill);
 
 			CheckNice(arrayToFill);
 		}
+
+	    public void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices)
+	    {
+            UnderlyingHandler.Fill(CheckNice(filler), CheckNice(arrayToFill), sourceBeginIndices, sourceEndIndices, destinationBeginIndices, destinationEndIndices);
+
+	        CheckNice(arrayToFill);
+	    }
+
+	    public void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices)
+	    {
+	        UnderlyingHandler.Fill(filler, CheckNice(arrayToFill), destinationBeginIndices, destinationEndIndices);
+
+	        CheckNice(arrayToFill);
+	    }
 
 		public INDArray FlattenTime(INDArray array)
 		{

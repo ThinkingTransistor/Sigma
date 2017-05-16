@@ -14,6 +14,8 @@ The never ending list of nice-to-have things by project. These lists are not mea
   * Custom code can be stored within the environment / trainer files 
 * Improved preprocessor pipeline with extra step before extraction
   * Use extra step to detect values for preprocessing (e.g. for auto-normalisation)
+* Network training
+  * Implement a trainer that can be controlled via a custom network protocol and functions as a wrapper for all trainers
 
 ## Sigma.Core.Monitors General
 
@@ -34,3 +36,4 @@ The never ending list of nice-to-have things by project. These lists are not mea
 ## Sigma.Core.Monitors.WPF
 
 * Language change within the GUI without having to restart _everything_
+* Drastically improved chart performance

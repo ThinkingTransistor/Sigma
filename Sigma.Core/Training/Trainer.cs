@@ -336,7 +336,21 @@ namespace Sigma.Core.Training
             }
         }
 
+        public void StartOnce()
+        {
+            InitStart();
+
+            Operator.StartOnce();
+        }
+
         public void Start()
+        {
+            InitStart();
+
+            Operator.Start();
+        }
+
+        private void InitStart()
         {
             _logger.Info($"Validating trainer state of trainer {Name} before start...");
 
@@ -347,8 +361,6 @@ namespace Sigma.Core.Training
 
             Operator.Network = Network;
             Operator.Trainer = this;
-
-            Operator.Start();
         }
 
         public void RunTrainingIteration(INetwork localNetwork, IOptimiser localOptimiser, IRegistry localRegistry, IComputationHandler handler)

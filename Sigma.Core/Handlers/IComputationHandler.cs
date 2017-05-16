@@ -133,6 +133,28 @@ namespace Sigma.Core.Handlers
 		/// <param name="arrayToFill">The ndarray to fill.</param>
 		void Fill(INDArray filler, INDArray arrayToFill);
 
+	    /// <summary>
+	    /// Fill an ndarray with the contents of another ndarray within a specific range.
+	    /// Note: The index ranges must be of the same size (in source and destination).
+	    /// </summary>
+	    /// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
+	    /// <param name="arrayToFill">The array to fill within the specified range.</param>
+	    /// <param name="sourceBeginIndices">The begin indices in the filler array.</param>
+	    /// <param name="sourceEndIndices">The end indices in the filler array.</param>
+	    /// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
+	    /// <param name="destinationEndIndices">The end indices in the array to fill.</param>
+	    void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices);
+
+	    /// <summary>
+	    /// Fill an ndarray with the contents of another ndarray within a specific range.
+	    /// Note: The index ranges must be of the same size (in source and destination).
+	    /// </summary>
+	    /// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
+	    /// <param name="arrayToFill">The array to fill within the specified range.</param>
+	    /// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
+	    /// <param name="destinationEndIndices">The end indices in the array to fill.</param>
+	    void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices);
+
 		/// <summary>
 		/// Fill an ndarray with a single value.
 		/// This is not a traceable operation. 

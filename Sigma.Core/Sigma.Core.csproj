@@ -99,7 +99,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\DiffSharp.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -122,6 +125,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -138,10 +144,11 @@
     <Compile Include="Architecture\Linear\Parallel.cs" />
     <Compile Include="Architecture\Network.cs" />
     <Compile Include="Data\DataBuffer.cs" />
-    <Compile Include="Data\Datasets\Dataset.cs" />
+    <Compile Include="Data\Datasets\ExtractedDataset.cs" />
     <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\DatasetRecordwiseSlice.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
+    <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
     <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
@@ -242,10 +249,11 @@
     <Compile Include="Training\Hooks\LambdaHook.cs" />
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\AccumulatedValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueSourceReporterHook.cs" />
     <Compile Include="Training\Hooks\Saviors\DiskSaviorHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />

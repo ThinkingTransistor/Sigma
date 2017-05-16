@@ -47,10 +47,40 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleIris();
+            SampleXOR();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
+        }
+
+        private static void SampleXOR()
+        {
+            SigmaEnvironment sigma = SigmaEnvironment.Create("logical");
+            sigma.SetRandomSeed(0);
+            sigma.Prepare();
+
+            RawDataset dataset = new RawDataset("and");
+            dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
+
+            ITrainer trainer = sigma.CreateTrainer("xor-trainer");
+
+            trainer.Network = new Network();
+            trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+            trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+            trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+            trainer.Operator = new CpuSinglethreadedOperator();
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+
+            trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
+
+            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 1000));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Stop), averageValues: true));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Stop)));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.weights", TimeStep.Every(1, TimeScale.Stop)));
+            trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.biases", TimeStep.Every(1, TimeScale.Stop)));
+
+            sigma.Run();
         }
 
         private static void SampleIris()
@@ -66,7 +96,7 @@ namespace Sigma.Tests.Internals.Backend
                                                         .Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
                                                         .Preprocess(new ShufflePreprocessor());
 
-            IDataset dataset = new Dataset("iris", Dataset.BlockSizeAuto, false, irisExtractor);
+            IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
 
             ITrainer trainer = sigma.CreateGhostTrainer("test");
 
@@ -90,7 +120,7 @@ namespace Sigma.Tests.Internals.Backend
             //trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
             //trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
 
-            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
             //.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
             trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("iris_epoch{0}.sgnet", "epoch"), verbose: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
@@ -118,7 +148,7 @@ namespace Sigma.Tests.Internals.Backend
             ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
             IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
-            IDataset dataset = new Dataset("mnist", Dataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+            IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
             ITrainer trainer = sigma.CreateTrainer("test");
 
             trainer.Network = new Network();
@@ -136,7 +166,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
             //trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
             //    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
             trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "mnist.sgnet", verbose: true)
@@ -160,7 +190,7 @@ namespace Sigma.Tests.Internals.Backend
             ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: dataSource);
             IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
 
-            IDataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor);
+            IDataset dataset = new ExtractedDataset("mnist-training", ExtractedDataset.BlockSizeAuto, mnistImageExtractor);
             IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
             IDataset trainingData = slices[0];
 
@@ -350,7 +380,7 @@ namespace Sigma.Tests.Internals.Backend
 
             IComputationHandler handler = new CpuFloat32Handler();
 
-            Dataset dataset = new Dataset("mnist-training", Dataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
+            ExtractedDataset dataset = new ExtractedDataset("mnist-training", ExtractedDataset.BlockSizeAuto, mnistImageExtractor, mnistTargetExtractor);
             IDataset[] slices = dataset.SplitRecordwise(0.8, 0.2);
             IDataset trainingData = slices[0];
             IDataset validationData = slices[1];

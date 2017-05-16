@@ -40,7 +40,7 @@ namespace Sigma.Tests.Training
 			extractor.SectionNames = new[] {"targets", "inputs"};
 			extractor.Reader = new MockRecordReader();
 			Sigma = SigmaEnvironment.GetOrCreate("testificate-mocktrainer");
-			TrainingDataIterator = new UndividedIterator(new Dataset("testificate", extractor));
+			TrainingDataIterator = new UndividedIterator(new ExtractedDataset("testificate", extractor));
 		}
 
 		internal class MockRecordReader : IRecordReader

@@ -330,6 +330,16 @@ namespace Sigma.Core
 			await Task.Run(() => Run());
 		}
 
+        /// <summary>
+        /// Prepare and run this sigma environment.
+        /// Note: This should only be used with smaller projects, as an early <see cref="Prepare"/> call gives monitors more time to setup and more instant user feedback.
+        /// </summary>
+	    public void PrepareAndRun()
+	    {
+	        Prepare();
+	        Run();
+	    }
+
 		private void InitialiseTrainers()
 		{
 			foreach (ITrainer trainer in _trainersByName.Values)

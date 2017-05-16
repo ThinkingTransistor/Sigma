@@ -44,7 +44,7 @@ namespace Sigma.Tests.Data.Iterators
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
 
 			Assert.Throws<ArgumentNullException>(() => new UndividedIterator(null));
 
@@ -64,7 +64,7 @@ namespace Sigma.Tests.Data.Iterators
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 2, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("test", 2, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestUndividedIteratorCreate)), true, extractor);
 			UndividedIterator iterator = new UndividedIterator(dataset);
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");
 			IComputationHandler handler = new CpuFloat32Handler();

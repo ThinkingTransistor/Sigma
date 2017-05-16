@@ -23,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.Utils
 		/// Set all required actions to improve the performance of the <see cref="ChartPanel{TChart,TSeries,TData}"/>.
 		/// This method allows to disable animations, hovering, and tooltips. It will not reenable them. 
 		/// </summary>
-		public static void Fast<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart, bool animationsEnabled = false, bool hoverEnabled = false, bool pointGemeotryEnabled = false) where TChart : Chart, new() where TSeries : Series, new() where TValues : IList<TData>, IChartValues, new()
+		public static ChartPanel<TChart, TSeries, TValues, TData> Fast<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart, bool animationsEnabled = false, bool hoverEnabled = false, bool pointGemeotryEnabled = false) where TChart : Chart, new() where TSeries : Series, new() where TValues : IList<TData>, IChartValues, new()
 		{
 			if (!animationsEnabled)
 			{
@@ -43,6 +43,8 @@ namespace Sigma.Core.Monitors.WPF.Utils
 					series.PointGeometry = null;
 				}
 			}
+
+			return chart;
 		}
 	}
 }

@@ -8,17 +8,19 @@ namespace Sigma.Core.Monitors.WPF.Utils
 {
 	public static class ChartPanelVisualisation
 	{
-		public static void SetLineSmoothness<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart, double lineSmoothness) where TChart : Chart, new() where TSeries : LineSeries, new() where TValues : IList<TData>, IChartValues, new()
+		public static ChartPanel<TChart, TSeries, TValues, TData> SetLineSmoothness<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart, double lineSmoothness) where TChart : Chart, new() where TSeries : LineSeries, new() where TValues : IList<TData>, IChartValues, new()
 		{
 			foreach (TSeries series in chart.Series)
 			{
 				series.LineSmoothness = lineSmoothness;
 			}
+
+			return chart;
 		}
 
-		public static void Linearify<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart) where TChart : Chart, new() where TSeries : LineSeries, new() where TValues : IList<TData>, IChartValues, new()
+		public static ChartPanel<TChart, TSeries, TValues, TData> Linearify<TChart, TSeries, TValues, TData>(this ChartPanel<TChart, TSeries, TValues, TData> chart) where TChart : Chart, new() where TSeries : LineSeries, new() where TValues : IList<TData>, IChartValues, new()
 		{
-			chart.SetLineSmoothness(0);
+			return chart.SetLineSmoothness(0);
 		}
 	}
 }

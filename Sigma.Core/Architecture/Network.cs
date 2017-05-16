@@ -121,6 +121,8 @@ namespace Sigma.Core.Architecture
                 }
             }
 
+            copy.UpdateRegistry();
+
             return copy;
         }
 
@@ -231,11 +233,37 @@ namespace Sigma.Core.Architecture
             Registry["name"] = Name;
             Registry["architecture"] = Architecture?.Registry;
 
-            Registry layersRegistry = new Registry(Registry);
+            IRegistry layersRegistry = new Registry(Registry);
             Registry["layers"] = layersRegistry;
 
             foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
             {
+                IRegistry exposedInputs = new Registry(parent: layerBuffer.Layer.Parameters);
+                IRegistry exposedOutputs = new Registry(parent: layerBuffer.Layer.Parameters);
+
+                foreach (string input in layerBuffer.Inputs.Keys)
+                {
+                    exposedInputs[input] = layerBuffer.Inputs[input];
+                }
+
+                foreach (string output in layerBuffer.Outputs.Keys)
+                {
+                    exposedOutputs[output] = layerBuffer.Outputs[output];
+                }
+
+                layerBuffer.Layer.Parameters["_inputs"] = exposedInputs;
+                layerBuffer.Layer.Parameters["_outputs"] = exposedOutputs;
+
+                if (layerBuffer.ExternalInputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_input");
+                }
+
+                if (layerBuffer.ExternalOutputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_output");
+                }
+
                 layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
             }
         }

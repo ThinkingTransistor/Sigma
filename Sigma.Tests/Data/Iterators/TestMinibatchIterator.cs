@@ -45,7 +45,7 @@ namespace Sigma.Tests.Data.Iterators
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
 
 			Assert.Throws<ArgumentException>(() => new MinibatchIterator(-3, dataset));
 			Assert.Throws<ArgumentNullException>(() => new MinibatchIterator(1, null));
@@ -76,7 +76,7 @@ namespace Sigma.Tests.Data.Iterators
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 			CsvRecordExtractor extractor = (CsvRecordExtractor) new CsvRecordReader(source).Extractor(new CsvRecordExtractor(new Dictionary<string, int[][]> { ["inputs"] = new[] { new[] { 0 } } }));
-			Dataset dataset = new Dataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
+			ExtractedDataset dataset = new ExtractedDataset("test", 1, new DiskCacheProvider(Path.GetTempPath() + "/" + nameof(TestMinibatchIteratorYield)), true, extractor);
 			MinibatchIterator iterator = new MinibatchIterator(minibatchSize, dataset);
 			IComputationHandler handler = new CpuFloat32Handler();
 			SigmaEnvironment sigma = SigmaEnvironment.Create("test");

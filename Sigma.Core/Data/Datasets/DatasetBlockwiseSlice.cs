@@ -50,7 +50,7 @@ namespace Sigma.Core.Data.Datasets
 		}
 		public string[] SectionNames => UnderlyingDataset.SectionNames;
 		public IReadOnlyCollection<int> ActiveBlockIndices => UnderlyingDataset.ActiveBlockIndices;
-		public int ActiveIndividualBlockCount => UnderlyingDataset.ActiveIndividualBlockCount;
+		public int ActiveIndividualBlockRegionCount => UnderlyingDataset.ActiveIndividualBlockRegionCount;
 		public int ActiveBlockRegionCount => UnderlyingDataset.ActiveBlockRegionCount;
 
 		/// <summary>
@@ -112,12 +112,12 @@ namespace Sigma.Core.Data.Datasets
 
 		public IDataset[] SplitBlockwise(params int[] parts)
 		{
-			return Dataset.SplitBlockwise(this, parts);
+			return ExtractedDataset.SplitBlockwise(this, parts);
 		}
 
 		public IDataset[] SplitRecordwise(params double[] parts)
 		{
-			return Dataset.SplitRecordwise(this, parts);
+			return ExtractedDataset.SplitRecordwise(this, parts);
 		}
 
 		public bool TrySetBlockSize(int blockSizeRecords)

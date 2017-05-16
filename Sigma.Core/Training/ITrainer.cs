@@ -159,10 +159,15 @@ namespace Sigma.Core.Training
 		/// </summary>
 		void Start();
 
-		/// <summary>
-		/// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator.
-		/// </summary>
-		void Reset();
+	    /// <summary>
+	    /// Start the trainer in the current configuration (e.g. using the set network, operator, optimiser, hooks) once.
+	    /// </summary>
+	    void StartOnce();
+
+        /// <summary>
+        /// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator.
+        /// </summary>
+        void Reset();
 
 		/// <summary>
 		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).
