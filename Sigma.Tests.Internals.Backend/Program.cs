@@ -70,11 +70,11 @@ namespace Sigma.Tests.Internals.Backend
             trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Operator = new CpuSinglethreadedOperator();
-            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.04);
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
 
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
-            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 2000));
+            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 4000));
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Stop), averageValues: true));
             trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Stop)));
             trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.weights", TimeStep.Every(1, TimeScale.Stop)));

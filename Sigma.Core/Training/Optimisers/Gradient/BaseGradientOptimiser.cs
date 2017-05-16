@@ -91,8 +91,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			Registry["cost_total"] = cost.GetValueAs<double>();
 
             Console.WriteLine(" - begin backprop - ");
-			handler.ComputeDerivativesTo(cost);
-		    Console.WriteLine(" - end backprop - ");
+            handler.ComputeDerivativesTo(cost);
+            Console.WriteLine(" - end backprop - ");
 
             foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
