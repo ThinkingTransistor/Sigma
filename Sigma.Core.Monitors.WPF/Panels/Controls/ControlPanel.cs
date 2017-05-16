@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -125,6 +126,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			//TODO: completely hardcoded activation function
 			UserControlParameterVisualiser activationBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentActivationFunction, typeof(object), _trainer.Operator.Registry, "network.layers.2-fullyconnected.activation");
 			activationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Start));
+
+			Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1,TimeScale.Reset), (registry1, resolver) =>
+			{
+				epochBox.Read();
+				iterationBox.Read();
+			}));
 
 			Content.Children.Add(_parameterView);
 		}

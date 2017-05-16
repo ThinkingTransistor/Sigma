@@ -88,9 +88,9 @@ namespace Sigma.Tests.Internals.WPF
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
 			gui.ColourManager.Dark = DemoMode != DemoType.Iris;
 
-			StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
+			StatusBarLegendInfo legendInfo = new StatusBarLegendInfo(name, MaterialColour.Blue);
 			StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
-			gui.AddLegend(iris);
+			gui.AddLegend(legendInfo);
 			gui.AddLegend(general);
 
 			// create a tab
@@ -109,7 +109,7 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Overview"].GridSize.Columns -= 1;
 
 				// add a panel that controls the learning process
-				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
+				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: legendInfo);
 
 				ITimeStep reportTimeStep = DemoMode.Slow ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(10, TimeScale.Epoch);
 
@@ -146,19 +146,19 @@ namespace Sigma.Tests.Internals.WPF
 				var learningBlock = (UserControlParameterVisualiser)parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 				learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: iris);
+				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: legendInfo);
 				window.TabControl["Overview"].AddCumulativePanel(parameter);
-				window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: iris);
+				window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: legendInfo);
 
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(accuracy2, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(weightStddev, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(outputActivationsMean, legend: iris);
+				window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(accuracy2, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(weightStddev, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: legendInfo);
+				window.TabControl["Metrics"].AddCumulativePanel(outputActivationsMean, legend: legendInfo);
 
 				// finish initialisation
 				window.IsInitializing = false;

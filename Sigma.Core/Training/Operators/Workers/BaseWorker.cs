@@ -186,19 +186,28 @@ namespace Sigma.Core.Training.Operators.Workers
 					if (State == ExecutionState.None || State == ExecutionState.Stopped)
 					{
 						Initialise();
+						InvokeTimeScaleEvent(TimeScale.Start);
 					}
 					else //Paused
 					{
 						OnResume();
+						InvokeTimeScaleEvent(TimeScale.Resume);
 					}
 
 					new ThreadUtils.BlockingThread(reset =>
 					{
 						DoWork();
 						reset.Set();
+						lock (_stateLock)
+						{
+							State = ExecutionState.Paused;
+							InvokeTimeScaleEvent(TimeScale.Pause);
+						}
 					}).Start();
 
 					OnStop();
+
+					State = ExecutionState.Running;
 				}
 			}
 			else

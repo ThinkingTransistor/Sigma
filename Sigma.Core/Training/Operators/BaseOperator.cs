@@ -315,6 +315,10 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Notify the system that a given timescale just occured.
+		/// </summary>
+		/// <param name="timeScale">The timescale that just occured.</param>
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
 			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>();
@@ -933,20 +937,29 @@ namespace Sigma.Core.Training.Operators
 				{
 					PrepareWorkers();
 
-					//TODO: hack that does not work
-					Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Epoch, 1), (registry, resolver) =>
+					////TODO: hack that does not work
+					//Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Epoch, 1), (registry, resolver) =>
+					//{
+					//	State = ExecutionState.Paused;
+					//	Console.WriteLine("Changed state!!!!!!!!!!!!!!!!!");
+					//}));
+
+					if (State == ExecutionState.None || State == ExecutionState.Stopped)
 					{
-						State = ExecutionState.Paused;
-						Console.WriteLine("Changed state!!!!!!!!!!!!!!!!!");
-					}));
+						InvokeTimeScaleEvent(TimeScale.Start);
+					}
+					else
+					{
+						InvokeTimeScaleEvent(TimeScale.Resume);
+					}
 
 					RunWorkersOnce();
 
-					State = ExecutionState.Running;
+					InvokeTimeScaleEvent(TimeScale.Pause);
+
+					State = ExecutionState.Paused;
 
 					_InternalResumeRunningStopwatch(); // TODO this can't be right?
-
-					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
 			else

@@ -132,6 +132,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				ITrainer trainer = Control.Trainer;
 				IOperator @operator = trainer.Operator;
 
+				@operator.WaitForStateChanged();
+
 				if (@operator.State == ExecutionState.Running)
 				{
 					@operator.SignalPause();
@@ -153,9 +155,11 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			public override void Execute(object parameter)
 			{
-				//Debug.WriteLine("Rewind!");
-				Control.Running = false;
 				ITrainer trainer = Control.Trainer;
+
+				trainer.Operator.WaitForStateChanged();
+
+				Control.Running = false;
 				trainer.Reset();
 				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
 															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
@@ -168,22 +172,19 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			public override void Execute(object parameter)
 			{
-				//Debug.WriteLine("Step!");
+				ITrainer trainer = Control.Trainer;
+				IOperator @operator = trainer.Operator;
 
-				Control.Running = false;
+				@operator.WaitForStateChanged();
 
-                ITrainer trainer = Control.Trainer;
-                trainer.StartOnce();
-                //trainer.RunTrainingIteration();
+				if (@operator.State == ExecutionState.Running)
+				{
+					Control.Running = false;
+					@operator.SignalPause();
+					@operator.WaitForStateChanged();
+				}
 
-				LogManager.GetLogger(typeof(DefaultStep)).Fatal("Step not yet implemented!");
-
-				//#if DEBUG
-				//				if (Control.Task != null)
-				//				{
-				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				//				}
-				//#endif
+				Control.Trainer.StartOnce();
 			}
 
 			public DefaultStep(SigmaPlaybackControl control) : base(control) { }
