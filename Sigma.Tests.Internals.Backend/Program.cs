@@ -62,6 +62,7 @@ namespace Sigma.Tests.Internals.Backend
             RawDataset dataset = new RawDataset("and");
             dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
             dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
+            // TODO it's the transpose function. it doesn't work like this. fix it.
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
