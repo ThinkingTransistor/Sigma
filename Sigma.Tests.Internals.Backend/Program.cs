@@ -61,21 +61,21 @@ namespace Sigma.Tests.Internals.Backend
 
             RawDataset dataset = new RawDataset("and");
             dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
-            dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
-            // TODO it's the transpose function. it doesn't work like this. fix it.
+            dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
             trainer.Network = new Network(); 
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-            trainer.TrainingDataIterator = new MinibatchIterator(4, dataset);
+            trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
             trainer.Operator = new CpuSinglethreadedOperator();
             trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
 
             trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
-            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 4000));
+            trainer.AddLocalHook(new StopTrainingHook(atEpoch: 10000));
+            trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Stop), averageValues: true));
             trainer.AddLocalHook(new ValueReporterHook("network.layers.*<external_output>._outputs.default.activations", TimeStep.Every(1, TimeScale.Stop)));
             trainer.AddLocalHook(new ValueReporterHook("network.layers.*-fullyconnected.weights", TimeStep.Every(1, TimeScale.Stop)));
@@ -160,7 +160,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
             trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.95);
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
             trainer.Operator = new CpuSinglethreadedOperator();
 
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
