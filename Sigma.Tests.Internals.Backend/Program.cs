@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Sigma.Core.Monitors;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Optimisers.Gradient;
@@ -47,7 +48,7 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleMnist();
+            SampleIris();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
@@ -133,7 +134,9 @@ namespace Sigma.Tests.Internals.Backend
 
             sigma.AddTrainer(trainer);
 
-            sigma.Run();
+            sigma.AddMonitor(new HttpMonitor("http://localhost:8080/sigma/"));
+
+            sigma.PrepareAndRun();
         }
 
         private static void SampleMnist()
@@ -161,7 +164,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
             trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.008);
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
             trainer.Operator = new CpuSinglethreadedOperator();
 
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
@@ -170,7 +173,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
             trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("mnist_e{0}.sgnet", "epoch"), verbose: true)
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Static("mnist.sgnet"), verbose: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
             var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);

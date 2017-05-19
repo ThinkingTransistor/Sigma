@@ -213,6 +213,7 @@
     <Compile Include="MathAbstract\Backends\SigmaDiff\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
+    <Compile Include="Monitors\HttpMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Monitors\Synchronisation\ISynchronisationHandler.cs" />
