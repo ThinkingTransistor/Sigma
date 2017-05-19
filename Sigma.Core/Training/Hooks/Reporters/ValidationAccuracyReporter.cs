@@ -38,6 +38,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			}
 
 			DefaultTargetMode = TargetMode.Global;
+		    InvokePriority = -100;
 			ParameterRegistry["tops"] = tops;
 			
 			RequireHook(new ValidationAccuracyScorer(validationIteratorName, "shared.validation_accuracy_top", timestep, tops));

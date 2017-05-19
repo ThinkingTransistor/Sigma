@@ -47,7 +47,7 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleXor();
+            SampleMnist();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
@@ -154,28 +154,29 @@ namespace Sigma.Tests.Internals.Backend
             trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(28, 28)
                                             + FullyConnectedLayer.Construct(28 * 28)
+                                            + FullyConnectedLayer.Construct(28 * 28)
                                             + FullyConnectedLayer.Construct(10)
                                             + OutputLayer.Construct(10)
                                             + SoftMaxCrossEntropyCostLayer.Construct();
             trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
             trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+            trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.008);
             trainer.Operator = new CpuSinglethreadedOperator();
 
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
-            //trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
-            //    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", "mnist.sgnet", verbose: true)
+            trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+                .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+            trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("mnist_e{0}.sgnet", "epoch"), verbose: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
             var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
-            trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: 1));
-            trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.5), validationTimeStep));
+            trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: new[]{ 1, 2, 3}));
+            trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
             trainer.AddHook(new StopTrainingHook(atEpoch: 500));
 
             sigma.Run();
