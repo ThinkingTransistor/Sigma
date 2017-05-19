@@ -250,6 +250,7 @@
     <Compile Include="Training\Hooks\LambdaHook.cs" />
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
+    <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />

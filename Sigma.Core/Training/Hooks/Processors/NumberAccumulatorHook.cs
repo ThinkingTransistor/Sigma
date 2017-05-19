@@ -6,10 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using Sigma.Core.Utils;
 using System;
+using Sigma.Core.Utils;
 
-namespace Sigma.Core.Training.Hooks.Accumulators
+namespace Sigma.Core.Training.Hooks.Processors
 {
 	/// <summary>
 	/// An accumulator hook for accumulating any number over a certain time step (this hook's time step).

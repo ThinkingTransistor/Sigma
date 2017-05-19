@@ -389,5 +389,23 @@ namespace Sigma.Core.Utils
 		{
 			list.Sort((self, other) => (int) (indexFunction.Invoke(self) - indexFunction.Invoke(other)));
 		}
+
+	    /// <summary>
+	    /// Get a one-hot representation of a certain value in an array of a certain size.
+	    /// </summary>
+	    /// <param name="hotIndex">The index of the "hot" element.</param>
+	    /// <param name="size">The size of the array.</param>
+	    /// <returns>An array of the specified size with the specified index marked as "hot" (1).</returns>
+	    public static int[] OneHot(int hotIndex, int size)
+	    {
+            if (size < 1) throw new ArgumentOutOfRangeException($"Array size must be >= 1 but was {size}.");
+            if (hotIndex < 0 || hotIndex >= size) throw new ArgumentOutOfRangeException($"Hot index must be >= 0 and < size but was {hotIndex} (size is {size}).");
+
+	        int[] result = new int[size];
+
+	        result[hotIndex] = 1;
+
+	        return result;
+	    }
 	}
 }

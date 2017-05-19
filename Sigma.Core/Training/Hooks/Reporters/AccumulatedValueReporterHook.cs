@@ -7,11 +7,11 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using log4net;
-using Sigma.Core.Training.Hooks.Accumulators;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sigma.Core.Training.Hooks.Processors;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {

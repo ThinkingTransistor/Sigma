@@ -8,7 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using log4net;
-using Sigma.Core.Training.Hooks.Accumulators;
+using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Stoppers

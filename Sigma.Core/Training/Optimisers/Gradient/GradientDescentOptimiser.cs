@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			Registry.Set("learning_rate", learningRate, typeof(double));
 		}
 
-		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
+		internal override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
 		{
 			INDArray update = handler.Multiply(gradient, -Registry.Get<double>("learning_rate"));
 

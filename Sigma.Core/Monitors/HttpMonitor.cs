@@ -19,6 +19,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors
 {
+    /// <summary>
+    /// An HTTP monitor that visualises a sigma environment on a website.
+    /// </summary>
     public class HttpMonitor : IMonitor
     {
         private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -27,12 +30,17 @@ namespace Sigma.Core.Monitors
         /// The sigma environment associated with this monitor.
         /// </summary>
         public SigmaEnvironment Sigma { get; set; }
+        /// <inheritdoc />
         public IRegistry Registry { get; set; }
 
         private HttpListener _listener;
         private readonly string[] _uriPrefixes;
         private MemoryAppender _memoryAppender;
 
+        /// <summary>
+        /// Create an HTTP monitor with a certain list of URI prefixes under which it will be available.
+        /// </summary>
+        /// <param name="uriPrefixes">The URI prefixes.</param>
         public HttpMonitor(params string[] uriPrefixes)
         {
             if (uriPrefixes == null) throw new ArgumentNullException(nameof(uriPrefixes));
@@ -86,7 +94,7 @@ namespace Sigma.Core.Monitors
                                              @"   .console > table {border-spacing: 0.5rem 0rem;}" +
                                              @"   .console > table > tbody > tr {line-height: 95%; font-size: 13px; padding-bottom: 0.4rem; padding-top: 0.4rem; margin-top: 0rem; margin-bottom: 0rem; cursor: default;}" +
                                              @"   .console > table > tbody > tr:hover {background-color: 3B4C56;}" +
-                                          // @"   ::selection {background-color: 3B4C56;}" +
+                                             @"   ::selection {background-color: 1B2428;}" +
                                              @"   .footer {color: #CCCCCC; font-size: 13px; text-align: center; position: absolute; right: 0; bottom: 0; left: 0; padding: 1rem}" +
                                              @"   " +
                                              @"   " +
@@ -135,7 +143,7 @@ namespace Sigma.Core.Monitors
                                 {
                                     string loggerName = loggingEvent.LoggerName.Substring(loggingEvent.LoggerName.LastIndexOf(".", StringComparison.Ordinal) + 1);
 
-                                    builder.Append(string.Format(responseDynamicConsoleItem, loggingEvent.TimeStamp, loggingEvent.Level.Name, 
+                                    builder.Append(string.Format(responseDynamicConsoleItem, loggingEvent.TimeStamp, loggingEvent.Level.Name,
                                         loggingEvent.ThreadName, loggerName, loggingEvent.MessageObject.ToString()));
                                 }
 

@@ -35,7 +35,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		}
 
 		/// <inheritdoc />
-		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
+		internal override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
 		{
 			double learningRate = Registry.Get<double>("learning_rate"), momentum = Registry.Get<double>("momentum");
 			INDArray velocity = GetMemory(paramIdentifier, gradient);

@@ -48,7 +48,7 @@ namespace Sigma.Tests.Internals.Backend
             SigmaEnvironment.EnableLogging(xml: true);
             SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-            SampleIris();
+            SampleMnist();
 
             Console.WriteLine("Program ended, waiting for termination, press any key...");
             Console.ReadKey();
@@ -66,7 +66,7 @@ namespace Sigma.Tests.Internals.Backend
 
             ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
-            trainer.Network = new Network(); 
+            trainer.Network = new Network();
             trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
             trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
             trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
@@ -170,6 +170,7 @@ namespace Sigma.Tests.Internals.Backend
             trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
             trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
+            trainer.AddLocalHook(new TargetMaximisationHook(TimeStep.Every(1, TimeScale.Iteration), trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(1, 10), 10)));
             trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
             trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
                 .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
@@ -178,7 +179,7 @@ namespace Sigma.Tests.Internals.Backend
 
             var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
-            trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: new[]{ 1, 2, 3}));
+            trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
             trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
             trainer.AddHook(new StopTrainingHook(atEpoch: 500));
 
@@ -418,13 +419,18 @@ namespace Sigma.Tests.Internals.Backend
             //dataset.InvalidateAndClearCaches();
         }
 
+        private static void PrintFormatted(INDArray array, char[] palette)
+        {
+            string blockString = ArrayUtils.ToString<float>(array, e => palette[(int)(e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false);
+
+            Console.WriteLine(blockString);
+        }
+
         private static void PrintFormattedBlock(IDictionary<string, INDArray> block, char[] palette)
         {
             foreach (string name in block.Keys)
             {
-                string blockString = name == "inputs"
-                        ? ArrayUtils.ToString<float>(block[name], e => palette[(int)(e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false)
-                        : block[name].ToString();
+                string blockString = ArrayUtils.ToString<float>(block[name], e => palette[(int)(e * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false);
 
                 Console.WriteLine($"[{name}]=\n" + blockString);
             }
