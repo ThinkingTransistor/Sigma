@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Utils;
 
@@ -32,7 +33,14 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.Parameterisation
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
-			((IParameterVisualiser) ParameterRegistry[VisualiserIdentifier]).Read();
+			try
+			{
+				((IParameterVisualiser) ParameterRegistry[VisualiserIdentifier]).Read();
+			}
+			catch (TaskCanceledException)
+			{
+				// TODO: log to console
+			}
 		}
 	}
 }

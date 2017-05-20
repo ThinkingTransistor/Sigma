@@ -1,8 +1,6 @@
 ﻿/* 
 MIT License
-
 Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
-
 For full license see LICENSE in the root directory of this project. 
 */
 
@@ -37,7 +35,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="target">The extrema criteria target.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
+		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] { valueIdentifier }, timestep)
 		{
 			On(new ExtremaCriteria(valueIdentifier, target));
 		}
@@ -85,18 +83,18 @@ namespace Sigma.Core.Training.Hooks.Reporters
 
 			IDictionary<string, object> valuesByIdentifier = ParameterRegistry.Get<IDictionary<string, object>>("value_buffer");
 
-            valuesByIdentifier.Clear();
+			valuesByIdentifier.Clear();
 
 			for (int i = 0; i < valueIdentifiers.Length; i++)
 			{
-			    string[] resolvedIdentifiers;
+				string[] resolvedIdentifiers;
 				object[] values = resolver.ResolveGet<object>(valueIdentifiers[i], out resolvedIdentifiers);
 
-			    for (int y = 0; y < resolvedIdentifiers.Length; y++)
-			    {
-			        valuesByIdentifier.Add(resolvedIdentifiers[y], values[y]);
-                }
-            }
+				for (int y = 0; y < resolvedIdentifiers.Length; y++)
+				{
+					valuesByIdentifier.Add(resolvedIdentifiers[y], values[y]);
+				}
+			}
 
 			ReportValues(valuesByIdentifier, ParameterRegistry.Get<bool>("report_epoch_iteration"), registry.Get<int>("epoch"), registry.Get<int>("iteration"));
 		}

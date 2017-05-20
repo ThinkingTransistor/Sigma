@@ -7,11 +7,13 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Utils;
 
@@ -24,6 +26,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// </summary>
 	/// <typeparam name="TChart">The <see cref="Chart"/> that is used.</typeparam>
 	/// <typeparam name="TSeries">The <see cref="Series"/> that is used.</typeparam>
+	/// <typeparam name="TChartValues">The data structure that contains the points itself, may be generic of type TData.</typeparam>
 	/// <typeparam name="TData">The data the <see cref="Series"/> contains.</typeparam>
 	public class TrainerChartPanel<TChart, TSeries, TChartValues, TData> : ChartPanel<TChart, TSeries, TChartValues, TData> where TChart : Chart, new() where TSeries : Series, new() where TChartValues : IList<TData>, IChartValues, new()
 	{
@@ -35,11 +38,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The hook that is attached to the Trainer (see <see cref="Trainer"/>). 
 		/// </summary>
-		protected VisualAccumulatedValueReporterHook AttachedHook;
+		protected IHook AttachedHook;
 
 		///  <summary>
 		///  Create a TrainerChartPanel with a given title.
-		///  This <see cref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
+		///  This <see ref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
 		///  If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		///  </summary>
 		/// <param name="title">The given tile.</param>
@@ -56,7 +59,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 		///  <summary>
 		///  Create a TrainerChartPanel with a given title.
-		///  This <see cref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
+		///  This <see ref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
 		///  If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		///  </summary>
 		/// <param name="title">The given tile.</param>
@@ -73,7 +76,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 
 		///  <summary>
 		///  Create a TrainerChartPanel with a given title.
-		///  This <see cref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
+		///  This <see ref="ChartPanel{T,TSeries,TData}"/> automatically receives data via a hook and adds it to the chart.
 		///  If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
 		///  </summary>
 		/// <param name="title">The given tile.</param>
@@ -91,12 +94,16 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// </summary>
 		/// <param name="trainer">The trainer that will be set.</param>
 		/// <param name="hook">The hook that will be applied.</param>
-		private void Init(ITrainer trainer, VisualAccumulatedValueReporterHook hook)
+		protected void Init(ITrainer trainer, VisualAccumulatedValueReporterHook hook)
 		{
 			Trainer = trainer;
-
 			AttachedHook = hook;
 			Trainer.AddHook(hook);
+			Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Stop), (registry, resolver) => Clear()));
+
+			// TODO: is a formatter the best solution?
+			AxisX.LabelFormatter = number => (number * hook.TimeStep.Interval).ToString(CultureInfo.InvariantCulture);
+			AxisX.Unit = hook.TimeStep.Interval;
 		}
 
 		/// <summary>
@@ -108,9 +115,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// The identifier for the parameter registry that keeps a reference to the chartpanel
 			/// </summary>
 			protected const string ChartPanelIdentifier = "panel";
-
-			//public VisualValueReporterHook(ChartPanel<TChart, TSeries, TData> chartPanel, string valueIdentifier, ITimeStep timestep) : this(chartPanel, new[] { valueIdentifier }, timestep)
-			//{ }
 
 			/// <summary>
 			/// Create a new <see ref="VisualValueReportHook"/> fully prepared to report values.
@@ -132,8 +136,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// <param name="iteration">The current iteration.</param>
 			protected override void ReportValues(IDictionary<string, object> valuesByIdentifier, bool reportEpochIteration, int epoch, int iteration)
 			{
-				ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel = (ChartPanel<TChart, TSeries, TChartValues, TData>) ParameterRegistry[ChartPanelIdentifier];
-				chartPanel.Add((TData) valuesByIdentifier.Values.First());
+				ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel = (ChartPanel<TChart, TSeries, TChartValues, TData>)ParameterRegistry[ChartPanelIdentifier];
+				chartPanel.Add((TData)valuesByIdentifier.Values.First());
 
 				//TODO: multiple values (in same series)
 				//ChartPanel.Dispatcher.InvokeAsync(() => ChartPanel.Series.Values.Add(valuesByIdentifier.Values.First()));
