@@ -95,6 +95,9 @@ namespace Sigma.Core.Monitors
                                              @"   .console > table > tbody > tr {line-height: 95%; font-size: 13px; padding-bottom: 0.4rem; padding-top: 0.4rem; margin-top: 0rem; margin-bottom: 0rem; cursor: default;}" +
                                              @"   .console > table > tbody > tr:hover {background-color: 3B4C56;}" +
                                              @"   ::selection {background-color: 1B2428;}" +
+                                             @"   ::-webkit-scrollbar { height: 12px; width: 16px; background: #1B2428; } " +
+                                             @"   ::-webkit-scrollbar-thumb { background: #3B4C56; } " +
+                                             @"   ::-webkit-scrollbar-corner { background: #000; }" +
                                              @"   .footer {color: #CCCCCC; font-size: 13px; text-align: center; position: absolute; right: 0; bottom: 0; left: 0; padding: 1rem}" +
                                              @"   " +
                                              @"   " +
