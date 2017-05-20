@@ -192,7 +192,16 @@ namespace Sigma.Tests.Internals.WPF
 				//	}
 				//}
 
+
+
 				//window.TabControl["Debug"].AddCumulativePanel(rectanglePanel);
+				var bitmapPanel = new BitmapPanel("Bitmap", 768, 768);
+				var pixels = new byte[bitmapPanel.Bitmap.PixelHeight * bitmapPanel.Bitmap.PixelWidth * bitmapPanel.Bitmap.Format.BitsPerPixel / 8];
+				Random rand = new Random();
+				rand.NextBytes(pixels);
+				bitmapPanel.Render(pixels);
+				window.TabControl["Debug"].AddCumulativePanel(bitmapPanel);
+			
 
 				// finish initialisation
 				window.IsInitializing = false;

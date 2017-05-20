@@ -141,6 +141,7 @@
     <Compile Include="Panels\Charts\ChartPanel.cs" />
     <Compile Include="Panels\Charts\Definitions\IPointVisualiser.cs" />
     <Compile Include="Panels\Charts\TrainerChartPanel.cs" />
+    <Compile Include="Panels\Controls\BitmapPanel.cs" />
     <Compile Include="Panels\Controls\ControlPanel.cs" />
     <Compile Include="Panels\Controls\DrawPanel.cs" />
     <Compile Include="Panels\Controls\RectanglePanel.cs" />

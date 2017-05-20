@@ -73,16 +73,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		}
 
 		/// <summary>
-		/// This method will be called once the window is initialising (after it has been added).
-		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
-		/// </summary>
-		/// <param name="window">The wpf window this panel will be added to.</param>
-		protected override void OnInitialise(WPFWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(ControlPanel)} is only compatible with {nameof(SigmaWindow)}s.");
-		}
-
-		/// <summary>
 		/// This method will be called after the panel has been added (window, monitor set...)
 		/// </summary>
 		protected override void OnInitialise(SigmaWindow window)
