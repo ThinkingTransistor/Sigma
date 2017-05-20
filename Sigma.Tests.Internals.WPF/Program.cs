@@ -29,11 +29,14 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Windows.Media;
+using System.Windows.Shapes;
 using LiveCharts;
 using LiveCharts.Geared;
 using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Persistence;
 
 namespace Sigma.Tests.Internals.WPF
@@ -95,7 +98,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation");
+			gui.AddTabs("Overview", "Metrics", "Validation", "Debug");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -166,6 +169,30 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(outputActivationsMean, legend: iris);
+
+				if (DemoMode == DemoType.Mnist)
+				{
+					NumberPanel outputpanel = new NumberPanel("Numbers", trainer);
+					DrawPanel drawPanel = new DrawPanel("Draw", trainer, 560, 560, 20, outputpanel);
+
+					window.TabControl["Validation"].AddCumulativePanel(drawPanel);
+					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
+				}
+
+				//Random rand = new Random();
+				//RectanglePanel rectanglePanel = new RectanglePanel("Rects", 768, 768, 1);
+				//RectangleCanvas canvas = rectanglePanel.Content;
+				//for (int i = 0; i < canvas.Rectangles.GetLength(0); i++)
+				//{
+				//	for (int j = 0; j < canvas.Rectangles.GetLength(1); j++)
+				//	{
+				//		Rectangle rect = canvas.Rectangles[i, j];
+				//		rect.Fill = Brushes.Red;
+				//		rect.Opacity = rand.NextDouble();
+				//	}
+				//}
+
+				//window.TabControl["Debug"].AddCumulativePanel(rectanglePanel);
 
 				// finish initialisation
 				window.IsInitializing = false;

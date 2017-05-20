@@ -143,6 +143,7 @@
     <Compile Include="Panels\Charts\TrainerChartPanel.cs" />
     <Compile Include="Panels\Controls\ControlPanel.cs" />
     <Compile Include="Panels\Controls\DrawPanel.cs" />
+    <Compile Include="Panels\Controls\RectanglePanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\IInputPanel.cs" />
     <Compile Include="Panels\IOutputPanel.cs" />
@@ -176,6 +177,7 @@
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />
     <Compile Include="ViewModel\Parameterisation\ParameterVisualiserManager.cs" />
     <Compile Include="View\CustomControls\Panels\Control\DrawCanvas.cs" />
+    <Compile Include="View\CustomControls\Panels\Control\RectangleCanvas.cs" />
     <Compile Include="View\CustomControls\Panels\Control\SigmaPlaybackControl.cs" />
     <Compile Include="View\CustomControls\StatusBar\StatusBarLegend.cs" />
     <Compile Include="View\CustomControls\StatusBar\TaskVisualizer.cs" />
