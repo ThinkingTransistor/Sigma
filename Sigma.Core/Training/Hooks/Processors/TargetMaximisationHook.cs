@@ -47,7 +47,7 @@ namespace Sigma.Core.Training.Hooks.Processors
             INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
             IComputationHandler handler = Operator.Handler;
 
-            long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape"); // TODO now that's a hack
+            long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
             INDArray maximisedInputs = CreateRandomisedInput(handler, ArrayUtils.Concatenate(new[] { 1L, 1L }, inputShape)); // BTF dimension ordering
             IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
 
