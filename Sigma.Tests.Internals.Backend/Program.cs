@@ -45,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SampleMnist();
-
+			
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
 		}
@@ -130,7 +130,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.AddTrainer(trainer);
 
-			sigma.AddMonitor(new HttpMonitor("http://localhost:8080/sigma/"));
+			sigma.AddMonitor(new HttpMonitor("http://+:80/sigma/"));
 
 			sigma.PrepareAndRun();
 		}
