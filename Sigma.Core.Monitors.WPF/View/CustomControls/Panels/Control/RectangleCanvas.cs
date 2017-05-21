@@ -13,7 +13,7 @@ public class RectangleCanvas : Canvas
 	/// </summary>
 	public int GridWidth
 	{
-		get => (int)GetValue(GridWidthProperty);
+		get { return (int) GetValue(GridWidthProperty); } 
 		set
 		{
 			SetValue(GridWidthProperty, value);
@@ -29,7 +29,7 @@ public class RectangleCanvas : Canvas
 	/// </summary>
 	public int GridHeight
 	{
-		get => (int)GetValue(GridHeightProperty);
+		get { return (int) GetValue(GridHeightProperty); } 
 		set
 		{
 			SetValue(GridHeightProperty, value);

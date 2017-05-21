@@ -1,10 +1,14 @@
-﻿using LiveCharts.Wpf;
+﻿using LiveCharts;
+using LiveCharts.Geared;
+using LiveCharts.Wpf;
+using LiveCharts.Wpf.Charts.Base;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
+using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Layers.Cost;
@@ -14,11 +18,13 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
+using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
+using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Reporters;
@@ -29,15 +35,6 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using LiveCharts;
-using LiveCharts.Geared;
-using LiveCharts.Wpf.Charts.Base;
-using Sigma.Core.Data.Preprocessors.Adaptive;
-using Sigma.Core.Monitors.WPF.Model.UI.Windows;
-using Sigma.Core.Monitors.WPF.Panels;
-using Sigma.Core.Persistence;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -196,12 +193,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				//window.TabControl["Debug"].AddCumulativePanel(rectanglePanel);
 				var bitmapPanel = new BitmapPanel("Bitmap", 768, 768);
-				var pixels = new byte[bitmapPanel.Bitmap.PixelHeight * bitmapPanel.Bitmap.PixelWidth * bitmapPanel.Bitmap.Format.BitsPerPixel / 8];
-				Random rand = new Random();
-				rand.NextBytes(pixels);
-				bitmapPanel.Render(pixels);
-				window.TabControl["Debug"].AddCumulativePanel(bitmapPanel);
-			
+				window.TabControl["Debug"].AddCumulativePanel(bitmapPanel, 2, 2);
 
 				// finish initialisation
 				window.IsInitializing = false;
@@ -213,6 +205,13 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.Prepare();
 
 			sigma.Run();
+
+			//gui.WindowDispatcherAsync(window =>
+			//{
+			//	Thread.Sleep(15000);
+			//	var source = PresentationSource.FromVisual(window);
+			//	Console.WriteLine(source);
+			//});
 		}
 
 		private static ITrainer CreateXorTrainer(SigmaEnvironment sigma)

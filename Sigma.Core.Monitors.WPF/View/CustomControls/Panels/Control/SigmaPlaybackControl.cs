@@ -6,13 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Training;
+using Sigma.Core.Training.Operators;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using log4net;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
@@ -29,8 +28,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public ITrainer Trainer
 		{
-			get => (ITrainer) GetValue(TrainerProperty);
-		    set => SetValue(TrainerProperty, value);
+			get { return (ITrainer) GetValue(TrainerProperty); }
+			set { SetValue(TrainerProperty, value); }
 		}
 
 		public static readonly DependencyProperty TrainerProperty =
@@ -38,8 +37,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public bool Running
 		{
-			get => (bool) GetValue(RunningProperty);
-		    set => SetValue(RunningProperty, value);
+			get { return(bool) GetValue(RunningProperty); }
+			set { SetValue(RunningProperty, value); }
 		}
 
 		public static readonly DependencyProperty RunningProperty = DependencyProperty.Register(nameof(Running),
@@ -47,8 +46,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public Orientation Orientation
 		{
-			get => (Orientation) GetValue(OrientationProperty);
-		    set => SetValue(OrientationProperty, value);
+			get { return(Orientation) GetValue(OrientationProperty); }
+			set { SetValue(OrientationProperty, value); }
 		}
 
 		public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(nameof(Orientation),
@@ -56,8 +55,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public ICommand TogglePlay
 		{
-			get => (ICommand) GetValue(TogglePlayProperty);
-		    set => SetValue(TogglePlayProperty, value);
+			get { return (ICommand) GetValue(TogglePlayProperty); }
+			set { SetValue(TogglePlayProperty, value); }
 		}
 
 		public static readonly DependencyProperty TogglePlayProperty =
@@ -65,8 +64,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public ICommand Rewind
 		{
-			get => (ICommand) GetValue(RewindProperty);
-		    set => SetValue(RewindProperty, value);
+			get { return (ICommand) GetValue(RewindProperty); }
+			set {SetValue(RewindProperty, value);}
 		}
 
 		public static readonly DependencyProperty RewindProperty =
@@ -74,8 +73,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public ICommand Step
 		{
-			get => (ICommand) GetValue(StepProperty);
-		    set => SetValue(StepProperty, value);
+			get { return(ICommand) GetValue(StepProperty); }
+			set { SetValue(StepProperty, value); }
 		}
 
 		public static readonly DependencyProperty StepProperty =
