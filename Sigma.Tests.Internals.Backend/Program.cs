@@ -45,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleMnist();
+			SampleIris();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -57,7 +57,7 @@ namespace Sigma.Tests.Internals.Backend
 			sigma.SetRandomSeed(0);
 			sigma.Prepare();
 
-			RawDataset dataset = new RawDataset("and");
+			RawDataset dataset = new RawDataset("xor");
 			dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
 			dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
 
@@ -89,13 +89,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.Prepare();
 
-			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
-			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
-														.Preprocess(new OneHotPreprocessor("targets", minValue: 0, maxValue: 2))
-														.Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
-														.Preprocess(new ShufflePreprocessor());
-
-			IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
+			IDataset dataset = Defaults.Datasets.Iris();
 
 			ITrainer trainer = sigma.CreateGhostTrainer("test");
 
@@ -142,13 +136,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.Prepare();
 
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
-
-			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
-
-			IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+			IDataset dataset = Defaults.Datasets.Mnist();
 			ITrainer trainer = sigma.CreateTrainer("test");
 
 			trainer.Network = new Network();
@@ -181,6 +169,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
+			trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
 			trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 500));
