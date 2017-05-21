@@ -18,24 +18,24 @@ namespace Sigma.Core.Utils
 	/// </summary>
 	public static class ArrayUtils
 	{
-        /// <summary>
-        /// Concatenate two given arrays into one result array (b is appended after a).
-        /// </summary>
-        /// <typeparam name="T">The array element type.</typeparam>
-        /// <param name="a">The first array.</param>
-        /// <param name="b">The second array.</param>
-        /// <returns>A concatenated array of a and b.</returns>
-	    public static T[] Concatenate<T>(T[] a, T[] b)
-	    {
-            if (a == null) throw new ArgumentNullException(nameof(a));
-            if (b == null) throw new ArgumentNullException(nameof(b));
+		/// <summary>
+		/// Concatenate two given arrays into one result array (b is appended after a).
+		/// </summary>
+		/// <typeparam name="T">The array element type.</typeparam>
+		/// <param name="a">The first array.</param>
+		/// <param name="b">The second array.</param>
+		/// <returns>A concatenated array of a and b.</returns>
+		public static T[] Concatenate<T>(T[] a, T[] b)
+		{
+			if (a == null) throw new ArgumentNullException(nameof(a));
+			if (b == null) throw new ArgumentNullException(nameof(b));
 
-	        T[] result = new T[a.Length + b.Length];
-            a.CopyTo(result, 0);
-            b.CopyTo(result, a.Length);
+			T[] result = new T[a.Length + b.Length];
+			a.CopyTo(result, 0);
+			b.CopyTo(result, a.Length);
 
-	        return result;
-	    }
+			return result;
+		}
 
 		/// <summary>
 		/// The product of an integer array (i.e. all values multiplied with each other).
@@ -390,22 +390,22 @@ namespace Sigma.Core.Utils
 			list.Sort((self, other) => (int) (indexFunction.Invoke(self) - indexFunction.Invoke(other)));
 		}
 
-	    /// <summary>
-	    /// Get a one-hot representation of a certain value in an array of a certain size.
-	    /// </summary>
-	    /// <param name="hotIndex">The index of the "hot" element.</param>
-	    /// <param name="size">The size of the array.</param>
-	    /// <returns>An array of the specified size with the specified index marked as "hot" (1).</returns>
-	    public static int[] OneHot(int hotIndex, int size)
-	    {
-            if (size < 1) throw new ArgumentOutOfRangeException($"Array size must be >= 1 but was {size}.");
-            if (hotIndex < 0 || hotIndex >= size) throw new ArgumentOutOfRangeException($"Hot index must be >= 0 and < size but was {hotIndex} (size is {size}).");
+		/// <summary>
+		/// Get a one-hot representation of a certain value in an array of a certain size.
+		/// </summary>
+		/// <param name="hotIndex">The index of the "hot" element.</param>
+		/// <param name="size">The size of the array.</param>
+		/// <returns>An array of the specified size with the specified index marked as "hot" (1).</returns>
+		public static int[] OneHot(int hotIndex, int size)
+		{
+			if (size < 1) throw new ArgumentOutOfRangeException($"Array size must be >= 1 but was {size}.");
+			if (hotIndex < 0 || hotIndex >= size) throw new ArgumentOutOfRangeException($"Hot index must be >= 0 and < size but was {hotIndex} (size is {size}).");
 
-	        int[] result = new int[size];
+			int[] result = new int[size];
 
-	        result[hotIndex] = 1;
+			result[hotIndex] = 1;
 
-	        return result;
-	    }
+			return result;
+		}
 	}
 }

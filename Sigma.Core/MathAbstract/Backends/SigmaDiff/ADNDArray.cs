@@ -357,6 +357,11 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 
 			builder.Append("ndarray with shape " + ArrayUtils.ToString(shape) + ": ");
 
+			if (dimensionNewLine < rank)
+			{
+				builder.Append('\n');
+			}
+
 			for (long i = 0; i < length; i++)
 			{
 				indices = NDArrayUtils.GetIndices(i, shape, strides, indices);
