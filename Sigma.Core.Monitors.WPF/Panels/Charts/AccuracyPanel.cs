@@ -78,7 +78,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// This hook is specifically designed to report values to the <see cref="AccuracyPanel"/>.
 		/// It reports given top accuracies ranging from 0-100%. 
 		/// </summary>
-		protected class ChartValidationAccuracyReport : ValidationAccuracyReporter
+		protected class ChartValidationAccuracyReport : MultiClassificationAccuracyReporter
 		{
 			private const string PanelIdentifier = "Panel";
 

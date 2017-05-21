@@ -16,27 +16,27 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Training.Hooks.Scorers
 {
 	/// <summary>
-	/// A validation accuracy scorer that scores model predictions against their targets with topx accuracy (e.g. top1, top3 and top10).
+	/// A multi-class classification accuracy scorer that scores model predictions against their targets with topx accuracy (e.g. top1, top3 and top10).
 	/// </summary>
 	[Serializable]
-	public class ValidationAccuracyScorer : BaseValidationScorer
+	public class MultiClassificationAccuracyScorer : BaseAccuracyScorer
 	{
 		///  <summary>
-		///  Create a validation accuracy scorer hook for a certain validation iterator.
+		///  Create a multi-class classification accuracy scorer hook for a certain validation iterator.
 		///  Note:	The "external_default" output may not always be the actual final output in your model.
 		/// 		If your model contains multiple output you may need to explicitly specify the actual final output with this alias.
 		///  </summary>
 		///  <param name="validationIteratorName">The validation data iterator name (as in the trainer).</param>
-		/// <param name="resultBaseEntry">The base entry under which the results will be available (base entry + tops[i]).</param>
+		/// <param name="resultBaseKey">The base key under which the results will be available (base entry + tops[i]).</param>
 		/// <param name="tops">The tops that should be scored (e.g. top 1, top 3, top5).</param>
 		/// <param name="timestep">The time step.</param>
-		public ValidationAccuracyScorer(string validationIteratorName, string resultBaseEntry, ITimeStep timestep, params int[] tops) : base(validationIteratorName, timestep)
+		public MultiClassificationAccuracyScorer(string validationIteratorName, string resultBaseKey, ITimeStep timestep, params int[] tops) : base(validationIteratorName, timestep)
 		{
 			if (tops == null) throw new ArgumentNullException(nameof(tops));
 			if (tops.Length == 0) throw new ArgumentException($"The tops must be of length > 0 (otherwise what should be scored? It doesn't make sense).");
 
 			ParameterRegistry["tops"] = tops;
-			ParameterRegistry["result_base_entry"] = resultBaseEntry;
+			ParameterRegistry["result_base_key"] = resultBaseKey;
 		}
 
 		/// <summary>
@@ -65,10 +65,16 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		/// <param name="handler">The computation handler.</param>
 		protected override void ScoreIntermediate(INDArray predictions, INDArray targets, IComputationHandler handler)
 		{
+			predictions = handler.FlattenTimeAndFeatures(predictions);
+
+			if (predictions.Shape[1] <= 1)
+			{
+				throw new InvalidOperationException($"Cannot score multi-class classification accuracy on targets with less than 2 feature indices (there were {predictions.Shape[1]}.");
+			}
+
 			int[] tops = ParameterRegistry.Get<int[]>("tops");
 
-		    // TODO this kind of max comparision for scoring doesn't make sense - maybe scoring mode enum?
-			predictions = handler.RowWise(handler.FlattenTimeAndFeatures(predictions), handler.SoftMax);
+			predictions = handler.RowWise(predictions, handler.SoftMax);
 			var perRowTopPredictions = handler.RowWiseTransform(predictions, 
 				row => row.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).Select(p => p.Value).ToArray()).ToList();
 
@@ -96,14 +102,14 @@ namespace Sigma.Core.Training.Hooks.Scorers
 
 			foreach (int top in tops)
 			{
-				string resultBaseEntry = ParameterRegistry.Get<string>("result_base_entry");
+				string resultBaseKey = ParameterRegistry.Get<string>("result_base_key");
 
 				int totalClassifications = ParameterRegistry.Get<int>("total_classifications");
 				int correctClassifications = ParameterRegistry.Get<int>($"correct_classifications_top{top}");
 
 				double score = ((double) correctClassifications) / totalClassifications;
 
-				resolver.ResolveSet(resultBaseEntry + top, score, addIdentifierIfNotExists: true);
+				resolver.ResolveSet(resultBaseKey + top, score, addIdentifierIfNotExists: true);
 			}
 		}
 	}

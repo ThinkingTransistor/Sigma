@@ -117,8 +117,8 @@ namespace Sigma.Tests.Internals.Backend
 			//trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("iris_epoch{0}.sgnet", "epoch"), verbose: true)
 			//    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
-			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
-			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.98)));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.98)));
 
 			Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
 			trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
@@ -154,7 +154,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
 			trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new UniClassificationAccuracyReporter("validation", 0.5, TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.AddTrainer(trainer);
 
@@ -196,13 +196,12 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Static("mnist_mincost.sgnet"), verbose: true)
 				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 			trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("mnist_maxacc.sgnet"), verbose: true)
-				.On(new ExtremaCriteria("shared.validation_accuracy_top1", ExtremaTarget.Max)));
+				.On(new ExtremaCriteria("shared.classification_accuracy_top1", ExtremaTarget.Max)));
 
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
-			trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
-			trainer.AddHook(new ValidationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
-			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.validation_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
+			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 500));
 
 			sigma.Run();
