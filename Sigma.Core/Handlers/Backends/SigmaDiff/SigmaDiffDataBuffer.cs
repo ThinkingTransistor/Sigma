@@ -23,13 +23,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		#region DiffSharp SigmaDiffDataBuffer interop properties
 
-		int ISigmaDiffDataBuffer<T>.Length => (int) Length;
+		int ISigmaDiffDataBuffer<T>.Length => (int)Length;
 
-		int ISigmaDiffDataBuffer<T>.Offset => (int) Offset;
+		int ISigmaDiffDataBuffer<T>.Offset => (int)Offset;
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int) Offset, (int) Length);
+		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length);
 
 		#endregion
 
@@ -70,26 +70,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override object DeepCopy()
 		{
-			return new SigmaDiffDataBuffer<T>((T[]) Data.Clone(), Offset, Length, BackendTag, Type);
+			return new SigmaDiffDataBuffer<T>((T[])Data.Clone(), Offset, Length, BackendTag, Type);
 		}
 
 		#region DiffSharp SigmaDiffDataBuffer interop methods
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.GetValues(int startIndex, int length)
 		{
-			return (ISigmaDiffDataBuffer<T>) GetValues(startIndex, length);
+			return (ISigmaDiffDataBuffer<T>)GetValues(startIndex, length);
 		}
 
 		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
 		{
-			int newSize = (rowFinish - rowStart + 1) * (colFinish - colStart + 1);
-			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
 			int colLength = colFinish - colStart + 1;
+			int newSize = (rowFinish - rowStart + 1) * colLength;
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
 				long sourceIndex = Offset + m * totalCols + colStart;
-				long destinationIndex = m * (totalCols - 1 - colStart - colFinish) + colStart;
+				long destinationIndex = (m - rowStart) * colLength;
 
 				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
 			}

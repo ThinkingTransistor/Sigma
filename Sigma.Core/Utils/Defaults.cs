@@ -70,9 +70,10 @@ namespace Sigma.Core.Utils
 			public static IDataset Iris(string name = "iris")
 			{
 				IRecordExtractor irisExtractor = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")))
-					.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
+					.Extractor("inputs", new[] { 0, 3 }, "targets", 4)
+					.AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
 					.Preprocess(new OneHotPreprocessor("targets", minValue: 0, maxValue: 2))
-					.Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
+					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0, sectionNames: "inputs"))
 					.Preprocess(new ShufflePreprocessor());
 
 				return new ExtractedDataset(name, ExtractedDataset.BlockSizeAuto, false, irisExtractor);
@@ -95,6 +96,25 @@ namespace Sigma.Core.Utils
 					.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
 
 				return new ExtractedDataset(name, ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+			}
+
+
+			/// <summary>
+			/// Create an extracted WDBC (Wisconsin Diagnostic Breast Cancer) dataset, automatically download any required resources.
+			/// This dataset is normalised.
+			/// </summary>
+			/// <param name="name">The optional name.</param>
+			/// <returns>THe WDBC dataset.</returns>
+			public static IDataset Wdbc(string name = "wdbc")
+			{
+				IRecordExtractor extractor = new CsvRecordReader(
+					source: new MultiSource(new FileSource("wdbc.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data")))
+					.Extractor("inputs", new[] { 2, 31 }, "targets", 1)
+					.AddValueMapping(1, "M", "B")
+					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, extractor);
 			}
 
 			#endregion

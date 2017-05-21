@@ -106,6 +106,7 @@ namespace Sigma.Core.Monitors
 											 @"   .footer {color: #CCCCCC; font-size: 13px; text-align: center; position: absolute; right: 0; bottom: 0; left: 0; padding: 1rem}" +
 											 @"   @media (max-width: 50rem) {" +
 											 @"    .console {width: 100%; overflow-x: scroll}" +
+											 @"    .meta > table {width: 90;}" +
 											 @"    .footer {display: none;}" +
 											 @"   }" +
 											 @"   " +

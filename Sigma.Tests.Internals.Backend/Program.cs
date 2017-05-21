@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training.Hooks.Processors;
@@ -45,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleIris();
+			SampleWdbc();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -106,8 +107,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1));
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
 			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
 			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
@@ -126,6 +126,37 @@ namespace Sigma.Tests.Internals.Backend
 			sigma.AddTrainer(trainer);
 
 			sigma.AddMonitor(new HttpMonitor("http://+:8080/sigma/"));
+
+			sigma.PrepareAndRun();
+		}
+
+		private static void SampleWdbc()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("wdbc");
+
+			IDataset dataset = Defaults.Datasets.Wdbc();
+
+			ITrainer trainer = sigma.CreateGhostTrainer("test");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(30)
+											+ FullyConnectedLayer.Construct(42)
+											+ FullyConnectedLayer.Construct(24)
+											+ FullyConnectedLayer.Construct(1)
+											+ OutputLayer.Construct(1)
+											+ SquaredDifferenceCostLayer.Construct();
+
+			trainer.TrainingDataIterator = new MinibatchIterator(72, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.005);
+			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+			trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new ValidationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch)));
+
+			sigma.AddTrainer(trainer);
 
 			sigma.PrepareAndRun();
 		}

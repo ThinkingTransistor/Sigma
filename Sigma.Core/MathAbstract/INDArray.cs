@@ -123,13 +123,13 @@ namespace Sigma.Core.MathAbstract
 		INDArray PermuteSelf(params int[] rearrangedDimensions);
 
 		/// <summary>
-		/// Get a NEW ndarray with the same data but transposed (reversed dimensions).
+		/// Get a NEW ndarray with the same data but transposed (mirrored dimensions).
 		/// </summary>
-		/// <returns>A NEW ndarray with the same data but transposed (reversed dimensions).</returns>
+		/// <returns>A NEW ndarray with the same data but transposed (mirrored dimensions).</returns>
 		INDArray Transpose();
 
 		/// <summary>
-		/// Transpose THIS ndarray (reverse dimensions). 
+		/// Transpose THIS ndarray (mirrored dimensions). 
 		/// </summary>
 		/// <returns>This ndarray (for convenience).</returns>
 		INDArray TransposeSelf();
