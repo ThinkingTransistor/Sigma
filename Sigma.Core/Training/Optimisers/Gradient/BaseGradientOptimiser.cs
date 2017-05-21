@@ -48,7 +48,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
 			Registry["updates"] = new Dictionary<string, INDArray>();
-		    Registry["self"] = this;
+			Registry["self"] = this;
 		}
 
 		/// <summary>
@@ -91,9 +91,9 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			INumber cost = GetTotalCost(network, handler, costRegistry);
 			Registry["cost_total"] = cost.GetValueAs<double>();
 
-            handler.ComputeDerivativesTo(cost);
+			handler.ComputeDerivativesTo(cost);
 
-            foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
+			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
 				string layerIdentifier = layerBuffer.Layer.Name;
 

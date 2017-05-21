@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Saviors;
@@ -45,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
 			SampleMnist();
-			
+
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
 		}
@@ -130,14 +131,14 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.AddTrainer(trainer);
 
-			sigma.AddMonitor(new HttpMonitor("http://+:80/sigma/"));
+			sigma.AddMonitor(new HttpMonitor("http://+:8080/sigma/"));
 
 			sigma.PrepareAndRun();
 		}
 
 		private static void SampleMnist()
 		{
-			SigmaEnvironment sigma = SigmaEnvironment.Create("trainer_test");
+			SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
 
 			sigma.Prepare();
 
@@ -152,26 +153,31 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28)
-											+ FullyConnectedLayer.Construct(28 * 28)
-											+ FullyConnectedLayer.Construct(28 * 28)
+											+ DropoutLayer.Construct(0.2)
+											+ FullyConnectedLayer.Construct(1200)
+											+ DropoutLayer.Construct(0.4)
+											+ FullyConnectedLayer.Construct(1200)
+											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(10)
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-			trainer.AddLocalHook(new TargetMaximisationHook(TimeStep.Every(1, TimeScale.Iteration), trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(1, 10), 10)));
 			trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
 			trainer.AddLocalHook(new ValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
 				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
-			trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Static("mnist.sgnet"), verbose: true)
+
+			trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Static("mnist_mincost.sgnet"), verbose: true)
 				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+			trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("mnist_maxacc.sgnet"), verbose: true)
+				.On(new ExtremaCriteria("shared.validation_accuracy_top1", ExtremaTarget.Max)));
 
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 

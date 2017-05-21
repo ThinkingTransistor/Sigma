@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Layers;
 using Sigma.Core.MathAbstract;

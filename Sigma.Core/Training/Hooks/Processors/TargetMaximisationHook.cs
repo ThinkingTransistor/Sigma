@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Optimisers.Gradient;
@@ -18,71 +19,79 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Processors
 {
-    public class TargetMaximisationHook : BaseHook
-    {
-        /// <summary>
-        /// Create a hook with a certain time step and a set of required global registry entries. 
-        /// </summary>
-        /// <param name="timestep">The time step.</param>
-        /// <param name="desiredTargets">The targets for which the inputs should be optimised for.</param>
-        /// <param name="desiredCost">The maximum factor of difference between approached targets and desired targets (squared difference).</param>
-        public TargetMaximisationHook(ITimeStep timestep, INDArray desiredTargets, double desiredCost = 0.5) : base(timestep, "network.self", "optimiser.self")
-        {
-            if (desiredTargets == null) throw new ArgumentNullException(nameof(desiredTargets));
+	public class TargetMaximisationHook : BaseHook
+	{
+		/// <summary>
+		/// Create a hook with a certain time step and a set of required global registry entries. 
+		/// </summary>
+		/// <param name="timestep">The time step.</param>
+		/// <param name="desiredTargets">The targets for which the inputs should be optimised for.</param>
+		/// <param name="desiredCost">The maximum factor of difference between approached targets and desired targets (squared difference).</param>
+		public TargetMaximisationHook(ITimeStep timestep, INDArray desiredTargets, double desiredCost = 0.06) : base(timestep, "network.self", "optimiser.self")
+		{
+			if (desiredTargets == null) throw new ArgumentNullException(nameof(desiredTargets));
 
-            ParameterRegistry["desired_targets"] = desiredTargets;
-            ParameterRegistry["desired_cost"] = desiredCost;
-        }
+			ParameterRegistry["desired_targets"] = desiredTargets;
+			ParameterRegistry["desired_cost"] = desiredCost;
+		}
 
-        /// <summary>
-        /// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
-        /// </summary>
-        /// <param name="registry">The registry containing the required values for this hook's execution.</param>
-        /// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-        public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
-        {
-            // we need copies of network and optimiser as to not affect the current internal state
-            INetwork network = (INetwork)resolver.ResolveGetSingle<INetwork>("network.self").DeepCopy();
-            BaseGradientOptimiser optimiser = (BaseGradientOptimiser) resolver.ResolveGetSingle<BaseGradientOptimiser>("optimiser.self").DeepCopy();
-            INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
-            IComputationHandler handler = Operator.Handler;
+		/// <summary>
+		/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
+		/// </summary>
+		/// <param name="registry">The registry containing the required values for this hook's execution.</param>
+		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
+		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
+		{
+			// we need copies of network and optimiser as to not affect the current internal state
+			INetwork network = (INetwork)resolver.ResolveGetSingle<INetwork>("network.self").DeepCopy();
+			BaseGradientOptimiser optimiser = (BaseGradientOptimiser) resolver.ResolveGetSingle<BaseGradientOptimiser>("optimiser.self").DeepCopy();
+			INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
+			IComputationHandler handler = new DebugHandler(Operator.Handler);
 
-            long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
-            INDArray maximisedInputs = CreateRandomisedInput(handler, ArrayUtils.Concatenate(new[] { 1L, 1L }, inputShape)); // BTF dimension ordering
-            IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
+			long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
+			INDArray maximisedInputs = CreateRandomisedInput(handler, inputShape); // BTF dimension ordering
+			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
 
-            block["targets"] = desiredTargets; // desired targets don't change during execution
+			block["targets"] = desiredTargets; // desired targets don't change during execution
 
-            double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost;
+			double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost;
 
-            do
-            {
-                uint traceTag = handler.BeginTrace();
-                block["inputs"] = handler.Trace(maximisedInputs, traceTag);
+			do
+			{
+				uint traceTag = handler.BeginTrace();
+				block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] { 1L, 1L }, inputShape)), traceTag);
 
-                DataProviderUtils.ProvideExternalInputData(network, block);
-                network.Run(handler, trainingPass: false);
+				DataProviderUtils.ProvideExternalInputData(network, block);
+				network.Run(handler, trainingPass: false);
 
-                INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
-                    .Outputs["external_default"].Get<INDArray>("activations");
-                INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.SoftMax(currentTargets), desiredTargets), 2));
+				INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
+					.Outputs["external_default"].Get<INDArray>("activations");
+				INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
 
-                handler.ComputeDerivativesTo(squaredDifference);
+				handler.ComputeDerivativesTo(squaredDifference);
 
-                INDArray gradient = handler.GetDerivative(block["inputs"]);
-                maximisedInputs = optimiser.Optimise("inputs", block["inputs"], gradient, handler);
+				INDArray gradient = handler.GetDerivative(block["inputs"]);
+				maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));
 
-                currentCost = squaredDifference.GetValueAs<double>();
-            } while (currentCost > desiredCost);
-        }
+				currentCost = squaredDifference.GetValueAs<double>();
+			} while (currentCost > desiredCost);
 
-        private INDArray CreateRandomisedInput(IComputationHandler handler, long[] shape)
-        {
-            INDArray randomInput = handler.NDArray(shape);
+			maximisedInputs.ReshapeSelf(inputShape);
 
-            new GaussianInitialiser(standardDeviation: 0.1).Initialise(randomInput, handler, new Random()); // new random because this shouldn't affect the global rng seed
+			char[] palette = PrintUtils.AsciiGreyscalePalette;
 
-            return randomInput;
-        }
-    }
+			float min = handler.Min(maximisedInputs).GetValueAs<float>(), max = handler.Max(maximisedInputs).GetValueAs<float>();
+			float range = max - min;
+			Console.WriteLine(ArrayUtils.ToString<float>(maximisedInputs, e => palette[(int) (((e - min) / range) * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false));
+		}
+
+		private INDArray CreateRandomisedInput(IComputationHandler handler, long[] shape)
+		{
+			INDArray randomInput = handler.NDArray(shape);
+
+			new GaussianInitialiser(standardDeviation: 0.1).Initialise(randomInput, handler, new Random()); // new random because this shouldn't affect the global rng seed
+
+			return randomInput;
+		}
+	}
 }
