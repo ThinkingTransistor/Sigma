@@ -412,6 +412,102 @@ namespace Sigma.Core.Training.Hooks
 		}
 	}
 
+	[Serializable]
+	public class ExternalCriteria : HookInvokeCriteria
+	{
+		/// <summary>
+		/// Create an external criteria that can be toggled and held active by external functions.
+		/// </summary>
+		/// <param name="initialState">The initial state (decremented every check, > 0 => active)</param>
+		/// <param name="registerToggleFunc">A utility function to anonymously register the external toggle function somewhere.</param>
+		/// <param name="registerHoldFunc">A utility function to anonymously register the external hold function somewhere.</param>
+		public ExternalCriteria(Action<Action> registerToggleFunc = null, Action<Action> registerHoldFunc = null, int initialState = 0)
+		{
+			ParameterRegistry["state"] = initialState;
+
+			registerToggleFunc?.Invoke(ExternalToggle);
+			registerHoldFunc?.Invoke(ExternalHold);
+		}
+
+		/// <summary>
+		/// Check if the criteria is satisfied using a certain parameter registry and helper resolver from the base hook.
+		/// </summary>
+		/// <param name="registry">The registry.</param>
+		/// <param name="resolver">The helper resolver.</param>
+		/// <returns>A boolean indicating if this criteria is satisfied.</returns>
+		public override bool CheckCriteria(IRegistry registry, IRegistryResolver resolver)
+		{
+			bool active;
+
+			lock (ParameterRegistry)
+			{
+				int state = ParameterRegistry.Get<int>("state");
+
+				active = state > 0;
+
+				if (state != int.MaxValue && state > int.MinValue)
+				{
+					state--;
+				}
+
+				Console.WriteLine("check state: " + state);
+
+				ParameterRegistry["state"] = state;
+			}
+
+			Console.WriteLine("check active: " + active);
+
+			return active;
+		}
+
+		/// <summary>
+		/// The external toggle function. Invoke this to toggle this criteria.
+		/// </summary>
+		public void ExternalToggle()
+		{
+			lock (ParameterRegistry)
+			{
+				int state = ParameterRegistry.Get<int>("state");
+
+				if (state < 0)
+				{
+					state = int.MaxValue;
+				}
+				else
+				{
+					state = int.MinValue;
+				}
+
+				Console.WriteLine("state: " + state);
+
+				ParameterRegistry["state"] = state;
+			}
+		}
+
+		/// <summary>
+		/// The external hold function. Invoke this to hold this criteria active for +1 check.
+		/// </summary>
+		public void ExternalHold()
+		{
+			lock (ParameterRegistry)
+			{
+				int state = ParameterRegistry.Get<int>("state");
+
+				if (state < 0)
+				{
+					state = 0;
+				}
+
+				if (state < int.MaxValue)
+				{
+					state++;
+				}
+
+				ParameterRegistry["state"] = state;
+			}
+		}
+	}
+
 	/// <summary>
 	/// A comparison target for conditional invokes. 
 	/// </summary>
