@@ -98,7 +98,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation", "Debug");
+			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -108,7 +108,8 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
 				window.TabControl["Validation"].GridSize = new GridSize(1, 2);
-				window.TabControl["Debug"].GridSize = new GridSize(2, 5);
+				window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
+				window.TabControl["Reproduction"].GridSize = new GridSize(2, 5);
 
 				window.TabControl["Overview"].GridSize.Rows -= 1;
 				window.TabControl["Overview"].GridSize.Columns -= 1;
@@ -193,7 +194,7 @@ namespace Sigma.Tests.Internals.WPF
 				//	}
 				//}
 
-				//window.TabControl["Debug"].AddCumulativePanel(rectanglePanel);
+				//window.TabControl["Maximisation"].AddCumulativePanel(rectanglePanel);
 
 				//var bitmapPanel = new BitmapPanel("Bitmap", 28, 28);
 				////bitmapPanel.Content.Width = 28;
@@ -209,12 +210,17 @@ namespace Sigma.Tests.Internals.WPF
 				//	//data = new byte[] { 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff, 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff };
 				//	bitmapPanel.RenderRectangle<double>(ndArray, r => 0x00, g => 0x00, b => (byte) (255 * b), a => 0xff, 1, 1);
 				//});
-				//window.TabControl["Debug"].AddCumulativePanel(bitmapPanel, 2, 2);
+				//window.TabControl["Maximisation"].AddCumulativePanel(bitmapPanel, 2, 2);
 
-				for (int i = 0; i < 10; i++)
-				{
-					window.TabControl["Debug"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
-				}
+				//for (int i = 0; i < 10; i++)
+				//{
+				//	window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				//}
+
+				//for (int i = 0; i < 10; i++)
+				//{
+				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				//}
 
 				window.IsInitializing = false;
 			});

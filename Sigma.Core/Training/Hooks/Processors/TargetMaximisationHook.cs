@@ -89,7 +89,7 @@ namespace Sigma.Core.Training.Hooks.Processors
 					block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] {1L, 1L}, inputShape)), traceTag);
 
 					DataProviderUtils.ProvideExternalInputData(network, block);
-					network.Run(handler, trainingPass: true);
+					network.Run(handler, trainingPass: false);
 
 					// fetch current outputs and optimise against them (towards desired targets)
 					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
