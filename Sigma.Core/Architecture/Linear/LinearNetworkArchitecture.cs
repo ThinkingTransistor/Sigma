@@ -300,5 +300,26 @@ namespace Sigma.Core.Architecture.Linear
 		{
 			return _layerConstructs;
 		}
+
+		/// <summary>Determines whether the specified object is equal to the current object.</summary>
+		/// <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+		/// <param name="obj">The object to compare with the current object. </param>
+		public override bool Equals(object obj)
+		{
+			LinearNetworkArchitecture asLinearNetworkArchitecture = obj as LinearNetworkArchitecture;
+
+			if (asLinearNetworkArchitecture == null) return false;
+			if (_layerConstructs.Count != asLinearNetworkArchitecture._layerConstructs.Count) return false;
+
+			for (int i = 0; i < _layerConstructs.Count; i++)
+			{
+				if (!_layerConstructs[i].TypeEquals(asLinearNetworkArchitecture._layerConstructs[i]))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
 	}
 }

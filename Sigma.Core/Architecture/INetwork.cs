@@ -70,6 +70,12 @@ namespace Sigma.Core.Architecture
 		void Reset();
 
 		/// <summary>
+		/// Transfer this networks' parameters to another network.
+		/// </summary>
+		/// <param name="other">The other network.</param>
+		void TransferParametersTo(INetwork other);
+
+		/// <summary>
 		/// Get the layers of this network in the order they should be processed. 
 		/// </summary>
 		/// <returns></returns>

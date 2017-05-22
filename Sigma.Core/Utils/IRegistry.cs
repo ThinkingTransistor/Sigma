@@ -124,6 +124,12 @@ namespace Sigma.Core.Utils
 		/// <param name="other">The other registry.</param>
 		/// <returns>A boolean indicating if this registry's contents equal another registry's contents.</returns>
 		bool RegistryContentEquals(IRegistry other);
+
+		/// <summary>
+		/// Copy this registry's to another registry (contents, flags and constraints).
+		/// </summary>
+		/// <param name="other">The other registry to copy to.</param>
+		void CopyTo(IRegistry other);
 	}
 
 	/// <summary>

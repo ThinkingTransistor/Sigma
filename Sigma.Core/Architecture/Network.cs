@@ -297,6 +297,40 @@ namespace Sigma.Core.Architecture
             _logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
         }
 
+	    /// <summary>
+	    /// Transfer this networks' parameters to another network (may be uninitialised).
+	    /// </summary>
+	    /// <param name="other">The other network.</param>
+	    public void TransferParametersTo(INetwork other)
+	    {
+			if (other == null) throw new ArgumentNullException(nameof(other));
+
+		    if (!Equals(Architecture, other.Architecture))
+		    {
+			    throw new InvalidOperationException($"Cannot transfer parameters to network of different architecture (own architecture {Architecture} != {other.Architecture}).");
+		    }
+
+		    if (!other.Initialised)
+		    {
+				other.Initialise(_associatedHandler);
+			}
+
+		    ILayerBuffer[] otherBuffers = other.YieldLayerBuffersOrdered().ToArray();
+		    for (var i = 0; i < _orderedLayerBuffers.Count; i++)
+		    {
+			    _orderedLayerBuffers[i].Parameters.CopyTo(otherBuffers[i].Parameters);
+
+				// remove exposed data, not part of actual parameters
+			    otherBuffers[i].Parameters.Remove("_outputs");
+			    otherBuffers[i].Parameters.Remove("_inputs");
+		    }
+
+			// update registry if from the same type
+			Network otherAsNetwork = other as Network;
+
+			otherAsNetwork?.UpdateRegistry();
+	    }
+
         /// <inheritdoc />
         public IEnumerable<ILayer> YieldLayersOrdered()
         {

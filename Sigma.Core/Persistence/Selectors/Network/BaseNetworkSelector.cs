@@ -61,21 +61,21 @@ namespace Sigma.Core.Persistence.Selectors.Network
 		/// <returns>A selector for a new network with the given component(s) retained.</returns>
 		public ISelector<TNetwork> Keep(params NetworkComponent[] components)
 		{
-			if (components.Length != 1)
-			{
-				throw new ArgumentException($"Number of network components to keep must be 1 but was {components.Length} (either none, architecture or everything - they are mutually exclusive).");
-			}
-
-			if (components[0] == NetworkComponent.Everything)
+			if (components.ContainsFlag(NetworkComponent.Everything))
 			{
 				return CreateSelector((TNetwork) Result.DeepCopy());
 			}
 
 			TNetwork network = CreateNetwork(Result.Name);
 
-			if (components[0] == NetworkComponent.Architecture)
+			if (components.ContainsFlag(NetworkComponent.Architecture))
 			{				
-				network.Architecture = Result.Architecture;
+				network.Architecture = (INetworkArchitecture) Result.Architecture.DeepCopy();
+			}
+
+			if (components.ContainsFlag(NetworkComponent.Parameters))
+			{
+				Result.TransferParametersTo(network);
 			}
 
 			return CreateSelector(network);

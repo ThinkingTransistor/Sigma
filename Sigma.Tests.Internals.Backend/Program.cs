@@ -31,6 +31,7 @@ using System.Threading;
 using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
+using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Optimisers.Gradient;
@@ -183,7 +184,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.02, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
