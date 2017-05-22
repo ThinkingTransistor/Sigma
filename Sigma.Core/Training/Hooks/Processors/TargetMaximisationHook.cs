@@ -47,7 +47,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 
 			ParameterRegistry["desired_targets"] = desiredTargets;
 			ParameterRegistry["desired_cost"] = desiredCost;
-			ParameterRegistry["max_optimisation_steps"] = 1000;
+			ParameterRegistry["max_optimisation_steps"] = 1024;
+			ParameterRegistry["max_optimisation_attempts"] = 2;
 			ParameterRegistry["shared_result_input_key"] = sharedResultInputKey;
 			ParameterRegistry["shared_result_success_key"] = sharedResultSuccessKey;
 		}
@@ -61,43 +62,58 @@ namespace Sigma.Core.Training.Hooks.Processors
 		{
 			// we need copies of network and optimiser as to not affect the current internal state
 			INetwork network = (INetwork)resolver.ResolveGetSingle<INetwork>("network.self").DeepCopy();
-			BaseGradientOptimiser optimiser = (BaseGradientOptimiser)resolver.ResolveGetSingle<BaseGradientOptimiser>("optimiser.self").DeepCopy();
+			BaseGradientOptimiser optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
 			IComputationHandler handler = new DebugHandler(Operator.Handler);
 
 			long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
 
-			INDArray maximisedInputs = CreateRandomisedInput(handler, inputShape); // BTF dimension ordering
 			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
 
 			block["targets"] = desiredTargets; // desired targets don't change during execution
 
-			double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost;
-			int optimisationSteps = 0, maxOptimisationSteps = ParameterRegistry.Get<int>("max_optimisation_steps");
+			double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost = Double.MaxValue;
+			int maxOptimisationAttempts = ParameterRegistry.Get<int>("max_optimisation_attempts");
+			int maxOptimisationSteps = ParameterRegistry.Get<int>("max_optimisation_steps");
+			int optimisationSteps = 0;
+			INDArray maximisedInputs = CreateRandomisedInput(handler, inputShape); 
 
-			do
+			for (int i = 0; i < maxOptimisationAttempts; i++)
 			{
-				// trace current inputs and run network as normal
-				uint traceTag = handler.BeginTrace();
-				block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] { 1L, 1L }, inputShape)), traceTag);
+				optimisationSteps = 0;
 
-				DataProviderUtils.ProvideExternalInputData(network, block);
-				network.Run(handler, trainingPass: true);
+				do
+				{
+					// trace current inputs and run network as normal
+					uint traceTag = handler.BeginTrace();
+					block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] {1L, 1L}, inputShape)), traceTag);
 
-				// fetch current outputs and optimise against them (towards desired targets)
-				INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
-					.Outputs["external_default"].Get<INDArray>("activations");
-				INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
+					DataProviderUtils.ProvideExternalInputData(network, block);
+					network.Run(handler, trainingPass: true);
 
-				handler.ComputeDerivativesTo(squaredDifference);
+					// fetch current outputs and optimise against them (towards desired targets)
+					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
+						.Outputs["external_default"].Get<INDArray>("activations");
+					INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
 
-				INDArray gradient = handler.GetDerivative(block["inputs"]);
-				maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));
+					handler.ComputeDerivativesTo(squaredDifference);
 
-				currentCost = squaredDifference.GetValueAs<double>();
+					INDArray gradient = handler.GetDerivative(block["inputs"]);
+					maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));
 
-			} while (currentCost > desiredCost && ++optimisationSteps < maxOptimisationSteps);
+					currentCost = squaredDifference.GetValueAs<double>();
 
+					if (currentCost <= desiredCost)
+					{
+						goto Validation;
+					}
+
+				} while (++optimisationSteps < maxOptimisationSteps);
+
+				maximisedInputs = CreateRandomisedInput(handler, inputShape); // reset input
+			}
+
+			Validation:
 			maximisedInputs.ReshapeSelf(inputShape);
 
 			string sharedResultInput = ParameterRegistry.Get<string>("shared_result_input_key");
@@ -105,7 +121,7 @@ namespace Sigma.Core.Training.Hooks.Processors
 
 			if (optimisationSteps >= maxOptimisationSteps)
 			{
-				_logger.Debug($"Aborted target maximisation for {desiredTargets}, failed after {maxOptimisationSteps} optimisation steps (exceeded limit, current cost {currentCost} but desired {desiredCost}).");
+				_logger.Debug($"Aborted target maximisation for {desiredTargets}, failed after {maxOptimisationSteps} optimisation steps in {maxOptimisationAttempts} attempts (exceeded limit, current cost {currentCost} but desired {desiredCost}).");
 
 				resolver.ResolveSet(sharedResultSuccess, false, addIdentifierIfNotExists: true);
 			}

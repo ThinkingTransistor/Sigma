@@ -35,6 +35,7 @@ using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Optimisers.Gradient;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -47,7 +48,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleWdbc();
+			SampleMnist();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -174,17 +175,17 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28)
 											+ DropoutLayer.Construct(0.2)
-											+ FullyConnectedLayer.Construct(1200)
-											+ DropoutLayer.Construct(0.4)
-											+ FullyConnectedLayer.Construct(1200)
-											+ DropoutLayer.Construct(0.4)
+											+ FullyConnectedLayer.Construct(1000, activation: "rel")
+											+ DropoutLayer.Construct(0.5)
+											+ FullyConnectedLayer.Construct(800, activation: "rel")
+											+ DropoutLayer.Construct(0.5)
 											+ FullyConnectedLayer.Construct(10)
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.02, momentum: 0.9);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
@@ -201,6 +202,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
+			trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 500));

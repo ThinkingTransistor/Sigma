@@ -99,14 +99,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 			else
 			{
-				InitBitmap(_width, _height);
+				InitialiseBitmap(_width, _height);
 			}
 		}
 
 		/// <summary>
 		/// Initialise the bitmap and unassign from all listeners. Further after this method has finished execution, it will call all attached listeners
 		/// </summary>
-		protected void InitBitmap(int width, int height)
+		protected void InitialiseBitmap(int width, int height)
 		{
 			PresentationSource source = PresentationSource.FromVisual(_window);
 
@@ -180,7 +180,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		protected void OnWindowLoaded(object sender, RoutedEventArgs e)
 		{
 			_window.Loaded -= OnWindowLoaded;
-			InitBitmap(_width, _height);
+			InitialiseBitmap(_width, _height);
 		}
 
 		protected virtual byte[] ToColourArray<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)

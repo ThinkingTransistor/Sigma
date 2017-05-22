@@ -108,6 +108,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
 				window.TabControl["Validation"].GridSize = new GridSize(1, 2);
+				window.TabControl["Debug"].GridSize = new GridSize(2, 5);
 
 				window.TabControl["Overview"].GridSize.Rows -= 1;
 				window.TabControl["Overview"].GridSize.Columns -= 1;
@@ -210,10 +211,11 @@ namespace Sigma.Tests.Internals.WPF
 				//});
 				//window.TabControl["Debug"].AddCumulativePanel(bitmapPanel, 2, 2);
 
-				var mnistMaxTargetPanel = new MnistTargetMaximisationPanel("Number", trainer, TimeStep.Every(1, TimeScale.Start));
-				window.TabControl["Debug"].AddCumulativePanel(mnistMaxTargetPanel, 2, 3);
+				for (int i = 0; i < 10; i++)
+				{
+					window.TabControl["Debug"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				}
 
-				// finish initialisation
 				window.IsInitializing = false;
 			});
 
