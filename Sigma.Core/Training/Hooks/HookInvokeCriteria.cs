@@ -450,12 +450,8 @@ namespace Sigma.Core.Training.Hooks
 					state--;
 				}
 
-				Console.WriteLine("check state: " + state);
-
 				ParameterRegistry["state"] = state;
 			}
-
-			Console.WriteLine("check active: " + active);
 
 			return active;
 		}
@@ -477,8 +473,6 @@ namespace Sigma.Core.Training.Hooks
 				{
 					state = int.MinValue;
 				}
-
-				Console.WriteLine("state: " + state);
 
 				ParameterRegistry["state"] = state;
 			}
