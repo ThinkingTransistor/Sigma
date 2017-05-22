@@ -15,6 +15,7 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
+	//TODO: HACK: only for presentation
 	public class Guess
 	{
 		public int Zahl { get; set; }
@@ -94,6 +95,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 
 		}
 
+		// TODO: own public class
 		private class PassNetworkHook : BaseHook
 		{
 			private const string DataIdentifier = "data";
@@ -117,7 +119,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			{
 				IDictionary<string, INDArray> block = (IDictionary<string, INDArray>) ParameterRegistry[DataIdentifier];
 				IOutputPanel panel = (IOutputPanel) ParameterRegistry[PanelIdentifier];
-
 
 				INetwork network = resolver.ResolveGetSingle<INetwork>("network.self");
 
@@ -184,7 +185,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			Content.InputChangedEvent += UpdateValues;
 		}
 
-		private double[] DrawCanvasValuesSingle(DrawCanvas canvas)
+		private static double[] DrawCanvasValuesSingle(RectangleCanvas canvas)
 		{
 			double[,] vals = canvas.GetValues();
 			double[] newVals = new double[vals.Length];

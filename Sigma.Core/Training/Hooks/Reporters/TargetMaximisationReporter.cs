@@ -69,14 +69,25 @@ namespace Sigma.Core.Training.Hooks.Reporters
 				IComputationHandler handler = Operator.Handler;
 				INDArray inputs = resolver.ResolveGetSingle<INDArray>($"shared.target_maximisation_result_{uid}_input");
 
-				char[] palette = PrintUtils.AsciiGreyscalePalette;
-
-				float min = handler.Min(inputs).GetValueAs<float>(), max = handler.Max(inputs).GetValueAs<float>();
-				float range = max - min;
-
-				_logger.Info($"Successfully completed target maximisation for {desiredTargets}: \n" +
-					ArrayUtils.ToString<float>(inputs, e => palette[(int)(Math.Pow((e - min) / range, 1.9) * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false));
+				OnTargetMaximisationSuccess(handler, inputs, desiredTargets);
 			}
+		}
+
+		/// <summary>
+		/// Handle a successful maximisation.
+		/// </summary>
+		/// <param name="handler">The computation handler.</param>
+		/// <param name="inputs">The inputs.</param>
+		/// <param name="desiredTargets">The desired targets.</param>
+		protected virtual void OnTargetMaximisationSuccess(IComputationHandler handler, INDArray inputs, INDArray desiredTargets)
+		{
+			char[] palette = PrintUtils.AsciiGreyscalePalette;
+
+			float min = handler.Min(inputs).GetValueAs<float>(), max = handler.Max(inputs).GetValueAs<float>();
+			float range = max - min;
+
+			_logger.Info($"Successfully completed target maximisation for {desiredTargets}: \n" +
+						ArrayUtils.ToString<float>(inputs, e => palette[(int)(Math.Pow((e - min) / range, 1.9) * (palette.Length - 1))].ToString(), maxDimensionNewLine: 0, printSeperator: false));
 		}
 	}
 }

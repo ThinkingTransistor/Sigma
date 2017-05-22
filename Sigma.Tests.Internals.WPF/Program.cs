@@ -35,6 +35,9 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Media;
+using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -189,11 +192,26 @@ namespace Sigma.Tests.Internals.WPF
 				//	}
 				//}
 
-
-
 				//window.TabControl["Debug"].AddCumulativePanel(rectanglePanel);
-				var bitmapPanel = new BitmapPanel("Bitmap", 768, 768);
-				window.TabControl["Debug"].AddCumulativePanel(bitmapPanel, 2, 2);
+
+				//var bitmapPanel = new BitmapPanel("Bitmap", 28, 28);
+				////bitmapPanel.Content.Width = 28;
+				////bitmapPanel.Content.Height = 28;
+				//RenderOptions.SetBitmapScalingMode(bitmapPanel.Content, BitmapScalingMode.NearestNeighbor);
+				//bitmapPanel.OnBitmapInitialised(() =>
+				//{
+				//	byte[] data = new byte[28 * 28 * 4];
+				//	for (int i = 0; i < data.Length; i++) data[i] = 0xff;
+				//	bitmapPanel.RenderRaw(data);
+
+				//	INDArray ndArray = trainer.Operator.Handler.NDArray(new[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6 }, 3, 2);
+				//	//data = new byte[] { 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff, 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff };
+				//	bitmapPanel.RenderRectangle<double>(ndArray, r => 0x00, g => 0x00, b => (byte) (255 * b), a => 0xff, 1, 1);
+				//});
+				//window.TabControl["Debug"].AddCumulativePanel(bitmapPanel, 2, 2);
+
+				var mnistMaxTargetPanel = new MnistTargetMaximisationPanel("Number", trainer, TimeStep.Every(1, TimeScale.Start));
+				window.TabControl["Debug"].AddCumulativePanel(mnistMaxTargetPanel, 2, 3);
 
 				// finish initialisation
 				window.IsInitializing = false;
@@ -293,11 +311,13 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
+
+			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
 
 			return trainer;
 		}

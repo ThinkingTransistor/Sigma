@@ -3,10 +3,13 @@ using log4net;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Sigma.Core.Data;
+using Sigma.Core.MathAbstract;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -42,6 +45,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// </summary>
 		private readonly ILog _logger = LogManager.GetLogger(typeof(BitmapPanel));
 
+		protected int PixelWidth, PixelHeight;
+		protected int BitsPerPixel;
+
 		/// <summary>
 		///     Create a BitmapPanel with a given title, width, and height.
 		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
@@ -56,7 +62,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			Content = new Image();
 			_width = width;
 			_height = height;
-
 		}
 
 		/// <summary>
@@ -94,14 +99,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 			else
 			{
-				InitBitmap();
+				InitBitmap(_width, _height);
 			}
 		}
 
 		/// <summary>
 		/// Initialise the bitmap and unassign from all listeners. Further after this method has finished execution, it will call all attached listeners
 		/// </summary>
-		protected void InitBitmap()
+		protected void InitBitmap(int width, int height)
 		{
 			PresentationSource source = PresentationSource.FromVisual(_window);
 
@@ -118,24 +123,31 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
 			}
 
-			Bitmap = new WriteableBitmap(_width, _height, dpiX, dpiY, PixelFormats.Bgra32, null);
+			Bitmap = new WriteableBitmap(width, height, dpiX, dpiY, PixelFormats.Bgra32, null);
 
 			DrawingVisual drawingVisual = new DrawingVisual();
 			using (DrawingContext context = drawingVisual.RenderOpen())
 			{
-				context.DrawImage(Bitmap, new Rect(0, 0, _width, _height));
+				context.DrawImage(Bitmap, new Rect(0, 0, width, height));
 			}
 
 			DrawingImage drawingImage = new DrawingImage(drawingVisual.Drawing);
 
 			Content.Source = drawingImage;
 
+			PixelWidth = Bitmap.PixelWidth;
+			PixelHeight = Bitmap.PixelHeight;
+			BitsPerPixel = Bitmap.Format.BitsPerPixel;
+
 			_window = null;
 			OnBitmapInitialised();
 
 			Initialised = true;
-			foreach (Action listener in BitmapInitListeners) { listener(); }
-			BitmapInitListeners = null;
+			if (BitmapInitListeners != null)
+			{
+				foreach (Action listener in BitmapInitListeners) { listener(); }
+				BitmapInitListeners = null;
+			}
 		}
 
 		/// <summary>
@@ -168,7 +180,22 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		protected void OnWindowLoaded(object sender, RoutedEventArgs e)
 		{
 			_window.Loaded -= OnWindowLoaded;
-			InitBitmap();
+			InitBitmap(_width, _height);
+		}
+
+		protected virtual byte[] ToColourArray<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		{
+			byte[] newData = new byte[data.Length * 4];
+			for (int i = 0; i < data.Length; i++)
+			{
+				int pos = i * 4;
+				newData[pos] = blue(data[i]);
+				newData[pos + 1] = green(data[i]);
+				newData[pos + 2] = red(data[i]);
+				newData[pos + 3] = alpha(data[i]);
+			}
+
+			return newData;
 		}
 
 		/// <summary>
@@ -176,18 +203,97 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// The data has to be of the length Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8.
 		/// </summary>
 		/// <param name="data">The new data the image will contain.</param>
-		public void Render(byte[] data)
+		public void RenderRaw(byte[] data)
 		{
-			if (Bitmap == null)
-			{
-				throw new InvalidOperationException("The bitmap is not yet initialised.");
-			}
-			if (data.Length != Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8)
-			{
-				throw new ArgumentException(nameof(data));
-			}
+			RenderRectangleRaw(data, PixelWidth, PixelHeight, 0, 0);
+		}
 
-			Bitmap.WritePixels(new Int32Rect(0, 0, Bitmap.PixelWidth, Bitmap.PixelHeight), data, Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8, 0);
+		public void Render<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		{
+			RenderRaw(ToColourArray(data, red, green, blue, alpha));
+		}
+
+		/// <summary>
+		/// Render a given byte INDarray of data (the bitmap has to be initialised).
+		/// The data has to be of the length Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8.
+		/// </summary>
+		/// <param name="data">The new data the image will contain.</param>
+		public void RenderRaw(INDArray data)
+		{
+			RenderRaw(data.GetDataAs<byte>().ToArray());
+		}
+
+		public void Render<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		{
+			Render(data.GetDataAs<T>().ToArray(), red, green, blue, alpha);
+		}
+
+		/// <summary>
+		/// Render bytes as a rectangle with a x- and y-offset.
+		/// </summary>
+		/// <param name="data">The data that will be rendered.</param>
+		/// <param name="xOffset">The x-offset.</param>
+		/// <param name="yOffset">The y-offste.</param>
+		public void RenderRectangleRaw(byte[] data, int width, int height, int xOffset, int yOffset)
+		{
+			if (Bitmap == null) throw new InvalidOperationException("The bitmap is not yet initialised.");
+			//if (data.Length + xOffset * _width + yOffset * _height > height * width * BitsPerPixel / 8) throw new ArgumentException(nameof(data));
+
+			Bitmap.WritePixels(new Int32Rect(xOffset, yOffset, width, height), data, width * BitsPerPixel / 8, 0);
+		}
+
+		public void RenderRectangle<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int width, int height, int xOffset, int yOffset)
+		{
+			RenderRectangleRaw(ToColourArray(data, red, green, blue, alpha), width, height, xOffset, yOffset);
+		}
+
+		/// <summary>
+		/// Render bytes as a rectangle with a x- and y-offset.
+		/// </summary>
+		/// <param name="data">The data that will be rendered.</param>
+		/// <param name="xOffset">The x-offset.</param>
+		/// <param name="yOffset">The y-offste.</param>
+		public void RenderRectangleRaw(INDArray data, int xOffset, int yOffset)
+		{
+			RenderRectangleRaw(data.GetDataAs<byte>().ToArray(), (int)data.Shape[1], (int)data.Shape[0], xOffset, yOffset);
+		}
+
+		public void RenderRectangle<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset, int yOffset)
+		{
+			RenderRectangleRaw(ToColourArray(data.GetDataAs<T>().ToArray(), red, green, blue, alpha), (int)data.Shape[1], (int)data.Shape[0], xOffset, yOffset);
+		}
+
+		/// <summary>
+		/// Render a stream of bytes with an xOffset.
+		/// </summary>
+		/// <param name="data"></param>
+		/// <param name="xOffset"></param>
+		public void RenderStreamRaw(byte[] data, int xOffset)
+		{
+			if (Bitmap == null) throw new InvalidOperationException("The bitmap is not yet initialised.");
+			//if (data.Length + xOffset > PixelHeight * PixelWidth * BitsPerPixel / 8) throw new ArgumentException(nameof(data));
+
+			Bitmap.WritePixels(new Int32Rect(0, 0, PixelWidth, PixelHeight), data, PixelWidth * BitsPerPixel / 8, xOffset);
+		}
+
+		public void RenderStream<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset)
+		{
+			RenderStreamRaw(ToColourArray(data, red, green, blue, alpha), xOffset);
+		}
+
+		/// <summary>
+		/// Render a stream of bytes with an xOffset.
+		/// </summary>
+		/// <param name="data"></param>
+		/// <param name="xOffset"></param>
+		public void RenderStreamRaw(INDArray data, int xOffset)
+		{
+			RenderStreamRaw(data.GetDataAs<byte>().ToArray(), xOffset);
+		}
+
+		public void RenderStream<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset)
+		{
+			RenderStreamRaw(ToColourArray(data.GetDataAs<T>().ToArray(), red, green, blue, alpha), xOffset);
 		}
 	}
 }
