@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System.Collections.Generic;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Preprocessors;
@@ -69,7 +70,8 @@ namespace Sigma.Core.Utils
 			/// <returns>The IRIS dataset.</returns>
 			public static IDataset Iris(string name = "iris")
 			{
-				IRecordExtractor irisExtractor = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")))
+				IRecordExtractor irisExtractor = new CsvRecordReader(
+					new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")))
 					.Extractor("inputs", new[] { 0, 3 }, "targets", 4)
 					.AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
 					.Preprocess(new OneHotPreprocessor("targets", minValue: 0, maxValue: 2))
@@ -108,13 +110,45 @@ namespace Sigma.Core.Utils
 			public static IDataset Wdbc(string name = "wdbc")
 			{
 				IRecordExtractor extractor = new CsvRecordReader(
-					source: new MultiSource(new FileSource("wdbc.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data")))
+					new MultiSource(new FileSource("wdbc.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data")))
 					.Extractor("inputs", new[] { 2, 31 }, "targets", 1)
 					.AddValueMapping(1, "M", "B")
 					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
 					.Preprocess(new ShufflePreprocessor());
 
 				return new ExtractedDataset(name, extractor);
+			}
+
+			/// <summary>
+			/// Create an extracted Connect4 dataset (6 by 7 field).
+			/// The dataset is shuffled and one-hot-target-preprocessed.
+			/// </summary>
+			/// <param name="name">The optional name.</param>
+			/// <returns>The Connect4 dataset.</returns>
+			public static IDataset Connect4(string name = "connect4")
+			{
+				CsvRecordExtractor csvExtractor = new CsvRecordReader(
+					new MultiSource(new FileSource("connect-4.data"), new UrlSource("https://raw.githubusercontent.com/moroshko/connect4/master/connect-4.data")))
+					.Extractor("inputs", new[] { 0, 41 }, "targets", 42)
+					.AddValueMapping(42, "loss", "draw", "win");
+
+				Dictionary<object, object> mappings = new Dictionary<object, object>()
+				{
+					["x"] = 1,
+					["b"] = 0,
+					["o"] = -1
+				};
+
+				for (int i = 0; i < 42; i++)
+				{
+					csvExtractor.AddValueMapping(i, mapping: mappings);
+				}
+
+				var extractor = csvExtractor
+					.Preprocess(new OneHotPreprocessor("targets", 0, 2))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, 67557, extractor);
 			}
 
 			#endregion

@@ -142,7 +142,7 @@ namespace Sigma.Tests.Internals.WPF
 				var parameter = new ParameterPanel("Parameters", sigma, window);
 				parameter.Add("Time", typeof(DateTime), regTest, "test");
 
-				ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
+				ValueSourceReporter valueHook = new ValueSourceReporter(TimeStep.Every(1, TimeScale.Epoch), "optimiser.cost_total");
 				trainer.AddGlobalHook(valueHook);
 				sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 
@@ -212,10 +212,10 @@ namespace Sigma.Tests.Internals.WPF
 				//});
 				//window.TabControl["Maximisation"].AddCumulativePanel(bitmapPanel, 2, 2);
 
-				//for (int i = 0; i < 10; i++)
-				//{
-				//	window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
-				//}
+				for (int i = 0; i < 10; i++)
+				{
+					window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				}
 
 				//for (int i = 0; i < 10; i++)
 				//{
@@ -257,8 +257,8 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
-			trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
-			trainer.AddLocalHook(new ValueReporterHook("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+			trainer.AddLocalHook(new ValueReporter("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
 
 			return trainer;
 		}
@@ -284,8 +284,8 @@ namespace Sigma.Tests.Internals.WPF
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
-			trainer.AddLocalHook(new AccumulatedValueReporterHook("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
-			trainer.AddLocalHook(new ValueReporterHook("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
+			trainer.AddLocalHook(new ValueReporter("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
 
 			return trainer;

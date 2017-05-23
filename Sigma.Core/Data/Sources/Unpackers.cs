@@ -40,10 +40,10 @@ namespace Sigma.Core.Data.Sources
 		private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static readonly IUnpacker GzipUnpacker = Register(".gz", new GZipUnpacker());
-		public static readonly IUnpacker TarUnpacker = Register(".tar", new GZipUnpacker());
+		public static readonly IUnpacker TarUnpacker = Register(".tar", new TarUnpacker());
 		public static readonly IUnpacker ZipUnpacker = Register(".zip", new ZipUnpacker());
 		public static readonly IUnpacker Bzip2Unpacker = Register(".bz2", new BZip2Unpacker());
-		public static readonly IUnpacker LzwUnpacker = Register(".z", new BZip2Unpacker());
+		public static readonly IUnpacker LzwUnpacker = Register(".z", new LzwUnpacker());
 
 		public static bool AllowExternalTypeOverwrites { get; set; } = false;
 

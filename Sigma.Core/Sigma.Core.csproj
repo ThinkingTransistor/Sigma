@@ -254,12 +254,12 @@
     <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
     <Compile Include="Training\Hooks\Reporters\TargetMaximisationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\UniClassificationAccuracyReporter.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\MultiClassificationAccuracyReporter.cs" />
-    <Compile Include="Training\Hooks\Reporters\AccumulatedValueReporterHook.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValueSourceReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\AccumulatedValueReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueSourceReporter.cs" />
     <Compile Include="Training\Hooks\Saviors\DiskSaviorHook.cs" />
     <Compile Include="Training\Hooks\Scorers\BaseAccuracyScorer.cs" />
     <Compile Include="Training\Hooks\Scorers\MultiClassificationAccuracyScorer.cs" />

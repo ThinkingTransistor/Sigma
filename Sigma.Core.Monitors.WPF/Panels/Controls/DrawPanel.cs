@@ -69,8 +69,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			Trainer.AddGlobalHook(new PassNetworkHook(this, block));
 		}
 
-
-
 		public void SetOutput(INDArray output)
 		{
 			output = Handler.SoftMax(output); // TODO fix for very small numbers
@@ -82,7 +80,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			{
 				double confidence = Math.Round(sorted[i].Key * 10000) / 100;
 				int number = sorted[i].Value;
-				_guesses[i].Wahrscheinlichkeit = $"{confidence:00.00}";
+				_guesses[i].Wahrscheinlichkeit = $"{confidence:00.000}";
 				_guesses[i].Zahl = number;
 				//guesses.Add(new Guess { Accuracy = Math.Round(accuracy.Key * 100), Number = accuracy.Value });
 			}

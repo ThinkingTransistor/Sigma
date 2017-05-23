@@ -7,7 +7,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 	/// <summary>
 	/// A hook that stores given values and can provide them to a <see cref="ISynchronisationHandler"/> as a source.
 	/// </summary>
-	public class ValueSourceReporterHook : BaseHook, ISynchronisationSource
+	public class ValueSourceReporter : BaseHook, ISynchronisationSource
 	{
 		private const string ValueIdentifier = "values";
 		private const string RegistryResolver = "resolver";
@@ -19,7 +19,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueSourceReporterHook(TimeStep timestep, string valueIdentifier) : base(timestep, valueIdentifier)
+		public ValueSourceReporter(TimeStep timestep, string valueIdentifier) : base(timestep, valueIdentifier)
 		{
 			Initialise(valueIdentifier);
 		}
@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// </summary>
 		/// <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
-		public ValueSourceReporterHook(ITimeStep timestep, params string[] valueIdentifiers) : base(timestep, valueIdentifiers)
+		public ValueSourceReporter(ITimeStep timestep, params string[] valueIdentifiers) : base(timestep, valueIdentifiers)
 		{
 			Initialise(valueIdentifiers);
 		}

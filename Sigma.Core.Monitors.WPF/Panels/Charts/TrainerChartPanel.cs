@@ -22,7 +22,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 	/// <summary>
 	/// This generic <see cref="SigmaPanel"/> (should) work with every chart from LiveCharts.
 	/// Depending on the generics, it plots a given chart with given data and a given amount of parameters.
-	/// These parameters are automatically fetched at a given <see cref="TimeStep"/> via a <see cref="AccumulatedValueReporterHook"/>.
+	/// These parameters are automatically fetched at a given <see cref="TimeStep"/> via a <see cref="AccumulatedValueReporter"/>.
 	/// </summary>
 	/// <typeparam name="TChart">The <see cref="Chart"/> that is used.</typeparam>
 	/// <typeparam name="TSeries">The <see cref="Series"/> that is used.</typeparam>
@@ -47,7 +47,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		///  </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer">The trainer to attach the hook to.</param>
-		/// <param name="hookedValue">The value that will get hooked (i.e. the value identifier of <see cref="AccumulatedValueReporterHook"/>).</param>
+		/// <param name="hookedValue">The value that will get hooked (i.e. the value identifier of <see cref="AccumulatedValueReporter"/>).</param>
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
@@ -64,7 +64,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		///  </summary>
 		/// <param name="title">The given tile.</param>
 		/// <param name="trainer">The trainer to attach the hook to.</param>
-		/// <param name="hookedValues">The values that will get hooked (i.e. the value identifiers of <see cref="AccumulatedValueReporterHook"/>).</param>
+		/// <param name="hookedValues">The values that will get hooked (i.e. the value identifiers of <see cref="AccumulatedValueReporter"/>).</param>
 		/// <param name="timestep">The <see cref="TimeStep"/> for the hook.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
@@ -109,7 +109,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// <summary>
 		/// The hook reports values to a given <see ref="ChartPanel"/>.
 		/// </summary>
-		protected class VisualAccumulatedValueReporterHook : AccumulatedValueReporterHook
+		protected class VisualAccumulatedValueReporterHook : AccumulatedValueReporter
 		{
 			/// <summary>
 			/// The identifier for the parameter registry that keeps a reference to the chartpanel
@@ -120,7 +120,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			/// Create a new <see ref="VisualValueReportHook"/> fully prepared to report values.
 			/// </summary>
 			/// <param name="chartPanel">The chartpanel to which points will get added.</param>
-			/// <param name="valueIdentifiers">The identifiers for the <see cref="AccumulatedValueReporterHook"/>; these values will get plotted.</param>
+			/// <param name="valueIdentifiers">The identifiers for the <see cref="AccumulatedValueReporter"/>; these values will get plotted.</param>
 			/// <param name="timestep">The <see cref="TimeStep"/> for the hook (i.e. execution definition).</param>
 			public VisualAccumulatedValueReporterHook(ChartPanel<TChart, TSeries, TChartValues, TData> chartPanel, string[] valueIdentifiers, ITimeStep timestep, bool averageMode = false) : base(valueIdentifiers, timestep, averageMode, false)
 			{

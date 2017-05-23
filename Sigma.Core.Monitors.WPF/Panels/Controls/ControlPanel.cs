@@ -79,12 +79,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		{
 			if (!Trainers.Contains(Trainer))
 			{
-				ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "runtime_millis");
+				ValueSourceReporter valueHook = new ValueSourceReporter(TimeStep.Every(1, TimeScale.Epoch), "runtime_millis");
 				_trainer.AddGlobalHook(valueHook);
 				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 				Trainers.Add(Trainer);
 
-				valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Iteration), "iteration");
+				valueHook = new ValueSourceReporter(TimeStep.Every(1, TimeScale.Iteration), "iteration");
 				_trainer.AddLocalHook(valueHook);
 				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 			}
