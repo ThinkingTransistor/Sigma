@@ -48,7 +48,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleConnect4();
+			SampleTicTacToe();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -165,6 +165,8 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SampleConnect4()
 		{
+			// Note: This sample doesn't work properly yet, data isn't preprocessed enough and the net cant really (meaningfully) handle it
+			//			(requires spatial preprocessing and per-index-one-hot-encodings for inputs (player1, player2, blank) instead of real valued)
 			SigmaEnvironment sigma = SigmaEnvironment.Create("connect4");
 
 			IDataset dataset = Defaults.Datasets.Connect4();
@@ -188,6 +190,36 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1 }));
+
+			sigma.PrepareAndRun();
+		}
+
+		private static void SampleTicTacToe()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("tictactoe");
+
+			IDataset dataset = Defaults.Datasets.TicTacToe();
+
+			ITrainer trainer = sigma.CreateTrainer("tictactoe-trainer");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(9)
+											+ FullyConnectedLayer.Construct(27, "rel")
+											+ FullyConnectedLayer.Construct(81, "rel")
+											+ FullyConnectedLayer.Construct(27, "rel")
+											+ FullyConnectedLayer.Construct(3, "sigmoid")
+											+ OutputLayer.Construct(3)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+
+			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
+
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
 
 			sigma.PrepareAndRun();
 		}

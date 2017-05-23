@@ -6,7 +6,9 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Preprocessors;
@@ -149,6 +151,108 @@ namespace Sigma.Core.Utils
 					.Preprocess(new ShufflePreprocessor());
 
 				return new ExtractedDataset(name, 67557, extractor);
+			}
+
+			public static IDataset TicTacToe(string name = "tictactoe")
+			{
+				byte[] board = new byte[3 * 3];
+				byte[] states = new byte[] { 0, 1, 2 }; //empty, player x, player o
+
+				IDictionary<byte[], byte[]> scoredBoards = new Dictionary<byte[], byte[]>();
+
+				_InternalScoreBoards(0, board, states, scoredBoards);
+
+				Random rng = new Random();
+
+				var scoredBoardsAsArray = scoredBoards.ToArray().OrderBy(x => rng.Next());
+
+				RawDataset dataset = new RawDataset(name);
+
+				dataset.AddRecords("inputs", scoredBoardsAsArray.Select(x => x.Key).ToArray());
+				dataset.AddRecords("targets", scoredBoards.Select(x => x.Value).ToArray());
+
+				return dataset;
+			}
+
+			private static void _InternalScoreBoards(int currentPosition, byte[] board, byte[] states, IDictionary<byte[], byte[]> scoredBoards)
+			{
+				for (int i = 0; i < states.Length; i++)
+				{
+					board[currentPosition] = states[i];
+					byte[] currentBoard = (byte[])board.Clone();
+
+					if (currentPosition < board.Length - 1)
+					{
+						_InternalScoreBoards(currentPosition + 1, currentBoard, states, scoredBoards);
+					}
+					else
+					{
+						int score = ScoreBoard(currentBoard);
+						byte[] scoreOneHot = new byte[3];
+						scoreOneHot[score] = 1;
+
+						//Console.WriteLine($"{board[0]} {board[1]} {board[2]}\n" +
+						//					$"{board[3]} {board[4]} {board[5]} \t => {score}\n" +
+						//					$"{board[6]} {board[7]} {board[8]}\n");
+
+						scoredBoards.Add(currentBoard, scoreOneHot);
+					}
+				}
+			}
+
+			private static int ScoreBoard(byte[] board)
+			{
+				int score = 0;
+
+				for (int i = 0; i < board.Length; i++)
+				{
+					if (board[i] != 1) continue;
+
+					int row = i / 3, col = i % 3;
+					int horizontalStreak = 0, verticalStreak = 0;
+
+					for (int y = i; y < board.Length; y++)
+					{
+						int otherRow = y / 3;
+						if (otherRow != row) break;
+						horizontalStreak++;
+						if (board[i] != board[y]) break;
+					}
+
+					if (horizontalStreak == 2) score = 1;
+					if (horizontalStreak == 3) return 2;
+
+					for (int y = i; y < board.Length; y++)
+					{
+						int otherCol = y % 3;
+						if (otherCol != col) break;
+						verticalStreak++;
+						if (board[i] != board[y]) break;
+					}
+
+					if (verticalStreak == 2) score = 1;
+					if (verticalStreak == 3) return 2;
+				}
+
+				if (board[0] == 1)
+				{
+					if (board[0] == board[4])
+					{
+						if (board[4] == board[8]) return 2;
+					}
+					else if (board[4] == 1 && board[4] == board[8]) score = 1;
+				}
+
+				if (board[2] == 1)
+				{
+					if (board[2] == board[4])
+					{
+						if (board[4] == board[6]) return 2;
+					}
+					else if (board[4] == 1 && board[4] == board[6]) score = 1;
+				}
+
+				return score;
 			}
 
 			#endregion
