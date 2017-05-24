@@ -179,16 +179,15 @@ namespace Sigma.Tests.Internals.WPF
 
 					window.TabControl["Validation"].AddCumulativePanel(drawPanel);
 					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
-				}
 
-				for (int i = 0; i < 10; i++)
-				{
-					window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
+					for (int i = 0; i < 10; i++)
+					{
+						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
+					}
 				}
-
 				//for (int i = 0; i < 10; i++)
 				//{
-				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
 				//}
 
 				window.IsInitializing = false;

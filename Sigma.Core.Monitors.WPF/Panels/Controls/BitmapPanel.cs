@@ -52,7 +52,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// <param name="height">The height of the bitmappanel (not the actual height but the height of the data grid).</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public BitmapPanel(string title, int width, int height, object headerContent = null) : base(title, headerContent)
+		protected BitmapPanel(string title, int width, int height, object headerContent = null) : base(title, headerContent)
 		{
 			Content = new Image();
 			_width = width;
@@ -64,8 +64,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// Use it if a initialisation is requried.
 		/// </summary>
 		protected virtual void OnBitmapInitialised()
-		{
-		}
+		{ }
 
 		/// <summary>
 		/// Add an action as listener that will be invoked once the bitmap has been initialised.
@@ -107,13 +106,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		}
 
 		/// <summary>
-		/// Initialise the bitmap and unassign from all listeners. Further after this method has finished execution, it will call all attached listeners
+		/// Calculate the given DPI for the currently active system.
 		/// </summary>
-		protected void InitialiseBitmap(int width, int height)
+		/// <param name="dpiX">The horizontal dpi.</param>
+		/// <param name="dpiY">The vertical dpi.</param>
+		protected virtual void CalculateDpi(out double dpiX, out double dpiY)
 		{
 			PresentationSource source = PresentationSource.FromVisual(_window);
 
-			double dpiX, dpiY;
 			if (source?.CompositionTarget == null)
 			{
 				dpiX = dpiY = 96;
@@ -121,13 +121,19 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 			else
 			{
-
 				dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
 				dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
 			}
+		}
 
-			Bitmap = new WriteableBitmap(width, height, dpiX, dpiY, PixelFormats.Bgra32, null);
-
+		/// <summary>
+		/// Create the drawing image that will be rendered.
+		/// </summary>
+		/// <param name="width">The width of the image.</param>
+		/// <param name="height">The height of the image.</param>
+		/// <returns></returns>
+		protected virtual DrawingImage CreateDrawingImage(int width, int height)
+		{
 			DrawingVisual drawingVisual = new DrawingVisual();
 			using (DrawingContext context = drawingVisual.RenderOpen())
 			{
@@ -135,6 +141,18 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			}
 
 			DrawingImage drawingImage = new DrawingImage(drawingVisual.Drawing);
+			return drawingImage;
+		}
+
+		/// <summary>
+		/// Initialise the bitmap and unassign from all listeners. Further after this method has finished execution, it will call all attached listeners
+		/// </summary>
+		protected virtual void InitialiseBitmap(int width, int height)
+		{
+			CalculateDpi(out double dpiX, out double dpiY);
+			Bitmap = new WriteableBitmap(width, height, dpiX, dpiY, PixelFormats.Bgra32, null);
+
+			DrawingImage drawingImage = CreateDrawingImage(width, height);
 
 			Content.Source = drawingImage;
 

@@ -9,10 +9,27 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Sigma.Core.Monitors.WPF.View.Factories
+namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 {
+	/// <summary>
+	/// A factory that can create a loading indicator.
+	/// </summary>
 	public class LoadingIndicatorFactory : IUIFactory<UIElement>
 	{
+		private static readonly LoadingIndicatorFactory _factory;
+		/// <summary>
+		/// The singleton of the factory.
+		/// </summary>
+		public static LoadingIndicatorFactory Factory => _factory;
+
+		static LoadingIndicatorFactory()
+		{
+			_factory = new LoadingIndicatorFactory();
+		}
+
+		private LoadingIndicatorFactory() { }
+
+		/// <inheritdoc />
 		public UIElement CreateElement(Application app, Window window, params object[] parameters)
 		{
 			StackPanel panel = new StackPanel
