@@ -19,3 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+LiveCharts.Geared
+LiveCharts.Geared drastically enhances the performance of charts and is free
+for open source projects. As long as the code written with Geared is not edited
+by the user (therefore the user is not a developer), he / she or the company / 
+organization does not have to acquire a LiveCharts.Geared license in order to 
+use Sigma.

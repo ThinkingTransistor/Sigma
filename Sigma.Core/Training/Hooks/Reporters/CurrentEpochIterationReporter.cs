@@ -12,6 +12,9 @@ using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
+	/// <summary>
+	/// A reporter hook that reports the current epoch and iteration.
+	/// </summary>
 	[Serializable]
 	public class CurrentEpochIterationReporter : BaseHook
 	{

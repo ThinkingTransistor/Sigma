@@ -150,6 +150,21 @@ Free to use for anyone (MIT license).</value>
   <data name="CloseApp" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="CurrentActivationFunction" xml:space="preserve">
+    <value>Current activation</value>
+  </data>
+  <data name="CurrentEpoch" xml:space="preserve">
+    <value>Current epoch</value>
+  </data>
+  <data name="CurrentIteration" xml:space="preserve">
+    <value>Current iteration</value>
+  </data>
+  <data name="CurrentOperator" xml:space="preserve">
+    <value>Current operator</value>
+  </data>
+  <data name="CurrentOptimiser" xml:space="preserve">
+    <value>Current optimiser</value>
+  </data>
   <data name="MenuButtonAbout" xml:space="preserve">
     <value>About Sigma</value>
   </data>
@@ -173,5 +188,8 @@ Free to use for anyone (MIT license).</value>
   </data>
   <data name="OpenApp" xml:space="preserve">
     <value>Open</value>
+  </data>
+  <data name="RunningTime" xml:space="preserve">
+    <value>Running time</value>
   </data>
 </root>

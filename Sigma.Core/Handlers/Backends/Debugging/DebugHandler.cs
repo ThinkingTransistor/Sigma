@@ -278,7 +278,21 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 
 		public void Fill<TOther>(TOther value, INDArray arrayToFill)
 		{
-			UnderlyingHandler.Fill(value, CheckNice(arrayToFill));
+			UnderlyingHandler.Fill(value, arrayToFill);
+
+			CheckNice(arrayToFill);
+		}
+
+		public void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices)
+		{
+			UnderlyingHandler.Fill(CheckNice(filler), CheckNice(arrayToFill), sourceBeginIndices, sourceEndIndices, destinationBeginIndices, destinationEndIndices);
+
+			CheckNice(arrayToFill);
+		}
+
+		public void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices)
+		{
+			UnderlyingHandler.Fill(filler, CheckNice(arrayToFill), destinationBeginIndices, destinationEndIndices);
 
 			CheckNice(arrayToFill);
 		}
@@ -352,7 +366,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 					Report($"row and column length must be > 0, but were {rowLength} and {columnLength}", array, rowLength, columnLength);
 				}
 
-				if (rowIndex + rowLength >= array.Shape[0] || columnIndex + columnLength >= array.Shape[1])
+				if (rowIndex + rowLength > array.Shape[0] || columnIndex + columnLength > array.Shape[1])
 				{
 					Report($"row index and column index must be < ndarray.shape[i], but were {rowIndex + rowLength} and {columnIndex + columnLength} (bounds were {array.Shape[0]} and {array.Shape[1]})", array, rowIndex, columnIndex, rowLength, columnLength);
 				}

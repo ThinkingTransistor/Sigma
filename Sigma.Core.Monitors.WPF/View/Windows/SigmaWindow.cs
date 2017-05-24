@@ -171,7 +171,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// The <see cref="IParameterVisualiserManager"/> that is responsible for creation and detection of 
 		/// visualisation elements.
 		/// </summary>
-		public IParameterVisualiserManager ParameterVisualiser { get;  }
+		public IParameterVisualiserManager ParameterVisualiser { get; }
 
 		/// <summary>
 		/// The prefix-identifier for <see cref="DialogHost"/>.
@@ -663,7 +663,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			foreach (string name in names)
 			{
-				tabControl.AddTab(name, new TabUI(name, DefaultGridSize));
+				tabControl.AddTab(name, new TabUI(Monitor, name, DefaultGridSize));
 			}
 		}
 
@@ -675,7 +675,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		{
 			foreach (string tab in tabs)
 			{
-				TabControl.AddTab(tab, new TabUI(tab, DefaultGridSize));
+				TabControl.AddTab(tab, new TabUI(Monitor, tab, DefaultGridSize));
 			}
 		}
 

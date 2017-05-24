@@ -143,7 +143,7 @@ namespace Sigma.Core.Persistence
 		/// <param name="verbose">Optionally indicate where the log messages should written to (verbose = Info, otherwise Debug).</param>
 		/// <param name="validationFunction">The optional validation function to validate the read object with (if false, the original value is returned).</param>
 		/// <returns>The read (i.e. existing) if successfully read and validated, otherwise the original value.</returns>
-		public static T ReadFromBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
+		public static T ReadBinaryFileIfExists<T>(string fileName, T originalValue, bool verbose = true, Func<T, bool> validationFunction = null)
 		{
 			try
 			{
@@ -160,7 +160,7 @@ namespace Sigma.Core.Persistence
 			}
 			catch (Exception e)
 			{
-				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with {e}, returning default value.", ClazzLogger);
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with \"{e.GetType()}: {e.Message}\", returning default value.", ClazzLogger);
 			}
 
 			return originalValue;
@@ -175,6 +175,7 @@ namespace Sigma.Core.Persistence
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
 			Type type = root.GetType();
+
 			traversedObjects.Add(root);
 
 			// traverse all types up to object base type for all relevant fields in the graph

@@ -315,6 +315,10 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Notify the system that a given timescale just occured.
+		/// </summary>
+		/// <param name="timeScale">The timescale that just occured.</param>
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
 			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>();
@@ -361,7 +365,7 @@ namespace Sigma.Core.Training.Operators
 
 			lock (_networkChangedLock)
 			{
-				return (INetwork) Network.DeepCopy();
+				return (INetwork)Network.DeepCopy();
 			}
 		}
 
@@ -775,7 +779,7 @@ namespace Sigma.Core.Training.Operators
 			{
 				if (!localHookTimeSteps.ContainsKey(hook))
 				{
-					TimeStep timeStep = (TimeStep) hook.TimeStep.DeepCopy();
+					TimeStep timeStep = (TimeStep)hook.TimeStep.DeepCopy();
 
 					timeStep.LocalLiveTime = timeStep.LiveTime;
 					timeStep.LocalInterval = timeStep.Interval;
@@ -890,7 +894,7 @@ namespace Sigma.Core.Training.Operators
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
 				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = (IOptimiser) Trainer?.Optimiser?.DeepCopy();
+				workers[i].LocalOptimiser = (IOptimiser)Trainer?.Optimiser?.DeepCopy();
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
@@ -927,19 +931,35 @@ namespace Sigma.Core.Training.Operators
 
 		public virtual void StartOnce()
 		{
-			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
+			if (State != ExecutionState.Running)
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
 					PrepareWorkers();
 
+					////TODO: hack that does not work
+					//Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Epoch, 1), (registry, resolver) =>
+					//{
+					//	State = ExecutionState.Paused;
+					//	Console.WriteLine("Changed state!!!!!!!!!!!!!!!!!");
+					//}));
+
+					if (State == ExecutionState.None || State == ExecutionState.Stopped)
+					{
+						InvokeTimeScaleEvent(TimeScale.Start);
+					}
+					else
+					{
+						InvokeTimeScaleEvent(TimeScale.Resume);
+					}
+
 					RunWorkersOnce();
 
-					State = ExecutionState.Running;
+					InvokeTimeScaleEvent(TimeScale.Pause);
+
+					State = ExecutionState.Paused;
 
 					_InternalResumeRunningStopwatch(); // TODO this can't be right?
-
-					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
 			}
 			else
@@ -1155,6 +1175,7 @@ namespace Sigma.Core.Training.Operators
 			registry["trainer"] = Trainer.Registry;
 			registry["epoch"] = localEpochNumber;
 			registry["iteration"] = localIterationNumber;
+			registry["runtime_millis"] = RunningTimeMilliseconds;
 
 			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
 			{
@@ -1259,7 +1280,7 @@ namespace Sigma.Core.Training.Operators
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				((ICommand) ParameterRegistry[WrappedCommandIdentifier]).OnFinish?.Invoke();
+				((ICommand)ParameterRegistry[WrappedCommandIdentifier]).OnFinish?.Invoke();
 			}
 		}
 
@@ -1296,24 +1317,24 @@ namespace Sigma.Core.Training.Operators
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				IRegistry paramRegistry = (IRegistry) ParameterRegistry[ParameterRegistryIdentifier];
-				int workerCount = (int) paramRegistry[WorkerCountIdentifier];
+				IRegistry paramRegistry = (IRegistry)ParameterRegistry[ParameterRegistryIdentifier];
+				int workerCount = (int)paramRegistry[WorkerCountIdentifier];
 				int finishedWorkers;
 
-				ICommand wrappedCommand = (ICommand) paramRegistry[WrappedCommandIdentifier];
+				ICommand wrappedCommand = (ICommand)paramRegistry[WrappedCommandIdentifier];
 				wrappedCommand.Invoke(registry, resolver);
 
 				// increse the number by one and store it
 				lock (paramRegistry)
 				{
-					finishedWorkers = (int) paramRegistry[FinishedWorkerCountIdentifier] + 1;
+					finishedWorkers = (int)paramRegistry[FinishedWorkerCountIdentifier] + 1;
 					paramRegistry[FinishedWorkerCountIdentifier] = finishedWorkers;
 				}
 
 				// finished execution
 				if (finishedWorkers > workerCount)
 				{
-					BaseOperator op = (BaseOperator) paramRegistry[BaseOperatorIdentifier];
+					BaseOperator op = (BaseOperator)paramRegistry[BaseOperatorIdentifier];
 					op.CommandExecuted(wrappedCommand);
 				}
 			}

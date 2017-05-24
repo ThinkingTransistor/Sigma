@@ -31,7 +31,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
         }
 
         /// <inheritdoc />
-        protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
+        internal override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
         {
             // implementation according to the reference algorithm 1 in the published paper "ADADELTA: AN ADAPTIVE LEARNING RATE METHOD"
             double decayRate = Registry.Get<double>("decay_rate"), smoothing = Registry.Get<double>("smoothing");
@@ -59,6 +59,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
             // store accumulated values for next iteration
             SetMemory(memoryIdentifierGradient, currentAccumulatedGradient);
             SetMemory(memoryIdentifierUpdate, currentAccumulatedUpdate);
+
+            ExposeParameterUpdate(paramIdentifier, update);
 
             // compute optimised parameter using computed update
             return handler.Add(parameter, update);

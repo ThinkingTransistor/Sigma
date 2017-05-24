@@ -26,7 +26,7 @@ namespace Sigma.Core.Data.Datasets
     /// Provides caching of entire blocks and reader data, partial extraction, unordered extraction, automatic block sizing, smart block loading. 
     /// </summary>
     [Serializable]
-    public class Dataset : IDataset, ISerialisationNotifier
+    public class ExtractedDataset : IDataset, ISerialisationNotifier
     {
         [NonSerialized]
         private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -64,7 +64,7 @@ namespace Sigma.Core.Data.Datasets
         public int ActiveBlockRegionCount => _activeBlocks.Count;
 
         /// <inheritdoc />
-        public int ActiveIndividualBlockCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
+        public int ActiveIndividualBlockRegionCount { get { return _activeBlocks.Values.Sum(set => set.Count); } }
 
         /// <inheritdoc />
         public int TargetBlockSizeRecords { get; private set; }
@@ -112,7 +112,7 @@ namespace Sigma.Core.Data.Datasets
         /// </summary>
         /// <param name="name">The unique dataset name.</param>
         /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
-        public Dataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BlockSizeAuto, recordExtractors)
+        public ExtractedDataset(string name, params IRecordExtractor[] recordExtractors) : this(name, BlockSizeAuto, recordExtractors)
         {
         }
 
@@ -122,7 +122,19 @@ namespace Sigma.Core.Data.Datasets
         /// <param name="name">The unique dataset name.</param>
         /// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
         /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
-        public Dataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
+        public ExtractedDataset(string name, int blockSizeRecords, params IRecordExtractor[] recordExtractors)
+            : this(name, blockSizeRecords, true, recordExtractors)
+        {
+        }
+
+        /// <summary>
+        /// Create a dataset with a certain unique name, target block size in records and the record extractors to use.
+        /// </summary>
+        /// <param name="name">The unique dataset name.</param>
+        /// <param name="blockSizeRecords">The target block size for records. May also be <see cref="BlockSizeAuto"/> or <see cref="BlockSizeAll"/>.</param>
+        /// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
+        /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
+        public ExtractedDataset(string name, int blockSizeRecords, bool flushCache, params IRecordExtractor[] recordExtractors)
             : this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
         {
         }
@@ -135,7 +147,7 @@ namespace Sigma.Core.Data.Datasets
         /// <param name="cacheProvider">The cache provider to use for caching record blocks and raw reader data.</param>
         /// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
         /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
-        public Dataset(string name, int blockSizeRecords, ICacheProvider cacheProvider, bool flushCache = true, params IRecordExtractor[] recordExtractors)
+        public ExtractedDataset(string name, int blockSizeRecords, ICacheProvider cacheProvider, bool flushCache = true, params IRecordExtractor[] recordExtractors)
         {
             if (name == null)
             {
@@ -229,7 +241,7 @@ namespace Sigma.Core.Data.Datasets
         public void OnDeserialised()
         {
             InvalidateAndClearCaches();
-            _availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockCount, MaxConcurrentActiveBlocks);
+            _availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks - ActiveIndividualBlockRegionCount, MaxConcurrentActiveBlocks);
         }
 
         public IDataset[] SplitBlockwise(params int[] parts)
@@ -482,7 +494,7 @@ namespace Sigma.Core.Data.Datasets
 
         private Dictionary<string, INDArray> FetchBlockConstrained(int blockIndex, IComputationHandler handler)
         {
-            if (ActiveIndividualBlockCount >= MaxConcurrentActiveBlocks)
+            if (ActiveIndividualBlockRegionCount >= MaxConcurrentActiveBlocks)
             {
                 _logger.Debug($"Unable to fetch block due to MaxConcurrentActiveBlocks constraint of {MaxConcurrentActiveBlocks}.");
 

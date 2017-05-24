@@ -99,7 +99,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\DiffSharp.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.1.17\lib\net45\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -122,6 +125,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -138,10 +144,11 @@
     <Compile Include="Architecture\Linear\Parallel.cs" />
     <Compile Include="Architecture\Network.cs" />
     <Compile Include="Data\DataBuffer.cs" />
-    <Compile Include="Data\Datasets\Dataset.cs" />
+    <Compile Include="Data\Datasets\ExtractedDataset.cs" />
     <Compile Include="Data\Datasets\DatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\DatasetRecordwiseSlice.cs" />
     <Compile Include="Data\Datasets\IDataset.cs" />
+    <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
     <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
@@ -155,11 +162,13 @@
     <Compile Include="Data\Iterators\UnifiedIterator.cs" />
     <Compile Include="Data\Preprocessors\Adaptive\AdaptiveNormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\Adaptive\BaseAdaptivePreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\Adaptive\AdaptivePerIndexNormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\BasePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\IRecordPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\ShufflePreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
@@ -205,6 +214,7 @@
     <Compile Include="MathAbstract\Backends\SigmaDiff\ADNumber.cs" />
     <Compile Include="MathAbstract\ITraceable.cs" />
     <Compile Include="Monitors\ConsoleTaskListMonitor.cs" />
+    <Compile Include="Monitors\HttpMonitor.cs" />
     <Compile Include="Monitors\IMonitor.cs" />
     <Compile Include="Monitors\MonitorAdapter.cs" />
     <Compile Include="Monitors\Synchronisation\ISynchronisationHandler.cs" />
@@ -233,6 +243,7 @@
     <Compile Include="Persistence\Serialiser.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Hooks\Processors\MetricProcessorHook.cs" />
     <Compile Include="Training\Hooks\Processors\NumberAccumulatorHook.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
     <Compile Include="Training\Hooks\IllegalHookDependencyException.cs" />
@@ -240,14 +251,19 @@
     <Compile Include="Training\Hooks\LambdaHook.cs" />
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
+    <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\TargetMaximisationReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\UniClassificationAccuracyReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\CurrentEpochIterationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\RunningTimeReporter.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValidationAccuracyReporter.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValueReporterHook.cs" />
-    <Compile Include="Training\Hooks\Reporters\ValueSourceReporterHook.cs" />
+    <Compile Include="Training\Hooks\Reporters\MultiClassificationAccuracyReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\AccumulatedValueReporter.cs" />
+    <Compile Include="Training\Hooks\Reporters\ValueSourceReporter.cs" />
     <Compile Include="Training\Hooks\Saviors\DiskSaviorHook.cs" />
-    <Compile Include="Training\Hooks\Scorers\BaseValidationScorer.cs" />
-    <Compile Include="Training\Hooks\Scorers\ValidationAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\Scorers\BaseAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\Scorers\MultiClassificationAccuracyScorer.cs" />
+    <Compile Include="Training\Hooks\Scorers\UniClassificationAccuracyScorer.cs" />
     <Compile Include="Training\Hooks\Stoppers\StopTrainingHook.cs" />
     <Compile Include="Training\Hooks\TargetMode.cs" />
     <Compile Include="Training\Initialisers\ConstantValueInitialiser.cs" />
@@ -286,6 +302,7 @@
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
     <Compile Include="Utils\DataProviderUtils.cs" />
+    <Compile Include="Utils\Defaults.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
     <Compile Include="Utils\HookUtils.cs" />
@@ -293,6 +310,7 @@
     <Compile Include="Utils\IDeepCopyable.cs" />
     <Compile Include="Training\Hooks\IHook.cs" />
     <Compile Include="Utils\IEnumerableExtensions.cs" />
+    <Compile Include="Utils\Namers.cs" />
     <Compile Include="Utils\IRegistry.cs" />
     <Compile Include="Utils\IRegistryResolver.cs" />
     <Compile Include="Utils\ITaskObserver.cs" />

@@ -23,6 +23,7 @@
 						<Style x:Key="SigmaPlayButton" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignFloatingActionToggleButton}">
 							<Setter Property="SnapsToDevicePixels" Value="False"/>
 							<Setter Property="UseLayoutRounding" Value="False"/>
+							<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
 						</Style>
 
 					</ResourceDictionary>

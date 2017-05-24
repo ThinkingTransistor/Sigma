@@ -7,19 +7,19 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using log4net;
-using Sigma.Core.Training.Hooks.Accumulators;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sigma.Core.Training.Hooks.Processors;
 
 namespace Sigma.Core.Training.Hooks.Reporters
 {
 	/// <summary>
-	/// A hook that logs the current local value of each worker (e.g. cost) over a certain time period.
+	/// A hook that logs the accumulated / averaged value(s) of a certain identifier.
 	/// </summary>
 	[Serializable]
-	public class ValueReporterHook : BaseHook
+	public class AccumulatedValueReporter : BaseHook
 	{
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -30,7 +30,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, reportEpochIteration) { }
+		public AccumulatedValueReporter(string valueIdentifier, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : this(new[] { valueIdentifier }, timestep, averageValues: averageValues, reportEpochIteration: reportEpochIteration) { }
 
 		/// <summary>
 		/// Create a hook that conditionally (extrema criteria) fetches a given value (i.e. registry identifier) at a given <see cref="ITimeStep"/>.
@@ -38,7 +38,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="valueIdentifier">The value that will be fetched (i.e. registry identifier). E.g. <c>"optimiser.cost_total"</c></param>
 		/// <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="target">The extrema criteria target.</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
+		public AccumulatedValueReporter(string valueIdentifier, ITimeStep timestep, ExtremaTarget target) : this(new[] {valueIdentifier}, timestep)
 		{
 			On(new ExtremaCriteria(GetAccumulatedIdentifier(valueIdentifier), target));
 		}
@@ -51,7 +51,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="threshold">The threshold to compare against.</param>
 		/// <param name="target">The threshold criteria comparison target.</param>
 		/// <param name="fireContinously">If the value should be reported every time step the criteria is satisfied (or just once).</param>
-		public ValueReporterHook(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : this(new[] { valueIdentifier }, timestep)
+		public AccumulatedValueReporter(string valueIdentifier, ITimeStep timestep, double threshold, ComparisonTarget target, bool fireContinously = true) : this(new[] { valueIdentifier }, timestep)
 		{
 			On(new ThresholdCriteria(GetAccumulatedIdentifier(valueIdentifier), target, threshold, fireContinously));
 		}
@@ -62,7 +62,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		///  <param name="valueIdentifiers">The values that will be fetched (i.e. registry identifiers). E.g. <c>"optimiser.cost_total"</c>, ...</param>
 		///  <param name="timestep">The <see cref="ITimeStep"/> the hook will executed on.</param>
 		/// <param name="reportEpochIteration">Indicate whether or not to report the current epoch and iteration in addition to the values.</param>
-		public ValueReporterHook(string[] valueIdentifiers, ITimeStep timestep, bool reportEpochIteration = false) : base(timestep, valueIdentifiers)
+		public AccumulatedValueReporter(string[] valueIdentifiers, ITimeStep timestep, bool averageValues = false, bool reportEpochIteration = false) : base(timestep, valueIdentifiers)
 		{
 			if (valueIdentifiers.Length == 0) throw new ArgumentException("Value identifiers cannot be empty (it's the whole point of this hook).");
 
@@ -92,7 +92,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 					resetInterval = 0;
 				}
 
-				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), resetEvery, resetInterval));
+				RequireHook(new NumberAccumulatorHook(value, accumulatedIdentifiers[i], Utils.TimeStep.Every(1, TimeScale.Iteration), averageValues, resetEvery, resetInterval));
 
 				valueBuffer.Add(value, null);
 			}

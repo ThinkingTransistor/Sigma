@@ -20,7 +20,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 	/// A base implementation for validation scorers that takes care of automatically getting the final output of a and staging the scoring process.
 	/// </summary>
 	[Serializable]
-	public abstract class BaseValidationScorer : BaseHook
+	public abstract class BaseAccuracyScorer : BaseHook
 	{
 		/// <summary>
 		/// Create a validation scorer hook for a certain validation iterator.
@@ -29,7 +29,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		/// </summary>
 		/// <param name="validationIteratorName">The validation data iterator name (as in the trainer).</param>
 		/// <param name="timestep">The time step.</param>
-		protected BaseValidationScorer(string validationIteratorName, ITimeStep timestep) : this(validationIteratorName, "external_default", timestep)
+		protected BaseAccuracyScorer(string validationIteratorName, ITimeStep timestep) : this(validationIteratorName, "external_default", timestep)
 		{
 		}
 
@@ -39,7 +39,7 @@ namespace Sigma.Core.Training.Hooks.Scorers
 		/// <param name="validationIteratorName">The validation data iterator name (as in the trainer).</param>
 		/// <param name="finalExternalOutputAlias">The final external output alias (where the actual output is).</param>
 		/// <param name="timestep">The time step.</param>
-		protected BaseValidationScorer(string validationIteratorName, string finalExternalOutputAlias, ITimeStep timestep) : base(timestep, "network.self", "trainer.self")
+		protected BaseAccuracyScorer(string validationIteratorName, string finalExternalOutputAlias, ITimeStep timestep) : base(timestep, "network.self", "trainer.self")
 		{
 			if (validationIteratorName == null) throw new ArgumentNullException(nameof(validationIteratorName));
 			if (finalExternalOutputAlias == null) throw new ArgumentNullException(nameof(finalExternalOutputAlias));

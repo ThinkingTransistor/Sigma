@@ -59,7 +59,7 @@ namespace Sigma.Core
 		private ManualResetEvent _processQueueEvent;
 
 		[NonSerialized]
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		private readonly ILog _logger = LogManager.GetLogger(typeof(SigmaEnvironment));
 
 		/// <summary>
 		/// The unique name of this environment. 
@@ -86,6 +86,7 @@ namespace Sigma.Core
 		/// </summary>
 		public IParameterisationManager ParameterisationManager { get; }
 
+		//TODO: put into trainer
 		/// <summary>
 		/// The handler that is responsible for syncing the monitor with operators / workers. 
 		/// </summary>
@@ -327,6 +328,16 @@ namespace Sigma.Core
 		public async Task RunAsync()
 		{
 			await Task.Run(() => Run());
+		}
+
+		/// <summary>
+		/// Prepare and run this sigma environment.
+		/// Note: This should only be used with smaller projects, as an early <see cref="Prepare"/> call gives monitors more time to setup and more instant user feedback.
+		/// </summary>
+		public void PrepareAndRun()
+		{
+			Prepare();
+			Run();
 		}
 
 		private void InitialiseTrainers()

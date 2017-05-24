@@ -8,46 +8,49 @@ For full license see LICENSE in the root directory of this project.
 
 namespace Sigma.Core.Handlers.Backends
 {
-	/// <summary>
-	/// A BLAS backend interface consisting of a subset of the BLAS standard functions.
-	/// See http://www.netlib.org/blas/ for details.
-	/// </summary>
-	public unsafe interface IBlasBackend
-	{
-		#region Scalar-vector valued BLAS functions
+    /// <summary>
+    /// A BLAS backend interface consisting of a subset of the BLAS standard functions.
+    /// See http://www.netlib.org/blas/ for details.
+    /// </summary>
+    public unsafe interface IBlasBackend
+    {
+        #region Scalar-vector valued BLAS functions
 
-		int Isamax(int* n, float* x, int* incx);
-		void Saxpy(int* n, float* a, float* x, int* incx, float* y, int* incy);
-		void Sscal(int* n, float* alpha, float* x, int* incx);
-		void Sdot(int* n, float* x, int* incx, float* y, int* incy);
-		float Sasum(int* n, float* x, int* incx);
-		float Snrm2(int* n, float* x, int* incx);
+        int Isamax(int* n, float* x, int* incx);
+        void Saxpy(int* n, float* a, float* x, int* incx, float* y, int* incy);
+        void Sscal(int* n, float* alpha, float* x, int* incx);
+        void Sdot(int* n, float* x, int* incx, float* y, int* incy);
+        float Sasum(int* n, float* x, int* incx);
+        float Snrm2(int* n, float* x, int* incx);
 
-		int Idamax(int* n, double* x, int* incx);
-		void Daxpy(int* n, double* a, double* x, int* incx, double* y, int* incy);
-		void Dscal(int* n, double* alpha, double* x, int* incx);
-		void Ddot(int* n, double* x, int* incx, double* y, int* incy);
-		double Dasum(int* n, double* x, int* incx);
-		double Dnrm2(int* n, double* x, int* incx);
+        int Idamax(int* n, double* x, int* incx);
+        void Daxpy(int* n, double* a, double* x, int* incx, double* y, int* incy);
+        void Dscal(int* n, double* alpha, double* x, int* incx);
+        void Ddot(int* n, double* x, int* incx, double* y, int* incy);
+        double Dasum(int* n, double* x, int* incx);
+        double Dnrm2(int* n, double* x, int* incx);
 
-		#endregion
+        #endregion
 
-		#region Vector-matrix valued BLAS functions
+        #region Vector-matrix valued BLAS functions
 
-		void Sger(int* m, int* n, float* alpha, float* x, int* incx, float* y, int* incy, float* a, int* lda);
+        void Sger(int* m, int* n, float* alpha, float* x, int* incx, float* y, int* incy, float* a, int* lda);
 
-		void Dger(int* m, int* n, double* alpha, double* x, int* incx, double* y, int* incy, double* a, int* lda);
+        void Dger(int* m, int* n, double* alpha, double* x, int* incx, double* y, int* incy, double* a, int* lda);
 
-		#endregion
+        #endregion
 
-		#region Matrix valued BLAS functions
+        #region Matrix valued BLAS functions
 
-		void Sgemm(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* a, int* lda, float* b, int* ldb, float* beta, float* c, int* ldc);
-		void Sgemv(char* trans, int* m, int* n, float* alpha, float* a, int* lda, float* x, int* incx, float* beta, float* y, int* incy);
+        void Sgemm(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* a, int* lda, float* b, int* ldb, float* beta, float* c, int* ldc);
+        void Sgemv(char* trans, int* m, int* n, float* alpha, float* a, int* lda, float* x, int* incx, float* beta, float* y, int* incy);
 
-		void Dgemm(char* transa, char* transb, int* m, int* n, int* k, double* alpha, double* a, int* lda, double* b, int* ldb, double* beta, double* c, int* ldc);
-		void Dgemv(char* trans, int* m, int* n, double* alpha, double* a, int* lda, double* x, int* incx, double* beta, double* y, int* incy);
+        void Dgemm(char* transa, char* transb, int* m, int* n, int* k, double* alpha, double* a, int* lda, double* b, int* ldb, double* beta, double* c, int* ldc);
+        void Dgemv(char* trans, int* m, int* n, double* alpha, double* a, int* lda, double* x, int* incx, double* beta, double* y, int* incy);
 
-		#endregion
-	}
+        void Somatcopy(int ordering, int trans, int rows, int cols, float alpha, float* a, int lda, float* b, int ldb);
+        void Domatcopy(int ordering, int trans, int rows, int cols, float alpha, float* a, int lda, float* b, int ldb);
+
+        #endregion
+    }
 }

@@ -136,6 +136,21 @@ namespace Sigma.Core.Utils
 			return copy;
 		}
 
+		/// <summary>
+		/// Copy this registry's to another registry (contents, flags and constraints).
+		/// </summary>
+		/// <param name="other">The other registry to copy to.</param>
+		public void CopyTo(IRegistry other)
+		{
+			if (other == null) throw new ArgumentNullException(nameof(other));
+
+			other.Tags.Clear();
+			other.Tags.AddRange(Tags);
+
+			other.Clear();
+			other.AddAll(this);
+		}
+
 		public object this[string identifier]
 		{
 			get

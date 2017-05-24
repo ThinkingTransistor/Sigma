@@ -38,7 +38,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
 		/// <param name="handler">The handler to use.</param>
 		/// <returns>The optimised parameter.</returns>
-		protected override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
+		internal override INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler)
 		{
 			double learningRate = Registry.Get<double>("base_learning_rate"), smoothing = Registry.Get<double>("smoothing");
 			INDArray squaredGradientSum = GetMemory(paramIdentifier, () => handler.NDArray((long[]) parameter.Shape.Clone()));
@@ -48,7 +48,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 
 			INDArray adaptedLearningRate = handler.Divide(learningRate, handler.SquareRoot(handler.Add(squaredGradientSum, smoothing)));
 
-			return handler.Add(parameter, handler.Multiply(gradient, handler.Multiply(adaptedLearningRate, -1.0)));
+			INDArray update = handler.Multiply(gradient, handler.Multiply(adaptedLearningRate, -1.0));
+
+			ExposeParameterUpdate(paramIdentifier, update);
+
+			return handler.Add(parameter, update);
 		}
 
 		/// <summary>

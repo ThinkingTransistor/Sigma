@@ -7,7 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using log4net;
+using System.Collections.Generic;
+using System.Linq;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
@@ -33,8 +34,6 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// </summary>
 		protected readonly string ExternalCostAlias;
 
-		[NonSerialized]
-		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		private bool _prepared;
 		private uint _traceTag;
 
@@ -48,6 +47,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
+			Registry["updates"] = new Dictionary<string, INDArray>();
+			Registry["self"] = this;
 		}
 
 		/// <summary>
@@ -133,7 +134,42 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 					layerBuffer.Parameters[trainableParameter] = handler.ClearTrace(layerBuffer.Parameters.Get<ITraceable>(trainableParameter));
 				}
+
+				// outputs might have a trace as well, clear everything
+				_InternalClearAllTraces(layerBuffer.Inputs, handler);
+				_InternalClearAllTraces(layerBuffer.Outputs, handler);
 			}
+		}
+
+		private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
+		{
+			foreach (string output in layerExternalBuffer.Keys.ToArray())
+			{
+				IRegistry registry = layerExternalBuffer[output];
+
+				foreach (string parameter in registry.Keys.ToArray())
+				{
+					ITraceable traceable = registry[parameter] as ITraceable;
+
+					if (traceable != null)
+					{
+						registry[parameter] = handler.ClearTrace(traceable);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Expose a parameter update to the outside through the gradient optimiser utilities.
+		/// </summary>
+		/// <param name="parameterIdentifier">The parameter identifier.</param>
+		/// <param name="update">The update.</param>
+		protected void ExposeParameterUpdate(string parameterIdentifier, INDArray update)
+		{
+			if (parameterIdentifier == null) throw new ArgumentNullException(nameof(parameterIdentifier));
+			if (update == null) throw new ArgumentNullException(nameof(update));
+
+			Registry.Get<IDictionary<string, INDArray>>("updates")[parameterIdentifier] = update;
 		}
 
 		/// <summary>
@@ -176,7 +212,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
 		/// <param name="handler">The handler to use.</param>
 		/// <returns>The optimised parameter.</returns>
-		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
+		internal abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
 
 		/// <summary>
 		/// Deep copy this object.

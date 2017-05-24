@@ -9,9 +9,8 @@ using Point = System.Windows.Point;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
-	public class DrawCanvas : Canvas, IDisposable
+	public class DrawCanvas : RectangleCanvas, IDisposable
 	{
-
 		public delegate void InputChangedEventHandler(DrawCanvas canvas);
 
 		public event InputChangedEventHandler InputChangedEvent;
@@ -21,7 +20,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		/// </summary>
 		public Brush DrawColour
 		{
-			get { return (Brush) GetValue(DrawColourProperty); }
+			get { return (Brush)GetValue(DrawColourProperty); }
 			set { SetValue(DrawColourProperty, value); }
 		}
 
@@ -31,90 +30,43 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		public static readonly DependencyProperty DrawColourProperty =
 			DependencyProperty.Register("DrawColour", typeof(Brush), typeof(DrawCanvas), new PropertyMetadata(Brushes.Black));
 
-		public int GridWidth
-		{
-			get { return (int) GetValue(GridWidthProperty); }
-			set
-			{
-				SetValue(GridWidthProperty, value);
-				Width = value;
-			}
-		}
-
-		// Using a DependencyProperty as the backing store for GridWidth.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty GridWidthProperty =
-			DependencyProperty.Register("GridWidth", typeof(int), typeof(DrawCanvas), new PropertyMetadata(0));
-
-		public int GridHeight
-		{
-			get { return (int) GetValue(GridHeightProperty); }
-			set
-			{
-				SetValue(GridHeightProperty, value);
-				Height = value;
-			}
-		}
-
-		// Using a DependencyProperty as the backing store for GridHeight.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty GridHeightProperty =
-			DependencyProperty.Register("GridHeight", typeof(int), typeof(DrawCanvas), new PropertyMetadata(0));
-
-		public int PointSize
-		{
-			get { return (int) GetValue(PointSizeProperty); }
-			set { SetValue(PointSizeProperty, value); }
-		}
-
-
 		/// <summary>
 		///  Decide if a drawcolourchange affects currently drawn shapes.
 		/// </summary>
 		public bool UpdateColours
 		{
-			get { return (bool) GetValue(UpdateColoursProperty); }
+			get { return (bool)GetValue(UpdateColoursProperty); }
 			set { SetValue(UpdateColoursProperty, value); }
 		}
 
-		// Using a DependencyProperty as the backing store for UpdateColours.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty UpdateColoursProperty =
 			DependencyProperty.Register("UpdateColours", typeof(bool), typeof(DrawCanvas), new PropertyMetadata(true));
 
-
-
-		// Using a DependencyProperty as the backing store for PointSize.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty PointSizeProperty =
-			DependencyProperty.Register("PointSize", typeof(int), typeof(DrawCanvas), new PropertyMetadata(0));
-
 		public bool SoftDrawing
 		{
-			get { return (bool) GetValue(SoftDrawingProperty); }
+			get { return (bool)GetValue(SoftDrawingProperty); }
 			set { SetValue(SoftDrawingProperty, value); }
 		}
 
-		// Using a DependencyProperty as the backing store for SoftDrawing.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty SoftDrawingProperty =
 			DependencyProperty.Register("SoftDrawing", typeof(bool), typeof(DrawCanvas), new PropertyMetadata(true));
 
 		public double SoftFactor
 		{
-			get { return (double) GetValue(SoftFactorProperty); }
+			get { return (double)GetValue(SoftFactorProperty); }
 			set { SetValue(SoftFactorProperty, value); }
 		}
 
-		// Using a DependencyProperty as the backing store for SoftFactor.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty SoftFactorProperty =
 			DependencyProperty.Register("SoftFactor", typeof(double), typeof(DrawCanvas), new PropertyMetadata(0.125));
 
 		private Point _currentPoint;
-
-		private Rectangle[,] _rects;
 
 		public DrawCanvas()
 		{
 			MouseDown += Canvas_MouseDown;
 			MouseMove += Canvas_MouseMove;
 			DependencyPropertyDescriptor.FromProperty(DrawColourProperty, typeof(DrawCanvas)).AddValueChanged(this, OnDrawColourChanged);
-
 		}
 
 		private void OnDrawColourChanged(object sender, EventArgs eventArgs)
@@ -156,11 +108,11 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 					Y2 = e.GetPosition(this).Y
 				};
 
-				for (int row = 0; row < _rects.GetLength(0); row++)
+				for (int row = 0; row < Rectangles.GetLength(0); row++)
 				{
-					for (int column = 0; column < _rects.GetLength(1); column++)
+					for (int column = 0; column < Rectangles.GetLength(1); column++)
 					{
-						Rectangle rect = _rects[row, column];
+						Rectangle rect = Rectangles[row, column];
 						double x = GetLeft(rect);
 						double y = GetTop(rect);
 
@@ -170,7 +122,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 							rect.Fill = fill;
 							if (SoftDrawing)
 							{
-								UpdateNeighbours(GetNeighbours(_rects, row, column), factor, fill);
+								UpdateNeighbours(GetNeighbours(Rectangles, row, column), factor, fill);
 							}
 						}
 					}
@@ -180,63 +132,6 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 				_currentPoint = e.GetPosition(this);
 			}
-		}
-
-		private Rectangle[] GetNeighbours(Rectangle[,] rectangles, int row, int column)
-		{
-			int height = rectangles.GetLength(0);
-			int width = rectangles.GetLength(1);
-
-			Rectangle[] rects = new Rectangle[8];
-
-			// cells above
-			if (row > 0)
-			{
-				// cell topleft
-				if (column > 0)
-				{
-					rects[0] = rectangles[row - 1, column - 1];
-				}
-
-				// cell top
-				rects[1] = rectangles[row - 1, column];
-
-				// cell topright
-				if (column + 1 < width)
-				{
-					rects[2] = rectangles[row - 1, column + 1];
-				}
-			}
-
-			// cell right
-			if (column + 1 < width)
-			{
-				rects[3] = rectangles[row, column + 1];
-			}
-
-			if (row + 1 < height)
-			{
-				// cell bottom right
-				if (column + 1 < width)
-				{
-					rects[4] = rectangles[row + 1, column + 1];
-				}
-
-				// cell bottom
-				rects[5] = rectangles[row + 1, column];
-
-				if (column > 0)
-				{
-					rects[6] = rectangles[row + 1, column - 1];
-				}
-			}
-
-			if (column > 0)
-			{
-				rects[7] = rectangles[row, column - 1];
-			}
-
-			return rects;
 		}
 
 		private void UpdateNeighbours(Rectangle[] neighbours, int factor, Brush fill)
@@ -257,36 +152,6 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 					}
 
 					neighbours[i].Opacity = Math.Max(0, Math.Min(neighbours[i].Opacity + currentSoft * factor, 1));
-				}
-			}
-		}
-
-		public void UpdateRects()
-		{
-			GenerateRects();
-		}
-
-		private void GenerateRects()
-		{
-			_rects = new Rectangle[GridHeight / PointSize, GridWidth / PointSize];
-			// width
-			for (int x = 0; x < GridWidth; x += PointSize)
-			{
-				// height
-				for (int y = 0; y < GridHeight; y += PointSize)
-				{
-					Rectangle rect = new Rectangle
-					{
-						Opacity = 0,
-						Width = Math.Min(PointSize, GridWidth - x),
-						Height = Math.Min(PointSize, GridHeight - y),
-					};
-
-					SetLeft(rect, x);
-					SetTop(rect, y);
-
-					_rects[y / PointSize, x / PointSize] = rect;
-					Children.Add(rect);
 				}
 			}
 		}
@@ -319,12 +184,12 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		private static bool RectIntersectsLine(Rect a, LineSegment b)
 		{
-			return (SegmentsIntersect(b, new LineSegment { X1 = a.X, Y1 = a.Y, X2 = a.X, Y2 = a.Y + a.Height }) ||
-				SegmentsIntersect(b, new LineSegment { X1 = a.X, Y1 = a.Y + a.Height, X2 = a.X + a.Width, Y2 = a.Y + a.Height }) ||
-				SegmentsIntersect(b, new LineSegment { X1 = a.X + a.Width, Y1 = a.Y + a.Height, X2 = a.X + a.Width, Y2 = a.Y }) ||
-				SegmentsIntersect(b, new LineSegment { X1 = a.X + a.Width, Y1 = a.Y, X2 = a.X, Y2 = a.Y }) ||
-				RectContainsPoint(a, new Point(b.X1, b.Y1)) ||
-				RectContainsPoint(a, new Point(b.X2, b.Y2)));
+			return SegmentsIntersect(b, new LineSegment { X1 = a.X, Y1 = a.Y, X2 = a.X, Y2 = a.Y + a.Height }) ||
+					SegmentsIntersect(b, new LineSegment { X1 = a.X, Y1 = a.Y + a.Height, X2 = a.X + a.Width, Y2 = a.Y + a.Height }) ||
+					SegmentsIntersect(b, new LineSegment { X1 = a.X + a.Width, Y1 = a.Y + a.Height, X2 = a.X + a.Width, Y2 = a.Y }) ||
+					SegmentsIntersect(b, new LineSegment { X1 = a.X + a.Width, Y1 = a.Y, X2 = a.X, Y2 = a.Y }) ||
+					RectContainsPoint(a, new Point(b.X1, b.Y1)) ||
+					RectContainsPoint(a, new Point(b.X2, b.Y2));
 		}
 
 		private static bool RectContainsPoint(Rect a, Point b)
@@ -334,49 +199,13 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		#endregion RectangleBoundries
 
-		public void Clear()
-		{
-			if (_rects != null)
-			{
-				foreach (Rectangle rectangle in _rects)
-				{
-					rectangle.Opacity = 0;
-					rectangle.Fill = null;
-				}
-			}
-		}
-
-		/// <summary>
-		/// The values of the panels normalised between [0;1]
-		/// </summary>
-		/// <returns>The normalised values.</returns>
-		public double[,] GetValues()
-		{
-			if (_rects == null)
-			{
-				return null;
-			}
-
-			double[,] values = new double[_rects.GetLength(0), _rects.GetLength(1)];
-
-			for (int i = 0; i < _rects.GetLength(0); i++)
-			{
-				for (int j = 0; j < _rects.GetLength(1); j++)
-				{
-					values[i, j] = _rects[i, j].Opacity;
-				}
-			}
-
-			return values;
-		}
-
 		private void UpdateDrawnRectangles(Brush newColour)
 		{
 			if (UpdateColours)
 			{
-				if (_rects != null)
+				if (Rectangles != null)
 				{
-					foreach (Rectangle rectangle in _rects)
+					foreach (Rectangle rectangle in Rectangles)
 					{
 						if (rectangle.Fill != null) { rectangle.Fill = newColour; }
 					}

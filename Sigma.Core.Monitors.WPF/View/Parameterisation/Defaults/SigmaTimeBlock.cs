@@ -3,6 +3,13 @@ using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 
 namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 {
+	//TODO: editable time box (timepicker)
+	//[ParameterVisualiser(typeof(DateTime), Priority = VisualiserPriority.Lower)]
+	//public class SigmaTimeBox : SigmaTextBox
+	//{
+		
+	//}
+
 	/// <summary>
 	/// A TimeBlock that allows to display the current time. 
 	/// </summary>

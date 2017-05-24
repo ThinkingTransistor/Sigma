@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.View.Windows;
 
 // ReSharper disable VirtualMemberCallInConstructor
 
@@ -37,6 +38,11 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		///     The content that will be inside the contentGrid.
 		/// </summary>
 		private UIElement _content;
+
+		/// <summary>
+		/// Currently responsible monitor - it will be automatically set when adding a new panel. (<c>null</c> until <see cref="Initialise"/>)
+		/// </summary>
+		public WPFMonitor Monitor { get; set; }
 
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -178,6 +184,39 @@ namespace Sigma.Core.Monitors.WPF.Panels
 			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			return grid;
+		}
+
+		/// <summary>
+		/// This method invokes the initialisation of the panel (after it has been addded).
+		/// </summary>
+		public void Initialise(WPFWindow window)
+		{
+			if (window is SigmaWindow)
+			{
+				OnInitialise((SigmaWindow)window);
+			}
+
+			OnInitialise(window);
+		}
+
+		/// <summary>
+		/// This method will be called once the window is initialising (after it has been added).
+		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
+		/// </summary>
+		/// <param name="window">The wpf window this panel will be added to.</param>
+		protected virtual void OnInitialise(WPFWindow window)
+		{
+
+		}
+
+		/// <summary>
+		/// This method will be called once the window is initialising (after it has been added).
+		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
+		/// </summary>
+		/// <param name="window">The wpf window this panel will be added to.</param>
+		protected virtual void OnInitialise(SigmaWindow window)
+		{
+
 		}
 
 		/// <summary>

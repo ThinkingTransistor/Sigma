@@ -38,8 +38,11 @@ namespace Sigma.Core.Monitors.WPF.View.Parameterisation.Defaults
 		/// </summary>
 		public override void Read()
 		{
-			CurrentValue = SynchronisationHandler.SynchroniseGet<T>(Registry, Key);
-			Text = CurrentValue.ToString();
+			SynchronisationHandler.SynchroniseUpdate(Registry, Key, CurrentValue, val =>
+			{
+				CurrentValue = val;
+				Text = CurrentValue.ToString();
+			});
 		}
 
 		/// <summary>

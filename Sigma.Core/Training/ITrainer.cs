@@ -104,7 +104,7 @@ namespace Sigma.Core.Training
 		bool ForceInitialisation { get; set; }
 
 		/// <summary>
-		/// Add an initialiser by registry resolve string (e.g. FC*.weights, *.weights, Layer1.biases, Layer2.*).
+		/// Add an initialiser by registry resolve string (e.g. fc*.weights, *.weights, layer1.biases, layer2.*).
 		/// Registry resolve notation may be used as the initialiser will be executed on all ndarrays which resolve to a match in a certain layer and match identifier. 
 		/// </summary>
 		/// <param name="identifier">The identifier (registry resolve string).</param>
@@ -159,10 +159,15 @@ namespace Sigma.Core.Training
 		/// </summary>
 		void Start();
 
-		/// <summary>
-		/// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator.
-		/// </summary>
-		void Reset();
+	    /// <summary>
+	    /// Start the trainer in the current configuration (e.g. using the set network, operator, optimiser, hooks) once.
+	    /// </summary>
+	    void StartOnce();
+
+        /// <summary>
+        /// Reset this trainer to an un-initialised state, discard all progress information. If necessary, stop the operator.
+        /// </summary>
+        void Reset();
 
 		/// <summary>
 		/// Run a training iteration on a prepared network (does not have to match the trainer's network but must have interchangeable architecture).

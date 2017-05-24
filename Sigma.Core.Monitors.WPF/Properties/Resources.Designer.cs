@@ -154,6 +154,51 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current activation.
+        /// </summary>
+        public static string CurrentActivationFunction {
+            get {
+                return ResourceManager.GetString("CurrentActivationFunction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current epoch.
+        /// </summary>
+        public static string CurrentEpoch {
+            get {
+                return ResourceManager.GetString("CurrentEpoch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current iteration.
+        /// </summary>
+        public static string CurrentIteration {
+            get {
+                return ResourceManager.GetString("CurrentIteration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current operator.
+        /// </summary>
+        public static string CurrentOperator {
+            get {
+                return ResourceManager.GetString("CurrentOperator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current optimiser.
+        /// </summary>
+        public static string CurrentOptimiser {
+            get {
+                return ResourceManager.GetString("CurrentOptimiser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to About Sigma.
         /// </summary>
         public static string MenuButtonAbout {
@@ -222,6 +267,15 @@ namespace Sigma.Core.Monitors.WPF.Properties {
         public static string OpenApp {
             get {
                 return ResourceManager.GetString("OpenApp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running time.
+        /// </summary>
+        public static string RunningTime {
+            get {
+                return ResourceManager.GetString("RunningTime", resourceCulture);
             }
         }
     }
