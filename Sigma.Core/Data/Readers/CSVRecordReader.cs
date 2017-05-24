@@ -121,7 +121,7 @@ namespace Sigma.Core.Data.Readers
 					break;
 				}
 
-				string[] lineParts = line.Split(_separator);
+				string[] lineParts = line.Trim().Split(_separator);
 
 				//set number columns to the amount we find in the first column
 				if (_numberColumns == NumberColumnsNotSet)

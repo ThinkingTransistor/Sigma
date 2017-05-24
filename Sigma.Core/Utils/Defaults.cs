@@ -105,7 +105,7 @@ namespace Sigma.Core.Utils
 
 			/// <summary>
 			/// Create an extracted WDBC (Wisconsin Diagnostic Breast Cancer) dataset, automatically download any required resources.
-			/// This dataset is normalised.
+			/// This dataset is normalised and shuffled.
 			/// </summary>
 			/// <param name="name">The optional name.</param>
 			/// <returns>THe WDBC dataset.</returns>
@@ -116,6 +116,46 @@ namespace Sigma.Core.Utils
 					.Extractor("inputs", new[] { 2, 31 }, "targets", 1)
 					.AddValueMapping(1, "M", "B")
 					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, extractor);
+			}
+
+			/// <summary>
+			/// Create an extracted heart disease dataset, automatically download any required resources.
+			/// This dataset is normalised, one-hot-target-preprocessed and shuffled.
+			/// </summary>
+			/// <param name="name">The optional name.</param>
+			/// <returns>The heart disease dataset.</returns>
+			public static IDataset HeartDisease(string name = "heart_disease")
+			{
+				IRecordExtractor extractor = new CsvRecordReader(separator: ' ',
+						source: new MultiSource(new FileSource("reprocessed.hungarian.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/reprocessed.hungarian.data")))
+					.Extractor("inputs", new[] { 0, 12 }, "targets", 13)
+					.AddValueMapping(3, new Dictionary<object, object> { ["-9"] = 132.133 }) // substitute averages for missing values
+					.AddValueMapping(4, new Dictionary<object, object> { ["-9"] = 231.224 })
+					.AddValueMapping(7, new Dictionary<object, object> { ["-9"] = 138.656 })
+					.AddSpanValueMapping(8, 12, new Dictionary<object, object> { ["-9"] = 0 })
+					.AddSpanValueMapping(5, 6, new Dictionary<object, object> { ["-9"] = 0 })
+					.Preprocess(new OneHotPreprocessor("targets", 0, 4))
+					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, extractor);
+			}
+
+			/// <summary>
+			/// Create an extracted parkinsons dataset, automatically download any required resources.
+			/// This dataset is normalised and shuffled.
+			/// </summary>
+			/// <param name="name"></param>
+			/// <returns></returns>
+			public static IDataset Parkinsons(string name = "parkinsons")
+			{
+				IRecordExtractor extractor = new CsvRecordReader(skipFirstLine: true,
+					source: new MultiSource(new FileSource("parkinsons.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/parkinsons/parkinsons.data")))
+					.Extractor("inputs", new[] { 1, 16 }, new[] { 18, 23 }, "targets", 17)
+					.Preprocess(new PerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
 					.Preprocess(new ShufflePreprocessor());
 
 				return new ExtractedDataset(name, extractor);
