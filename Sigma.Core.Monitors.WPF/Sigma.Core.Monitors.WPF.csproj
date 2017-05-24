@@ -173,7 +173,9 @@
     <Compile Include="Utils\ChartPanelPerformance.cs" />
     <Compile Include="Utils\ChartPanelVisualisation.cs" />
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Panels\Optimisations\BitmapHookPanel.cs" />
     <Compile Include="Utils\Defaults\MNIST\MnistTargetMaximisationPanel.cs" />
+    <Compile Include="Utils\WriteableBitmapUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\PollParameterHook.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\IParameterVisualiserManager.cs" />

@@ -1,15 +1,13 @@
-﻿
-using log4net;
+﻿using log4net;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -45,9 +43,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// </summary>
 		private readonly ILog _logger = LogManager.GetLogger(typeof(BitmapPanel));
 
-		protected int PixelWidth, PixelHeight;
-		protected int BitsPerPixel;
-
 		/// <summary>
 		///     Create a BitmapPanel with a given title, width, and height.
 		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
@@ -62,6 +57,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			Content = new Image();
 			_width = width;
 			_height = height;
+		}
+
+		/// <summary>
+		/// This method is called once the bitmap has been successfully initialised.
+		/// Use it if a initialisation is requried.
+		/// </summary>
+		protected virtual void OnBitmapInitialised()
+		{
 		}
 
 		/// <summary>
@@ -135,10 +138,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 
 			Content.Source = drawingImage;
 
-			PixelWidth = Bitmap.PixelWidth;
-			PixelHeight = Bitmap.PixelHeight;
-			BitsPerPixel = Bitmap.Format.BitsPerPixel;
-
 			_window = null;
 			OnBitmapInitialised();
 
@@ -148,28 +147,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				foreach (Action listener in BitmapInitListeners) { listener(); }
 				BitmapInitListeners = null;
 			}
-		}
-
-		/// <summary>
-		/// This method is called once the bitmap has been successfully initialised.
-		/// Use it if a initialisation is requried.
-		/// </summary>
-		protected virtual void OnBitmapInitialised()
-		{
-			//byte[] pixels = new byte[Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8];
-			//for (int i = 0; i < 768; i++)
-			//{
-			//	int pos = i * 4;
-			//	int pos2 = pos + 768 * 767 * 4;
-			//	pixels[pos] = 0xff;
-			//	pixels[pos + 3] = 0xff;
-
-			//	pixels[pos2 + 2] = 0xff;
-			//	pixels[pos2 + 3] = 0xff;
-			//}
-			//Random rand = new Random();
-			//rand.NextBytes(pixels);
-			//Render(pixels);
 		}
 
 		/// <summary>
@@ -183,117 +160,123 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			InitialiseBitmap(_width, _height);
 		}
 
-		protected virtual byte[] ToColourArray<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		/// <summary>
+		/// Check whether the bitmap is already initialised (equals null).
+		/// </summary>
+		/// <exception cref="InvalidOperationException">If the bitmap is not yet initialised.</exception>
+		protected virtual void IsBitmapLoaded()
 		{
-			byte[] newData = new byte[data.Length * 4];
-			for (int i = 0; i < data.Length; i++)
-			{
-				int pos = i * 4;
-				newData[pos] = blue(data[i]);
-				newData[pos + 1] = green(data[i]);
-				newData[pos + 2] = red(data[i]);
-				newData[pos + 3] = alpha(data[i]);
-			}
-
-			return newData;
+			if (Bitmap == null) throw new InvalidOperationException("The bitmap is not yet initialised.");
 		}
 
 		/// <summary>
-		/// Render a given byte array of data (the bitmap has to be initialised).
-		/// The data has to be of the length Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8.
+		/// Fill the content from a bitmap with a raw byte[]. The byte[] has to contain all data (so rgb etc).
 		/// </summary>
-		/// <param name="data">The new data the image will contain.</param>
+		/// <param name="data">The data that will be written to the new bitmap.</param>
 		public void RenderRaw(byte[] data)
 		{
-			RenderRectangleRaw(data, PixelWidth, PixelHeight, 0, 0);
+			IsBitmapLoaded();
+			Bitmap.RenderRaw(data);
 		}
 
+		/// <summary>
+		/// Fill the content from a bitmap with a data[]. The data[] can be of arbitrary format and will be mapped with the provided functions.
+		/// </summary>
+		/// <typeparam name="T">The type of the data.</typeparam>
+		/// <param name="data">The data that will be written to the new bitmap.</param>
+		/// <param name="red">The function that defines the red value.</param>
+		/// <param name="green">The function that defines the green value.</param>
+		/// <param name="blue">The function that defines the blue value.</param>
+		/// <param name="alpha">The function that defines the alpha value.</param>
 		public void Render<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
 		{
-			RenderRaw(ToColourArray(data, red, green, blue, alpha));
+			IsBitmapLoaded();
+			Bitmap.Render(data, blue, green, red, alpha);
 		}
 
 		/// <summary>
-		/// Render a given byte INDarray of data (the bitmap has to be initialised).
-		/// The data has to be of the length Bitmap.PixelHeight * Bitmap.PixelWidth * Bitmap.Format.BitsPerPixel / 8.
+		/// Fill the content from a bitmap with a raw INDarray. The INDarray has to contain all data (so rgb etc).
 		/// </summary>
-		/// <param name="data">The new data the image will contain.</param>
+		/// <param name="data">The data that will be written to the new bitmap.</param>
 		public void RenderRaw(INDArray data)
 		{
-			RenderRaw(data.GetDataAs<byte>().ToArray());
-		}
-
-		public void Render<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
-		{
-			Render(data.GetDataAs<T>().ToArray(), red, green, blue, alpha);
+			IsBitmapLoaded();
+			Bitmap.RenderRaw(data);
 		}
 
 		/// <summary>
-		/// Render bytes as a rectangle with a x- and y-offset.
+		/// Fill the content from a bitmap with the data from an INDarray. The data can be of arbitrary format and will be mapped with the provided functions.
 		/// </summary>
-		/// <param name="data">The data that will be rendered.</param>
+		/// <typeparam name="T">The type of the data.</typeparam>
+		/// <param name="data">The data that will be written to the new bitmap.</param>
+		/// <param name="red">The function that defines the red value.</param>
+		/// <param name="green">The function that defines the green value.</param>
+		/// <param name="blue">The function that defines the blue value.</param>
+		/// <param name="alpha">The function that defines the alpha value.</param>
+		public void Render<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		{
+			IsBitmapLoaded();
+			Bitmap.Render(data, blue, green, red, alpha);
+		}
+
+		/// <summary>
+		/// Render bytes as a rectangle with a x- and y-offset and a given width and height. The byte[] has to contain all data (so rgb etc).
+		/// </summary>
+		/// <param name="data">The data that will be rendered.</param>		
+		/// <param name="width">The width of the data[].</param>
+		/// <param name="height">The height of the data[].</param>
 		/// <param name="xOffset">The x-offset.</param>
 		/// <param name="yOffset">The y-offste.</param>
 		public void RenderRectangleRaw(byte[] data, int width, int height, int xOffset, int yOffset)
 		{
-			if (Bitmap == null) throw new InvalidOperationException("The bitmap is not yet initialised.");
-			//if (data.Length + xOffset * _width + yOffset * _height > height * width * BitsPerPixel / 8) throw new ArgumentException(nameof(data));
-
-			Bitmap.WritePixels(new Int32Rect(xOffset, yOffset, width, height), data, width * BitsPerPixel / 8, 0);
-		}
-
-		public void RenderRectangle<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int width, int height, int xOffset, int yOffset)
-		{
-			RenderRectangleRaw(ToColourArray(data, red, green, blue, alpha), width, height, xOffset, yOffset);
+			IsBitmapLoaded();
+			Bitmap.RenderRectangleRaw(data, width, height, xOffset, yOffset);
 		}
 
 		/// <summary>
-		/// Render bytes as a rectangle with a x- and y-offset.
+		/// Render bytes as a rectangle with a x- and y-offset and a given width and height. The data[] can be of arbitrary format and will be mapped with the provided functions.
 		/// </summary>
-		/// <param name="data">The data that will be rendered.</param>
+		/// <param name="data">The data that will be rendered.</param>		
+		/// <param name="width">The width of the data[].</param>
+		/// <param name="height">The height of the data[].</param>
+		/// <param name="xOffset">The x-offset.</param>
+		/// <param name="yOffset">The y-offste.</param>		
+		/// <param name="red">The function that defines the red value.</param>
+		/// <param name="green">The function that defines the green value.</param>
+		/// <param name="blue">The function that defines the blue value.</param>
+		/// <param name="alpha">The function that defines the alpha value.</param>
+		public void RenderRectangle<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int width, int height, int xOffset, int yOffset)
+		{
+			IsBitmapLoaded();
+			Bitmap.RenderRectangle(data, width, height, xOffset, yOffset, blue, green, red, alpha);
+		}
+
+		/// <summary>
+		/// Render bytes as a rectangle with a x- and y-offset, where the width and height is automatically taken from the INDarrays shape. The byte[] has to contain all data (so rgb etc).
+		/// </summary>
+		/// <param name="data">The data that will be rendered.</param>		
 		/// <param name="xOffset">The x-offset.</param>
 		/// <param name="yOffset">The y-offste.</param>
 		public void RenderRectangleRaw(INDArray data, int xOffset, int yOffset)
 		{
-			RenderRectangleRaw(data.GetDataAs<byte>().ToArray(), (int)data.Shape[1], (int)data.Shape[0], xOffset, yOffset);
+			IsBitmapLoaded();
+			Bitmap.RenderRectangleRaw(data, xOffset, yOffset);
 		}
 
+		/// <summary>
+		/// Render bytes as a rectangle with a x- and y-offset and a given width and height. The data[] can be of arbitrary format and will be mapped with the provided functions.
+		/// </summary>
+		/// <param name="data">The data that will be rendered.</param>		
+		/// <param name="xOffset">The x-offset.</param>
+		/// <param name="yOffset">The y-offste.</param>
+		/// <param name="red">The function that defines the red value.</param>
+		/// <param name="green">The function that defines the green value.</param>
+		/// <param name="blue">The function that defines the blue value.</param>
+		/// <param name="alpha">The function that defines the alpha value.</param>
 		public void RenderRectangle<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset, int yOffset)
 		{
-			RenderRectangleRaw(ToColourArray(data.GetDataAs<T>().ToArray(), red, green, blue, alpha), (int)data.Shape[1], (int)data.Shape[0], xOffset, yOffset);
-		}
-
-		/// <summary>
-		/// Render a stream of bytes with an xOffset.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="xOffset"></param>
-		public void RenderStreamRaw(byte[] data, int xOffset)
-		{
-			if (Bitmap == null) throw new InvalidOperationException("The bitmap is not yet initialised.");
-			//if (data.Length + xOffset > PixelHeight * PixelWidth * BitsPerPixel / 8) throw new ArgumentException(nameof(data));
-
-			Bitmap.WritePixels(new Int32Rect(0, 0, PixelWidth, PixelHeight), data, PixelWidth * BitsPerPixel / 8, xOffset);
-		}
-
-		public void RenderStream<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset)
-		{
-			RenderStreamRaw(ToColourArray(data, red, green, blue, alpha), xOffset);
-		}
-
-		/// <summary>
-		/// Render a stream of bytes with an xOffset.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="xOffset"></param>
-		public void RenderStreamRaw(INDArray data, int xOffset)
-		{
-			RenderStreamRaw(data.GetDataAs<byte>().ToArray(), xOffset);
-		}
-
-		public void RenderStream<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset)
-		{
-			RenderStreamRaw(ToColourArray(data.GetDataAs<T>().ToArray(), red, green, blue, alpha), xOffset);
+			IsBitmapLoaded();
+			Bitmap.RenderRectangle(data, xOffset, yOffset, blue, green, red, alpha);
 		}
 	}
 }

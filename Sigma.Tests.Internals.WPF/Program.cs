@@ -181,40 +181,9 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
 				}
 
-				//Random rand = new Random();
-				//RectanglePanel rectanglePanel = new RectanglePanel("Rects", 768, 768, 1);
-				//RectangleCanvas canvas = rectanglePanel.Content;
-				//for (int i = 0; i < canvas.Rectangles.GetLength(0); i++)
-				//{
-				//	for (int j = 0; j < canvas.Rectangles.GetLength(1); j++)
-				//	{
-				//		Rectangle rect = canvas.Rectangles[i, j];
-				//		rect.Fill = Brushes.Red;
-				//		rect.Opacity = rand.NextDouble();
-				//	}
-				//}
-
-				//window.TabControl["Maximisation"].AddCumulativePanel(rectanglePanel);
-
-				//var bitmapPanel = new BitmapPanel("Bitmap", 28, 28);
-				////bitmapPanel.Content.Width = 28;
-				////bitmapPanel.Content.Height = 28;
-				//RenderOptions.SetBitmapScalingMode(bitmapPanel.Content, BitmapScalingMode.NearestNeighbor);
-				//bitmapPanel.OnBitmapInitialised(() =>
-				//{
-				//	byte[] data = new byte[28 * 28 * 4];
-				//	for (int i = 0; i < data.Length; i++) data[i] = 0xff;
-				//	bitmapPanel.RenderRaw(data);
-
-				//	INDArray ndArray = trainer.Operator.Handler.NDArray(new[] { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6 }, 3, 2);
-				//	//data = new byte[] { 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff, 0xff, 0, 0, 0xff, 0, 0xff, 0, 0xff, 0, 0, 0xff, 0xff };
-				//	bitmapPanel.RenderRectangle<double>(ndArray, r => 0x00, g => 0x00, b => (byte) (255 * b), a => 0xff, 1, 1);
-				//});
-				//window.TabControl["Maximisation"].AddCumulativePanel(bitmapPanel, 2, 2);
-
 				for (int i = 0; i < 10; i++)
 				{
-					window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+					window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
 				}
 
 				//for (int i = 0; i < 10; i++)
@@ -231,13 +200,6 @@ namespace Sigma.Tests.Internals.WPF
 			sigma.Prepare();
 
 			sigma.Run();
-
-			//gui.WindowDispatcherAsync(window =>
-			//{
-			//	Thread.Sleep(15000);
-			//	var source = PresentationSource.FromVisual(window);
-			//	Console.WriteLine(source);
-			//});
 		}
 
 		private static ITrainer CreateXorTrainer(SigmaEnvironment sigma)
