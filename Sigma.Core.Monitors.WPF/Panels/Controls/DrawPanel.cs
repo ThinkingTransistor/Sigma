@@ -18,8 +18,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 	//TODO: HACK: only for presentation
 	public class Guess
 	{
-		public int Zahl { get; set; }
-		public string Wahrscheinlichkeit { get; set; }
+		public int Digit { get; set; }
+		public string Probability { get; set; }
 	}
 
 	//TODO: move to own class
@@ -80,8 +80,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			{
 				double confidence = Math.Round(sorted[i].Key * 10000) / 100;
 				int number = sorted[i].Value;
-				_guesses[i].Wahrscheinlichkeit = $"{confidence:00.000}";
-				_guesses[i].Zahl = number;
+				_guesses[i].Probability = $"{confidence:00.000}";
+				_guesses[i].Digit = number;
 				//guesses.Add(new Guess { Accuracy = Math.Round(accuracy.Key * 100), Number = accuracy.Value });
 			}
 

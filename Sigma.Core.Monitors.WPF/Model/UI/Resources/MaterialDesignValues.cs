@@ -187,7 +187,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(Primary800, new Color {A = 255, R = 55, G = 71, B = 79}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(Primary900, new Color {A = 255, R = 38, G = 50, B = 56}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		/// <summary>
 		/// The swatch that contains all primary and accent colours for the shade.
@@ -208,7 +208,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(Primary800, new Color {A = 255, R = 78, G = 52, B = 46}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(Primary900, new Color {A = 255, R = 62, G = 39, B = 35}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		/// <summary>
 		/// The swatch that contains all primary and accent colours for the shade.
@@ -337,7 +337,7 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(Primary800, new Color {A = 255, R = 66, G = 66, B = 66}, new Color {A = 255, R = 255, G = 255, B = 255}),
 				new Hue(Primary900, new Color {A = 255, R = 33, G = 33, B = 33}, new Color {A = 255, R = 255, G = 255, B = 255})
 			},
-			new Hue[] {});
+			new Hue[] { });
 
 		/// <summary>
 		/// The swatch that contains all primary and accent colours for the shade.
@@ -609,7 +609,34 @@ namespace Sigma.Core.Monitors.WPF.Model.UI.Resources
 				new Hue(Accent700, new Color {A = 255, R = 255, G = 214, B = 0}, new Color {A = 255, R = 0, G = 0, B = 0})
 			});
 
-#endregion SwatchDefinition
+		/// <summary>
+		/// The swatch that contains all primary and accent colours for the shade.
+		/// The accent colour is the text foreground colour that should be on the colour for
+		/// every Primary smaller or equal to that number (Acceent200: Primary50, Primary100, Primary200).
+		/// </summary>
+		public static readonly Swatch Sigma = new Swatch("sigma",
+			new[]
+			{
+				new Hue(Primary100, new Color {A = 255, R = 197, G = 200, B = 203}, new Color {A = 255, R = 0, G = 0, B = 0}),
+				new Hue(Primary200, new Color {A = 255, R = 158, G = 164, B = 168}, new Color {A = 255, R = 0, G = 0, B = 0}),
+				new Hue(Primary300, new Color {A = 255, R = 119, G = 127, B = 133}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary400, new Color {A = 255, R = 90, G = 99, B = 107}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary50, new Color {A = 255, R = 232, G = 233, B = 234}, new Color {A = 255, R = 0, G = 0, B = 0}),
+				new Hue(Primary500, new Color {A = 255, R = 61, G = 72, B = 81}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary600, new Color {A = 255, R = 55, G = 65, B = 74}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary700, new Color {A = 255, R = 47, G = 56, B = 64}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary800, new Color {A = 255, R = 39, G = 48, B = 55}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Primary900, new Color {A = 255, R = 26, G = 33, B = 39}, new Color {A = 255, R = 255, G = 255, B = 255})
+			},
+			new[]
+			{
+				new Hue(Accent100, new Color {A = 255, R = 110, G = 189, B = 255}, new Color {A = 255, R = 0, G = 0, B = 0}),
+				new Hue(Accent200, new Color {A = 255, R = 59, G = 166, B = 255}, new Color {A = 255, R = 0, G = 0, B = 0}),
+				new Hue(Accent400, new Color {A = 255, R = 8, G = 143, B = 255}, new Color {A = 255, R = 255, G = 255, B = 255}),
+				new Hue(Accent700, new Color {A = 255, R = 0, G = 129, B = 237}, new Color {A = 255, R = 255, G = 255, B = 255})
+			});
+
+		#endregion SwatchDefinition
 
 		private static Hue GetHue(IEnumerable<Hue> hues, string name)
 		{

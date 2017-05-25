@@ -91,6 +91,7 @@ namespace Sigma.Tests.Internals.WPF
 			// create and attach a new UI framework
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
 			gui.ColourManager.Dark = DemoMode != DemoType.Iris;
+			//gui.ColourManager.PrimaryColor = MaterialDesignValues.Sigma;
 
 			StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
 			StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
@@ -107,7 +108,7 @@ namespace Sigma.Tests.Internals.WPF
 				window.IsInitializing = true;
 
 				window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
-				window.TabControl["Validation"].GridSize = new GridSize(1, 2);
+				window.TabControl["Validation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Reproduction"].GridSize = new GridSize(2, 5);
 
@@ -165,11 +166,11 @@ namespace Sigma.Tests.Internals.WPF
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
+				//window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(accuracy2, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(weightStddev, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(biasesStddev, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
+				//window.TabControl["Metrics"].AddCumulativePanel(updateStddev, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(outputActivationsMean, legend: iris);
 
 				if (DemoMode == DemoType.Mnist)
@@ -177,8 +178,11 @@ namespace Sigma.Tests.Internals.WPF
 					NumberPanel outputpanel = new NumberPanel("Numbers", trainer);
 					DrawPanel drawPanel = new DrawPanel("Draw", trainer, 560, 560, 20, outputpanel);
 
-					window.TabControl["Validation"].AddCumulativePanel(drawPanel);
-					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
+					window.TabControl["Validation"].AddCumulativePanel(drawPanel, 2, 3);
+					window.TabControl["Validation"].AddCumulativePanel(outputpanel, 2);
+
+					window.TabControl["Validation"].AddCumulativePanel(updateAverage);
+					window.TabControl["Validation"].AddCumulativePanel(updateStddev);
 
 					for (int i = 0; i < 10; i++)
 					{
