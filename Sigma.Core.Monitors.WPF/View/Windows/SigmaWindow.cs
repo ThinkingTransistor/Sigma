@@ -170,6 +170,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public Snackbar Snackbar { get; private set; }
 
+		/// <summary>
+		/// The snackbar message queue.
+		/// </summary>
+		public SnackbarMessageQueue SnackbarMessageQueue { get; private set; }
+
 		#endregion UIElements
 
 		/// <summary>
@@ -334,6 +339,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 			// TODO: factory
 			// TODO: style
 			Snackbar = new Snackbar { MessageQueue = new SnackbarMessageQueue(TimeSpan.FromSeconds(2)), HorizontalAlignment = HorizontalAlignment.Stretch };
+			SnackbarMessageQueue = Snackbar.MessageQueue;
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
 			RootContentElement = CreateContent(monitor, other, out _titleBar);
 
