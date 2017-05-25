@@ -36,7 +36,9 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using Sigma.Core.Monitors.WPF.NetView;
+using Sigma.Core.Monitors.WPF.NetView.Graphing;
 using Sigma.Core.Monitors.WPF.Panels;
+using Sigma.Core.Monitors.WPF.Panels.Graphing;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 
 namespace Sigma.Tests.Internals.WPF
@@ -186,8 +188,18 @@ namespace Sigma.Tests.Internals.WPF
 					}
 				}
 
-				//window.TabControl["NetView"].GridSize = new[] { 1, 1 };
-				window.TabControl["NetView"].AddCumulativePanel(new XamlPanel<NetLayout>("Network View"),1,2);
+				window.TabControl["NetView"].GridSize = new[] { 1, 1 };
+				//window.TabControl["NetView"].AddCumulativePanel(new XamlPanel<NetLayout>("Network View"),1,2);
+
+				GraphNode root = new GraphNode("Layer 0");
+				GraphNode node1 = new GraphNode("Layer 1");
+				GraphNode node2 = new GraphNode("Layer 2");
+				IGraphStructure graphStructure = new GraphStructure(root);
+				graphStructure.AddNode(root, "0 out", node1, "1 in");
+				graphStructure.AddNode(node1, "1 out", node2, "2 in");
+
+
+				window.TabControl["NetView"].AddCumulativePanel(new GraphPanel("Graphing", trainer.Network.Architecture));
 
 				//for (int i = 0; i < 10; i++)
 				//{

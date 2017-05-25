@@ -332,7 +332,7 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		/// </summary>
 		private void FitContent_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			IList nodes = null;
+			IList nodes;
 
 			if (networkControl.SelectedNodes.Count > 0)
 			{

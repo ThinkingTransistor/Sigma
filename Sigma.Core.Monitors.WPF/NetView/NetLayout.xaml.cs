@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Input;
 using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
 using Sigma.Core.Monitors.WPF.NetView.NetworkUIs;
@@ -17,33 +18,6 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		/// Convenient accessor for the view-model.
 		/// </summary>
 		public NetLayoutViewModel ViewModel => (NetLayoutViewModel)DataContext;
-
-		/// <summary>
-		/// Event raised when the Window has loaded.
-		/// </summary>
-		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-		{
-			//
-			// Display help text for the sample app.
-			//
-			//HelpTextWindow helpTextWindow = new HelpTextWindow
-			//{
-			//	Left = Left + Width + 5,
-			//	Top = Top,
-			//	Owner = this
-			//};
-			//helpTextWindow.Show();
-
-			//OverviewWindow overviewWindow = new OverviewWindow
-			//{
-			//	Left = Left,
-			//	Top = Top + Height + 5,
-			//	Owner = this,
-			//	DataContext = ViewModel
-			//};
-			// Pass the view model onto the overview window.
-			//overviewWindow.Show();
-		}
 
 		/// <summary>
 		/// Event raised when the user has started to drag out a connection.
@@ -148,8 +122,9 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		/// </summary>
 		private void CreateNode()
 		{
-			Point newNodePosition = Mouse.GetPosition(networkControl);
-			ViewModel.CreateNode("New Node!", newNodePosition, true);
+			throw new NotImplementedException();
+			//Point newNodePosition = Mouse.GetPosition(networkControl);
+			//ViewModel.CreateNode("New Node!", newNodePosition, true);
 		}
 
 		/// <summary>

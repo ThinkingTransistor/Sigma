@@ -78,34 +78,6 @@ namespace Sigma.Core.Monitors.WPF.NetView.NetworkModel
 			}
 		}
 
-		/// <summary>
-		/// Connect two nodes together.
-		/// </summary>
-		/// <param name="a">The first node.</param>
-		/// <param name="b">The second node.</param>
-		/// <param name="aOut">The output of the first node.</param>
-		/// <param name="bIn">The input of the second node. </param>
-		public void Connect(NodeViewModel a, NodeViewModel b, ConnectorViewModel aOut, ConnectorViewModel bIn)
-		{
-			Connections.Add(new ConnectionViewModel
-			{
-				SourceConnector = aOut,
-				DestConnector = bIn
-			});
-		}
-
-		/// <summary>
-		/// Connect two nodes together.
-		/// </summary>
-		/// <param name="a">The first node.</param>
-		/// <param name="b">The second node.</param>
-		/// <param name="aOutIndex">The index of the output of the first node.</param>
-		/// <param name="bInIndex">The index of the input of the second node.</param>
-		public void Connect(NodeViewModel a, NodeViewModel b, int aOutIndex, int bInIndex)
-		{
-			Connect(a, b, a.OutputConnectors[aOutIndex], b.InputConnectors[bInIndex]);
-		}
-
 		#region Private Methods
 
 		/// <summary>

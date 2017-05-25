@@ -139,6 +139,8 @@
     <Compile Include="NetView\AdornedControls\AdornedControl.cs" />
     <Compile Include="NetView\AdornedControls\AdornerEventArgs.cs" />
     <Compile Include="NetView\Converters\ScaleToPercentConverter.cs" />
+    <Compile Include="NetView\Graphing\GraphConnection.cs" />
+    <Compile Include="NetView\Graphing\GraphStructure.cs" />
     <Compile Include="NetView\NetLayout.xaml.cs">
       <DependentUpon>NetLayout.xaml</DependentUpon>
     </Compile>
@@ -183,6 +185,9 @@
     <Compile Include="Panels\Controls\DrawPanel.cs" />
     <Compile Include="Panels\Controls\RectanglePanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
+    <Compile Include="Panels\Graphing\GraphPanel.cs" />
+    <Compile Include="NetView\Graphing\GraphNode.cs" />
+    <Compile Include="Panels\Graphing\IGraphVisualiser.cs" />
     <Compile Include="Panels\IInputPanel.cs" />
     <Compile Include="Panels\IOutputPanel.cs" />
     <Compile Include="Panels\Logging\LogDataGridPanel.cs" />
