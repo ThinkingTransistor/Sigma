@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -92,13 +93,13 @@ namespace Sigma.Core.Monitors
 											 @"   * {font-family: 'Lucida Console';}" +
 											 @"   body {background-color: 36474F; color: #EEEEEE;}" +
 											 @"   a {color: #CCCCCC;}" +
-											 @"   .meta {margin-top: 1rem; margin-bottom: 2rem;}" +
-											 @"   .meta > table {width: 65%; margin: auto; font-size: 18px; }" +
+											 @"   .meta {margin-top: 1rem; margin-bottom: 1rem;}" +
+											 @"   .meta > table {width: 65%; margin: auto; font-size: 16px; }" +
 											 @"   .console {background-color: 232D33; width: 65%; height: 80%; margin: auto; overflow-y: scroll; overflow-x: hidden; }" +
 											 @"   .console {border: 1px solid grey;}" +
 											 @"   .console > table {border-spacing: 0.5rem 0rem;}" +
 											 @"   .console > table > tbody > tr {line-height: 95%; font-size: 13px; padding-bottom: 0.4rem; padding-top: 0.4rem; margin-top: 0rem; margin-bottom: 0rem; cursor: default;}" +
-											 @"   .console > table > tbody > tr:hover {background-color: 3B4C56;}" +
+											 @"   .console > table > tbody > tr:hover {background-color: #3B4C56;}" +
 											 @"   ::selection {background-color: 1B2428;}" +
 											 @"   ::-webkit-scrollbar { height: 12px; width: 16px; background: #1B2428; } " +
 											 @"   ::-webkit-scrollbar-thumb { background: #3B4C56; } " +
@@ -106,7 +107,7 @@ namespace Sigma.Core.Monitors
 											 @"   .footer {color: #CCCCCC; font-size: 13px; text-align: center; position: absolute; right: 0; bottom: 0; left: 0; padding: 1rem}" +
 											 @"   @media (max-width: 50rem) {" +
 											 @"    .console {width: 100%; overflow-x: scroll}" +
-											 @"    .meta > table {width: 90;}" +
+											 @"    .meta > table {width: 90%;}" +
 											 @"    .footer {display: none;}" +
 											 @"   }" +
 											 @"   " +
@@ -132,11 +133,17 @@ namespace Sigma.Core.Monitors
 
 							try
 							{
+								string responseDynamicMetaTrainers = string.Join("<br>", Sigma.RunningOperatorsByTrainer.Keys.Select(
+									t => $"<b>{t.ToString()}</b>" +
+										$"<br> using dataset <b>\"{t.TrainingDataIterator.UnderlyingDataset.Name}\"</b>" +
+										$"<br> optimising with <b>{t.Optimiser.GetType().Name}</b>" +
+										$"<br> powered by <b>{t.Operator.GetType().Name}</b>"));
+
 								string responseDynamicMeta = $"<div class=\"meta\">" +
 															 $"  <table>" +
 															 $"     <caption><b>Sigma Remote HTTP Monitor</b></caption>" +
 															 $"     <tr><td>Environment:</td><td>{Sigma.Name}</td></tr>" +
-															 $"     <tr><td>Active Trainers ({Sigma.RunningOperatorsByTrainer.Count}):</td><td>{string.Join(", ", Sigma.RunningOperatorsByTrainer.Keys)}</td></tr>" +
+															 $"     <tr><td>Active Trainers ({Sigma.RunningOperatorsByTrainer.Count}):</td><td>{responseDynamicMetaTrainers}</td></tr>" +
 															 $"  </table>" +
 															 $"</div>";
 

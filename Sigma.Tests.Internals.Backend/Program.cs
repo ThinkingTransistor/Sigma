@@ -48,7 +48,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleTicTacToe();
+			SampleWdbc();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -159,6 +159,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new UniClassificationAccuracyReporter("validation", 0.5, TimeStep.Every(1, TimeScale.Epoch)));
 
 			sigma.AddTrainer(trainer);
+
+			sigma.AddMonitor(new HttpMonitor("http://+:8080/sigma/"));
 
 			sigma.PrepareAndRun();
 		}
