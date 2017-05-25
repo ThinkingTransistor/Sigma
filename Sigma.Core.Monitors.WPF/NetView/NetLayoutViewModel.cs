@@ -540,7 +540,7 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			// Create some nodes and add them to the view-model.
 			//
 			NodeViewModel node1 = CreateNode("Node1", new Point(100, 60), false);
-			NodeViewModel node2 = CreateNode("Node2", new Point(350, 80), false);
+			NodeViewModel node2 = CreateNode("Node2 with a really long name", new Point(350, 80), false);
 
 			//
 			// Create a connection between the nodes.

@@ -62,10 +62,7 @@ namespace Sigma.Core.Monitors.WPF.NetView.PositionManagement
                 animatableElement.SetValue(dependencyProperty, animatableElement.GetValue(dependencyProperty));
                 CancelAnimation(animatableElement, dependencyProperty);
 
-                if (completedEvent != null)
-                {
-                    completedEvent(sender, e);
-                }
+	            completedEvent?.Invoke(sender, e);
             };
 
             animation.Freeze();

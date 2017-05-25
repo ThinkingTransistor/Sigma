@@ -10,7 +10,6 @@
              xmlns:positionManagement="clr-namespace:Sigma.Core.Monitors.WPF.NetView.PositionManagement"
              xmlns:NetworkUI="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkUIs"
              xmlns:NetworkModel="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkModel"
-             FocusManager.FocusedElement="{Binding ElementName=networkControl}"
              mc:Ignorable="d" 
 			 MinWidth="400"
 			 MinHeight ="150"
@@ -334,6 +333,7 @@
 								Grid.ColumnSpan="3"
 								Grid.Row="0"
 								Text="{Binding Name}"
+								Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
 							/>
@@ -406,24 +406,20 @@
 
 		<KeyBinding
 			Key="Delete"
-			Command="{StaticResource Commands.DeleteSelectedNodes}"
-		/>
+			Command="{StaticResource Commands.DeleteSelectedNodes}"/>
 		<KeyBinding
 			Key="Minus"
-			Command="{StaticResource Commands.ZoomOut}"
-		/>
+			Command="{StaticResource Commands.ZoomOut}"/>
 		<KeyBinding
 			Key="Plus"
-			Command="{StaticResource Commands.ZoomIn}"
-		/>
-		<!--KeyBinding
-			Key="Backspace"
+			Command="{StaticResource Commands.ZoomIn}"/>
+		<KeyBinding
+			Key="Back"
 			Command="{StaticResource Commands.JumpBackToPrevZoom}"
-		/-->
+		/>
 		<KeyBinding
 			Key="Space"
-			Command="{StaticResource Commands.FitContent}"
-		/>
+			Command="{StaticResource Commands.FitContent}"/>
 
 	</UserControl.InputBindings>
 
@@ -433,45 +429,35 @@
 
 		<CommandBinding 
 			Command="{StaticResource Commands.DeleteSelectedNodes}" 
-			Executed="DeleteSelectedNodes_Executed" 
-		/>
+			Executed="DeleteSelectedNodes_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.CreateNode}" 
-			Executed="CreateNode_Executed" 
-		/>
+			Executed="CreateNode_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.DeleteNode}" 
-			Executed="DeleteNode_Executed" 
-		/>
+			Executed="DeleteNode_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.DeleteConnection}" 
-			Executed="DeleteConnection_Executed" 
-		/>
+			Executed="DeleteConnection_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.ZoomOut}" 
-			Executed="ZoomOut_Executed" 
-		/>
+			Executed="ZoomOut_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.ZoomIn}" 
-			Executed="ZoomIn_Executed" 
-		/>
+			Executed="ZoomIn_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.JumpBackToPrevZoom}" 
 			Executed="JumpBackToPrevZoom_Executed" 
-			CanExecute="JumpBackToPrevZoom_CanExecuted"
-		/>
+			CanExecute="JumpBackToPrevZoom_CanExecuted"/>
 		<CommandBinding 
 			Command="{StaticResource Commands.FitContent}" 
-			Executed="FitContent_Executed" 
-		/>
+			Executed="FitContent_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.Fill}" 
-			Executed="Fill_Executed" 
-		/>
+			Executed="Fill_Executed" />
 		<CommandBinding 
 			Command="{StaticResource Commands.OneHundredPercent}" 
-			Executed="OneHundredPercent_Executed" 
-		/>
+			Executed="OneHundredPercent_Executed" />
 
 	</UserControl.CommandBindings>
 	<UserControl.ContextMenu>
@@ -479,49 +465,42 @@
 		<ContextMenu>
 
 			<!-- Clicking this menu item creates a new node. -->
-
-			<MenuItem
+			<!--MenuItem
 				Header="Create Node"
 				Command="{StaticResource Commands.CreateNode}"
-				ToolTip="Creates a new node"
-			/>
+				ToolTip="Creates a new node"/>
 
-			<Separator />
+			<Separator /-->
 
 			<MenuItem
 				Header="Fit"
 				Command="{StaticResource Commands.FitContent}"
-				ToolTip="Fit selected nodes to the viewport, when nothing is selected fits all nodes to the viewport"
-			/>
+				ToolTip="Fit selected nodes to the viewport, when nothing is selected fits all nodes to the viewport"/>
 			<MenuItem
 				Header="Fill"
 				Command="{StaticResource Commands.Fill}"
-				ToolTip="Fit the entire content area to the viewport"
-			/>
+				ToolTip="Fit the entire content area to the viewport"/>
 			<MenuItem
 				Header="100%"
 				Command="{StaticResource Commands.OneHundredPercent}"
-				ToolTip="Scale the content to 100%"
-			/>
-			<MenuItem
+				ToolTip="Scale the content to 100%"/>
+			<!--MenuItem
 				Header="Previous Zoom"
 				Command="{StaticResource Commands.JumpBackToPrevZoom}"
-				ToolTip="Return to the previous zoom level"
-			/>
+				ToolTip="Return to the previous zoom level"/-->
 
 			<Separator />
-
+			
+			<MenuItem
+				Header="Zoom In"
+				Command="{StaticResource Commands.ZoomIn}"
+				ToolTip="Zooms in on the canvas"/>
+			
 			<MenuItem
 				Header="Zoom Out"
 				Command="{StaticResource Commands.ZoomOut}"
-				ToolTip="Zooms out from the canvas"
-			/>
-			<MenuItem
-				Header="Zoom In"
-				Command="{StaticResource Commands.ZoomOut}"
-				ToolTip="Zooms in on the canvas"
-			/>
-
+				ToolTip="Zooms out from the canvas"/>
+			
 		</ContextMenu>
 	</UserControl.ContextMenu>
 
@@ -701,7 +680,7 @@
                     This grid specifies the size of the ZoomAndPanControl's content.
                     It wraps up both the NetworkView and drag-zooming Canvas.
                     -->
-					<Grid
+					<Grid FocusManager.FocusedElement="{Binding ElementName=networkControl}"
 						Width="{Binding ContentWidth}"
 						Height="{Binding ContentHeight}">
 

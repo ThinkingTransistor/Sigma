@@ -10,7 +10,7 @@
 					<!-- Style for playback control -->
 					<ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
 					<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/Themes/Styles/MaterialDesign/MaterialDesignExtensionStyles.xaml"/>
-					<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />
+					<!--<ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Amber.xaml" />-->
 					<ResourceDictionary>
 						<Style x:Key="SigmaPlaybackButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFloatingActionButton}">
 							<Setter Property="Margin" Value="8,0,8,0"/>

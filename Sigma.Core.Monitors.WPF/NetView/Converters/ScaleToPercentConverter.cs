@@ -39,8 +39,8 @@ namespace Sigma.Core.Monitors.WPF.NetView.Converters
 		/// </summary>
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
+			return value == null ? 100 : Math.Min(999, Math.Max((int)((double)value * 100.0), 1));
 			// Round to an integer value whilst converting.
-			return (double)(int)((double)value * 100.0);
 		}
 
 		/// <summary>
