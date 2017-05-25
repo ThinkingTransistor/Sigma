@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:shapes="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Shapes"
              xmlns:converters="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Converters"
-             xmlns:adornedControls="clr-namespace:Sigma.Core.Monitors.WPF.NetView.AdornedControls"
              xmlns:netView="clr-namespace:Sigma.Core.Monitors.WPF.NetView"
              xmlns:positionManagement="clr-namespace:Sigma.Core.Monitors.WPF.NetView.PositionManagement"
              xmlns:NetworkUI="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkUIs"
@@ -110,7 +109,7 @@
             Template for the button that is used to delete nodes and connections in the graph.
             This button is displayed in an adorner when the user hovers the mouse over a node or connection.
             -->
-			<ControlTemplate 
+			<!--<ControlTemplate 
 				x:Key="deleteButtonTemplate"
 				TargetType="{x:Type Button}"
 			>
@@ -154,10 +153,10 @@
 					<EventTrigger
 						RoutedEvent="Mouse.MouseEnter"
 					>
-						<!-- 
+						--><!-- 
                         Make the 'delete connection button' larger when the mouse 
                         cursor is hovered over it.
-                        -->
+                        --><!--
 						<BeginStoryboard>
 							<Storyboard>
 								<DoubleAnimation
@@ -179,10 +178,10 @@
 					<EventTrigger
 						RoutedEvent="Mouse.MouseLeave"
 					>
-						<!-- 
+						--><!-- 
                         Return the 'delete connection button' to normal size when the mouse
                         cursor is moved away.
-                        -->
+                        --><!--
 						<BeginStoryboard>
 							<Storyboard>
 								<DoubleAnimation
@@ -202,7 +201,7 @@
 					</EventTrigger>
 				</ControlTemplate.Triggers>
 
-			</ControlTemplate>
+			</ControlTemplate>-->
 
 			<!-- 
             Data-template for ConectionViewModel.
@@ -221,11 +220,11 @@
                 When the user hovers the mouse cursor over the connection, the 
                 'delete connection' adorner pops up and allows them to delete the connection.
                 -->
-				<adornedControls:AdornedControl
+				<!--<adornedControls:AdornedControl
 					HorizontalAdornerPlacement="Mouse"
 					VerticalAdornerPlacement="Mouse"
 					IsMouseOverShowEnabled="{Binding ElementName=networkControl, Path=IsNotDragging}"
-				>
+				>-->
 
 					<!-- The connection is represented by a curved arrow. -->
 					<shapes:CurvedArrow
@@ -235,13 +234,13 @@
 						Points="{Binding Points}"
 					/>
 
-					<adornedControls:AdornedControl.AdornerContent>
+					<!--<adornedControls:AdornedControl.AdornerContent>-->
 
 						<!-- 
                         This is the adorner that pops up when the user hovers the mouse over the connection.
                         It displays a button that the user can click to delete the connection.
                         -->
-						<Canvas
+						<!--<Canvas
 							x:Name="connectionAdornerCanvas"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Top"
@@ -268,9 +267,9 @@
 								CommandParameter="{Binding}"
 								Template="{StaticResource deleteButtonTemplate}"
 							/>
-						</Canvas>
-					</adornedControls:AdornedControl.AdornerContent>
-				</adornedControls:AdornedControl>
+						</Canvas>-->
+					<!--</adornedControls:AdornedControl.AdornerContent>-->
+				<!--</adornedControls:AdornedControl>-->
 			</DataTemplate>
 
 			<!-- Define a data-template for the 'NodeViewModel' class. -->
@@ -283,13 +282,13 @@
                 When the user hovers the mouse cursor over the node, the 
                 'delete node' adorner pops up and allows them to delete the node.
                 -->
-				<adornedControls:AdornedControl
+				<!--<adornedControls:AdornedControl
 					HorizontalAdornerPlacement="Outside"
 					VerticalAdornerPlacement="Outside"
 					AdornerOffsetX="-12"
 					AdornerOffsetY="8"
 					IsMouseOverShowEnabled="{Binding ElementName=networkControl, Path=IsNotDragging}"
-				>
+				>-->
 
 					<!-- The margin has been selected so that the selection rect nicely covers the entire node. -->
 
@@ -358,13 +357,13 @@
 						</Grid>
 					</Grid>
 
-					<adornedControls:AdornedControl.AdornerContent>
+					<!--<adornedControls:AdornedControl.AdornerContent>
 
-						<!-- 
+						--><!-- 
                         This is the adorner that pops up when the user hovers the mouse over the node.
                         It displays a button that the user can click to delete the node.
                         -->
-						<Canvas
+						<!--<Canvas
 							x:Name="nodeAdornerCanvas"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Top"
@@ -392,8 +391,8 @@
 								Template="{StaticResource deleteButtonTemplate}"
 							/>
 						</Canvas>
-					</adornedControls:AdornedControl.AdornerContent>
-				</adornedControls:AdornedControl>
+					</adornedControls:AdornedControl.AdornerContent>-->
+				<!--</adornedControls:AdornedControl>-->
 			</DataTemplate>
 
 		</ResourceDictionary>
@@ -522,22 +521,22 @@
 				<ColumnDefinition Width="*" />
 
 				<!-- the fit content button -->
-				<ColumnDefinition Width="40" />
+				<ColumnDefinition Width="60" />
 
 				<!-- spacer -->
-				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="10" />
 
 				<!-- the fill button -->
-				<ColumnDefinition Width="40" />
+				<ColumnDefinition Width="60" />
 
 				<!-- spacer -->
-				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="10" />
 
 				<!-- the 100% button -->
-				<ColumnDefinition Width="40" />
+				<ColumnDefinition Width="60" />
 
 				<!-- spacer -->
-				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="10" />
 
 				<!-- the zoom percentage label -->
 				<ColumnDefinition Width="25" />
@@ -549,19 +548,19 @@
 				<ColumnDefinition Width="5" />
 
 				<!-- the zoom out button -->
-				<ColumnDefinition Width="20" />
+				<ColumnDefinition Width="40" />
 
 				<!-- spacer -->
-				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="10" />
 
 				<!-- the zoom slider -->
 				<ColumnDefinition Width="120" />
 
 				<!-- spacer -->
-				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="10" />
 
 				<!-- the zoom in button -->
-				<ColumnDefinition Width="20" />
+				<ColumnDefinition Width="40" />
 
 				<!-- spacer -->
 				<ColumnDefinition Width="10" />
@@ -669,13 +668,13 @@
 				ContentOffsetY="{Binding ContentOffsetY, Mode=TwoWay}"
 				ContentViewportWidth="{Binding ContentViewportWidth, Mode=OneWayToSource}"
 				ContentViewportHeight="{Binding ContentViewportHeight, Mode=OneWayToSource}"
-				Background="LightGray"
+				Background="Transparent"
 				Focusable="False">
 				<!--
                 We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
                 we zoom in and out using the ZoomAndPanControl
                 -->
-				<AdornerDecorator>
+				<!--<AdornerDecorator>-->
 					<!--
                     This grid specifies the size of the ZoomAndPanControl's content.
                     It wraps up both the NetworkView and drag-zooming Canvas.
@@ -703,7 +702,8 @@
 							MouseDown="networkControl_MouseDown"
 							MouseUp="networkControl_MouseUp"
 							MouseMove="networkControl_MouseMove"
-							MouseWheel="networkControl_MouseWheel"/>
+							MouseWheel="networkControl_MouseWheel"
+							Background="LightGray"/>
 
 
 						<!--
@@ -723,7 +723,7 @@
 						</Canvas>
 
 					</Grid>
-				</AdornerDecorator>
+				<!--</AdornerDecorator>-->
 			</positionManagement:ZoomAndPanControl>
 		</ScrollViewer>
 	</DockPanel>

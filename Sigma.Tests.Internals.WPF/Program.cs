@@ -187,7 +187,7 @@ namespace Sigma.Tests.Internals.WPF
 				}
 
 				window.TabControl["NetView"].GridSize = new[] { 1, 1 };
-				window.TabControl["NetView"].AddCumulativePanel(new XamlPanel<NetLayout>("Title"));
+				window.TabControl["NetView"].AddCumulativePanel(new XamlPanel<NetLayout>("Network View"));
 
 				//for (int i = 0; i < 10; i++)
 				//{
