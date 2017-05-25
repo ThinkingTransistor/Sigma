@@ -136,7 +136,8 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 
 									activeTrainer.ForceInitialisation = forceInitialisationBefore;
 
-									Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue($"Switched network \"{network.Name}\", reset training (now using \"{fileDialog.FileName}\")", "Got it", null));
+									Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue(
+										$"Switched network \"{network.Name}\", reset training (now using \"{fileDialog.FileName}\")", "Got it", null));
 								}
 								catch (Exception e)
 								{
