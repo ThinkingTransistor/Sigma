@@ -138,12 +138,20 @@
     </Compile>
     <Compile Include="NetView\AdornedControls\AdornedControl.cs" />
     <Compile Include="NetView\AdornedControls\AdornerEventArgs.cs" />
+    <Compile Include="NetView\Converters\ScaleToPercentConverter.cs" />
+    <Compile Include="NetView\NetLayout.xaml.cs">
+      <DependentUpon>NetLayout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="NetView\NetLayoutViewModel.cs" />
+    <Compile Include="NetView\NetLayout_ZoomAndPan.cs" />
     <Compile Include="NetView\NetworkModel\ConnectionViewModel.cs" />
     <Compile Include="NetView\NetworkModel\ConnectorType.cs" />
     <Compile Include="NetView\NetworkModel\ConnectorViewModel.cs" />
     <Compile Include="NetView\NetworkModel\NetworkViewModel.cs" />
     <Compile Include="NetView\NetworkModel\NodeViewModel.cs" />
+    <Compile Include="NetView\NetworkUIs\ConnectionBadIndicator.cs" />
     <Compile Include="NetView\NetworkUIs\ConnectionDragEvents.cs" />
+    <Compile Include="NetView\NetworkUIs\ConnectionOkIndicator.cs" />
     <Compile Include="NetView\NetworkUIs\ConnectorItem.cs" />
     <Compile Include="NetView\NetworkUIs\ConnectorItemDragEvents.cs" />
     <Compile Include="NetView\NetworkUIs\NetworkView.cs" />
@@ -334,6 +342,14 @@
     <Page Include="Model\UI\Resources\FontResource.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NetView\NetLayout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NetView\NetworkViewTemplates.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>

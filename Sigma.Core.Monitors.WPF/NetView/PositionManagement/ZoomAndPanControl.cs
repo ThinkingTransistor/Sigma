@@ -1040,17 +1040,14 @@ namespace Sigma.Core.Monitors.WPF.NetView.PositionManagement
         {
             Size size = base.ArrangeOverride(DesiredSize);
 
-            if (content.DesiredSize != unScaledExtent)
+			if (content != null && content.DesiredSize != unScaledExtent)
             {
                 //
                 // Use the size of the child as the un-scaled extent content.
                 //
                 unScaledExtent = content.DesiredSize;
 
-                if (scrollOwner != null)
-                {
-                    scrollOwner.InvalidateScrollInfo();
-                }
+	            scrollOwner?.InvalidateScrollInfo();
             }
 
             //

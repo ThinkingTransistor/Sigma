@@ -230,8 +230,8 @@ namespace Sigma.Core.Monitors.WPF.NetView.NetworkModel
                 if (inputConnectors == null)
                 {
                     inputConnectors = new ImpObservableCollection<ConnectorViewModel>();
-                    inputConnectors.ItemsAdded += new EventHandler<CollectionItemsChangedEventArgs>(inputConnectors_ItemsAdded);
-                    inputConnectors.ItemsRemoved += new EventHandler<CollectionItemsChangedEventArgs>(inputConnectors_ItemsRemoved);
+                    inputConnectors.ItemsAdded += inputConnectors_ItemsAdded;
+                    inputConnectors.ItemsRemoved += inputConnectors_ItemsRemoved;
                 }
 
                 return inputConnectors;
@@ -248,8 +248,8 @@ namespace Sigma.Core.Monitors.WPF.NetView.NetworkModel
                 if (outputConnectors == null)
                 {
                     outputConnectors = new ImpObservableCollection<ConnectorViewModel>();
-                    outputConnectors.ItemsAdded += new EventHandler<CollectionItemsChangedEventArgs>(outputConnectors_ItemsAdded);
-                    outputConnectors.ItemsRemoved += new EventHandler<CollectionItemsChangedEventArgs>(outputConnectors_ItemsRemoved);
+                    outputConnectors.ItemsAdded += outputConnectors_ItemsAdded;
+                    outputConnectors.ItemsRemoved += outputConnectors_ItemsRemoved;
                 }
 
                 return outputConnectors;

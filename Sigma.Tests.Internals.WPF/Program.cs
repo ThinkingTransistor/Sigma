@@ -35,8 +35,8 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Media;
+using Sigma.Core.Monitors.WPF.NetView;
+using Sigma.Core.Monitors.WPF.Panels;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 
 namespace Sigma.Tests.Internals.WPF
@@ -98,7 +98,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction");
+			gui.AddTabs("NetView", "Overview", "Metrics", "Validation", "Maximisation", "Reproduction");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -179,12 +179,15 @@ namespace Sigma.Tests.Internals.WPF
 
 					window.TabControl["Validation"].AddCumulativePanel(drawPanel);
 					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
-					
+
 					for (int i = 0; i < 10; i++)
 					{
 						window.TabControl["Maximisation"].AddCumulativePanel(new MnistTargetMaximisationPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
 					}
 				}
+
+				window.TabControl["NetView"].GridSize = new[] { 1, 1 };
+				window.TabControl["NetView"].AddCumulativePanel(new XamlPanel<NetLayout>("Title"));
 
 				//for (int i = 0; i < 10; i++)
 				//{
