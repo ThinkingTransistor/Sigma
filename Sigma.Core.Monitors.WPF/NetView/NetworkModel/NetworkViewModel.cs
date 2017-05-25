@@ -26,72 +26,100 @@ using Sigma.Core.Monitors.WPF.NetView.Utils;
 
 namespace Sigma.Core.Monitors.WPF.NetView.NetworkModel
 {
-    /// <summary>
-    /// Defines a network of nodes and connections between the nodes.
-    /// </summary>
-    public sealed class NetworkViewModel
-    {
-        #region Internal Data Members
+	/// <summary>
+	/// Defines a network of nodes and connections between the nodes.
+	/// </summary>
+	public sealed class NetworkViewModel
+	{
+		#region Internal Data Members
 
-        /// <summary>
-        /// The collection of nodes in the network.
-        /// </summary>
-        private ImpObservableCollection<NodeViewModel> nodes = null;
+		/// <summary>
+		/// The collection of nodes in the network.
+		/// </summary>
+		private ImpObservableCollection<NodeViewModel> nodes = null;
 
-        /// <summary>
-        /// The collection of connections in the network.
-        /// </summary>
-        private ImpObservableCollection<ConnectionViewModel> connections = null;
+		/// <summary>
+		/// The collection of connections in the network.
+		/// </summary>
+		private ImpObservableCollection<ConnectionViewModel> connections = null;
 
-        #endregion Internal Data Members
+		#endregion Internal Data Members
 
-        /// <summary>
-        /// The collection of nodes in the network.
-        /// </summary>
-        public ImpObservableCollection<NodeViewModel> Nodes
-        {
-            get
-            {
-                if (nodes == null)
-                {
-                    nodes = new ImpObservableCollection<NodeViewModel>();
-                }
+		/// <summary>
+		/// The collection of nodes in the network.
+		/// </summary>
+		public ImpObservableCollection<NodeViewModel> Nodes
+		{
+			get
+			{
+				if (nodes == null)
+				{
+					nodes = new ImpObservableCollection<NodeViewModel>();
+				}
 
-                return nodes;
-            }
-        }
+				return nodes;
+			}
+		}
 
-        /// <summary>
-        /// The collection of connections in the network.
-        /// </summary>
-        public ImpObservableCollection<ConnectionViewModel> Connections
-        {
-            get
-            {
-                if (connections == null)
-                {
-                    connections = new ImpObservableCollection<ConnectionViewModel>();
-                    connections.ItemsRemoved += new EventHandler<CollectionItemsChangedEventArgs>(connections_ItemsRemoved);
-                }
+		/// <summary>
+		/// The collection of connections in the network.
+		/// </summary>
+		public ImpObservableCollection<ConnectionViewModel> Connections
+		{
+			get
+			{
+				if (connections == null)
+				{
+					connections = new ImpObservableCollection<ConnectionViewModel>();
+					connections.ItemsRemoved += new EventHandler<CollectionItemsChangedEventArgs>(connections_ItemsRemoved);
+				}
 
-                return connections;
-            }
-        }
+				return connections;
+			}
+		}
 
-        #region Private Methods
+		/// <summary>
+		/// Connect two nodes together.
+		/// </summary>
+		/// <param name="a">The first node.</param>
+		/// <param name="b">The second node.</param>
+		/// <param name="aOut">The output of the first node.</param>
+		/// <param name="bIn">The input of the second node. </param>
+		public void Connect(NodeViewModel a, NodeViewModel b, ConnectorViewModel aOut, ConnectorViewModel bIn)
+		{
+			Connections.Add(new ConnectionViewModel
+			{
+				SourceConnector = aOut,
+				DestConnector = bIn
+			});
+		}
 
-        /// <summary>
-        /// Event raised then Connections have been removed.
-        /// </summary>
-        private void connections_ItemsRemoved(object sender, CollectionItemsChangedEventArgs e)
-        {
-            foreach (ConnectionViewModel connection in e.Items)
-            {
-                connection.SourceConnector = null;
-                connection.DestConnector = null;
-            }
-        }
+		/// <summary>
+		/// Connect two nodes together.
+		/// </summary>
+		/// <param name="a">The first node.</param>
+		/// <param name="b">The second node.</param>
+		/// <param name="aOutIndex">The index of the output of the first node.</param>
+		/// <param name="bInIndex">The index of the input of the second node.</param>
+		public void Connect(NodeViewModel a, NodeViewModel b, int aOutIndex, int bInIndex)
+		{
+			Connect(a, b, a.OutputConnectors[aOutIndex], b.InputConnectors[bInIndex]);
+		}
 
-        #endregion Private Methods
-    }
+		#region Private Methods
+
+		/// <summary>
+		/// Event raised then Connections have been removed.
+		/// </summary>
+		private void connections_ItemsRemoved(object sender, CollectionItemsChangedEventArgs e)
+		{
+			foreach (ConnectionViewModel connection in e.Items)
+			{
+				connection.SourceConnector = null;
+				connection.DestConnector = null;
+			}
+		}
+
+		#endregion Private Methods
+	}
 }

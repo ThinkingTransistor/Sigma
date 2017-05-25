@@ -335,7 +335,7 @@
 								Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
-								Padding="10,0,10,0"
+								Padding="15,0,15,0"
 							/>
 
 							<!-- Displays the node's input connectors. -->

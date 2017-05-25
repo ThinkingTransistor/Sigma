@@ -458,6 +458,17 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			Network.Nodes.Remove(node);
 		}
 
+		/// <summary>
+		/// Create a node and add it to the view-model.
+		/// </summary>
+		public NodeViewModel CreateNode(string name, double nodeX, double nodeY, bool centerNode)
+		{
+			return CreateNode(name, new Point(nodeX, nodeY), centerNode);
+		}
+
+		/// <summary>
+		/// Create a node and add it to the view-model.
+		/// </summary>
 		public NodeViewModel CreateNode(string name, Point nodeLocation, bool centerNode)
 		{
 			return CreateNode(name, nodeLocation, new[] { new ConnectorViewModel("in1"), new ConnectorViewModel("in2"), }, new[] { new ConnectorViewModel("out1"), new ConnectorViewModel("out2") }, centerNode);
@@ -466,11 +477,21 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		/// <summary>
 		/// Create a node and add it to the view-model.
 		/// </summary>
+		public NodeViewModel CreateNode(string name, double nodeX, double nodeY, ConnectorViewModel[] inputs, ConnectorViewModel[] outputs, bool centerNode)
+		{
+			return CreateNode(name, new Point(nodeX, nodeY), inputs, outputs, centerNode);
+		}
+
+		/// <summary>
+		/// Create a node and add it to the view-model.
+		/// </summary>
 		public NodeViewModel CreateNode(string name, Point nodeLocation, ConnectorViewModel[] inputs, ConnectorViewModel[] outputs, bool centerNode)
 		{
-			NodeViewModel node = new NodeViewModel(name);
-			node.X = nodeLocation.X;
-			node.Y = nodeLocation.Y;
+			NodeViewModel node = new NodeViewModel(name)
+			{
+				X = nodeLocation.X,
+				Y = nodeLocation.Y
+			};
 
 			node.InputConnectors.AddRange(inputs);
 			node.OutputConnectors.AddRange(outputs);
@@ -545,22 +566,13 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			//
 			// Create some nodes and add them to the view-model.
 			//
-			NodeViewModel node1 = CreateNode("Node1", new Point(100, 60), false);
-			NodeViewModel node2 = CreateNode("Node2 with a long name", new Point(350, 60), false);
-
-			//
-			// Create a connection between the nodes.
-			//
-			ConnectionViewModel connection = new ConnectionViewModel
-			{
-				SourceConnector = node1.OutputConnectors[0],
-				DestConnector = node2.InputConnectors[0]
-			};
+			NodeViewModel node1 = CreateNode("Node1", 100, 60, false);
+			NodeViewModel node2 = CreateNode("Node2 with a really really long name", 350, 60, false);
 
 			//
 			// Add the connection to the view-model.
 			//
-			Network.Connections.Add(connection);
+			Network.Connect(node1, node2, 0, 1);
 		}
 
 		#endregion Private Methods
