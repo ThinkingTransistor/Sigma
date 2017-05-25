@@ -165,6 +165,11 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public DialogHost DialogHost { get; private set; }
 
+		/// <summary>
+		/// The snackbar that is in the rootelement of every window and can be used to send notifications.
+		/// </summary>
+		public Snackbar Snackbar { get; private set; }
+
 		#endregion UIElements
 
 		/// <summary>
@@ -326,11 +331,15 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			DialogHostIdentifier = BaseDialogHostIdentifier + WindowIndex;
 			DialogHost = new DialogHost { Identifier = DialogHostIdentifier };
+			// TODO: factory
+			// TODO: style
+			Snackbar = new Snackbar { MessageQueue = new SnackbarMessageQueue(TimeSpan.FromSeconds(2)), HorizontalAlignment = HorizontalAlignment.Stretch };
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
 			RootContentElement = CreateContent(monitor, other, out _titleBar);
 
 			RootElement.Children.Add(RootContentElement);
 			RootElement.Children.Add(DialogHost);
+			RootElement.Children.Add(Snackbar);
 			RootElement.Children.Add(LoadingIndicatorElement);
 
 			if (other == null)
