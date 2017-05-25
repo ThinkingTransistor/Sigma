@@ -30,6 +30,9 @@ using Sigma.Core.Monitors.WPF.NetView.Utils;
 
 namespace Sigma.Core.Monitors.WPF.NetView
 {
+	/// <summary>
+	/// This model contains the necessary data for displaying a network model.
+	/// </summary>
 	public class NetLayoutViewModel : AbstractModelBase
 	{
 		#region Internal Data Members
@@ -455,19 +458,22 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			Network.Nodes.Remove(node);
 		}
 
+		public NodeViewModel CreateNode(string name, Point nodeLocation, bool centerNode)
+		{
+			return CreateNode(name, nodeLocation, new[] { new ConnectorViewModel("in1"), new ConnectorViewModel("in2"), }, new[] { new ConnectorViewModel("out1"), new ConnectorViewModel("out2") }, centerNode);
+		}
+
 		/// <summary>
 		/// Create a node and add it to the view-model.
 		/// </summary>
-		public NodeViewModel CreateNode(string name, Point nodeLocation, bool centerNode)
+		public NodeViewModel CreateNode(string name, Point nodeLocation, ConnectorViewModel[] inputs, ConnectorViewModel[] outputs, bool centerNode)
 		{
 			NodeViewModel node = new NodeViewModel(name);
 			node.X = nodeLocation.X;
 			node.Y = nodeLocation.Y;
 
-			node.InputConnectors.Add(new ConnectorViewModel("In1"));
-			node.InputConnectors.Add(new ConnectorViewModel("In2"));
-			node.OutputConnectors.Add(new ConnectorViewModel("Out1"));
-			node.OutputConnectors.Add(new ConnectorViewModel("Out2"));
+			node.InputConnectors.AddRange(inputs);
+			node.OutputConnectors.AddRange(outputs);
 
 			if (centerNode)
 			{
@@ -540,7 +546,7 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			// Create some nodes and add them to the view-model.
 			//
 			NodeViewModel node1 = CreateNode("Node1", new Point(100, 60), false);
-			NodeViewModel node2 = CreateNode("Node2 with a really long name", new Point(350, 80), false);
+			NodeViewModel node2 = CreateNode("Node2 with a long name", new Point(350, 60), false);
 
 			//
 			// Create a connection between the nodes.

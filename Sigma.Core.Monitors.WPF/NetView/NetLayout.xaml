@@ -1,26 +1,26 @@
 ﻿<UserControl x:Class="Sigma.Core.Monitors.WPF.NetView.NetLayout"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:shapes="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Shapes"
-             xmlns:converters="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Converters"
-             xmlns:netView="clr-namespace:Sigma.Core.Monitors.WPF.NetView"
-             xmlns:positionManagement="clr-namespace:Sigma.Core.Monitors.WPF.NetView.PositionManagement"
-             xmlns:NetworkUI="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkUIs"
-             xmlns:NetworkModel="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkModel"
-             mc:Ignorable="d" 
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:shapes="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Shapes"
+			 xmlns:converters="clr-namespace:Sigma.Core.Monitors.WPF.NetView.Converters"
+			 xmlns:netView="clr-namespace:Sigma.Core.Monitors.WPF.NetView"
+			 xmlns:positionManagement="clr-namespace:Sigma.Core.Monitors.WPF.NetView.PositionManagement"
+			 xmlns:NetworkUI="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkUIs"
+			 xmlns:NetworkModel="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkModel"
+			 mc:Ignorable="d" 
 			 MinWidth="400"
 			 MinHeight ="150"
-             d:DesignHeight="500" d:DesignWidth="800">
+			 d:DesignHeight="500" d:DesignWidth="800">
 
 	<UserControl.Resources>
 
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<!-- 
-                Merge in the resource dictionary that is shared between the main window and the overview window.
-                -->
+				Merge in the resource dictionary that is shared between the main window and the overview window.
+				-->
 				<ResourceDictionary 
 					Source="NetworkViewTemplates.xaml"/>
 
@@ -40,15 +40,15 @@
 			<RoutedUICommand x:Key="Commands.OneHundredPercent" />
 
 			<!-- 
-            This converts from a scale value to a percentage value.
-            It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.
-            -->
+			This converts from a scale value to a percentage value.
+			It is used to convert the value of 'ContentScale' to the percentage zoom level that is displayed in the UI.
+			-->
 			<converters:ScaleToPercentConverter 
 				x:Key="scaleToPercentConverter" />
 
 			<!-- 
-            This graphic is used to indicate that a connection cannot be made between two particular connectors.        
-            -->
+			This graphic is used to indicate that a connection cannot be made between two particular connectors.        
+			-->
 			<DataTemplate DataType="{x:Type NetworkUI:ConnectionBadIndicator}">
 				<Grid
 					Width="80">
@@ -61,8 +61,8 @@
 			</DataTemplate>
 
 			<!-- 
-            This graphic is used to indicate that a connection can be made between two particular connectors.        
-            -->
+			This graphic is used to indicate that a connection can be made between two particular connectors.        
+			-->
 			<DataTemplate DataType="{x:Type NetworkUI:ConnectionOkIndicator}">
 				<Grid
 					Width="80">
@@ -75,16 +75,16 @@
 			</DataTemplate>
 
 			<!-- 
-            Define the visual style for a 'ConnectorItem'.
-            -->
+			Define the visual style for a 'ConnectorItem'.
+			-->
 			<Style 
 				TargetType="{x:Type NetworkUI:ConnectorItem}">
 				<!-- 
-                Data-binding for the connector hotspot.
-                ConnectorItem automatically computes its center points and assings this value
-                to the 'Hotspot' property.  This data-binding then 'pushes' the value into the application
-                view-model.
-                -->
+				Data-binding for the connector hotspot.
+				ConnectorItem automatically computes its center points and assings this value
+				to the 'Hotspot' property.  This data-binding then 'pushes' the value into the application
+				view-model.
+				-->
 				<Setter 
 					Property="Hotspot"
 					Value="{Binding Hotspot, Mode=OneWayToSource}"/>
@@ -106,9 +106,9 @@
 			</Style>
 
 			<!-- 
-            Template for the button that is used to delete nodes and connections in the graph.
-            This button is displayed in an adorner when the user hovers the mouse over a node or connection.
-            -->
+			Template for the button that is used to delete nodes and connections in the graph.
+			This button is displayed in an adorner when the user hovers the mouse over a node or connection.
+			-->
 			<!--<ControlTemplate 
 				x:Key="deleteButtonTemplate"
 				TargetType="{x:Type Button}"
@@ -154,9 +154,9 @@
 						RoutedEvent="Mouse.MouseEnter"
 					>
 						--><!-- 
-                        Make the 'delete connection button' larger when the mouse 
-                        cursor is hovered over it.
-                        --><!--
+						Make the 'delete connection button' larger when the mouse 
+						cursor is hovered over it.
+						--><!--
 						<BeginStoryboard>
 							<Storyboard>
 								<DoubleAnimation
@@ -179,9 +179,9 @@
 						RoutedEvent="Mouse.MouseLeave"
 					>
 						--><!-- 
-                        Return the 'delete connection button' to normal size when the mouse
-                        cursor is moved away.
-                        --><!--
+						Return the 'delete connection button' to normal size when the mouse
+						cursor is moved away.
+						--><!--
 						<BeginStoryboard>
 							<Storyboard>
 								<DoubleAnimation
@@ -204,22 +204,22 @@
 			</ControlTemplate>-->
 
 			<!-- 
-            Data-template for ConectionViewModel.
-            
-            Note that the 'Start' and 'End' of the arrow are bound to 'SourceConnectorHotspot' and 'DestConnectorHotspot' in 
-            the view-model.
+			Data-template for ConectionViewModel.
+			
+			Note that the 'Start' and 'End' of the arrow are bound to 'SourceConnectorHotspot' and 'DestConnectorHotspot' in 
+			the view-model.
 
-            In this sample a curved arrow represents connections between nodes.
-            -->
+			In this sample a curved arrow represents connections between nodes.
+			-->
 			<DataTemplate
 				DataType="{x:Type NetworkModel:ConnectionViewModel}"
 			>
 
 				<!-- 
-                An adorned control is used, to represent the connection. 
-                When the user hovers the mouse cursor over the connection, the 
-                'delete connection' adorner pops up and allows them to delete the connection.
-                -->
+				An adorned control is used, to represent the connection. 
+				When the user hovers the mouse cursor over the connection, the 
+				'delete connection' adorner pops up and allows them to delete the connection.
+				-->
 				<!--<adornedControls:AdornedControl
 					HorizontalAdornerPlacement="Mouse"
 					VerticalAdornerPlacement="Mouse"
@@ -237,9 +237,9 @@
 					<!--<adornedControls:AdornedControl.AdornerContent>-->
 
 						<!-- 
-                        This is the adorner that pops up when the user hovers the mouse over the connection.
-                        It displays a button that the user can click to delete the connection.
-                        -->
+						This is the adorner that pops up when the user hovers the mouse over the connection.
+						It displays a button that the user can click to delete the connection.
+						-->
 						<!--<Canvas
 							x:Name="connectionAdornerCanvas"
 							HorizontalAlignment="Right"
@@ -278,10 +278,10 @@
 			>
 
 				<!-- 
-                An adorned control is used, to represent the node. 
-                When the user hovers the mouse cursor over the node, the 
-                'delete node' adorner pops up and allows them to delete the node.
-                -->
+				An adorned control is used, to represent the node. 
+				When the user hovers the mouse cursor over the node, the 
+				'delete node' adorner pops up and allows them to delete the node.
+				-->
 				<!--<adornedControls:AdornedControl
 					HorizontalAdornerPlacement="Outside"
 					VerticalAdornerPlacement="Outside"
@@ -308,9 +308,9 @@
 						/>
 
 						<!-- 
-                        This grid contains the node's connectors.
-                        The margin is negative so that the connectors overlap the body of the node and it's selection border.
-                        -->
+						This grid contains the node's connectors.
+						The margin is negative so that the connectors overlap the body of the node and it's selection border.
+						-->
 						<Grid
 							Margin="-6,4,-6,4"
 						>
@@ -335,6 +335,7 @@
 								Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
+								Padding="10,0,10,0"
 							/>
 
 							<!-- Displays the node's input connectors. -->
@@ -360,9 +361,9 @@
 					<!--<adornedControls:AdornedControl.AdornerContent>
 
 						--><!-- 
-                        This is the adorner that pops up when the user hovers the mouse over the node.
-                        It displays a button that the user can click to delete the node.
-                        -->
+						This is the adorner that pops up when the user hovers the mouse over the node.
+						It displays a button that the user can click to delete the node.
+						-->
 						<!--<Canvas
 							x:Name="nodeAdornerCanvas"
 							HorizontalAlignment="Right"
@@ -521,19 +522,19 @@
 				<ColumnDefinition Width="*" />
 
 				<!-- the fit content button -->
-				<ColumnDefinition Width="60" />
+				<ColumnDefinition Width="65" />
 
 				<!-- spacer -->
 				<ColumnDefinition Width="10" />
 
 				<!-- the fill button -->
-				<ColumnDefinition Width="60" />
+				<ColumnDefinition Width="65" />
 
 				<!-- spacer -->
 				<ColumnDefinition Width="10" />
 
 				<!-- the 100% button -->
-				<ColumnDefinition Width="60" />
+				<ColumnDefinition Width="65" />
 
 				<!-- spacer -->
 				<ColumnDefinition Width="10" />
@@ -571,8 +572,8 @@
 			</Grid.ColumnDefinitions>
 
 			<!-- 
-            The 'fit content' button.  Causes the content to be scaled so that all the graph nodes fit in the viewport.
-            -->
+			The 'fit content' button.  Causes the content to be scaled so that all the graph nodes fit in the viewport.
+			-->
 			<Button
 				Grid.Column="1"
 				Command="{StaticResource Commands.FitContent}"
@@ -581,8 +582,8 @@
 			</Button>
 
 			<!-- 
-            The fill button.  Causes the content to be scaled so that it fits in the viewport.
-            -->
+			The fill button.  Causes the content to be scaled so that it fits in the viewport.
+			-->
 			<Button
 				Grid.Column="3"
 				Command="{StaticResource Commands.Fill}"
@@ -591,8 +592,8 @@
 			</Button>
 
 			<!-- 
-            The 100% button.  Causes the content to be scaled to 100 percent.
-            -->
+			The 100% button.  Causes the content to be scaled to 100 percent.
+			-->
 			<Button
 				Grid.Column="5"
 				Command="{StaticResource Commands.OneHundredPercent}"
@@ -601,9 +602,9 @@
 			</Button>
 
 			<!--
-            This is the label that shows what the current zoom level
-            is while zooming in and out.
-            -->
+			This is the label that shows what the current zoom level
+			is while zooming in and out.
+			-->
 			<TextBlock
 				Grid.Column="7"
 				VerticalAlignment="Center"
@@ -636,8 +637,8 @@
 				ToolTip="Change the zoom level of the content" ValueChanged="Slider_ValueChanged"/>
 
 			<!--
-            Button to zoom in.
-            -->
+			Button to zoom in.
+			-->
 			<Button
 				Grid.Column="14"
 				Command="{StaticResource Commands.ZoomIn}"
@@ -648,9 +649,9 @@
 		</Grid>
 
 		<!-- 
-        The ScrollViewer displays scrollbars when the content is too big to fit in the viewport. 
-        Focusable is set to False because it is only that NetworkView that I want to be focusable.
-        -->
+		The ScrollViewer displays scrollbars when the content is too big to fit in the viewport. 
+		Focusable is set to False because it is only that NetworkView that I want to be focusable.
+		-->
 		<ScrollViewer
 			CanContentScroll="True"
 			VerticalScrollBarVisibility="Visible"
@@ -658,9 +659,9 @@
 			Focusable="False">
 
 			<!-- 
-            The ZoomAndPanControl displays the NetworkView as its content.
-            We can use the mouse to zoom and pan about the NetworkView.
-            -->
+			The ZoomAndPanControl displays the NetworkView as its content.
+			We can use the mouse to zoom and pan about the NetworkView.
+			-->
 			<positionManagement:ZoomAndPanControl
 				x:Name="zoomAndPanControl"
 				ContentScale="{Binding ContentScale, Mode=TwoWay}"
@@ -671,14 +672,14 @@
 				Background="Transparent"
 				Focusable="False">
 				<!--
-                We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
-                we zoom in and out using the ZoomAndPanControl
-                -->
+				We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
+				we zoom in and out using the ZoomAndPanControl
+				-->
 				<!--<AdornerDecorator>-->
 					<!--
-                    This grid specifies the size of the ZoomAndPanControl's content.
-                    It wraps up both the NetworkView and drag-zooming Canvas.
-                    -->
+					This grid specifies the size of the ZoomAndPanControl's content.
+					It wraps up both the NetworkView and drag-zooming Canvas.
+					-->
 					<Grid FocusManager.FocusedElement="{Binding ElementName=networkControl}"
 						Width="{Binding ContentWidth}"
 						Height="{Binding ContentHeight}">
@@ -693,12 +694,12 @@
 							
 							NodesSource="{Binding Network.Nodes}"
 							ConnectionsSource="{Binding Path=Network.Connections}"
-                            
+							
 							ConnectionDragStarted="networkControl_ConnectionDragStarted"
 							QueryConnectionFeedback="networkControl_QueryConnectionFeedback"
 							ConnectionDragging="networkControl_ConnectionDragging"                            
 							ConnectionDragCompleted="networkControl_ConnectionDragCompleted"
-                            
+							
 							MouseDown="networkControl_MouseDown"
 							MouseUp="networkControl_MouseUp"
 							MouseMove="networkControl_MouseMove"
@@ -707,9 +708,9 @@
 
 
 						<!--
-                        This Canvas and Border are used as a very simple way to render a drag rectangle that the user
-                        uses to specify an area to zoom in on.
-                        -->
+						This Canvas and Border are used as a very simple way to render a drag rectangle that the user
+						uses to specify an area to zoom in on.
+						-->
 						<Canvas
 							x:Name="dragZoomCanvas"
 							Visibility="Collapsed">
