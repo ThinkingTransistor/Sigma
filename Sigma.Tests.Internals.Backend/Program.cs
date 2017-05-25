@@ -41,14 +41,12 @@ namespace Sigma.Tests.Internals.Backend
 {
 	public static class Program
 	{
-		public static MinibatchIterator TrainingIterator;
-
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleWdbc();
+			SampleTicTacToe();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -254,8 +252,10 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(9)
-											+ FullyConnectedLayer.Construct(1764)
-											+ FullyConnectedLayer.Construct(3, "sigmoid")
+											+ FullyConnectedLayer.Construct(9, "tanh")
+											+ FullyConnectedLayer.Construct(140, "tanh")
+											+ FullyConnectedLayer.Construct(20, "tanh")
+											+ FullyConnectedLayer.Construct(3, "tanh")
 											+ OutputLayer.Construct(3)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
 
@@ -264,7 +264,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
 			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));

@@ -71,7 +71,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 
 		public void SetOutput(INDArray output)
 		{
-			output = Handler.SoftMax(output); // TODO fix for very small numbers
+			output = Handler.SoftMax(Handler.Multiply(output, 10)); // TODO remove hack and fix for very small numbers
 			KeyValuePair<double, int>[] sorted = output.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).ToArray();
 
 			string text = "";
