@@ -64,7 +64,7 @@ namespace Sigma.Tests.Internals.WPF
 				return _createTrainerFunction.Invoke(sigma);
 			}
 
-			internal static readonly DemoType Mnist = new DemoType("MNIST", "de-DE", true, CreateMnistTrainer);
+			internal static readonly DemoType Mnist = new DemoType("MNIST", "en-EN", true, CreateMnistTrainer);
 			internal static readonly DemoType Iris = new DemoType("IRIS", "en-EN", false, CreateIrisTrainer);
 			internal static readonly DemoType Xor = new DemoType("XOR", "en-EN", false, CreateXorTrainer);
 		}

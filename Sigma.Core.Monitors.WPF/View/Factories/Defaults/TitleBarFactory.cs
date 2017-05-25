@@ -9,13 +9,21 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using log4net;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
+using Sigma.Core.Architecture;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using Sigma.Core.Monitors.WPF.ViewModel.TitleBar;
+using Sigma.Core.Persistence;
+using Sigma.Core.Training;
 using Sigma.Core.Utils;
+using Registry = Sigma.Core.Utils.Registry;
 
 namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 {
@@ -93,10 +101,55 @@ namespace Sigma.Core.Monitors.WPF.View.Factories.Defaults
 		{
 			_log.Info("Creating default title bar items because no others have been specified.");
 
-			TitleBarFuncs.Add(
-				(app, window) =>
-					new TitleBarItem(Properties.Resources.ButtonEnvironment, Properties.Resources.MenuButtonLoad, Properties.Resources.MenuButtonSave,
-						new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
+			AddSigmaFunction((app, window) =>
+				new TitleBarItem(Properties.Resources.ButtonEnvironment,
+					Properties.Resources.MenuButtonLoad, (Action) (() =>
+					{
+						SigmaEnvironment sigma = window.Monitor.Sigma;
+						ITrainer activeTrainer = sigma.RunningOperatorsByTrainer.Keys.FirstOrDefault();
+
+						if (activeTrainer != null)
+						{
+							OpenFileDialog fileDialog = new OpenFileDialog();
+							fileDialog.Title = "Open Network";
+							fileDialog.Multiselect = false;
+							fileDialog.Filter = "Sigma Network Files (*.sgnet)|*.sgnet";
+							fileDialog.InitialDirectory = new FileInfo(SigmaEnvironment.Globals.Get<string>("storage_path")).FullName;
+
+							if (fileDialog.ShowDialog() == true)
+							{
+								try
+								{
+									INetwork network = Serialisation.Read<INetwork>(Target.FileByPath(fileDialog.FileName), Serialisers.BinarySerialiser, false);
+
+									if (!Network.AreNetworkExternalsCompatible(network, activeTrainer.Network))
+									{
+										throw new InvalidOperationException($"Unable to switch to network \"{network.Name}\" with incompatible internals (from {fileDialog.FileName}).");
+									}
+
+									activeTrainer.Reset();
+
+									bool forceInitialisationBefore = activeTrainer.ForceInitialisation;
+									activeTrainer.ForceInitialisation = false;
+									activeTrainer.Network = network;
+									activeTrainer.Initialise(activeTrainer.Operator.Handler);
+
+									activeTrainer.ForceInitialisation = forceInitialisationBefore;
+
+									Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue($"Switched network \"{network.Name}\", reset training (now using \"{fileDialog.FileName}\")", "Got it", null));
+								}
+								catch (Exception e)
+								{
+									_log.Error($"Error while switching to network \"{fileDialog.FileName}\": {e.GetType()} ({e.Message})", e);
+								}
+							}
+						}
+						else
+						{
+							_log.Warn($"Unable to load new network because no trainer is active.");
+						}
+					}),
+					Properties.Resources.MenuButtonSave, new TitleBarItem("Extras", "Extra1", "Extra2", new TitleBarItem("More", "Extra 3"))));
 
 #if DEBUG
 			AddSigmaFunction((app, window) => new TitleBarItem(Properties.Resources.ButtonDebug,

@@ -631,7 +631,8 @@ namespace Sigma.Core
 		/// statically generating a default logger.
 		/// </summary>
 		/// <param name="xml">If <c>true</c>, the app.config file will be loaded. Otherwise, a default configuration.</param>
-		public static void EnableLogging(bool xml = false)
+		/// <param name="printDebug">If <c>true</c>, debug statements will be printed to console (otherwise only <c>Level.Info</c> and up).</param>
+		public static void EnableLogging(bool xml = false, bool printDebug = false)
 		{
 			if (xml)
 			{
@@ -656,7 +657,7 @@ namespace Sigma.Core
 				};
 				LevelRangeFilter consoleRangeFilter = new LevelRangeFilter
 				{
-					LevelMin = Level.Debug,
+					LevelMin = printDebug ? Level.Debug : Level.Info,
 					LevelMax = Level.Fatal
 				};
 				console.AddFilter(consoleRangeFilter);
