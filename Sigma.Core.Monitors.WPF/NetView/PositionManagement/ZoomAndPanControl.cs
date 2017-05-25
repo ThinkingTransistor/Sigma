@@ -643,14 +643,11 @@ namespace Sigma.Core.Monitors.WPF.NetView.PositionManagement
             enableContentOffsetUpdateFromScale = true;
 
             AnimationHelper.StartAnimation(this, ContentScaleProperty, newContentScale, AnimationDuration,
-                delegate(object sender, EventArgs e)
+                delegate
                 {
                     enableContentOffsetUpdateFromScale = false;
 
-                    if (callback != null)
-                    {
-                        callback(this, EventArgs.Empty);
-                    }
+	                callback?.Invoke(this, EventArgs.Empty);
                 });
 
             AnimationHelper.StartAnimation(this, ViewportZoomFocusXProperty, ViewportWidth / 2, AnimationDuration);
@@ -723,15 +720,9 @@ namespace Sigma.Core.Monitors.WPF.NetView.PositionManagement
                 }
             }
 
-            if (c.ContentScaleChanged != null)
-            {
-                c.ContentScaleChanged(c, EventArgs.Empty);
-            }
+	        c.ContentScaleChanged?.Invoke(c, EventArgs.Empty);
 
-            if (c.scrollOwner != null)
-            {
-                c.scrollOwner.InvalidateScrollInfo();
-            }
+	        c.scrollOwner?.InvalidateScrollInfo();
         }
 
         /// <summary>
@@ -1040,7 +1031,7 @@ namespace Sigma.Core.Monitors.WPF.NetView.PositionManagement
         {
             Size size = base.ArrangeOverride(DesiredSize);
 
-			if (content != null && content.DesiredSize != unScaledExtent)
+			if (content.DesiredSize != unScaledExtent)
             {
                 //
                 // Use the size of the child as the un-scaled extent content.

@@ -24,8 +24,7 @@
                 Merge in the resource dictionary that is shared between the main window and the overview window.
                 -->
 				<ResourceDictionary 
-					Source="NetworkViewTemplates.xaml"
-				/>
+					Source="NetworkViewTemplates.xaml"/>
 
 			</ResourceDictionary.MergedDictionaries>
 
@@ -529,7 +528,7 @@
 	<UserControl.DataContext>
 		<netView:NetLayoutViewModel/>
 	</UserControl.DataContext>
-	
+
 	<DockPanel>
 
 		<!-- Grid placed below the zoom and pan control that contains the zoom slider, zoom label and some buttons. -->
@@ -599,8 +598,7 @@
 			<Button
 				Grid.Column="1"
 				Command="{StaticResource Commands.FitContent}"
-				ToolTip="Fit all nodes to the viewport"
-			>
+				ToolTip="Fit all nodes to the viewport">
 				Fit
 			</Button>
 
@@ -610,8 +608,7 @@
 			<Button
 				Grid.Column="3"
 				Command="{StaticResource Commands.Fill}"
-				ToolTip="Fit the entire content area to the viewport"
-			>
+				ToolTip="Fit the entire content area to the viewport">
 				Fill
 			</Button>
 
@@ -621,8 +618,7 @@
 			<Button
 				Grid.Column="5"
 				Command="{StaticResource Commands.OneHundredPercent}"
-				ToolTip="Scale the content to 100%"
-			>
+				ToolTip="Scale the content to 100%">
 				100%
 			</Button>
 
@@ -634,21 +630,18 @@
 				Grid.Column="7"
 				VerticalAlignment="Center"
 				HorizontalAlignment="Right"
-				Text="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
-			/>
+				Text="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"/>
 
 			<TextBlock
 				Grid.Column="8"
 				VerticalAlignment="Center"
-				Text="%"
-			/>
+				Text="%"/>
 
 			<!-- Button to zoom out. -->
 			<Button
 				Grid.Column="10"
 				Command="{StaticResource Commands.ZoomOut}"
-				ToolTip="Zoom out from the content"
-			>
+				ToolTip="Zoom out from the content">
 				-
 			</Button>
 
@@ -662,8 +655,7 @@
 				SmallChange="10" 
 				TickPlacement="TopLeft"
 				Value="{Binding ElementName=zoomAndPanControl, Path=ContentScale, Converter={StaticResource scaleToPercentConverter}}"
-				ToolTip="Change the zoom level of the content" ValueChanged="Slider_ValueChanged"
-			/>
+				ToolTip="Change the zoom level of the content" ValueChanged="Slider_ValueChanged"/>
 
 			<!--
             Button to zoom in.
@@ -671,8 +663,7 @@
 			<Button
 				Grid.Column="14"
 				Command="{StaticResource Commands.ZoomIn}"
-				ToolTip="Zoom in on the content"
-			>
+				ToolTip="Zoom in on the content">
 				+
 			</Button>
 
@@ -686,8 +677,7 @@
 			CanContentScroll="True"
 			VerticalScrollBarVisibility="Visible"
 			HorizontalScrollBarVisibility="Visible"
-			Focusable="False"
-		>
+			Focusable="False">
 
 			<!-- 
             The ZoomAndPanControl displays the NetworkView as its content.
@@ -701,8 +691,7 @@
 				ContentViewportWidth="{Binding ContentViewportWidth, Mode=OneWayToSource}"
 				ContentViewportHeight="{Binding ContentViewportHeight, Mode=OneWayToSource}"
 				Background="LightGray"
-				Focusable="False"
-			>
+				Focusable="False">
 				<!--
                 We need to nest our NetworkView in an AdornerDecorator so that adorners work correct when
                 we zoom in and out using the ZoomAndPanControl
@@ -714,14 +703,13 @@
                     -->
 					<Grid
 						Width="{Binding ContentWidth}"
-						Height="{Binding ContentHeight}"
-					>
+						Height="{Binding ContentHeight}">
 
 						<!-- In this sample the NetworkView is the content displayed by the ZoomAndPanControl. -->
 
 						<NetworkUI:NetworkView
 							x:Name="networkControl"
-                            
+							
 							EnableNodeDragging="False"
 							EnableConnectionDragging="False"
 							
@@ -736,8 +724,8 @@
 							MouseDown="networkControl_MouseDown"
 							MouseUp="networkControl_MouseUp"
 							MouseMove="networkControl_MouseMove"
-							MouseWheel="networkControl_MouseWheel"
-						/>
+							MouseWheel="networkControl_MouseWheel"/>
+
 
 						<!--
                         This Canvas and Border are used as a very simple way to render a drag rectangle that the user
@@ -745,19 +733,15 @@
                         -->
 						<Canvas
 							x:Name="dragZoomCanvas"
-							Visibility="Collapsed"
-						>
+							Visibility="Collapsed">
 							<Border 
 								x:Name="dragZoomBorder"
 								BorderBrush="Black"
 								BorderThickness="1"
 								Background="Silver"
 								CornerRadius="1"
-								Opacity="0"
-							/>
+								Opacity="0"/>
 						</Canvas>
-
-
 
 					</Grid>
 				</AdornerDecorator>

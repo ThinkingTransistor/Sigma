@@ -8,7 +8,9 @@
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/StatusBar/TaskVisualizerGeneric.xaml"/>
 
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/Control/SigmaPlaybackControlGeneric.xaml"/>
-	</ResourceDictionary.MergedDictionaries>
 
-	
+		<!-- Resources for NetView -->
+		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/NetView/PositionManagement/ZoomAndPanControlGeneric.xaml"/>
+		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/NetView/NetworkUIs/NetworkUIGeneric.xaml"/>
+	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

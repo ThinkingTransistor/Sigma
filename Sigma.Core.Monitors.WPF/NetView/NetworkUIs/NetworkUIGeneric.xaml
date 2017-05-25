@@ -1,0 +1,249 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:diagnostics="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+	xmlns:networkUIs="clr-namespace:Sigma.Core.Monitors.WPF.NetView.NetworkUIs">
+	<!-- 
+    Include this in binding statements for diagnostics:
+    diagnostics:PresentationTraceSources.TraceLevel=High
+    -->
+
+	<SolidColorBrush
+		x:Key="selectionBorderColor"
+		Color="Blue"
+	/>
+
+	<SolidColorBrush
+		x:Key="selectionBorderBackgroundColor"
+		Color="Blue"
+		Opacity="0.25"
+	/>
+
+	<!-- Default style and control-template for 'NodeItem'. -->
+	<Style 
+		TargetType="{x:Type networkUIs:NodeItem}"
+	>
+
+		<!-- Data-bind the parent NetworkView. -->
+		<Setter
+			Property="ParentNetworkView"
+			Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type networkUIs:NetworkView}}, Path=.}"
+		/>
+
+		<!-- Set the position of the node within the canvas. -->
+		<Setter
+			Property="Canvas.Left"
+			Value="{Binding X, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+		/>
+		<Setter
+			Property="Canvas.Top"
+			Value="{Binding Y, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+		/>
+
+		<!-- Set the z-order of the node within the canvas. -->
+		<Setter
+			Property="Canvas.ZIndex"
+			Value="{Binding ZIndex, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+		/>
+
+		<!-- Set defaults for background and border. -->
+		<Setter 
+			Property="Background" 
+			Value="Transparent" 
+		/>
+		<Setter 
+			Property="BorderBrush" 
+			Value="Transparent" 
+		/>
+		<Setter 
+			Property="BorderThickness" 
+			Value="1" 
+		/>
+
+		<!-- The control-template for the node. -->
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate 
+					TargetType="{x:Type networkUIs:NodeItem}"
+				>
+					<Grid>
+
+						<!-- 
+                        This border indicates that node is selected.
+                        Normally it is transparent, but when 'IsSelected' is set
+                        to 'true' the border brush becomes blue and its background
+                        becomds light blue.
+                        -->
+						<Border
+							x:Name="selectionBorder"
+							Background="{TemplateBinding Background}" 
+							BorderBrush="{TemplateBinding BorderBrush}" 
+							BorderThickness="{TemplateBinding BorderThickness}"
+							Margin="{TemplateBinding Margin}"
+							Padding="{TemplateBinding Padding}"
+							CornerRadius="2"
+						>
+
+							<!-- 
+                            User-defined node content is presented here. 
+                            -->
+							<ContentPresenter />
+
+						</Border>
+
+					</Grid>
+					<ControlTemplate.Triggers>
+
+						<Trigger 
+							Property="IsSelected"
+							Value="True"
+						>
+
+							<!-- When the node is selected, set the color of 'selectionBorder' to blue. -->
+							<Setter
+								TargetName="selectionBorder"
+								Property="BorderBrush"
+								Value="{StaticResource selectionBorderColor}"
+							/>
+						</Trigger>
+
+						<Trigger 
+							Property="IsSelected"
+							Value="True"
+						>
+
+							<!-- When the node is selected, set the background of 'selectionBorder' to light blue. -->
+							<Setter
+								TargetName="selectionBorder"
+								Property="Background"
+								Value="{StaticResource selectionBorderBackgroundColor}"
+							/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Default style and control-template for 'ConnectorItem'. -->
+	<Style TargetType="{x:Type networkUIs:ConnectorItem}">
+
+		<!-- Data-bind the parent NetworkView. -->
+		<Setter
+			Property="ParentNetworkView"
+			Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type networkUIs:NetworkView}}, Path=.}"
+		/>
+
+		<!-- Data-bind the parent NodeItem. -->
+		<Setter
+			Property="ParentNodeItem"
+			Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type networkUIs:NodeItem}}, Path=.}"
+		/>
+
+		<!-- The control-template for the connector. -->
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate 
+					TargetType="{x:Type networkUIs:ConnectorItem}"
+				>
+
+					<!-- Application-defined connector content is presented here. -->
+					<ContentPresenter />
+
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- 
+    Override the style of the ListBox to remove the ScrollViewer.
+    All we want is ListBox logic but based on a Canvas.
+    -->
+	<Style x:Key="noScrollViewerListBoxStyle" TargetType="ListBox">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="ListBox">
+					<!-- 
+                    The ListBoxItems are presented in a Canvas.
+                    'IsItemsHost' is set to 'True' so that the ListBox
+                    uses the Canvas as the container for its items.
+                    -->
+					<Canvas 
+						IsItemsHost="True" 
+					/>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Default style and visual template for 'NetworkView'. -->
+	<Style 
+		TargetType="{x:Type networkUIs:NetworkView}"
+	>
+
+		<!-- The visual template. -->
+		<Setter 
+			Property="Template"
+		>
+			<Setter.Value>
+				<ControlTemplate 
+					TargetType="{x:Type networkUIs:NetworkView}"
+				>
+					<Border 
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						Background="{TemplateBinding Background}"
+					>
+						<Grid>
+
+							<!-- Control that presents the nodes. -->
+							<networkUIs:NodeItemsControl
+								x:Name="PART_NodeItemsControl"
+								ItemsSource="{TemplateBinding Nodes}"
+								SelectionMode="Extended"
+								Style="{StaticResource noScrollViewerListBoxStyle}"
+								ItemTemplate="{TemplateBinding NodeItemTemplate}"
+								ItemTemplateSelector="{TemplateBinding NodeItemTemplateSelector}"
+								ItemContainerStyle="{TemplateBinding NodeItemContainerStyle}"
+							/>
+
+							<!-- Control that presents the connections between nodes. -->
+							<ItemsControl
+								x:Name="PART_ConnectionItemsControl"
+								ItemsSource="{TemplateBinding Connections}"
+								ItemTemplate="{TemplateBinding ConnectionItemTemplate}"
+								ItemTemplateSelector="{TemplateBinding ConnectionItemTemplateSelector}"
+								ItemContainerStyle="{TemplateBinding ConnectionItemContainerStyle}"
+							>
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<!-- Connections are presented in a Canvas. -->
+										<Canvas />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+							</ItemsControl>
+
+							<!--
+                            This Canvas and Border are used as a very simple way to render a drag selection rectangle.
+                            -->
+							<Canvas
+								x:Name="PART_DragSelectionCanvas"
+								Visibility="Collapsed"
+							>
+								<Border 
+									x:Name="PART_DragSelectionBorder"
+									BorderBrush="Blue"
+									BorderThickness="1"
+									Background="LightBlue"
+									CornerRadius="1"
+									Opacity="0.5"
+								/>
+							</Canvas>
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>
