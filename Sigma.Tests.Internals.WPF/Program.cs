@@ -36,7 +36,9 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Media;
+using MaterialDesignColors;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 
 namespace Sigma.Tests.Internals.WPF
@@ -91,7 +93,7 @@ namespace Sigma.Tests.Internals.WPF
 			// create and attach a new UI framework
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
 			gui.ColourManager.Dark = DemoMode != DemoType.Iris;
-			//gui.ColourManager.PrimaryColor = MaterialDesignValues.Sigma;
+			gui.ColourManager.PrimaryColor = MaterialDesignValues.Sigma;
 
 			StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
 			StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
@@ -104,6 +106,8 @@ namespace Sigma.Tests.Internals.WPF
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
 			{
+				//var primary = new SwatchesProvider(Assembly.GetEntryAssembly()).Swatches;
+
 				// enable initialisation
 				window.IsInitializing = true;
 
