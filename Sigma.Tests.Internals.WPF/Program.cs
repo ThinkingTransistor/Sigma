@@ -84,7 +84,7 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType Parkinsons = new DemoType("Parkinsons", false, CreateParkinsonsTrainer, MaterialDesignValues.LightBlue);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.Parkinsons;
+		private static readonly DemoType DemoMode = DemoType.Mnist;
 
 		private static void Main()
 		{
@@ -177,8 +177,8 @@ namespace Sigma.Tests.Internals.WPF
 				//window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: iris);
 
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
+				//window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
+				//window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
 				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
 				if (accuracy2 != null)
 				{
@@ -198,10 +198,14 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Validation"].AddCumulativePanel(drawPanel, 2, 3);
 					window.TabControl["Validation"].AddCumulativePanel(outputpanel, 2);
 
+					window.TabControl["Validation"].AddCumulativePanel(weightAverage);
+					window.TabControl["Validation"].AddCumulativePanel(biasesAverage);
+
 					for (int i = 0; i < 10; i++)
 					{
 						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
 					}
+
 				}
 				//for (int i = 0; i < 10; i++)
 				//{
@@ -249,28 +253,34 @@ namespace Sigma.Tests.Internals.WPF
 
 		private static ITrainer CreateIrisTrainer(SigmaEnvironment sigma)
 		{
-			var irisReader = new CsvRecordReader(new MultiSource(new FileSource("iris.data"), new UrlSource("http://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data")));
-			IRecordExtractor irisExtractor = irisReader.Extractor("inputs", new[] { 0, 3 }, "targets", 4).AddValueMapping(4, "Iris-setosa", "Iris-versicolor", "Iris-virginica")
-				.Preprocess(new OneHotPreprocessor("targets", minValue: 0, maxValue: 2))
-				.Preprocess(new AdaptiveNormalisingPreprocessor(minOutputValue: 0.0, maxOutputValue: 1.0))
-				.Preprocess(new ShufflePreprocessor());
+			IDataset dataset = Defaults.Datasets.Iris();
 
-			IDataset dataset = new ExtractedDataset("iris", ExtractedDataset.BlockSizeAuto, false, irisExtractor);
-
-			ITrainer trainer = sigma.CreateTrainer("xor-trainer");
+			ITrainer trainer = sigma.CreateTrainer("iris-trainer");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-			trainer.TrainingDataIterator = new UndividedIterator(dataset);
+			trainer.Network.Architecture = InputLayer.Construct(4)
+											+ FullyConnectedLayer.Construct(12)
+											+ FullyConnectedLayer.Construct(3)
+											+ OutputLayer.Construct(3)
+											+ SquaredDifferenceCostLayer.Construct();
+			//trainer.Network = Serialisation.ReadBinaryFileIfExists("iris.sgnet", trainer.Network);
+
+			trainer.TrainingDataIterator = new MinibatchIterator(50, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
 			trainer.Operator = new CpuSinglethreadedOperator();
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
-			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
-			trainer.AddLocalHook(new ValueReporter("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddLocalHook(new CurrentEpochIterationReporter(TimeStep.Every(5, TimeScale.Epoch)));
+			//trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 100));
+			//trainer.AddLocalHook(new EarlyStopperHook("optimiser.cost_total", 20, target: ExtremaTarget.Min));
+
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+			//.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+			//trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Dynamic("iris_epoch{0}.sgnet", "epoch"), verbose: true)
+			//    .On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
 
 			return trainer;
 		}
