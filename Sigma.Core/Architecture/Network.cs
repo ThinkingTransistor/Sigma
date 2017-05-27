@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using log4net;
 using Sigma.Core.Handlers;
@@ -316,7 +317,7 @@ namespace Sigma.Core.Architecture
 			}
 
 		    ILayerBuffer[] otherBuffers = other.YieldLayerBuffersOrdered().ToArray();
-		    for (var i = 0; i < _orderedLayerBuffers.Count; i++)
+		    for (int i = 0; i < _orderedLayerBuffers.Count; i++)
 		    {
 			    _orderedLayerBuffers[i].Parameters.CopyTo(otherBuffers[i].Parameters);
 
@@ -360,5 +361,56 @@ namespace Sigma.Core.Architecture
         {
             return new DefaultNetworkSelector<INetwork>(this);
         }
+
+		/// <summary>
+		/// Check if two networks have compatible external interfaces (external inputs / outputs).
+		/// </summary>
+		/// <param name="network">The first network.</param>
+		/// <param name="other">The second (other) network.</param>
+		/// <returns>A boolean indicating the external IO compatibility.</returns>
+	    public static bool AreNetworkExternalsCompatible(INetwork network, INetwork other)
+	    {
+		    ILayerBuffer[] inputs = network.YieldExternalInputsLayerBuffers().ToArray();
+		    ILayerBuffer[] outputs = network.YieldExternalOutputsLayerBuffers().ToArray();
+		    ILayerBuffer[] otherInputs = other.YieldExternalInputsLayerBuffers().ToArray();
+		    ILayerBuffer[] otherOutputs = other.YieldExternalOutputsLayerBuffers().ToArray();
+
+		    if (!_InternalCheckExternalBuffersCompatible(inputs, otherInputs)) return false;
+		    if (!_InternalCheckExternalBuffersCompatible(outputs, otherOutputs)) return false;
+
+			return true;
+	    }
+
+	    private static bool _InternalCheckExternalBuffersCompatible(ILayerBuffer[] buffers, ILayerBuffer[] otherBuffers)
+	    {
+		    for (int i = 0; i < buffers.Length; i++)
+		    {
+			    foreach (string key in buffers[i].Parameters.Keys)
+			    {
+				    if (key == "_inputs" || key == "_outputs") continue; // ignore exposed data
+				    if (!otherBuffers[i].Parameters.ContainsKey(key)) return false;
+
+				    object parameter = buffers[i].Parameters[key];
+				    object otherParameter = otherBuffers[i].Parameters[key];
+
+				    if (!parameter.Equals(otherParameter))
+				    {
+					    if (parameter.GetType() != otherParameter.GetType()) return false;
+					    if (!(parameter is Array)) return false;
+
+					    Array parameterAsArray = (Array) parameter;
+					    Array otherParameterAsArray = (Array) otherParameter;
+
+					    if (parameterAsArray.Length != otherParameterAsArray.Length) return false;
+
+					    for (int j = 0; j < parameterAsArray.Length; j++)
+					    {
+						    if (!parameterAsArray.GetValue(j).Equals(otherParameterAsArray.GetValue(j))) return false;
+					    }
+				    }
+			    }
+		    }
+		    return true;
+	    }
     }
 }

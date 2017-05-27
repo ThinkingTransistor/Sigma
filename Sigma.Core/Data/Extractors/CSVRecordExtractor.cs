@@ -85,6 +85,25 @@ namespace Sigma.Core.Data.Extractors
 			return this;
 		}
 
+		/// <summary>
+		/// Add a value mapping for a certain column range and certain key value pairs. Each key will be replaced with its value during extraction. 
+		/// </summary>
+		/// <param name="columnStart">The column range start (inclusive).</param>
+		/// <param name="columnEnd">The column range end (inclusive).</param>
+		/// <param name="mapping">The object to object mapping to use to automatically replace certain values.</param>
+		/// <returns>This record extractor (for convenience).</returns>
+		public CsvRecordExtractor AddSpanValueMapping(int columnStart, int columnEnd, Dictionary<object, object> mapping)
+		{
+			if (columnEnd < columnStart) throw new ArgumentException($"Colum start must be <= column end but start was {columnStart} and end was {columnEnd}.");
+
+			for (int i = columnStart; i <= columnEnd; i++)
+			{
+				_columnValueMappings.Add(i, mapping);
+			}
+
+			return this;
+		}
+
 		public override Dictionary<string, INDArray> ExtractDirectFrom(object readData, int numberOfRecords, IComputationHandler handler)
 		{
 			//read data being null indicates that nothing could be read so we can't extract anything either

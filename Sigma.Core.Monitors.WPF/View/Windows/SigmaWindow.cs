@@ -165,6 +165,16 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public DialogHost DialogHost { get; private set; }
 
+		/// <summary>
+		/// The snackbar that is in the rootelement of every window and can be used to send notifications.
+		/// </summary>
+		public Snackbar Snackbar { get; private set; }
+
+		/// <summary>
+		/// The snackbar message queue.
+		/// </summary>
+		public SnackbarMessageQueue SnackbarMessageQueue { get; private set; }
+
 		#endregion UIElements
 
 		/// <summary>
@@ -267,7 +277,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// </summary>
 		public GridSize DefaultGridSize
 		{
-			get { return (GridSize) GetValue(DefaultGridSizeProperty); }
+			get { return (GridSize)GetValue(DefaultGridSizeProperty); }
 			set
 			{
 				DefaultGridSize.Rows = value.Rows;
@@ -326,11 +336,16 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			DialogHostIdentifier = BaseDialogHostIdentifier + WindowIndex;
 			DialogHost = new DialogHost { Identifier = DialogHostIdentifier };
+			// TODO: factory
+			// TODO: style
+			Snackbar = new Snackbar { MessageQueue = new SnackbarMessageQueue(TimeSpan.FromSeconds(2)), HorizontalAlignment = HorizontalAlignment.Stretch };
+			SnackbarMessageQueue = Snackbar.MessageQueue;
 			LoadingIndicatorElement = CreateObjectByFactory<UIElement>(LoadingIndicatorFactoryIdentifier);
 			RootContentElement = CreateContent(monitor, other, out _titleBar);
 
 			RootElement.Children.Add(RootContentElement);
 			RootElement.Children.Add(DialogHost);
+			RootElement.Children.Add(Snackbar);
 			RootElement.Children.Add(LoadingIndicatorElement);
 
 			if (other == null)
@@ -420,7 +435,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="e">The args for the unhandled exception.</param>
 		public override void HandleUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
-			Exception exception = (Exception) e.ExceptionObject;
+			Exception exception = (Exception)e.ExceptionObject;
 			this.ShowMessageAsync($"An unexpected error in {exception.Source} occurred!", exception.Message);
 		}
 
@@ -507,7 +522,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <returns>The newly created object. (<see cref="IUIFactory{T}.CreateElement" /></returns>
 		protected T CreateObjectByFactory<T>(IMonitor monitor, string identifier, params object[] parameters)
 		{
-			return ((IUIFactory<T>) monitor.Registry[identifier]).CreateElement(App, this, parameters);
+			return ((IUIFactory<T>)monitor.Registry[identifier]).CreateElement(App, this, parameters);
 		}
 
 		/// <summary>
@@ -539,7 +554,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 
 			if (!registry.ContainsKey(LoadingIndicatorFactoryIdentifier))
 			{
-				registry[LoadingIndicatorFactoryIdentifier] = new LoadingIndicatorFactory();
+				registry[LoadingIndicatorFactoryIdentifier] = LoadingIndicatorFactory.Factory;
 			}
 
 			if (!registry.ContainsKey(NotifyIconFactoryIdentifier))
@@ -639,7 +654,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 				AddTabs(TabControl, monitor.Tabs);
 			}
 
-			Layout tabLayout = (Layout) TabControl;
+			Layout tabLayout = (Layout)TabControl;
 			// ReSharper disable once CoVariantArrayConversion
 			UIElement statusBar = CreateObjectByFactory<UIElement>(StatusBarFactoryIdentifier, monitor.Legends.Values.ToArray());
 			DockPanel rootLayout = CreateObjectByFactory<DockPanel>(RootPanelFactoryIdentifier);
@@ -732,7 +747,7 @@ namespace Sigma.Core.Monitors.WPF.View.Windows
 		/// <param name="action">The <see cref="Action"/> that will be executed.</param>
 		protected static void ExecuteOnRoot(WPFMonitor monitor, Action<SigmaWindow> action)
 		{
-			ExecuteOnWindow((SigmaWindow) monitor.Window, action);
+			ExecuteOnWindow((SigmaWindow)monitor.Window, action);
 		}
 
 		/// <summary>

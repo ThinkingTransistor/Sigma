@@ -41,8 +41,6 @@ namespace Sigma.Tests.Internals.Backend
 {
 	public static class Program
 	{
-		public static MinibatchIterator TrainingIterator;
-
 		private static void Main(string[] args)
 		{
 			SigmaEnvironment.EnableLogging(xml: true);
@@ -160,66 +158,38 @@ namespace Sigma.Tests.Internals.Backend
 
 			sigma.AddTrainer(trainer);
 
-			sigma.PrepareAndRun();
-		}
-
-		private static void SampleConnect4()
-		{
-			// Note: This sample doesn't work properly yet, data isn't preprocessed enough and the net cant really (meaningfully) handle it
-			//			(requires spatial preprocessing and per-index-one-hot-encodings for inputs (player1, player2, blank) instead of real valued)
-			SigmaEnvironment sigma = SigmaEnvironment.Create("connect4");
-
-			IDataset dataset = Defaults.Datasets.Connect4();
-
-			ITrainer trainer = sigma.CreateTrainer("connect4-trainer");
-
-			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(41)
-											+ FullyConnectedLayer.Construct(1000, "rel")
-											+ FullyConnectedLayer.Construct(300, "rel")
-											+ FullyConnectedLayer.Construct(3)
-											+ OutputLayer.Construct(3)
-											+ SoftMaxCrossEntropyCostLayer.Construct();
-
-			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
-			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Operator = new CpuSinglethreadedOperator();
-
-			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
-
-			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1 }));
+			sigma.AddMonitor(new HttpMonitor("http://+:8080/sigma/"));
 
 			sigma.PrepareAndRun();
 		}
 
-		private static void SampleTicTacToe()
+		private static void SampleParkinsons()
 		{
-			SigmaEnvironment sigma = SigmaEnvironment.Create("tictactoe");
+			SigmaEnvironment sigma = SigmaEnvironment.Create("parkinsons");
 
-			IDataset dataset = Defaults.Datasets.TicTacToe();
+			IDataset dataset = Defaults.Datasets.Parkinsons();
 
-			ITrainer trainer = sigma.CreateTrainer("tictactoe-trainer");
+			ITrainer trainer = sigma.CreateGhostTrainer("parkinsons-trainer");
 
 			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(9)
-											+ FullyConnectedLayer.Construct(27, "rel")
-											+ FullyConnectedLayer.Construct(81, "rel")
-											+ FullyConnectedLayer.Construct(27, "rel")
-											+ FullyConnectedLayer.Construct(3, "sigmoid")
-											+ OutputLayer.Construct(3)
-											+ SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.Network.Architecture = InputLayer.Construct(22)
+											+ FullyConnectedLayer.Construct(140)
+											+ FullyConnectedLayer.Construct(20)
+											+ FullyConnectedLayer.Construct(1)
+											+ OutputLayer.Construct(1)
+											+ SquaredDifferenceCostLayer.Construct();
 
 			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
 
-			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
 			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
-			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
+			trainer.AddHook(new UniClassificationAccuracyReporter("validation", 0.5, TimeStep.Every(1, TimeScale.Epoch)));
+
+			sigma.AddTrainer(trainer);
 
 			sigma.PrepareAndRun();
 		}
@@ -270,6 +240,36 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new StopTrainingHook(atEpoch: 500));
 
 			sigma.Run();
+		}
+
+		private static void SampleTicTacToe()
+		{
+			SigmaEnvironment sigma = SigmaEnvironment.Create("tictactoe");
+
+			IDataset dataset = Defaults.Datasets.TicTacToe();
+
+			ITrainer trainer = sigma.CreateTrainer("tictactoe-trainer");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(9)
+											+ FullyConnectedLayer.Construct(9, "tanh")
+											+ FullyConnectedLayer.Construct(140, "tanh")
+											+ FullyConnectedLayer.Construct(20, "tanh")
+											+ FullyConnectedLayer.Construct(3, "tanh")
+											+ OutputLayer.Construct(3)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+
+			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
+
+			sigma.PrepareAndRun();
 		}
 
 		private static void SampleCachedFastIteration()

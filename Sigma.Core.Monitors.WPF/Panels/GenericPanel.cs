@@ -23,7 +23,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <param name="content">The content that will be placed inside the panel.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public GenericPanel(string title, UIElement content, object headerContent = null) : base(title, content, headerContent) {}
+		public GenericPanel(string title, UIElement content, object headerContent = null) : base(title, content, headerContent) { }
 	}
 
 	/// <summary>
@@ -54,17 +54,29 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <param name="title">The given tile.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		protected GenericPanel(string title, object headerContent = null) : base(title, headerContent) {}
+		protected GenericPanel(string title, object headerContent = null) : base(title, headerContent) { }
+
+		/// <summary>
+		/// The actual content that is currently displayed.
+		/// </summary>
+		protected object ActualContent
+		{
+			get { return base.Content; }
+			set { base.Content = value; }
+		}
+
+		private T _content;
 
 		/// <summary>
 		/// Set the content of the <see cref="GenericPanel"/> and the <see cref="SigmaPanel"/>. 
 		/// </summary>
 		public new T Content
 		{
-			get { return (T) base.Content; }
+			get { return _content; }
 			set
 			{
-				base.Content = value;
+				ActualContent = value;
+				_content = value;
 			}
 		}
 	}

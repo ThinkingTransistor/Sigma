@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -313,6 +314,15 @@ namespace Sigma.Core.Training.Operators
 
 				InvokeTimeScaleEvent(TimeScale.Iteration);
 			}
+		}
+
+		/// <summary>
+		/// Dispatch the <see cref="InvokeTimeScaleEvent"/> for a certain time scale thread in a worker thread.
+		/// </summary>
+		/// <param name="timeScale"></param>
+		protected void DispatchInvokeTimeScaleEvent(TimeScale timeScale)
+		{
+			ThreadPool.QueueUserWorkItem(ts => InvokeTimeScaleEvent((TimeScale) ts), timeScale);
 		}
 
 		/// <summary>
@@ -946,20 +956,22 @@ namespace Sigma.Core.Training.Operators
 
 					if (State == ExecutionState.None || State == ExecutionState.Stopped)
 					{
-						InvokeTimeScaleEvent(TimeScale.Start);
+						DispatchInvokeTimeScaleEvent(TimeScale.Start);
 					}
 					else
 					{
-						InvokeTimeScaleEvent(TimeScale.Resume);
+						DispatchInvokeTimeScaleEvent(TimeScale.Resume);
 					}
+
+					_InternalResumeRunningStopwatch();
 
 					RunWorkersOnce();
 
-					InvokeTimeScaleEvent(TimeScale.Pause);
-
 					State = ExecutionState.Paused;
 
-					_InternalResumeRunningStopwatch(); // TODO this can't be right?
+					_InternalPauseRunningStopwatch();
+
+					DispatchInvokeTimeScaleEvent(TimeScale.Pause);
 				}).Start();
 			}
 			else
@@ -983,9 +995,9 @@ namespace Sigma.Core.Training.Operators
 
 					State = ExecutionState.Running;
 					_InternalResumeRunningStopwatch();
-
-					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Start);
 			}
 			else
 			{
@@ -1003,14 +1015,19 @@ namespace Sigma.Core.Training.Operators
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
-					foreach (IWorker worker in Workers) { PauseWorker(worker); }
+					foreach (IWorker worker in Workers)
+					{
+						PauseWorker(worker);
+					}
 
 					State = ExecutionState.Paused;
 
 					_InternalPauseRunningStopwatch();
 
-					InvokeTimeScaleEvent(TimeScale.Pause);
+
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Pause);
 			}
 			else
 			{
@@ -1036,9 +1053,9 @@ namespace Sigma.Core.Training.Operators
 					 State = ExecutionState.Running;
 
 					 _InternalResumeRunningStopwatch();
-
-					 InvokeTimeScaleEvent(TimeScale.Resume);
 				 }).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Resume);
 			}
 			else
 			{
@@ -1068,9 +1085,9 @@ namespace Sigma.Core.Training.Operators
 					State = ExecutionState.Stopped;
 
 					_InternalPauseRunningStopwatch();
-
-					InvokeTimeScaleEvent(TimeScale.Stop);
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Stop);
 			}
 			else
 			{

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF.Panels.Optimisations;
+using Sigma.Core.Monitors.WPF.View.Factories;
+using Sigma.Core.Monitors.WPF.View.Factories.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Utils;
 
@@ -11,7 +14,7 @@ namespace Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST
 	/// <summary>
 	/// A target maximisation panel optimised for MNIST.
 	/// </summary>
-	public class MnistTargetMaximisationPanel : TargetMaximisationPanel
+	public class MnistBitmapHookPanel : BitmapHookPanel
 	{
 		///  <summary>
 		///		Create a BitmapPanel that can easily be updated by a hook. This hook will be automatically attached to a given trainer.
@@ -22,10 +25,11 @@ namespace Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST
 		/// <param name="trainer">The trainer the hook will be applied to.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed, the title will be used.</param>
 		/// <param name="number">The number this panel tries to visualise.</param>
-		public MnistTargetMaximisationPanel(string title, int number, ITrainer trainer, ITimeStep timestep, object headerContent = null) : base(title, 28, 28, headerContent)
+		public MnistBitmapHookPanel(string title, int number, ITrainer trainer, ITimeStep timestep, object headerContent = null) : base(title, 28, 28, headerContent)
 		{
 			if (trainer == null) throw new ArgumentNullException(nameof(trainer));
 
+			UseLoadingIndicator = true;
 			VisualTargetMaximisationReporter hook = new VisualTargetMaximisationReporter(this, trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(number, 10), 10L), timestep);
 			trainer.AddGlobalHook(hook);
 		}
@@ -33,6 +37,8 @@ namespace Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST
 		/// <inheritdoc />
 		protected override void OnReported(IRegistry parameterRegistry, IComputationHandler handler, INDArray inputs, INDArray desiredTargets)
 		{
+			HideLoadingIndicator();
+
 			float[] targetData = inputs.GetDataAs<float>().Data;
 			float min = targetData.Min(), max = targetData.Max();
 			float range = max - min;

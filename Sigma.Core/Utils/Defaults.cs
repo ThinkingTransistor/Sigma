@@ -105,7 +105,7 @@ namespace Sigma.Core.Utils
 
 			/// <summary>
 			/// Create an extracted WDBC (Wisconsin Diagnostic Breast Cancer) dataset, automatically download any required resources.
-			/// This dataset is normalised.
+			/// This dataset is normalised and shuffled.
 			/// </summary>
 			/// <param name="name">The optional name.</param>
 			/// <returns>THe WDBC dataset.</returns>
@@ -116,6 +116,46 @@ namespace Sigma.Core.Utils
 					.Extractor("inputs", new[] { 2, 31 }, "targets", 1)
 					.AddValueMapping(1, "M", "B")
 					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, extractor);
+			}
+
+			/// <summary>
+			/// Create an extracted heart disease dataset, automatically download any required resources.
+			/// This dataset is normalised, one-hot-target-preprocessed and shuffled.
+			/// </summary>
+			/// <param name="name">The optional name.</param>
+			/// <returns>The heart disease dataset.</returns>
+			public static IDataset HeartDisease(string name = "heart_disease")
+			{
+				IRecordExtractor extractor = new CsvRecordReader(separator: ' ',
+						source: new MultiSource(new FileSource("reprocessed.hungarian.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/reprocessed.hungarian.data")))
+					.Extractor("inputs", new[] { 0, 12 }, "targets", 13)
+					.AddValueMapping(3, new Dictionary<object, object> { ["-9"] = 132.133 }) // substitute averages for missing values
+					.AddValueMapping(4, new Dictionary<object, object> { ["-9"] = 231.224 })
+					.AddValueMapping(7, new Dictionary<object, object> { ["-9"] = 138.656 })
+					.AddSpanValueMapping(8, 12, new Dictionary<object, object> { ["-9"] = 0 })
+					.AddSpanValueMapping(5, 6, new Dictionary<object, object> { ["-9"] = 0 })
+					.Preprocess(new OneHotPreprocessor("targets", 0, 4))
+					.Preprocess(new AdaptivePerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
+					.Preprocess(new ShufflePreprocessor());
+
+				return new ExtractedDataset(name, extractor);
+			}
+
+			/// <summary>
+			/// Create an extracted parkinsons dataset, automatically download any required resources.
+			/// This dataset is normalised and shuffled.
+			/// </summary>
+			/// <param name="name"></param>
+			/// <returns></returns>
+			public static IDataset Parkinsons(string name = "parkinsons")
+			{
+				IRecordExtractor extractor = new CsvRecordReader(skipFirstLine: true,
+					source: new MultiSource(new FileSource("parkinsons.data"), new UrlSource("https://archive.ics.uci.edu/ml/machine-learning-databases/parkinsons/parkinsons.data")))
+					.Extractor("inputs", new[] { 1, 16 }, new[] { 18, 23 }, "targets", 17)
+					.Preprocess(new PerIndexNormalisingPreprocessor(0.0, 1.0, "inputs"))
 					.Preprocess(new ShufflePreprocessor());
 
 				return new ExtractedDataset(name, extractor);
@@ -155,13 +195,13 @@ namespace Sigma.Core.Utils
 
 			public static IDataset TicTacToe(string name = "tictactoe")
 			{
-				byte[] board = new byte[3 * 3];
-				byte[] states = new byte[] { 0, 1, 2 }; //empty, player x, player o
+				int[] board = new int[3 * 3];
+				int[] states = new int[] { -1, 0, 1 }; //player o, empty, player x
 
-				IDictionary<byte[], byte[]> scoredBoards = new Dictionary<byte[], byte[]>();
+				IDictionary<int[], int[]> scoredBoards = new Dictionary<int[], int[]>();
 
-				_InternalScoreBoards(0, board, states, scoredBoards);
-
+				_InternalScoreBoardsRec(0, board, states, scoredBoards);
+				
 				Random rng = new Random();
 
 				var scoredBoardsAsArray = scoredBoards.ToArray().OrderBy(x => rng.Next());
@@ -174,33 +214,33 @@ namespace Sigma.Core.Utils
 				return dataset;
 			}
 
-			private static void _InternalScoreBoards(int currentPosition, byte[] board, byte[] states, IDictionary<byte[], byte[]> scoredBoards)
+			private static void _InternalScoreBoardsRec(int currentPosition, int[] board, int[] states, IDictionary<int[], int[]> scoredBoards)
 			{
 				for (int i = 0; i < states.Length; i++)
 				{
 					board[currentPosition] = states[i];
-					byte[] currentBoard = (byte[])board.Clone();
+					int[] boardClone = (int[])board.Clone();
+					int score = _InternalScoreBoard(boardClone);
 
-					if (currentPosition < board.Length - 1)
+					if (score < 2 && currentPosition < board.Length - 1)
 					{
-						_InternalScoreBoards(currentPosition + 1, currentBoard, states, scoredBoards);
+						_InternalScoreBoardsRec(currentPosition + 1, boardClone, states, scoredBoards);
 					}
 					else
 					{
-						int score = ScoreBoard(currentBoard);
-						byte[] scoreOneHot = new byte[3];
+						int[] scoreOneHot = new int[3];
 						scoreOneHot[score] = 1;
 
-						//Console.WriteLine($"{board[0]} {board[1]} {board[2]}\n" +
-						//					$"{board[3]} {board[4]} {board[5]} \t => {score}\n" +
-						//					$"{board[6]} {board[7]} {board[8]}\n");
+						//Console.WriteLine($"{boardClone[0]} {boardClone[1]} {boardClone[2]}\n" +
+						//					$"{boardClone[3]} {boardClone[4]} {boardClone[5]} \t => {score}\n" +
+						//					$"{boardClone[6]} {boardClone[7]} {boardClone[8]}\n");
 
-						scoredBoards.Add(currentBoard, scoreOneHot);
+						scoredBoards.Add(boardClone, scoreOneHot);
 					}
 				}
 			}
 
-			private static int ScoreBoard(byte[] board)
+			private static int _InternalScoreBoard(int[] board)
 			{
 				int score = 0;
 
@@ -211,46 +251,45 @@ namespace Sigma.Core.Utils
 					int row = i / 3, col = i % 3;
 					int horizontalStreak = 0, verticalStreak = 0;
 
-					for (int y = i; y < board.Length; y++)
+					for (int y = i + 1; y < board.Length; y++)
 					{
 						int otherRow = y / 3;
-						if (otherRow != row) break;
+						if (otherRow != row || board[i] != board[y]) break;
+
 						horizontalStreak++;
-						if (board[i] != board[y]) break;
 					}
 
-					if (horizontalStreak == 2) score = 1;
-					if (horizontalStreak == 3) return 2;
+					if (horizontalStreak == 1) score = 1;
+					if (horizontalStreak == 2) return 2;
 
-					for (int y = i; y < board.Length; y++)
+					for (int y = i + 1; y < board.Length; y++)
 					{
 						int otherCol = y % 3;
-						if (otherCol != col) break;
+						if (otherCol != col || board[i] != board[y]) break;
+
 						verticalStreak++;
-						if (board[i] != board[y]) break;
 					}
 
-					if (verticalStreak == 2) score = 1;
-					if (verticalStreak == 3) return 2;
+					if (verticalStreak == 1) score = 1;
+					if (verticalStreak == 2) return 2;
 				}
 
-				if (board[0] == 1)
-				{
-					if (board[0] == board[4])
-					{
-						if (board[4] == board[8]) return 2;
-					}
-					else if (board[4] == 1 && board[4] == board[8]) score = 1;
-				}
+				//if (board[4] == 1)
+				//{
+				//	if (board[0] == board[4])
+				//	{
+				//		score = 1;
+				//		if (board[4] == board[8]) return 2;
+				//	}
+				//	else if (board[4] == board[8]) score = 1;
 
-				if (board[2] == 1)
-				{
-					if (board[2] == board[4])
-					{
-						if (board[4] == board[6]) return 2;
-					}
-					else if (board[4] == 1 && board[4] == board[6]) score = 1;
-				}
+				//	if (board[2] == board[4])
+				//	{
+				//		score = 1;
+				//		if (board[4] == board[6]) return 2;
+				//	}
+				//	else if (board[4] == board[6]) score = 1;
+				//}
 
 				return score;
 			}

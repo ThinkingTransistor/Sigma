@@ -40,9 +40,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 			GraphStructure structure = null;
 			GraphNode prevNode = new GraphNode();
 			LayerConstruct prevLayerConstruct = null;
+			networkArchitecture.ResolveAllNames();
 			foreach (LayerConstruct layerConstruct in networkArchitecture.YieldLayerConstructsOrdered())
 			{
-				GraphNode node = new GraphNode(layerConstruct.Name.Substring(layerConstruct.Name.IndexOf("-") + 1));
+				GraphNode node = new GraphNode(layerConstruct.Name);
 				if (structure == null)
 				{
 					structure = new GraphStructure(node);
@@ -55,7 +56,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 					int output = -1;
 					if (layerConstruct.Parameters.ContainsKey("size"))
 					{
-						output = (int) layerConstruct.Parameters["size"];
+						output = (int)layerConstruct.Parameters["size"];
 					}
 					if (prevLayerConstruct.Parameters.ContainsKey("size"))
 					{
