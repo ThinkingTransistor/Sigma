@@ -200,8 +200,32 @@ namespace Sigma.Core.Utils
 
 				IDictionary<int[], int[]> scoredBoards = new Dictionary<int[], int[]>();
 
-				_InternalScoreBoardsRec(0, board, states, scoredBoards);
-				
+				//_InternalScoreBoardsRec(0, board, states, scoredBoards);
+
+				scoredBoards.Add(new[] { 1, 1, 1, 0, 0, 0, 0, 0, 0 }, new[] { 0, 0, 1 });
+				scoredBoards.Add(new[] { 0, 1, 1, 0, 0, 0, 0, 0, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 1, 1, 0, 0, 0, 0, 0, 0, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 1, 0, 1, 0, 0, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 1, 0, 0, 0, 0, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 1, 0, 0, 0, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 1, 0, 0, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+
+				scoredBoards.Add(new[] { 0, 0, 0, 1, 1, 1, 0, 0, 0 }, new[] { 0, 0, 1 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 1, 1, 0, 0, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 1, 1, 0, 0, 0, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 1, 0, 1, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 1, 0, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 1, 0, 0, 0 }, new[] { 1, 0, 0 });
+
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 1, 1, 1 }, new[] { 0, 0, 1 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 0, 1, 1 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 1, 1, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 1, 0, 1 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 1, 0, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 0, 1, 0 }, new[] { 1, 0, 0 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 0, 0, 1 }, new[] { 1, 0, 0 });
+
 				Random rng = new Random();
 
 				var scoredBoardsAsArray = scoredBoards.ToArray().OrderBy(x => rng.Next());

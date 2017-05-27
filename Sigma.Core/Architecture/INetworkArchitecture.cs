@@ -33,7 +33,7 @@ namespace Sigma.Core.Architecture
 
 		/// <summary>
 		/// Resolve all layer names to be fully qualified.
-		/// Note: Unresolved names are stored to enable consistency when changing the architecture and re-resolving the layer names.
+		/// Note: Unresolved names are stored to guarantee consistency when changing the architecture and re-resolving the layer names.
 		/// </summary>
 		void ResolveAllNames();
 
