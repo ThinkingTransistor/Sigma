@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using log4net;
 using Sigma.Core.Architecture;
+using Sigma.Core.Data.Datasets;
+using Sigma.Core.Data.Extractors;
+using Sigma.Core.Data.Readers;
+using Sigma.Core.Data.Sources;
 using Sigma.Core.Monitors.WPF.NetView;
 using Sigma.Core.Monitors.WPF.NetView.Graphing;
 using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
@@ -33,6 +38,56 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 		public GraphPanel(string title, IGraphStructure graphStructure, object headerContent = null) : base(title, headerContent)
 		{
 			Init(graphStructure);
+		}
+
+		public GraphPanel(string title, IDataset dataset, object headerContent = null) : base(title, headerContent)
+		{
+			GraphStructure structure = null;
+
+			ExtractedDataset asExtractedDataset = dataset as ExtractedDataset;
+
+			if (asExtractedDataset != null)
+			{
+				IRecordExtractor currentExtractor = asExtractedDataset.RecordExtractors.First();
+				IRecordExtractor rootExtractor = currentExtractor;
+				IList<IRecordExtractor> extractors = new List<IRecordExtractor>();
+
+				do
+				{
+					extractors.Add(currentExtractor);
+				} while ((currentExtractor = currentExtractor.ParentExtractor) != null);
+
+				extractors = extractors.Reverse().ToArray();
+
+				IRecordReader reader = extractors[0].Reader;
+				IDataSource source = reader.Source;
+
+				GraphNode resourceNode = new GraphNode($"\"{source.ResourceName}\"");
+				GraphNode sourceNode = new GraphNode(source.GetType().Name.ToLower());
+				GraphNode prevNode = new GraphNode(reader.GetType().Name.ToLower());
+
+				structure = new GraphStructure(resourceNode);
+				structure.AddNode(resourceNode, "resource", sourceNode, "source");
+				structure.AddNode(sourceNode, "origin", prevNode, "out (buffer)");
+
+				IRecordExtractor prevExtractor = null;
+				foreach (IRecordExtractor extractor in extractors)
+				{
+					GraphNode node = new GraphNode(extractor.GetType().Name.ToLower());
+
+					string outSectionNames = prevExtractor == null ? "buffer" : string.Join(", ", prevExtractor.SectionNames);
+					string inSectionNames = string.Join(", ", extractor.SectionNames);
+
+					structure.AddNode(prevNode, $"out ({outSectionNames})", node, $"in ({inSectionNames})");
+
+					prevNode = node;
+					prevExtractor = extractor;
+				}
+
+				structure.AddNode(prevNode, "out", new GraphNode(dataset.Name), "dataset");
+			}
+
+			Init(structure, 250);
 		}
 
 		public GraphPanel(string title, INetworkArchitecture networkArchitecture, object headerContent = null) : base(title, headerContent)
@@ -74,11 +129,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 			Init(structure);
 		}
 
-		private void Init(IGraphStructure graphStructure)
+		private void Init(IGraphStructure graphStructure, int nodeDistance = 200)
 		{
 			GraphStructure = graphStructure;
 			Content = new NetLayout();
-			PopulateNetLayout(Content, graphStructure);
+			PopulateNetLayout(Content, graphStructure, nodeDistance);
 		}
 
 		/// <summary>
@@ -86,13 +141,14 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 		/// </summary>
 		/// <param name="layout">The layout that will contain the definition for the nodes.</param>
 		/// <param name="structure">The structure of the nodes. </param>
-		protected virtual void PopulateNetLayout(NetLayout layout, IGraphStructure structure)
+		/// <param name="nodeDistance">The distance between nodes (in pixels).</param>
+		protected virtual void PopulateNetLayout(NetLayout layout, IGraphStructure structure, int nodeDistance = 200)
 		{
 			_logger.Debug($"Populating netlayout with a graph (root node: {structure.Root})");
 
 			GraphViewMapping = new Dictionary<GraphNode, NodeViewModel>();
 
-			PopulateForward(structure.Root);
+			PopulateForward(structure.Root, nodeDistance);
 
 			GraphViewMapping = null;
 
@@ -106,12 +162,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 
 		private int tmp = 30;
 
-		protected virtual NodeViewModel PopulateForward(GraphNode node)
+		protected virtual NodeViewModel PopulateForward(GraphNode node, int nodeDistance = 200)
 		{
 			NodeViewModel root = new NodeViewModel(node.Name);
 			root.X = tmp;
 			root.Y = 450;
-			tmp += 200;
+			tmp += nodeDistance;
 
 			GraphViewMapping.Add(node, root);
 
@@ -126,7 +182,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 						NodeViewModel next;
 						if (!GraphViewMapping.TryGetValue(connection.DestinationNode, out next))
 						{
-							next = PopulateForward(connection.DestinationNode);
+							next = PopulateForward(connection.DestinationNode, nodeDistance);
 						}
 
 						ConnectorViewModel rootOut = new ConnectorViewModel(connection.SourceName);
