@@ -359,7 +359,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		private void ButtonClick(int row, int column)
 		{
-			Place(row, column);
+			if (NextTicTacToePlayer == RealTicTacToePlayer)
+			{
+				Place(row, column);
+			}
 		}
 
 		private void Reset_OnClick(object sender, RoutedEventArgs e)
