@@ -145,6 +145,11 @@
     <Compile Include="Panels\Controls\ControlPanel.cs" />
     <Compile Include="Panels\Controls\DrawPanel.cs" />
     <Compile Include="Panels\Controls\RectanglePanel.cs" />
+    <Compile Include="Panels\Games\TicTacToe\TicTacToeButton.cs" />
+    <Compile Include="Panels\Games\TicTacToe\TicTacToeField.xaml.cs">
+      <DependentUpon>TicTacToeField.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Panels\Games\TicTacToe\TicTacToePanel.cs" />
     <Compile Include="Panels\GenericPanel.cs" />
     <Compile Include="Panels\IInputPanel.cs" />
     <Compile Include="Panels\IOutputPanel.cs" />
@@ -175,6 +180,8 @@
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Panels\Optimisations\BitmapHookPanel.cs" />
     <Compile Include="Utils\Defaults\MNIST\MnistTargetMaximisationPanel.cs" />
+    <Compile Include="Utils\PassNetworkHook.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\WriteableBitmapUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\PollParameterHook.cs" />
     <Compile Include="Utils\WindowUtils.cs" />
@@ -304,6 +311,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Panels\Games\TicTacToe\TicTacToeField.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\Icons.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -397,6 +408,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\CustomControls\Panels\Control\SigmaPlaybackControlGeneric.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CustomControls\Panels\TicTacToe\TicTacToeButtonGeneric.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

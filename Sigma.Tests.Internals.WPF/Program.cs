@@ -41,6 +41,7 @@ using MaterialDesignColors;
 using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Monitors;
+using Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 
 namespace Sigma.Tests.Internals.WPF
@@ -205,8 +206,13 @@ namespace Sigma.Tests.Internals.WPF
 					{
 						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
 					}
-
 				}
+
+				//if (DemoMode == DemoType.TicTacToe)
+				{
+					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!"));
+				}
+
 				//for (int i = 0; i < 10; i++)
 				//{
 				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));

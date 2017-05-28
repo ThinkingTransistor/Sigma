@@ -8,7 +8,8 @@
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/StatusBar/TaskVisualizerGeneric.xaml"/>
 
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/Control/SigmaPlaybackControlGeneric.xaml"/>
-	</ResourceDictionary.MergedDictionaries>
 
-	
+		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/TicTacToe/TicTacToeButtonGeneric.xaml"/>
+
+	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
