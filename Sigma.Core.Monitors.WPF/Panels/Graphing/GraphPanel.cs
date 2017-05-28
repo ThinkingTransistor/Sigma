@@ -119,7 +119,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 					if (output == -1) output = input;
 					else if (input == -1) input = output;
 
-					structure.AddNode(prevNode, $"out ({output})", node, $"in ({input})");
+					structure.AddNode(prevNode, $"out ({input})", node, $"in ({output})");
 				}
 
 				prevNode = node;
