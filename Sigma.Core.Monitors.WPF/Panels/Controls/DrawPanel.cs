@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF.Panels.DataGrids;
-using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
+
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -24,7 +21,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 	}
 
 	//TODO: move to own class
-	public class NumberPanel : SimpleDataGridPanel<Guess>, IOutputPanel
+	public class NumberPanel : SimpleDataGridPanel<Guess>, IOutputPanel, IPassNetworkReceiver
 	{
 		public ITrainer Trainer { get; }
 
@@ -33,6 +30,11 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		public IComputationHandler Handler { get; set; }
 
 		public IInputPanel Input { get; set; }
+
+		/// <summary>
+		/// The hook that is used to pass the network.
+		/// </summary>
+		protected PassNetworkHook Hook;
 
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -51,7 +53,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			_guesses = new List<Guess>(10);
 		}
 
-		private List<Guess> _guesses;
+		private readonly List<Guess> _guesses;
 
 		public void SetInputReference(INDArray values)
 		{
@@ -67,13 +69,23 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
 			block.Add("inputs", Values);
 			block.Add("targets", Handler.NDArray(1, 1, 10));
-			Trainer.AddGlobalHook(new PassNetworkHook(this, block));
+			if (Hook != null)
+			{
+				Trainer.Operator.DetachGlobalHook(Hook);
+			}
+
+			Hook = new PassNetworkHook(this, block, TimeStep.Every(1, TimeScale.Iteration));
+			Trainer.AddGlobalHook(Hook);
 		}
 
-		public void SetOutput(INDArray output)
+		/// <summary>
+		/// This method accepts a network pass and processes.
+		/// </summary>
+		/// <param name="array">The array that is the response from the pass.</param>
+		public void ReceivePass(INDArray array)
 		{
-			output = Handler.SoftMax(Handler.Multiply(output, 10)); // TODO remove hack and fix for very small numbers
-			KeyValuePair<double, int>[] sorted = output.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).ToArray();
+			array = Handler.SoftMax(Handler.Multiply(array, 10)); // TODO remove hack and fix for very small numbers
+			KeyValuePair<double, int>[] sorted = array.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).ToArray();
 
 			string text = "";
 
@@ -91,7 +103,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				Items.Clear();
 				Items.AddRange(_guesses);
 			});
-
 		}
 	}
 
@@ -99,6 +110,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 	{
 		private IOutputPanel _outputPanel;
 		public IComputationHandler Handler { get; set; }
+
+		public bool IsReady { get; } = true;
 
 		public INDArray Values { get; }
 

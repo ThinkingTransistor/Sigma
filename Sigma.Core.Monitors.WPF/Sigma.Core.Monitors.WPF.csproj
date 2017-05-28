@@ -180,7 +180,6 @@
     <Compile Include="Utils\Converters\InverseBooleanConverter.cs" />
     <Compile Include="Panels\Optimisations\BitmapHookPanel.cs" />
     <Compile Include="Utils\Defaults\MNIST\MnistTargetMaximisationPanel.cs" />
-    <Compile Include="Utils\PassNetworkHook.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\WriteableBitmapUtils.cs" />
     <Compile Include="ViewModel\Parameterisation\PollParameterHook.cs" />

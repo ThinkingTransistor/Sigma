@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
@@ -31,16 +33,46 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 	public partial class TicTacToeField
 	{
+		public class TicTacToeMoveEventArgs : EventArgs
+		{
+			public bool IsReset { get; }
+			public int Row { get; }
+			public int Column { get; }
+
+			public TicTacToePlayer Move { get; }
+
+			public bool GameOver { get; }
+
+			public TicTacToeMoveEventArgs()
+			{
+				IsReset = true;
+			}
+
+			public TicTacToeMoveEventArgs(int row, int column, TicTacToePlayer move, bool gameOver)
+			{
+				Row = row;
+				Column = column;
+				Move = move;
+				GameOver = gameOver;
+			}
+		}
+
 		private readonly WPFMonitor _monitor;
 
 		/// <summary>
 		/// The player that will start the game.
 		/// </summary>
-		public readonly TicTacToePlayer StartTicTacToePlayer = TicTacToePlayer.X;
+		public const TicTacToePlayer StartTicTacToePlayer = TicTacToePlayer.X;
+
 		/// <summary>
 		/// The real player. 
 		/// </summary>
-		public readonly TicTacToePlayer RealTicTacToePlayer = TicTacToePlayer.O;
+		public const TicTacToePlayer RealTicTacToePlayer = TicTacToePlayer.O;
+
+		/// <summary>
+		/// The computer player.
+		/// </summary>
+		public readonly TicTacToePlayer AiTicTacToePlayer = StartTicTacToePlayer.TogglePlayer();
 
 		/// <summary>
 		/// The next player (the current turn player).
@@ -60,12 +92,26 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		private bool _gameOver;
 
-		public TicTacToeField(WPFMonitor monitor)
+		/// <summary>
+		/// The current field as an INDArray (references).
+		/// </summary>
+		protected INDArray FieldAsNDArray;
+
+		/// <summary>
+		/// A field changed event handler, that occurs every time the field changes. (e.g. place a new move / reset).
+		/// </summary>
+		public event EventHandler<TicTacToeMoveEventArgs> FieldChange;
+
+		public event EventHandler AiMove;
+
+		public TicTacToeField(IComputationHandler handler, WPFMonitor monitor)
 		{
 			_monitor = monitor;
 			InitializeComponent();
 
 			_buttons = new TicTacToeButton[3, 3];
+			FieldAsNDArray = handler.NDArray(_buttons.GetLength(0) * _buttons.GetLength(1));
+
 			for (int i = 0; i < _buttons.GetLength(0); i++)
 			{
 				for (int j = 0; j < _buttons.GetLength(1); j++)
@@ -86,29 +132,29 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			InitGame();
 		}
 
-		public void AsINDarray(IComputationHandler handler)
+		public INDArray AsINDarray()
 		{
-			int[] vals = new int[_field.GetLength(0) * _field.GetLength(1)];
-			for (int i = 0; i < _field.GetLength(0); i++)
-			{
-				for (int j = 0; j < _field.GetLength(1); j++)
-				{
-					int number = 0;
+			return FieldAsNDArray;
+		}
 
-					if (_field[i, j] == RealTicTacToePlayer)
-					{
-						number = -1;
-					}
-					else if (_field[i, j] != TicTacToePlayer.None)
-					{
-						number = 1;
-					}
+		protected virtual int MapToInt(TicTacToePlayer player)
+		{
+			return player == AiTicTacToePlayer ? 1 : 0;
+		}
 
-					vals[i * _field.GetLength(0) + j] = number;
-				}
-			}
+		protected void OnAiMove()
+		{
+			AiMove?.Invoke(this, new EventArgs());
+		}
 
-			handler.NDArray(vals, vals.Length);
+		protected void OnFieldChange()
+		{
+			FieldChange?.Invoke(this, new TicTacToeMoveEventArgs());
+		}
+
+		protected void OnFieldChange(int row, int column, TicTacToePlayer move, bool gameOver)
+		{
+			FieldChange?.Invoke(this, new TicTacToeMoveEventArgs(row, column, move, gameOver));
 		}
 
 		private void InitField()
@@ -117,16 +163,24 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			{
 				_field = new TicTacToePlayer[_buttons.GetLength(0), _buttons.GetLength(1)];
 			}
+
 			for (int i = 0; i < _field.GetLength(0); i++)
 			{
 				for (int j = 0; j < _field.GetLength(1); j++)
 				{
-					SetIndexNoCheck(i, j, TicTacToePlayer.None);
+					SetIndexFast(i, j, TicTacToePlayer.None);
 				}
 			}
+
+			for (int i = 0; i < _field.GetLength(0) * _field.GetLength(1); i++)
+			{
+				AsINDarray().SetValue(MapToInt(TicTacToePlayer.None), i);
+			}
+
+			OnFieldChange();
 		}
 
-		private void SetIndexNoCheck(int row, int column, TicTacToePlayer move)
+		private void SetIndexFast(int row, int column, TicTacToePlayer move)
 		{
 			_field[row, column] = move;
 			_buttons[row, column].MainContent = move.GetPlayerText();
@@ -134,12 +188,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		public void SetIndex(int row, int column, TicTacToePlayer move)
 		{
-			SetIndexNoCheck(row, column, move);
+			SetIndexFast(row, column, move);
 
 			if (GameOver(row, column, out TicTacToePlayer winner))
 			{
 				//TODO: fix cast
-				SigmaWindow window = (SigmaWindow)_monitor.Window;
+				SigmaWindow window = (SigmaWindow) _monitor.Window;
 
 				if (winner == TicTacToePlayer.None)
 				{
@@ -154,11 +208,23 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 				foreach (TicTacToeButton ticTacToeButton in _buttons) { ticTacToeButton.IsEnabled = false; }
 			}
+
+			FieldAsNDArray.SetValue(MapToInt(move), row * _field.GetLength(0) + column);
+			OnFieldChange(row, column, move, _gameOver);
+
+			if (Autoplay)
+			{
+				if (NextTicTacToePlayer == AiTicTacToePlayer)
+				{
+					OnAiMove();
+				}
+			}
 		}
 
 		public void InitGame()
 		{
 			_gameOver = false;
+
 			foreach (TicTacToeButton ticTacToeButton in _buttons) { ticTacToeButton.IsEnabled = true; }
 			NextTicTacToePlayer = StartTicTacToePlayer;
 			InitField();
@@ -300,17 +366,26 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			InitGame();
 		}
 
+		private void Move_OnClick(object sender, RoutedEventArgs e)
+		{
+			if (NextTicTacToePlayer == AiTicTacToePlayer)
+			{
+				OnAiMove();
+			}
+		}
+
 		#region Dependy Properties
+
 		public bool Autoplay
 		{
-			get { return (bool)GetValue(AutoplayProperty); }
+			get { return (bool) GetValue(AutoplayProperty); }
 			set { SetValue(AutoplayProperty, value); }
 		}
 
 		// Using a DependencyProperty as the backing store for Autoplay.  This enables animation, styling, binding, etc...
 		public static readonly DependencyProperty AutoplayProperty =
 			DependencyProperty.Register("Autoplay", typeof(bool), typeof(TicTacToeField), new PropertyMetadata(true));
-		#endregion
 
+		#endregion
 	}
 }

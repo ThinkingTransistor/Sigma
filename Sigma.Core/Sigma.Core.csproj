@@ -243,6 +243,7 @@
     <Compile Include="Persistence\Serialiser.cs" />
     <Compile Include="Sigma.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Training\Hooks\PassNetworkHook.cs" />
     <Compile Include="Training\Hooks\Processors\MetricProcessorHook.cs" />
     <Compile Include="Training\Hooks\Processors\NumberAccumulatorHook.cs" />
     <Compile Include="Training\Hooks\BaseHook.cs" />
