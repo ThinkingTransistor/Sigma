@@ -61,7 +61,7 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		///
 		/// The width of the content (in content coordinates).
 		/// 
-		private double contentWidth = 1800;
+		private double contentWidth = 2100;
 
 		///
 		/// The heigth of the content (in content coordinates).

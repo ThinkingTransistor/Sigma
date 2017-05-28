@@ -84,7 +84,7 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType Parkinsons = new DemoType("Parkinsons", false, CreateParkinsonsTrainer, MaterialDesignValues.LightBlue);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.Mnist;
+		private static readonly DemoType DemoMode = DemoType.Iris;
 
 		private static void Main()
 		{
@@ -133,7 +133,7 @@ namespace Sigma.Tests.Internals.WPF
 				// add a panel that controls the learning process
 				window.TabControl["Overview"].AddCumulativePanel(new ControlPanel("Control", trainer), legend: iris);
 
-				ITimeStep reportTimeStep = DemoMode.Slow ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(10, TimeScale.Epoch);
+				ITimeStep reportTimeStep = DemoMode.Slow ? TimeStep.Every(1, TimeScale.Iteration) : TimeStep.Every(1, TimeScale.Epoch);
 
 				var cost1 = CreateChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)).Linearify();
 				var cost2 = CreateChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer, "optimiser.cost_total", reportTimeStep);

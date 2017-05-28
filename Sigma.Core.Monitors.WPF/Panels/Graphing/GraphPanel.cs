@@ -75,8 +75,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 				{
 					GraphNode node = new GraphNode(extractor.GetType().Name.ToLower());
 
-					string outSectionNames = prevExtractor == null ? "buffer" : string.Join(", ", prevExtractor.SectionNames);
-					string inSectionNames = string.Join(", ", extractor.SectionNames);
+					string outSectionNames = prevExtractor == null ? "buffer" : $"buffer_{prevExtractor.SectionNames.Length}";
+					string inSectionNames = $"buffer_{extractor.SectionNames.Length}";
 
 					structure.AddNode(prevNode, $"out ({outSectionNames})", node, $"in ({inSectionNames})");
 
@@ -93,7 +93,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 				structure.AddNode(resourceNode, "resource", new GraphNode(dataset.Name), "dataset");
 			}
 
-			Init(structure, 250);
+			Init(structure, 100);
 		}
 
 		public GraphPanel(string title, INetworkArchitecture networkArchitecture, object headerContent = null) : base(title, headerContent)
@@ -133,7 +133,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 				prevLayerConstruct = layerConstruct;
 			}
 
-			Init(structure);
+			Init(structure, 100);
 		}
 
 		private void Init(IGraphStructure graphStructure, int nodeDistance = 200)
@@ -167,14 +167,16 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 			_logger.Debug($"Finished populating netlayout with a graph (root node: {structure.Root})");
 		}
 
-		private int tmp = 30;
+		private int horizontalOffset = 30;
 
 		protected virtual NodeViewModel PopulateForward(GraphNode node, int nodeDistance = 200)
 		{
 			NodeViewModel root = new NodeViewModel(node.Name);
-			root.X = tmp;
+			root.X = horizontalOffset;
 			root.Y = 450;
-			tmp += nodeDistance;
+			horizontalOffset += nodeDistance;
+
+			int maxStringLength = node.Name.Length;
 
 			GraphViewMapping.Add(node, root);
 
@@ -186,6 +188,9 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 					// if it is not circular
 					if (connection.DestinationNode != node)
 					{
+						maxStringLength = Math.Max(maxStringLength, connection.SourceName.Length + connection.DestinationName.Length);
+						horizontalOffset += maxStringLength * 7;
+
 						NodeViewModel next;
 						if (!GraphViewMapping.TryGetValue(connection.DestinationNode, out next))
 						{
