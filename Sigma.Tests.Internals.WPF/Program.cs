@@ -210,7 +210,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				if (DemoMode == DemoType.TicTacToe)
 				{
-					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!", trainer.Operator.Handler));
+					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!", trainer));
 				}
 
 				//for (int i = 0; i < 10; i++)

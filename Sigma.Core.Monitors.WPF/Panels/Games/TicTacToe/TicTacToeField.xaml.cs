@@ -66,7 +66,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 		/// <summary>
 		/// The real player. 
 		/// </summary>
-		public const TicTacToePlayer RealTicTacToePlayer = TicTacToePlayer.O;
+		public const TicTacToePlayer RealTicTacToePlayer = TicTacToePlayer.X;
 
 		/// <summary>
 		/// The computer player.
@@ -133,7 +133,10 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		protected virtual int MapToInt(TicTacToePlayer player)
 		{
-			return player == AiTicTacToePlayer ? 1 : 0;
+			if (player == AiTicTacToePlayer) return 1;
+			if (player == RealTicTacToePlayer) return -1;
+
+			return 0;
 		}
 
 		protected void OnAiMove()
@@ -182,35 +185,40 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		public void SetIndex(int row, int column, TicTacToePlayer move)
 		{
-			SetIndexFast(row, column, move);
-
-			if (GameOver(row, column, out TicTacToePlayer winner))
+			if (move == NextTicTacToePlayer)
 			{
-				//TODO: fix cast
-				SigmaWindow window = (SigmaWindow)_monitor.Window;
+				SetIndexFast(row, column, move);
 
-				if (winner == TicTacToePlayer.None)
+				if (GameOver(row, column, out TicTacToePlayer winner))
 				{
-					Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue("It's a tie!", "Got it", null));
+					//TODO: fix cast
+					SigmaWindow window = (SigmaWindow)_monitor.Window;
+
+					if (winner == TicTacToePlayer.None)
+					{
+						Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue("It's a tie!", "Got it", null));
+					}
+					else
+					{
+						Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue($"Player: {winner} has won the game!", "Got it", null));
+					}
+
+					_gameOver = true;
+
+					foreach (TicTacToeButton ticTacToeButton in _buttons) { ticTacToeButton.IsEnabled = false; }
 				}
-				else
+
+				NextTicTacToePlayer = NextTicTacToePlayer.TogglePlayer();
+
+				Field.SetValue(MapToInt(move), 0, row * _field.GetLength(0) + column);
+				OnFieldChange(row, column, move, _gameOver);
+
+				if (Autoplay)
 				{
-					Task.Factory.StartNew(() => window.SnackbarMessageQueue.Enqueue($"Player: {winner} has won the game!", "Got it", null));
-				}
-
-				_gameOver = true;
-
-				foreach (TicTacToeButton ticTacToeButton in _buttons) { ticTacToeButton.IsEnabled = false; }
-			}
-
-			Field.SetValue(MapToInt(move), 0, row * _field.GetLength(0) + column);
-			OnFieldChange(row, column, move, _gameOver);
-
-			if (Autoplay)
-			{
-				if (NextTicTacToePlayer == AiTicTacToePlayer)
-				{
-					OnAiMove();
+					if (NextTicTacToePlayer == AiTicTacToePlayer)
+					{
+						OnAiMove();
+					}
 				}
 			}
 		}
@@ -237,7 +245,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			}
 
 			SetIndex(row, column, NextTicTacToePlayer);
-			NextTicTacToePlayer = NextTicTacToePlayer.TogglePlayer();
 
 			return true;
 		}
