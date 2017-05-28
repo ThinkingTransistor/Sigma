@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Windows;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors.WPF.Panels.Optimisations;
-using Sigma.Core.Monitors.WPF.View.Factories;
-using Sigma.Core.Monitors.WPF.View.Factories.Defaults;
 using Sigma.Core.Training;
 using Sigma.Core.Utils;
 

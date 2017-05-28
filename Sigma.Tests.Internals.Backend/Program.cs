@@ -252,22 +252,24 @@ namespace Sigma.Tests.Internals.Backend
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(9)
-											+ FullyConnectedLayer.Construct(9, "tanh")
-											+ FullyConnectedLayer.Construct(140, "tanh")
-											+ FullyConnectedLayer.Construct(20, "tanh")
+											+ FullyConnectedLayer.Construct(63, "tanh")
+											+ FullyConnectedLayer.Construct(90, "tanh")
 											+ FullyConnectedLayer.Construct(3, "tanh")
 											+ OutputLayer.Construct(3)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
 
-			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
+			trainer.TrainingDataIterator = new MinibatchIterator(21, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
 			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
+
+			trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("tictactoe.sgnet"), verbose: true)
+				.On(new ExtremaCriteria("shared.classification_accuracy_top1", ExtremaTarget.Max)));
 
 			sigma.PrepareAndRun();
 		}
