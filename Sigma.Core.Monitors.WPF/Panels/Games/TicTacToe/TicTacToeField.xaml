@@ -59,7 +59,8 @@
 			</CheckBox>
 			<Button IsEnabled="{Binding Autoplay, Converter={StaticResource InverseBooleanConverter}}"
 					HorizontalAlignment="Center"
-					Margin="0,5,0,0">Next move</Button>
+					Margin="0,5,0,0"
+					Click="Move_OnClick">Next move</Button>
 		</StackPanel>
 	</Grid>
 
