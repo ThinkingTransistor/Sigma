@@ -43,6 +43,8 @@ using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
+using Sigma.Core.Training.Hooks;
+using Sigma.Core.Training.Hooks.Saviors;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -385,6 +387,36 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
 
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
+
+			return trainer;
+		}
+
+		public static ITrainer CreateTicTacToeTrainer(SigmaEnvironment sigma)
+		{
+			IDataset dataset = Defaults.Datasets.TicTacToe();
+
+			ITrainer trainer = sigma.CreateTrainer("tictactoe-trainer");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(9)
+											+ FullyConnectedLayer.Construct(72, "tanh")
+											+ FullyConnectedLayer.Construct(99, "tanh")
+											+ FullyConnectedLayer.Construct(3, "tanh")
+											+ OutputLayer.Construct(3)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+
+			trainer.TrainingDataIterator = new MinibatchIterator(21, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
+
+			trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("tictactoe.sgnet"), verbose: true)
+				.On(new ExtremaCriteria("shared.classification_accuracy_top1", ExtremaTarget.Max)));
 
 			return trainer;
 		}
