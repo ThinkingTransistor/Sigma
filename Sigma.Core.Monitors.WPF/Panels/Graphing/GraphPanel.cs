@@ -86,6 +86,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 
 				structure.AddNode(prevNode, "out", new GraphNode(dataset.Name), "dataset");
 			}
+			else
+			{
+				GraphNode resourceNode = new GraphNode("internal");
+				structure = new GraphStructure(resourceNode);
+				structure.AddNode(resourceNode, "resource", new GraphNode(dataset.Name), "dataset");
+			}
 
 			Init(structure, 250);
 		}

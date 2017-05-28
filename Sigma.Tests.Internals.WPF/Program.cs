@@ -174,6 +174,7 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: iris);
 				window.TabControl["Overview"].AddCumulativePanel(parameter);
+				window.TabControl["Overview"].AddCumulativePanel(new GraphPanel("Data Pipeline", trainer.TrainingDataIterator.UnderlyingDataset), 1, 2);
 				//window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: iris);
 
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
@@ -215,7 +216,7 @@ namespace Sigma.Tests.Internals.WPF
 				graphStructure.AddNode(node1, "1 out", node2, "2 in");
 
 
-				window.TabControl["NetView"].AddCumulativePanel(new GraphPanel("Graphing", trainer.Network.Architecture));
+				window.TabControl["NetView"].AddCumulativePanel(new GraphPanel("Model Architecture", trainer.Network.Architecture));
 
 				//for (int i = 0; i < 10; i++)
 				//{
