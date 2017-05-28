@@ -6,10 +6,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 {
 	public class TicTacToePanel : GenericPanel<TicTacToeField>, IOutputPanel, IInputPanel
 	{
+		private readonly IComputationHandler _handler;
+
 		//TODO: document
 		//only works with sigmawindow
-		public TicTacToePanel(string title, object headerContent = null) : base(title, headerContent)
+		public TicTacToePanel(string title, IComputationHandler handler, object headerContent = null) : base(title, headerContent)
 		{
+			_handler = handler;
 			Input = this;
 		}
 
@@ -20,7 +23,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 		/// <param name="window">The wpf window this panel will be added to.</param>
 		protected override void OnInitialise(SigmaWindow window)
 		{
-			Content = new TicTacToeField(Monitor);
+			Content = new TicTacToeField(_handler, Monitor);
+			IsReady = true;
 		}
 
 		/// <Inheritdoc />
@@ -39,7 +43,13 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		/// <Inheritdoc />
 		public IComputationHandler Handler { get; set; }
+
+		public bool IsReady { get; private set; }
+
 		/// <Inheritdoc />
-		public INDArray Values { get; }
+		public INDArray Values
+		{
+			get { return Content.Field; }
+		}
 	}
 }

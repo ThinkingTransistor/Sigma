@@ -2,32 +2,39 @@
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
+using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
-using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
+using Sigma.Core.Handlers.Backends.Debugging;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
+using Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Persistence;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
@@ -35,16 +42,6 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Media;
-using MaterialDesignColors;
-using Sigma.Core.Handlers.Backends.Debugging;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.Monitors;
-using Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe;
-using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
-using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Hooks.Saviors;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -85,9 +82,10 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType Xor = new DemoType("XOR", false, CreateXorTrainer);
 			internal static readonly DemoType Wdbc = new DemoType("WDBC", false, CreateWdbcTrainer);
 			internal static readonly DemoType Parkinsons = new DemoType("Parkinsons", false, CreateParkinsonsTrainer, MaterialDesignValues.LightBlue);
+			internal static readonly DemoType TicTacToe = new DemoType("Tic-Tac-Toe", false, CreateTicTacToeTrainer, MaterialDesignValues.BlueGrey);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.Mnist;
+		private static readonly DemoType DemoMode = DemoType.TicTacToe;
 
 		private static void Main()
 		{
@@ -210,9 +208,9 @@ namespace Sigma.Tests.Internals.WPF
 					}
 				}
 
-				//if (DemoMode == DemoType.TicTacToe)
+				if (DemoMode == DemoType.TicTacToe)
 				{
-					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!"));
+					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!", trainer.Operator.Handler));
 				}
 
 				//for (int i = 0; i < 10; i++)

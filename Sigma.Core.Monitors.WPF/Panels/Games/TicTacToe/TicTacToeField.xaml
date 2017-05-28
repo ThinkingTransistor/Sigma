@@ -14,44 +14,37 @@
 		<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 		<Style TargetType="{x:Type ticTacToe:TicTacToeButton}">
 			<Setter Property="Margin" Value="5,5,5,5"/>
+			<Setter Property="FontSize" Value="{StaticResource H2}"/>
+			<Setter Property="FontWeight" Value="Light"/>
 		</Style>
 	</UserControl.Resources>
 
-	<Grid>
+	<Grid HorizontalAlignment="Center">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="Auto"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 
-		<StackPanel Grid.Column="0"
-					Orientation="Vertical"
-					VerticalAlignment="Center"
-					HorizontalAlignment="Center">
-			<Button HorizontalAlignment="Center"
-					Margin="0,5,0,0"
-					Click="Reset_OnClick">Reset</Button>
-		</StackPanel>
-
-		<Grid Grid.Column="1"
+		<Grid Grid.Column="0"
 			  VerticalAlignment="Center"
 			  HorizontalAlignment="Center"
 			  x:Name="ContentGrid">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="75"/>
-				<ColumnDefinition Width="75"/>
-				<ColumnDefinition Width="75"/>
+				<ColumnDefinition Width="95"/>
+				<ColumnDefinition Width="95"/>
+				<ColumnDefinition Width="95"/>
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
-				<RowDefinition Height="75"/>
-				<RowDefinition Height="75"/>
-				<RowDefinition Height="75"/>
+				<RowDefinition Height="95"/>
+				<RowDefinition Height="95"/>
+				<RowDefinition Height="95"/>
 			</Grid.RowDefinitions>
 		</Grid>
 
-		<StackPanel Grid.Column="2"
+		<StackPanel Grid.Column="1"
 					Orientation="Vertical"
-					VerticalAlignment="Center">
+					VerticalAlignment="Center"
+					Margin="10,0,0,10">
 			<CheckBox IsChecked="{Binding Autoplay}"
 					  Style="{StaticResource MaterialDesignCheckBox}"
 					  HorizontalAlignment="Center">
@@ -61,6 +54,10 @@
 					HorizontalAlignment="Center"
 					Margin="0,5,0,0"
 					Click="Move_OnClick">Next move</Button>
+
+			<Button HorizontalAlignment="Center"
+					Margin="0,10,0,0"
+					Click="Reset_OnClick">Reset</Button>
 		</StackPanel>
 	</Grid>
 

@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ticTacToe="clr-namespace:Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe">
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:ticTacToe="clr-namespace:Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe">
 	<Style TargetType="{x:Type ticTacToe:TicTacToeButton}">
 		<Setter Property="Template">
 			<Setter.Value>
@@ -13,7 +13,9 @@
 						<Button Background="{TemplateBinding Background}"
 								MinWidth="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" 
 								MinHeight="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"
-								Command="{TemplateBinding ClickCommand}">
+								Command="{TemplateBinding ClickCommand}"
+								FontSize="{TemplateBinding FontSize}"
+								FontWeight="{TemplateBinding FontWeight}">
 							<ContentPresenter Content="{TemplateBinding MainContent}"/>
 						</Button>
 					</Border>

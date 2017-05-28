@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF.View.Windows;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using Sigma.Core.Handlers;
-using Sigma.Core.MathAbstract;
-using Sigma.Core.Monitors.WPF.View.Windows;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 {
@@ -95,7 +94,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 		/// <summary>
 		/// The current field as an INDArray (references).
 		/// </summary>
-		protected INDArray FieldAsNDArray;
+		public INDArray Field { get; protected set; }
 
 		/// <summary>
 		/// A field changed event handler, that occurs every time the field changes. (e.g. place a new move / reset).
@@ -110,7 +109,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			InitializeComponent();
 
 			_buttons = new TicTacToeButton[3, 3];
-			FieldAsNDArray = handler.NDArray(_buttons.GetLength(0) * _buttons.GetLength(1));
+			Field = handler.NDArray(_buttons.GetLength(0) * _buttons.GetLength(1));
 
 			for (int i = 0; i < _buttons.GetLength(0); i++)
 			{
@@ -130,11 +129,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			}
 
 			InitGame();
-		}
-
-		public INDArray AsINDarray()
-		{
-			return FieldAsNDArray;
 		}
 
 		protected virtual int MapToInt(TicTacToePlayer player)
@@ -174,7 +168,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 			for (int i = 0; i < _field.GetLength(0) * _field.GetLength(1); i++)
 			{
-				AsINDarray().SetValue(MapToInt(TicTacToePlayer.None), i);
+				Field.SetValue(MapToInt(TicTacToePlayer.None), 0, i);
 			}
 
 			OnFieldChange();
@@ -193,7 +187,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			if (GameOver(row, column, out TicTacToePlayer winner))
 			{
 				//TODO: fix cast
-				SigmaWindow window = (SigmaWindow) _monitor.Window;
+				SigmaWindow window = (SigmaWindow)_monitor.Window;
 
 				if (winner == TicTacToePlayer.None)
 				{
@@ -209,7 +203,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 				foreach (TicTacToeButton ticTacToeButton in _buttons) { ticTacToeButton.IsEnabled = false; }
 			}
 
-			FieldAsNDArray.SetValue(MapToInt(move), row * _field.GetLength(0) + column);
+			Field.SetValue(MapToInt(move), 0, row * _field.GetLength(0) + column);
 			OnFieldChange(row, column, move, _gameOver);
 
 			if (Autoplay)
@@ -378,7 +372,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 
 		public bool Autoplay
 		{
-			get { return (bool) GetValue(AutoplayProperty); }
+			get { return (bool)GetValue(AutoplayProperty); }
 			set { SetValue(AutoplayProperty, value); }
 		}
 
