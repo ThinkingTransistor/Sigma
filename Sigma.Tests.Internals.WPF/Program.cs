@@ -2,32 +2,41 @@
 using LiveCharts.Geared;
 using LiveCharts.Wpf;
 using LiveCharts.Wpf.Charts.Base;
+using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Data.Preprocessors;
-using Sigma.Core.Data.Preprocessors.Adaptive;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
+using Sigma.Core.Handlers.Backends.Debugging;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF;
 using Sigma.Core.Monitors.WPF.Model.UI.Resources;
 using Sigma.Core.Monitors.WPF.Model.UI.StatusBar;
 using Sigma.Core.Monitors.WPF.Model.UI.Windows;
+using Sigma.Core.Monitors.WPF.NetView.Graphing;
 using Sigma.Core.Monitors.WPF.Panels.Charts;
 using Sigma.Core.Monitors.WPF.Panels.Controls;
+using Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe;
+using Sigma.Core.Monitors.WPF.Panels.Graphing;
 using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
+using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Persistence;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
 using Sigma.Core.Training.Optimisers.Gradient;
@@ -35,13 +44,7 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using MaterialDesignColors;
-using Sigma.Core.Handlers.Backends.Debugging;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.Monitors;
-using Sigma.Core.Monitors.WPF.NetView.Graphing;
-using Sigma.Core.Monitors.WPF.Panels.Graphing;
-using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
+
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -82,9 +85,10 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType Xor = new DemoType("XOR", false, CreateXorTrainer);
 			internal static readonly DemoType Wdbc = new DemoType("WDBC", false, CreateWdbcTrainer);
 			internal static readonly DemoType Parkinsons = new DemoType("Parkinsons", false, CreateParkinsonsTrainer, MaterialDesignValues.LightBlue);
+			internal static readonly DemoType TicTacToe = new DemoType("Tic-Tac-Toe", false, CreateTicTacToeTrainer, MaterialDesignValues.BlueGrey);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.Iris;
+		private static readonly DemoType DemoMode = DemoType.TicTacToe;
 
 		private static void Main()
 		{
@@ -106,7 +110,7 @@ namespace Sigma.Tests.Internals.WPF
 			// create and attach a new UI framework
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
 			gui.ColourManager.Dark = DemoMode.Dark;
-			gui.ColourManager.PrimaryColor = DemoMode.PrimarySwatch;
+			gui.ColourManager.PrimaryColor = MaterialDesignValues.Amber;
 
 			StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
 			StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
@@ -174,7 +178,11 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: iris);
 				window.TabControl["Overview"].AddCumulativePanel(parameter);
-				window.TabControl["Overview"].AddCumulativePanel(new GraphPanel("Data Pipeline", trainer.TrainingDataIterator.UnderlyingDataset), 1, 2);
+				if (DemoMode != DemoType.TicTacToe)
+				{
+					window.TabControl["Overview"].AddCumulativePanel(new GraphPanel("Data Pipeline", trainer.TrainingDataIterator.UnderlyingDataset), 1, 2);
+				}
+
 				//window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: iris);
 
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
@@ -218,10 +226,11 @@ namespace Sigma.Tests.Internals.WPF
 
 				window.TabControl["NetView"].AddCumulativePanel(new GraphPanel("Model Architecture", trainer.Network.Architecture));
 
-				//for (int i = 0; i < 10; i++)
-				//{
-				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
-				//}
+
+				if (DemoMode == DemoType.TicTacToe)
+				{
+					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!", trainer));
+				}
 
 				window.IsInitializing = false;
 			});
@@ -390,6 +399,36 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
 
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
+
+			return trainer;
+		}
+
+		public static ITrainer CreateTicTacToeTrainer(SigmaEnvironment sigma)
+		{
+			IDataset dataset = Defaults.Datasets.TicTacToe();
+
+			ITrainer trainer = sigma.CreateTrainer("tictactoe-trainer");
+
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(9)
+											+ FullyConnectedLayer.Construct(72, "tanh")
+											+ FullyConnectedLayer.Construct(99, "tanh")
+											+ FullyConnectedLayer.Construct(3, "tanh")
+											+ OutputLayer.Construct(3)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+
+			trainer.TrainingDataIterator = new MinibatchIterator(21, dataset);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Operator = new CpuSinglethreadedOperator();
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
+
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2 }));
+
+			trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("tictactoe.sgnet"), verbose: true)
+				.On(new ExtremaCriteria("shared.classification_accuracy_top1", ExtremaTarget.Max)));
 
 			return trainer;
 		}

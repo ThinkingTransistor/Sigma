@@ -7,6 +7,5 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		IInputPanel Input { get; set; }
 		//TODO: think about beatiful system
 		void SetInputReference(INDArray values);
-		void SetOutput(INDArray output);
 	}
 }

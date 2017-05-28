@@ -38,7 +38,7 @@ namespace Sigma.Core.Data
 		IDataType Type { get; }
 
 		/// <summary>
-		/// THe underlying data array as an array. 
+		/// The underlying data array as an array. 
 		/// </summary>
 		T[] Data { get; }
 

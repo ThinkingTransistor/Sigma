@@ -9,8 +9,11 @@
 
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/Control/SigmaPlaybackControlGeneric.xaml"/>
 
+		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/View/CustomControls/Panels/TicTacToe/TicTacToeButtonGeneric.xaml"/>
+		
 		<!-- Resources for NetView -->
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/NetView/PositionManagement/ZoomAndPanControlGeneric.xaml"/>
 		<ResourceDictionary Source="/Sigma.Core.Monitors.WPF;component/NetView/NetworkUIs/NetworkUIGeneric.xaml"/>
+		
 	</ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

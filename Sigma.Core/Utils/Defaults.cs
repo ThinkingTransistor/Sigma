@@ -196,7 +196,7 @@ namespace Sigma.Core.Utils
 			public static IDataset TicTacToe(string name = "tictactoe")
 			{
 				int[] board = new int[3 * 3];
-				int[] states = new int[] { -1, 0, 1 }; //player o, empty, player x
+				int[] states = new int[] { 0, 1 }; //player o, empty, player x
 
 				IDictionary<int[], int[]> scoredBoards = new Dictionary<int[], int[]>();
 
@@ -225,6 +225,14 @@ namespace Sigma.Core.Utils
 				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 1, 0, 0 }, new[] { 1, 0, 0 });
 				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 0, 1, 0 }, new[] { 1, 0, 0 });
 				scoredBoards.Add(new[] { 0, 0, 0, 0, 0, 0, 0, 0, 1 }, new[] { 1, 0, 0 });
+
+				scoredBoards.Add(new[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 }, new[] { 0, 0, 1 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 1, 0, 0, 0, 1 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 1, 0, 0, 0, 1, 0, 0, 0, 0 }, new[] { 0, 1, 0 });
+
+				scoredBoards.Add(new[] { 0, 0, 1, 0, 1, 0, 1, 0, 0 }, new[] { 0, 0, 1 });
+				scoredBoards.Add(new[] { 0, 0, 0, 0, 1, 0, 1, 0, 0 }, new[] { 0, 1, 0 });
+				scoredBoards.Add(new[] { 0, 0, 1, 0, 1, 0, 0, 0, 0 }, new[] { 0, 1, 0 });
 
 				Random rng = new Random();
 
