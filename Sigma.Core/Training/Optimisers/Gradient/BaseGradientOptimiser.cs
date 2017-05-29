@@ -48,6 +48,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
 			Registry["updates"] = new Dictionary<string, INDArray>();
+			Registry["self"] = this;
 		}
 
 		/// <summary>
@@ -211,7 +212,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// <param name="gradient">The gradient of the parameter respective to the total cost.</param>
 		/// <param name="handler">The handler to use.</param>
 		/// <returns>The optimised parameter.</returns>
-		protected abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
+		internal abstract INDArray Optimise(string paramIdentifier, INDArray parameter, INDArray gradient, IComputationHandler handler);
 
 		/// <summary>
 		/// Deep copy this object.

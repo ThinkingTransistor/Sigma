@@ -1,21 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sigma.Core.Architecture;
+using System.Linq;
+using System.Windows;
 using Sigma.Core.Handlers;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF.Panels.DataGrids;
 using Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
-using Sigma.Core.Training.Providers;
 using Sigma.Core.Utils;
+
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
-	public class DrawPanel : GenericPanel<DrawCanvas>, IInputPanel, IDisposable
+	//TODO: HACK: only for presentation
+	public class Guess
 	{
+		public int Digit { get; set; }
+		public string Probability { get; set; }
+	}
+
+	//TODO: move to own class
+	public class NumberPanel : SimpleDataGridPanel<Guess>, IOutputPanel, IPassNetworkReceiver
+	{
+		public ITrainer Trainer { get; }
+
+		protected INDArray Values { get; private set; }
+
 		public IComputationHandler Handler { get; set; }
 
-		public INDArray Values { get; private set; }
+		public IInputPanel Input { get; set; }
+
+		/// <summary>
+		/// The hook that is used to pass the network.
+		/// </summary>
+		protected PassNetworkHook Hook;
 
 		/// <summary>
 		///     Create a SigmaPanel with a given title.
@@ -24,7 +43,100 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// <param name="title">The given tile.</param>
 		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
 		/// the title will be used.</param>
-		public DrawPanel(string title, ITrainer trainer, int drawWidth, int drawHeight, int drawSize, object headerContent = null) : base(title, headerContent)
+		public NumberPanel(string title, ITrainer trainer, object headerContent = null) : base(title, headerContent)
+		{
+			Content.Padding = new Thickness(20, 0, 20, 0);
+			Content.FontSize = 25;
+			Handler = trainer.Operator.Handler;
+
+			Trainer = trainer;
+			_guesses = new List<Guess>(10);
+		}
+
+		private readonly List<Guess> _guesses;
+
+		public void SetInputReference(INDArray values)
+		{
+			Items.Clear();
+			for (int i = 0; i < 10; i++)
+			{
+				Guess guess = new Guess();
+				_guesses.Add(guess);
+				Items.Add(guess);
+			}
+			Values = values;
+			//TODO: check if hook already added, remove if...
+			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
+			block.Add("inputs", Values);
+			block.Add("targets", Handler.NDArray(1, 1, 10));
+			if (Hook != null)
+			{
+				Trainer.Operator.DetachGlobalHook(Hook);
+			}
+
+			Hook = new PassNetworkHook(this, block, TimeStep.Every(1, TimeScale.Iteration));
+			Trainer.AddGlobalHook(Hook);
+		}
+
+		/// <summary>
+		/// This method accepts a network pass and processes.
+		/// </summary>
+		/// <param name="array">The array that is the response from the pass.</param>
+		public void ReceivePass(INDArray array)
+		{
+			array = Handler.SoftMax(Handler.Multiply(array, 10)); // TODO remove hack and fix for very small numbers
+			KeyValuePair<double, int>[] sorted = array.GetDataAs<double>().Data.Select((x, i) => new KeyValuePair<double, int>(x, i)).OrderByDescending(x => x.Key).ToArray();
+
+			string text = "";
+
+			for (int i = 0; i < sorted.Length; i++)
+			{
+				double confidence = Math.Round(sorted[i].Key * 10000) / 100;
+				int number = sorted[i].Value;
+				_guesses[i].Probability = $"{confidence:00.000}";
+				_guesses[i].Digit = number;
+				//guesses.Add(new Guess { Accuracy = Math.Round(accuracy.Key * 100), Number = accuracy.Value });
+			}
+
+			Content.Dispatcher.Invoke(() =>
+			{
+				Items.Clear();
+				Items.AddRange(_guesses);
+			});
+		}
+	}
+
+	public class DrawPanel : GenericPanel<DrawCanvas>, IInputPanel, IDisposable
+	{
+		private IOutputPanel _outputPanel;
+		public IComputationHandler Handler { get; set; }
+
+		public bool IsReady { get; } = true;
+
+		public INDArray Values { get; }
+
+		public IOutputPanel OutputPanel
+		{
+			get { return _outputPanel; }
+			set
+			{
+				_outputPanel = value;
+				if (_outputPanel != null)
+				{
+					_outputPanel.Input = this;
+					_outputPanel.SetInputReference(Values);
+				}
+			}
+		}
+
+		/// <summary>
+		///     Create a SigmaPanel with a given title.
+		///     If a title is not sufficient modify <see cref="SigmaPanel.Header" />.
+		/// </summary>
+		/// <param name="title">The given tile.</param>
+		/// <param name="headerContent">The content for the header. If <c>null</c> is passed,
+		/// the title will be used.</param>
+		public DrawPanel(string title, ITrainer trainer, int drawWidth, int drawHeight, int drawSize, IOutputPanel outputPanel = null, object headerContent = null) : base(title, headerContent)
 		{
 			Handler = trainer.Operator.Handler;
 
@@ -41,16 +153,12 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 			double[] newVals = DrawCanvasValuesSingle(Content);
 			Values = Handler.NDArray(newVals, 1, 1, oldVals.GetLength(0), oldVals.GetLength(1));
 
+			OutputPanel = outputPanel;
+
 			Content.InputChangedEvent += UpdateValues;
-
-			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
-			block.Add("inputs", Values);
-			block.Add("targets", Handler.NDArray(1, 1, 10));
-
-			trainer.AddGlobalHook(new PassNetworkHook(block));
 		}
 
-		private double[] DrawCanvasValuesSingle(DrawCanvas canvas)
+		private static double[] DrawCanvasValuesSingle(RectangleCanvas canvas)
 		{
 			double[,] vals = canvas.GetValues();
 			double[] newVals = new double[vals.Length];
@@ -73,43 +181,6 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 				{
 					Values.SetValue(newVals[i], NDArrayUtils.GetIndices(i, Values.Shape, Values.Strides));
 				}
-			}
-		}
-
-		private class PassNetworkHook : BaseHook
-		{
-			private const string DataIdentifier = "data";
-			/// <summary>
-			/// Create a hook with a certain time step and a set of required global registry entries. 
-			/// </summary>
-			/// <param name="timestep">The time step.</param>
-			/// <param name="requiredRegistryEntries">The required global registry entries.</param>
-			public PassNetworkHook(IDictionary<string, INDArray> block) : base(Core.Utils.TimeStep.Every(1, TimeScale.Iteration), "network.self")
-			{
-				ParameterRegistry[DataIdentifier] = block;
-				InvokeInBackground = true;
-			}
-
-			/// <summary>
-			/// Invoke this hook with a certain parameter registry if optional conditional criteria are satisfied.
-			/// </summary>
-			/// <param name="registry">The registry containing the required values for this hook's execution.</param>
-			/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
-			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
-			{
-				IDictionary<string, INDArray> block = (IDictionary<string, INDArray>) ParameterRegistry[DataIdentifier];
-
-				INetwork network = resolver.ResolveGetSingle<INetwork>("network.self");
-
-				IDataProvider provider = new DefaultDataProvider();
-				provider.SetExternalOutputLink("external_default", (targetsRegistry, layer, targetBlock) =>
-				{
-					Console.WriteLine(targetsRegistry["activations"]);
-				});
-
-				DataProviderUtils.ProvideExternalInputData(provider, network, block);
-				network.Run(Operator.Handler, trainingPass: false);
-				DataProviderUtils.ProvideExternalOutputData(provider, network, block);
 			}
 		}
 

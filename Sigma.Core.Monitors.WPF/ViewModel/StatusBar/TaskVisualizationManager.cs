@@ -290,7 +290,7 @@ namespace Sigma.Core.Monitors.WPF.ViewModel.StatusBar
 
 			for (int i = 0; i < TaskVisualizers.Length; i++)
 			{
-				if (ReferenceEquals(TaskVisualizers[i].ActiveTask, task))
+				if (TaskVisualizers[i] != null && ReferenceEquals(TaskVisualizers[i]?.ActiveTask, task))
 				{
 					TaskVisualizers[i].Dispatcher.Invoke(() => TaskVisualizers[i].SetActive(null));
 

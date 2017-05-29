@@ -65,7 +65,12 @@ namespace Sigma.Core.Persistence.Selectors
 		/// <summary>
 		/// The <see cref="INetworkArchitecture"/> of this model. 
 		/// </summary>
-		public static readonly NetworkComponent Architecture = new NetworkComponent(0);
+		public static readonly NetworkComponent Architecture = new NetworkComponent(1);
+
+		/// <summary>
+		/// The parameters of this model (i.e. each layer's parameters). 
+		/// </summary>
+		public static readonly NetworkComponent Parameters = new NetworkComponent(2);
 
 		/// <summary>
 		/// Everything.

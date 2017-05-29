@@ -24,7 +24,7 @@ namespace Sigma.Core.Data.Preprocessors
 		public double MinOutputValue { get; }
 		public double MaxOutputValue { get; private set; }
 
-		private readonly IDictionary<int, double[]> _perIndexMinMaxMappings;
+		public IDictionary<int, double[]> PerIndexMinMaxMappings { get; }
 
 		/// <summary>
 		/// Create a per index normalising preprocessor with a certain output range and index mappings (order is index, min value, max value).
@@ -33,7 +33,18 @@ namespace Sigma.Core.Data.Preprocessors
 		/// <param name="maxOutputValue">The maximum output value.</param>
 		/// <param name="sectionName">The section name to pre-process.</param>
 		/// <param name="perIndexMinMaxMappings">The per index min max value mappings.</param>
-		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string sectionName, params object[] perIndexMinMaxMappings) : this(minOutputValue, maxOutputValue, sectionName, ToPerIndexMinMaxMappings(perIndexMinMaxMappings))
+		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string sectionName, params object[] perIndexMinMaxMappings) : this(minOutputValue, maxOutputValue, new[] { sectionName }, perIndexMinMaxMappings)
+		{
+		}
+
+		/// <summary>
+		/// Create a per index normalising preprocessor with a certain output range and index mappings (order is index, min value, max value).
+		/// </summary>
+		/// <param name="minOutputValue">The minimum output value.</param>
+		/// <param name="maxOutputValue">The maximum output value.</param>
+		/// <param name="sectionNames">The section names to pre-process.</param>
+		/// <param name="perIndexMinMaxMappings">The per index min max value mappings.</param>
+		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string[] sectionName, params object[] perIndexMinMaxMappings) : this(minOutputValue, maxOutputValue, sectionName, ToPerIndexMinMaxMappings(perIndexMinMaxMappings))
 		{
 		}
 
@@ -44,13 +55,24 @@ namespace Sigma.Core.Data.Preprocessors
 		/// <param name="maxOutputValue">The maximum output value.</param>
 		/// <param name="sectionName">The section name to pre-process.</param>
 		/// <param name="perIndexMinMaxMappings">The per index min max value mappings.</param>
-		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string sectionName, IDictionary<int, double[]> perIndexMinMaxMappings) : base(new[] { sectionName })
+		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string sectionName, IDictionary<int, double[]> perIndexMinMaxMappings) : this(minOutputValue, maxOutputValue, new[] { sectionName }, perIndexMinMaxMappings)
+		{
+		}
+
+		/// <summary>
+		/// Create a per index normalising preprocessor with a certain output range and index mappings (order is index, min value, max value).
+		/// </summary>
+		/// <param name="minOutputValue">The minimum output value.</param>
+		/// <param name="maxOutputValue">The maximum output value.</param>
+		/// <param name="sectionNames">The section names to pre-process.</param>
+		/// <param name="perIndexMinMaxMappings">The per index min max value mappings.</param>
+		public PerIndexNormalisingPreprocessor(double minOutputValue, double maxOutputValue, string[] sectionNames, IDictionary<int, double[]> perIndexMinMaxMappings) : base(sectionNames)
 		{
 			if (perIndexMinMaxMappings == null) throw new ArgumentNullException(nameof(perIndexMinMaxMappings));
 
 			MinOutputValue = minOutputValue;
 			MaxOutputValue = maxOutputValue;
-			_perIndexMinMaxMappings = perIndexMinMaxMappings;
+			PerIndexMinMaxMappings = perIndexMinMaxMappings;
 		}
 
 		internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
@@ -61,9 +83,9 @@ namespace Sigma.Core.Data.Preprocessors
 			{
 				for (int j = 0; j < array.Shape[1]; j++)
 				{
-					foreach (int index in _perIndexMinMaxMappings.Keys)
+					foreach (int index in PerIndexMinMaxMappings.Keys)
 					{
-						double[] minMaxRange = _perIndexMinMaxMappings[index];
+						double[] minMaxRange = PerIndexMinMaxMappings[index];
 						double value = array.GetValue<double>(i, j, index);
 
 						value = (value - minMaxRange[0]) / minMaxRange[2];
@@ -110,7 +132,7 @@ namespace Sigma.Core.Data.Preprocessors
 				throw new ArgumentException($"Argument at index {index} should be of type {typeof(T)} but was {args[index]}.");
 			}
 
-			return (T) args[index];
+			return (T)args[index];
 		}
 	}
 }

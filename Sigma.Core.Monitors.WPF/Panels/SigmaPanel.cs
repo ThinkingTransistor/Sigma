@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
+using Sigma.Core.Monitors.WPF.View.Factories;
 using Sigma.Core.Monitors.WPF.View.Windows;
 
 // ReSharper disable VirtualMemberCallInConstructor
@@ -45,6 +46,31 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		public WPFMonitor Monitor { get; set; }
 
 		/// <summary>
+		/// The default loading indicator factory that will be used for new panels.
+		/// </summary>
+		public static IUIFactory<UIElement> DefaultLoadingIndicatorFactory = View.Factories.Defaults.LoadingIndicatorFactory.Factory;
+
+		/// <summary>
+		/// The loading indicator. It will only be generated if <see cref="UseLoadingIndicator"/> is true while adding the panel.
+		/// </summary>
+		private UIElement _loadingIndicator;
+
+		/// <summary>
+		/// Determines whether a loading indactor is shown or not.
+		/// </summary>
+		protected bool UseLoadingIndicator;
+
+		/// <summary>
+		/// Determines whether the loading indicator is visible or not.
+		/// </summary>
+		protected bool LoadingIndicatorVisible { get; private set; }
+
+		/// <summary>
+		/// The factory that will be used to generate a loading indicator.
+		/// </summary>
+		protected IUIFactory<UIElement> LoadingIndicatorFactory;
+
+		/// <summary>
 		///     Create a SigmaPanel with a given title.
 		///     If a title is not sufficient modify <see cref="Header" />.
 		/// </summary>
@@ -61,6 +87,8 @@ namespace Sigma.Core.Monitors.WPF.Panels
 			}
 
 			Style = _cardStyle;
+
+			LoadingIndicatorFactory = DefaultLoadingIndicatorFactory;
 
 			Title = title;
 			RootPanel = CreateDockPanel();
@@ -105,7 +133,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 				}
 				else
 				{
-					_content = value as UIElement ?? new Label {Content = value.ToString()};
+					_content = value as UIElement ?? new Label { Content = value.ToString() };
 					ContentGrid.Children.Add(_content);
 				}
 			}
@@ -149,10 +177,10 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid header = new Grid();
 
-			header.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Auto)});
-			header.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Auto)});
+			header.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+			header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
 
-			Label headerContent = new Label {Content = content};
+			Label headerContent = new Label { Content = content };
 			header.Children.Add(headerContent);
 
 			header.SetResourceReference(BackgroundProperty, "SigmaPanelHeaderBackground");
@@ -180,8 +208,8 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		{
 			Grid grid = new Grid();
 
-			grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength(1, GridUnitType.Star)});
-			grid.ColumnDefinitions.Add(new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)});
+			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+			grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
 			return grid;
 		}
@@ -191,13 +219,48 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// </summary>
 		public void Initialise(WPFWindow window)
 		{
+			if (UseLoadingIndicator)
+			{
+				_loadingIndicator = LoadingIndicatorFactory.CreateElement(window.App, window, this);
+				ShowLoadingIndicator();
+			}
+			LoadingIndicatorFactory = null;
+
 			if (window is SigmaWindow)
 			{
 				OnInitialise((SigmaWindow)window);
 			}
-			else
+
+			OnInitialise(window);
+		}
+
+		/// <summary>
+		/// This method shows the loading indicator if not visible.
+		/// </summary>
+		protected void ShowLoadingIndicator()
+		{
+			if (_loadingIndicator != null)
 			{
-				OnInitialise(window);
+				if (!LoadingIndicatorVisible)
+				{
+					ContentGrid.Dispatcher.Invoke(() =>ContentGrid.Children.Add(_loadingIndicator));
+					LoadingIndicatorVisible = true;
+				}
+			}
+		}
+
+		/// <summary>
+		/// This method hides the loading indicator if visible.
+		/// </summary>
+		protected void HideLoadingIndicator()
+		{
+			if (_loadingIndicator != null)
+			{
+				if (LoadingIndicatorVisible)
+				{
+					ContentGrid.Dispatcher.Invoke(() => ContentGrid.Children.Remove(_loadingIndicator));
+					LoadingIndicatorVisible = false;
+				}
 			}
 		}
 
@@ -208,7 +271,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <param name="window">The wpf window this panel will be added to.</param>
 		protected virtual void OnInitialise(WPFWindow window)
 		{
-			
+
 		}
 
 		/// <summary>
@@ -218,7 +281,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <param name="window">The wpf window this panel will be added to.</param>
 		protected virtual void OnInitialise(SigmaWindow window)
 		{
-			
+
 		}
 
 		/// <summary>
@@ -227,7 +290,7 @@ namespace Sigma.Core.Monitors.WPF.Panels
 		/// <returns>The newly create <see cref="DockPanel" />.</returns>
 		protected virtual DockPanel CreateDockPanel()
 		{
-			return new DockPanel {LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0)};
+			return new DockPanel { LastChildFill = true, Margin = new Thickness(-1, 0, 0, 0) };
 		}
 	}
 }

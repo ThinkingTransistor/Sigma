@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Sigma.Core.Training;
+using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Utils;
 
@@ -67,6 +68,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 			}
 
 			trainer.AddHook(new ChartValidationAccuracyReport(this, "validation", timeStep, tops));
+			trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Stop), (registry, resolver) => Clear()));
 
 			AxisY.MinValue = 0;
 			AxisY.MaxValue = 100;
@@ -76,7 +78,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Charts
 		/// This hook is specifically designed to report values to the <see cref="AccuracyPanel"/>.
 		/// It reports given top accuracies ranging from 0-100%. 
 		/// </summary>
-		protected class ChartValidationAccuracyReport : ValidationAccuracyReporter
+		protected class ChartValidationAccuracyReport : MultiClassificationAccuracyReporter
 		{
 			private const string PanelIdentifier = "Panel";
 

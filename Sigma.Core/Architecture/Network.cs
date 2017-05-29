@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using log4net;
 using Sigma.Core.Handlers;
@@ -121,6 +122,8 @@ namespace Sigma.Core.Architecture
                 }
             }
 
+            copy.UpdateRegistry();
+
             return copy;
         }
 
@@ -231,11 +234,37 @@ namespace Sigma.Core.Architecture
             Registry["name"] = Name;
             Registry["architecture"] = Architecture?.Registry;
 
-            Registry layersRegistry = new Registry(Registry);
+            IRegistry layersRegistry = new Registry(Registry);
             Registry["layers"] = layersRegistry;
 
             foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
             {
+                IRegistry exposedInputs = new Registry(parent: layerBuffer.Layer.Parameters);
+                IRegistry exposedOutputs = new Registry(parent: layerBuffer.Layer.Parameters);
+
+                foreach (string input in layerBuffer.Inputs.Keys)
+                {
+                    exposedInputs[input] = layerBuffer.Inputs[input];
+                }
+
+                foreach (string output in layerBuffer.Outputs.Keys)
+                {
+                    exposedOutputs[output] = layerBuffer.Outputs[output];
+                }
+
+                layerBuffer.Layer.Parameters["_inputs"] = exposedInputs;
+                layerBuffer.Layer.Parameters["_outputs"] = exposedOutputs;
+
+                if (layerBuffer.ExternalInputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_input");
+                }
+
+                if (layerBuffer.ExternalOutputs.Length > 0)
+                {
+                    layerBuffer.Layer.Parameters.Tags.Add("external_output");
+                }
+
                 layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
             }
         }
@@ -269,6 +298,40 @@ namespace Sigma.Core.Architecture
             _logger.Debug($"Done resetting network \"{Name}\". All layer buffer information was discarded.");
         }
 
+	    /// <summary>
+	    /// Transfer this networks' parameters to another network (may be uninitialised).
+	    /// </summary>
+	    /// <param name="other">The other network.</param>
+	    public void TransferParametersTo(INetwork other)
+	    {
+			if (other == null) throw new ArgumentNullException(nameof(other));
+
+		    if (!Equals(Architecture, other.Architecture))
+		    {
+			    throw new InvalidOperationException($"Cannot transfer parameters to network of different architecture (own architecture {Architecture} != {other.Architecture}).");
+		    }
+
+		    if (!other.Initialised)
+		    {
+				other.Initialise(_associatedHandler);
+			}
+
+		    ILayerBuffer[] otherBuffers = other.YieldLayerBuffersOrdered().ToArray();
+		    for (int i = 0; i < _orderedLayerBuffers.Count; i++)
+		    {
+			    _orderedLayerBuffers[i].Parameters.CopyTo(otherBuffers[i].Parameters);
+
+				// remove exposed data, not part of actual parameters
+			    otherBuffers[i].Parameters.Remove("_outputs");
+			    otherBuffers[i].Parameters.Remove("_inputs");
+		    }
+
+			// update registry if from the same type
+			Network otherAsNetwork = other as Network;
+
+			otherAsNetwork?.UpdateRegistry();
+	    }
+
         /// <inheritdoc />
         public IEnumerable<ILayer> YieldLayersOrdered()
         {
@@ -298,5 +361,56 @@ namespace Sigma.Core.Architecture
         {
             return new DefaultNetworkSelector<INetwork>(this);
         }
+
+		/// <summary>
+		/// Check if two networks have compatible external interfaces (external inputs / outputs).
+		/// </summary>
+		/// <param name="network">The first network.</param>
+		/// <param name="other">The second (other) network.</param>
+		/// <returns>A boolean indicating the external IO compatibility.</returns>
+	    public static bool AreNetworkExternalsCompatible(INetwork network, INetwork other)
+	    {
+		    ILayerBuffer[] inputs = network.YieldExternalInputsLayerBuffers().ToArray();
+		    ILayerBuffer[] outputs = network.YieldExternalOutputsLayerBuffers().ToArray();
+		    ILayerBuffer[] otherInputs = other.YieldExternalInputsLayerBuffers().ToArray();
+		    ILayerBuffer[] otherOutputs = other.YieldExternalOutputsLayerBuffers().ToArray();
+
+		    if (!_InternalCheckExternalBuffersCompatible(inputs, otherInputs)) return false;
+		    if (!_InternalCheckExternalBuffersCompatible(outputs, otherOutputs)) return false;
+
+			return true;
+	    }
+
+	    private static bool _InternalCheckExternalBuffersCompatible(ILayerBuffer[] buffers, ILayerBuffer[] otherBuffers)
+	    {
+		    for (int i = 0; i < buffers.Length; i++)
+		    {
+			    foreach (string key in buffers[i].Parameters.Keys)
+			    {
+				    if (key == "_inputs" || key == "_outputs") continue; // ignore exposed data
+				    if (!otherBuffers[i].Parameters.ContainsKey(key)) return false;
+
+				    object parameter = buffers[i].Parameters[key];
+				    object otherParameter = otherBuffers[i].Parameters[key];
+
+				    if (!parameter.Equals(otherParameter))
+				    {
+					    if (parameter.GetType() != otherParameter.GetType()) return false;
+					    if (!(parameter is Array)) return false;
+
+					    Array parameterAsArray = (Array) parameter;
+					    Array otherParameterAsArray = (Array) otherParameter;
+
+					    if (parameterAsArray.Length != otherParameterAsArray.Length) return false;
+
+					    for (int j = 0; j < parameterAsArray.Length; j++)
+					    {
+						    if (!parameterAsArray.GetValue(j).Equals(otherParameterAsArray.GetValue(j))) return false;
+					    }
+				    }
+			    }
+		    }
+		    return true;
+	    }
     }
 }

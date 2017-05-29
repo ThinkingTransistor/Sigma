@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Windows;
 using Sigma.Core.Monitors.Synchronisation;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
 using Sigma.Core.Monitors.WPF.View.Windows;
@@ -27,6 +28,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Parameterisation
 		public ParameterPanel(string title, IParameterVisualiserManager visualiserManager, ISynchronisationHandler synchronisationHandler, object headerContent = null) : base(title, headerContent)
 		{
 			Content = new ParameterView(visualiserManager, synchronisationHandler);
+			Content.Margin = new Thickness(10, 10, 10, 0);
 		}
 		public ParameterPanel(string title, SigmaEnvironment environment, SigmaWindow window, object headerContent = null) : this(title, window.ParameterVisualiser, environment.SynchronisationHandler, headerContent) { }
 

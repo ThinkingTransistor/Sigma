@@ -213,6 +213,16 @@ namespace Sigma.Core.Architecture
 
 			return multiplier * new LinearNetworkArchitecture(self);
 		}
+
+		/// <summary>
+		/// Check if the type of two layer constructs is equal.
+		/// </summary>
+		/// <param name="other">The other layer construct.</param>
+		/// <returns>A boolean indicating whether or not the two layer construct types are equal.</returns>
+		public bool TypeEquals(LayerConstruct other)
+		{
+			return other != null && other._layerClassType == _layerClassType;
+		}
 	}
 
 	public class LayerConstructEventArgs : EventArgs

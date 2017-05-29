@@ -665,7 +665,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				transposed.Shape[i] = a.Shape[a.Shape.Length - 1 - i];
 			}
 
-			return transposed;
+		    fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
+		    fixed (float* bref = &transposed.DataBuffer.Data[transposed.DataBuffer.Offset])
+		    {
+		        int ordering = 101; // CBLAS_LAYOUT - CblasRowMajor
+		        int trans = 112; // CBLAS_TRANSPOSE - CblasTrans
+		        int rows = a.Rows, cols = a.Cols;
+		        int lda = a.Cols, ldb = a.Rows;
+		        float alpha = 1.0f;
+
+		        BlasBackend.Somatcopy(ordering, trans, rows, cols, alpha, aref, lda, bref, ldb);
+		    }
+
+		    return transposed;
 		}
 
 		private bool _InternalOptimisedMapOp_F_M(MapOp mapOp, ref ShapedDataBufferView<float> a)

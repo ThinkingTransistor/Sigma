@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Sigma.Core.Training.Hooks;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -72,56 +73,55 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		}
 
 		/// <summary>
-		/// This method will be called once the window is initialising (after it has been added).
-		/// Do not store a reference of the window unless you properly dispose it (remove reference once not required).
-		/// </summary>
-		/// <param name="window">The wpf window this panel will be added to.</param>
-		protected override void OnInitialise(WPFWindow window)
-		{
-			throw new InvalidOperationException($"{nameof(ControlPanel)} is only compatible with {nameof(SigmaWindow)}s.");
-		}
-
-		/// <summary>
 		/// This method will be called after the panel has been added (window, monitor set...)
 		/// </summary>
 		protected override void OnInitialise(SigmaWindow window)
 		{
 			if (!Trainers.Contains(Trainer))
 			{
-				ValueSourceReporterHook valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Epoch), "runtime_millis");
+				ValueSourceReporter valueHook = new ValueSourceReporter(TimeStep.Every(1, TimeScale.Epoch), "runtime_millis");
 				_trainer.AddGlobalHook(valueHook);
 				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 				Trainers.Add(Trainer);
 
-				valueHook = new ValueSourceReporterHook(TimeStep.Every(1, TimeScale.Iteration), "iteration");
+				valueHook = new ValueSourceReporter(TimeStep.Every(1, TimeScale.Iteration), "iteration");
 				_trainer.AddLocalHook(valueHook);
 				Monitor.Sigma.SynchronisationHandler.AddSynchronisationSource(valueHook);
 			}
 
 			//TODO: style?
-			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20), HorizontalAlignment = HorizontalAlignment.Center};
+			_playbackControl = new SigmaPlaybackControl { Trainer = Trainer, Margin = new Thickness(0, 0, 0, 20), HorizontalAlignment = HorizontalAlignment.Center };
 
 			Content.Children.Add(_playbackControl);
 
 			_parameterView = new ParameterView(Monitor.Sigma, window);
 
-			//TODO: language support
-
-			SigmaTextBlock timeBox = (SigmaTextBlock) _parameterView.Add("Running time", typeof(object), _trainer.Operator.Registry, "runtime_millis");
+			SigmaTextBlock timeBox = (SigmaTextBlock) _parameterView.Add(Properties.Resources.RunningTime, typeof(object), _trainer.Operator.Registry, "runtime_millis");
 			timeBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
 			timeBox.Postfix = " ms";
 
-			UserControlParameterVisualiser epochBox = (UserControlParameterVisualiser) _parameterView.Add("Current epoch", typeof(object), _trainer.Operator.Registry, "epoch");
+			UserControlParameterVisualiser epochBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentEpoch, typeof(object), _trainer.Operator.Registry, "epoch");
 			epochBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Epoch));
 
-			UserControlParameterVisualiser iterationBox = (UserControlParameterVisualiser) _parameterView.Add("Current iteration", typeof(object), _trainer.Operator.Registry, "iteration");
+			UserControlParameterVisualiser iterationBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentIteration, typeof(object), _trainer.Operator.Registry, "iteration");
 			iterationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Iteration));
 
 			IRegistry registry = new Registry
 			{
-				{ "op", Trainer.Operator.GetType().Name }
+				{ "operator", Trainer.Operator.GetType().Name },
+				{ "optimiser", Trainer.Optimiser.GetType().Name }
 			};
-			_parameterView.Add("Current operator", typeof(object), registry, "op");
+			_parameterView.Add(Properties.Resources.CurrentOperator, typeof(object), registry, "operator");
+			_parameterView.Add(Properties.Resources.CurrentOptimiser, typeof(object), registry, "optimiser");
+			//TODO: completely hardcoded activation function
+			UserControlParameterVisualiser activationBox = (UserControlParameterVisualiser) _parameterView.Add(Properties.Resources.CurrentActivationFunction, typeof(object), _trainer.Operator.Registry, "network.layers.2-fullyconnected.activation");
+			activationBox.AutoPollValues(_trainer, TimeStep.Every(1, TimeScale.Start));
+
+			Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1,TimeScale.Reset), (registry1, resolver) =>
+			{
+				epochBox.Read();
+				iterationBox.Read();
+			}));
 
 			Content.Children.Add(_parameterView);
 		}

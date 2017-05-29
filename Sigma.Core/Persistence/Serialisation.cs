@@ -160,7 +160,7 @@ namespace Sigma.Core.Persistence
 			}
 			catch (Exception e)
 			{
-				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with {e}, returning default value.", ClazzLogger);
+				LoggingUtils.Log(verbose ? Level.Info : Level.Debug, $"Read of type {typeof(T)} failed with \"{e.GetType()}: {e.Message}\", returning default value.", ClazzLogger);
 			}
 
 			return originalValue;

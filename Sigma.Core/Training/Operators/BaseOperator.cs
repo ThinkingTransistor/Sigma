@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -315,6 +316,19 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		/// <summary>
+		/// Dispatch the <see cref="InvokeTimeScaleEvent"/> for a certain time scale thread in a worker thread.
+		/// </summary>
+		/// <param name="timeScale"></param>
+		protected void DispatchInvokeTimeScaleEvent(TimeScale timeScale)
+		{
+			ThreadPool.QueueUserWorkItem(ts => InvokeTimeScaleEvent((TimeScale) ts), timeScale);
+		}
+
+		/// <summary>
+		/// Notify the system that a given timescale just occured.
+		/// </summary>
+		/// <param name="timeScale">The timescale that just occured.</param>
 		protected void InvokeTimeScaleEvent(TimeScale timeScale)
 		{
 			List<IHook> bufferHooksToInvoke = new List<IHook>(), bufferHooksInBackgroundToInvoke = new List<IHook>();
@@ -361,7 +375,7 @@ namespace Sigma.Core.Training.Operators
 
 			lock (_networkChangedLock)
 			{
-				return (INetwork) Network.DeepCopy();
+				return (INetwork)Network.DeepCopy();
 			}
 		}
 
@@ -775,7 +789,7 @@ namespace Sigma.Core.Training.Operators
 			{
 				if (!localHookTimeSteps.ContainsKey(hook))
 				{
-					TimeStep timeStep = (TimeStep) hook.TimeStep.DeepCopy();
+					TimeStep timeStep = (TimeStep)hook.TimeStep.DeepCopy();
 
 					timeStep.LocalLiveTime = timeStep.LiveTime;
 					timeStep.LocalInterval = timeStep.Interval;
@@ -890,7 +904,7 @@ namespace Sigma.Core.Training.Operators
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
 				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = (IOptimiser) Trainer?.Optimiser?.DeepCopy();
+				workers[i].LocalOptimiser = (IOptimiser)Trainer?.Optimiser?.DeepCopy();
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
@@ -927,19 +941,37 @@ namespace Sigma.Core.Training.Operators
 
 		public virtual void StartOnce()
 		{
-			if ((State == ExecutionState.None) || (State == ExecutionState.Stopped))
+			if (State != ExecutionState.Running)
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
 					PrepareWorkers();
 
+					////TODO: hack that does not work
+					//Trainer.AddGlobalHook(new LambdaHook(TimeStep.Every(1, TimeScale.Epoch, 1), (registry, resolver) =>
+					//{
+					//	State = ExecutionState.Paused;
+					//	Console.WriteLine("Changed state!!!!!!!!!!!!!!!!!");
+					//}));
+
+					if (State == ExecutionState.None || State == ExecutionState.Stopped)
+					{
+						DispatchInvokeTimeScaleEvent(TimeScale.Start);
+					}
+					else
+					{
+						DispatchInvokeTimeScaleEvent(TimeScale.Resume);
+					}
+
+					_InternalResumeRunningStopwatch();
+
 					RunWorkersOnce();
 
-					State = ExecutionState.Running;
+					State = ExecutionState.Paused;
 
-					_InternalResumeRunningStopwatch(); // TODO this can't be right?
+					_InternalPauseRunningStopwatch();
 
-					InvokeTimeScaleEvent(TimeScale.Start);
+					DispatchInvokeTimeScaleEvent(TimeScale.Pause);
 				}).Start();
 			}
 			else
@@ -963,9 +995,9 @@ namespace Sigma.Core.Training.Operators
 
 					State = ExecutionState.Running;
 					_InternalResumeRunningStopwatch();
-
-					InvokeTimeScaleEvent(TimeScale.Start);
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Start);
 			}
 			else
 			{
@@ -983,14 +1015,19 @@ namespace Sigma.Core.Training.Operators
 			{
 				new BlockingLockingThread(_stateChangeLock, () =>
 				{
-					foreach (IWorker worker in Workers) { PauseWorker(worker); }
+					foreach (IWorker worker in Workers)
+					{
+						PauseWorker(worker);
+					}
 
 					State = ExecutionState.Paused;
 
 					_InternalPauseRunningStopwatch();
 
-					InvokeTimeScaleEvent(TimeScale.Pause);
+
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Pause);
 			}
 			else
 			{
@@ -1016,9 +1053,9 @@ namespace Sigma.Core.Training.Operators
 					 State = ExecutionState.Running;
 
 					 _InternalResumeRunningStopwatch();
-
-					 InvokeTimeScaleEvent(TimeScale.Resume);
 				 }).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Resume);
 			}
 			else
 			{
@@ -1048,9 +1085,9 @@ namespace Sigma.Core.Training.Operators
 					State = ExecutionState.Stopped;
 
 					_InternalPauseRunningStopwatch();
-
-					InvokeTimeScaleEvent(TimeScale.Stop);
 				}).Start();
+
+				DispatchInvokeTimeScaleEvent(TimeScale.Stop);
 			}
 			else
 			{
@@ -1155,7 +1192,7 @@ namespace Sigma.Core.Training.Operators
 			registry["trainer"] = Trainer.Registry;
 			registry["epoch"] = localEpochNumber;
 			registry["iteration"] = localIterationNumber;
-		    registry["runtime_millis"] = RunningTimeMilliseconds;
+			registry["runtime_millis"] = RunningTimeMilliseconds;
 
 			if (!registry.ContainsKey("shared") || !(registry["shared"] is IRegistry))
 			{
@@ -1260,7 +1297,7 @@ namespace Sigma.Core.Training.Operators
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				((ICommand) ParameterRegistry[WrappedCommandIdentifier]).OnFinish?.Invoke();
+				((ICommand)ParameterRegistry[WrappedCommandIdentifier]).OnFinish?.Invoke();
 			}
 		}
 
@@ -1297,24 +1334,24 @@ namespace Sigma.Core.Training.Operators
 			/// <inheritdoc />
 			public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 			{
-				IRegistry paramRegistry = (IRegistry) ParameterRegistry[ParameterRegistryIdentifier];
-				int workerCount = (int) paramRegistry[WorkerCountIdentifier];
+				IRegistry paramRegistry = (IRegistry)ParameterRegistry[ParameterRegistryIdentifier];
+				int workerCount = (int)paramRegistry[WorkerCountIdentifier];
 				int finishedWorkers;
 
-				ICommand wrappedCommand = (ICommand) paramRegistry[WrappedCommandIdentifier];
+				ICommand wrappedCommand = (ICommand)paramRegistry[WrappedCommandIdentifier];
 				wrappedCommand.Invoke(registry, resolver);
 
 				// increse the number by one and store it
 				lock (paramRegistry)
 				{
-					finishedWorkers = (int) paramRegistry[FinishedWorkerCountIdentifier] + 1;
+					finishedWorkers = (int)paramRegistry[FinishedWorkerCountIdentifier] + 1;
 					paramRegistry[FinishedWorkerCountIdentifier] = finishedWorkers;
 				}
 
 				// finished execution
 				if (finishedWorkers > workerCount)
 				{
-					BaseOperator op = (BaseOperator) paramRegistry[BaseOperatorIdentifier];
+					BaseOperator op = (BaseOperator)paramRegistry[BaseOperatorIdentifier];
 					op.CommandExecuted(wrappedCommand);
 				}
 			}

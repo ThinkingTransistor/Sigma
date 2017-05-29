@@ -50,6 +50,13 @@ namespace Sigma.Core.Utils
         {
             return _name;
         }
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            return _name;
+        }
     }
 
     /// <summary>
@@ -85,6 +92,7 @@ namespace Sigma.Core.Utils
     public class DynamicItemisedNamer : INamer
     {
         private readonly string _formatString;
+        private readonly string _embeddedFormatString;
         private readonly string[] _parameterIdentifiers;
         private readonly object[] _bufferParameters;
 
@@ -102,6 +110,15 @@ namespace Sigma.Core.Utils
             _formatString = formatString;
             _parameterIdentifiers = parameterIdentifiers; // not sure, maybe copy?
             _bufferParameters = new object[parameterIdentifiers.Length];
+
+            string[] embeddedParameters = new string[parameterIdentifiers.Length];
+
+            for (var i = 0; i < embeddedParameters.Length; i++)
+            {
+                embeddedParameters[i] = "{" + parameterIdentifiers[i] + "}";
+            }
+
+            _embeddedFormatString = string.Format(_formatString, args: embeddedParameters);
         }
 
         /// <inheritdoc />
@@ -120,6 +137,13 @@ namespace Sigma.Core.Utils
             }
 
             return name;
+        }
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            return _embeddedFormatString;
         }
     }
 

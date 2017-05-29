@@ -6,13 +6,12 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using Sigma.Core.Training;
+using Sigma.Core.Training.Operators;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using log4net;
-using Sigma.Core.Training;
-using Sigma.Core.Training.Operators;
 
 namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 {
@@ -38,7 +37,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public bool Running
 		{
-			get { return (bool) GetValue(RunningProperty); }
+			get { return(bool) GetValue(RunningProperty); }
 			set { SetValue(RunningProperty, value); }
 		}
 
@@ -47,7 +46,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public Orientation Orientation
 		{
-			get { return (Orientation) GetValue(OrientationProperty); }
+			get { return(Orientation) GetValue(OrientationProperty); }
 			set { SetValue(OrientationProperty, value); }
 		}
 
@@ -66,7 +65,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		public ICommand Rewind
 		{
 			get { return (ICommand) GetValue(RewindProperty); }
-			set { SetValue(RewindProperty, value); }
+			set {SetValue(RewindProperty, value);}
 		}
 
 		public static readonly DependencyProperty RewindProperty =
@@ -74,7 +73,7 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 
 		public ICommand Step
 		{
-			get { return (ICommand) GetValue(StepProperty); }
+			get { return(ICommand) GetValue(StepProperty); }
 			set { SetValue(StepProperty, value); }
 		}
 
@@ -132,6 +131,8 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 				ITrainer trainer = Control.Trainer;
 				IOperator @operator = trainer.Operator;
 
+				@operator.WaitForStateChanged();
+
 				if (@operator.State == ExecutionState.Running)
 				{
 					@operator.SignalPause();
@@ -153,9 +154,11 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			public override void Execute(object parameter)
 			{
-				//Debug.WriteLine("Rewind!");
-				Control.Running = false;
 				ITrainer trainer = Control.Trainer;
+
+				trainer.Operator.WaitForStateChanged();
+
+				Control.Running = false;
 				trainer.Reset();
 				trainer.Initialise(trainer.Operator.Handler); // because we're manually resetting we have to initialise manually as well
 															  // TODO maybe find a nicer way to reset and reinitialise - maybe separate command?
@@ -168,18 +171,19 @@ namespace Sigma.Core.Monitors.WPF.View.CustomControls.Panels.Control
 		{
 			public override void Execute(object parameter)
 			{
-				//Debug.WriteLine("Step!");
+				ITrainer trainer = Control.Trainer;
+				IOperator @operator = trainer.Operator;
 
-				Control.Running = false;
+				@operator.WaitForStateChanged();
 
-				LogManager.GetLogger(typeof(DefaultStep)).Fatal("Step not yet implemented!");
+				if (@operator.State == ExecutionState.Running)
+				{
+					Control.Running = false;
+					@operator.SignalPause();
+					@operator.WaitForStateChanged();
+				}
 
-				//#if DEBUG
-				//				if (Control.Task != null)
-				//				{
-				//					SigmaEnvironment.TaskManager.CancelTask(Control.Task);
-				//				}
-				//#endif
+				Control.Trainer.StartOnce();
 			}
 
 			public DefaultStep(SigmaPlaybackControl control) : base(control) { }
