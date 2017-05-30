@@ -1,4 +1,6 @@
 ﻿using log4net;
+using Sigma.Core.MathAbstract;
+using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.View.Windows;
 using System;
 using System.Collections.Generic;
@@ -6,8 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Sigma.Core.MathAbstract;
-using Sigma.Core.Monitors.WPF.Utils;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Controls
 {
@@ -149,7 +149,8 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// </summary>
 		protected virtual void InitialiseBitmap(int width, int height)
 		{
-			CalculateDpi(out double dpiX, out double dpiY);
+			double dpiX, dpiY;
+			CalculateDpi(out dpiX, out dpiY);
 			Bitmap = new WriteableBitmap(width, height, dpiX, dpiY, PixelFormats.Bgra32, null);
 
 			DrawingImage drawingImage = CreateDrawingImage(width, height);

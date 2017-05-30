@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
+using Sigma.Core.Monitors.WPF.NetView.NetworkUIs;
+using System;
 using System.Windows;
 using System.Windows.Input;
-using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
-using Sigma.Core.Monitors.WPF.NetView.NetworkUIs;
 
 namespace Sigma.Core.Monitors.WPF.NetView
 {
@@ -47,7 +47,9 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			ConnectorViewModel draggedOutConnector = (ConnectorViewModel)e.ConnectorDraggedOut;
 			ConnectorViewModel draggedOverConnector = (ConnectorViewModel)e.DraggedOverConnector;
 
-			ViewModel.QueryConnnectionFeedback(draggedOutConnector, draggedOverConnector, out object feedbackIndicator, out bool connectionOk);
+			object feedbackIndicator;
+			bool connectionOk;
+			ViewModel.QueryConnnectionFeedback(draggedOutConnector, draggedOverConnector, out feedbackIndicator, out connectionOk);
 
 			//
 			// Return the feedback object to NetworkView.
