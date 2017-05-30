@@ -10,7 +10,6 @@ using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 {
@@ -149,7 +148,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 		private async void ZoomAndPan_Loaded(object sender, System.Windows.RoutedEventArgs e)
 		{
 			//TODO: ugly hack
-			await Task.Delay(1000);
+			//await Task.Delay(3000);
 
 			Content.FitContent();
 			Content.Loaded -= ZoomAndPan_Loaded;

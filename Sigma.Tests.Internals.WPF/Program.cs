@@ -88,7 +88,7 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType TicTacToe = new DemoType("Tic-Tac-Toe", false, CreateTicTacToeTrainer, MaterialDesignValues.BlueGrey);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.TicTacToe;
+		private static readonly DemoType DemoMode = DemoType.Mnist;
 
 		private static void Main()
 		{
@@ -110,7 +110,7 @@ namespace Sigma.Tests.Internals.WPF
 			// create and attach a new UI framework
 			WPFMonitor gui = sigma.AddMonitor(new WPFMonitor(name, DemoMode.Language));
 			gui.ColourManager.Dark = DemoMode.Dark;
-			gui.ColourManager.PrimaryColor = MaterialDesignValues.Amber;
+			gui.ColourManager.PrimaryColor = DemoMode.PrimarySwatch;
 
 			StatusBarLegendInfo iris = new StatusBarLegendInfo(name, MaterialColour.Blue);
 			StatusBarLegendInfo general = new StatusBarLegendInfo("General", MaterialColour.Grey);
@@ -118,7 +118,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("NetView", "Overview", "Metrics", "Validation", "Maximisation", "Reproduction");
+			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "NetView", "Reproduction");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
