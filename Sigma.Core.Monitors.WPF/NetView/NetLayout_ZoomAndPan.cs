@@ -21,13 +21,13 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // 
 
+using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
+using Sigma.Core.Monitors.WPF.NetView.PositionManagement;
 using System;
 using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
-using Sigma.Core.Monitors.WPF.NetView.PositionManagement;
 
 namespace Sigma.Core.Monitors.WPF.NetView
 {
@@ -332,6 +332,14 @@ namespace Sigma.Core.Monitors.WPF.NetView
 		/// </summary>
 		private void FitContent_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
+			FitContent();
+		}
+
+		/// <summary>
+		/// Fit the scale to the content
+		/// </summary>
+		public void FitContent()
+		{
 			IList nodes;
 
 			if (networkControl.SelectedNodes.Count > 0)
@@ -354,7 +362,7 @@ namespace Sigma.Core.Monitors.WPF.NetView
 			//
 			// Inflate the content rect by a fraction of the actual size of the total content area.
 			// This puts a nice border around the content we are fitting to the viewport.
-			//
+			//			
 			actualContentRect.Inflate(networkControl.ActualWidth / 40, networkControl.ActualHeight / 40);
 
 			zoomAndPanControl.AnimatedZoomTo(actualContentRect);

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using log4net;
+﻿using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Extractors;
@@ -10,6 +7,10 @@ using Sigma.Core.Data.Sources;
 using Sigma.Core.Monitors.WPF.NetView;
 using Sigma.Core.Monitors.WPF.NetView.Graphing;
 using Sigma.Core.Monitors.WPF.NetView.NetworkModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 {
@@ -141,6 +142,17 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 			GraphStructure = graphStructure;
 			Content = new NetLayout();
 			PopulateNetLayout(Content, graphStructure, nodeDistance);
+
+			Content.Loaded += ZoomAndPan_Loaded;
+		}
+
+		private async void ZoomAndPan_Loaded(object sender, System.Windows.RoutedEventArgs e)
+		{
+			//TODO: ugly hack
+			await Task.Delay(1000);
+
+			Content.FitContent();
+			Content.Loaded -= ZoomAndPan_Loaded;
 		}
 
 		/// <summary>
@@ -159,7 +171,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 
 			GraphViewMapping = null;
 
-			//NodeViewModel node1 = viewModel.CreateNode("Test node", 100, 100, false);
+
 			//NodeViewModel node2 = viewModel.CreateNode("Test node", 400, 100, false);
 
 			//viewModel.Connect(node1, node2, 0, 0);
