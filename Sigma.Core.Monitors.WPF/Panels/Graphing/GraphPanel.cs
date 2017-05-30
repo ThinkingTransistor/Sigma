@@ -142,17 +142,17 @@ namespace Sigma.Core.Monitors.WPF.Panels.Graphing
 			Content = new NetLayout();
 			PopulateNetLayout(Content, graphStructure, nodeDistance);
 
-			Content.Loaded += ZoomAndPan_Loaded;
+			//Content.networkControl.Loaded += ZoomAndPan_Loaded;
 		}
 
-		private async void ZoomAndPan_Loaded(object sender, System.Windows.RoutedEventArgs e)
-		{
-			//TODO: ugly hack
-			//await Task.Delay(3000);
+		//private async void ZoomAndPan_Loaded(object sender, System.Windows.RoutedEventArgs e)
+		//{
+		//	//TODO: ugly hack
+		//	//await Task.Delay(3000);
 
-			Content.FitContent();
-			Content.Loaded -= ZoomAndPan_Loaded;
-		}
+		//	Content.FitContent();
+		//	Content.networkControl.Loaded -= ZoomAndPan_Loaded;
+		//}
 
 		/// <summary>
 		/// Fill a given layout with a given graph structure.
