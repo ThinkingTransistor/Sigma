@@ -203,6 +203,7 @@
     <Compile Include="Layers\External\OutputLayer.cs" />
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="Layers\Recurrent\RecurrentLayer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\ArrayPool.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
@@ -334,7 +335,6 @@
   <ItemGroup>
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
-    <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>

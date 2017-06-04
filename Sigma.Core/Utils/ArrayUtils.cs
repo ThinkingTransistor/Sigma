@@ -168,6 +168,7 @@ namespace Sigma.Core.Utils
 		/// <returns>A permuted copy of the given array according to the permutation array (rearrangedDimensions).</returns>
 		public static long[] PermuteArray(long[] array, int[] rearrangedDimensions)
 		{
+			// TODO PermuteArrayInPlace version
 			int length = array.Length;
 			long[] result = new long[length];
 

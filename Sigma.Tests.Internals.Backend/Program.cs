@@ -46,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleTicTacToe();
+			SampleIris();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -326,6 +326,19 @@ namespace Sigma.Tests.Internals.Backend
 			INDArray c = handler.Dot(a, b);
 
 			Console.WriteLine("c = " + ArrayUtils.ToString(c, (ADNDArray<float>.ToStringElement)null, 0, true));
+		}
+
+		private static void SamplePermute()
+		{
+			IComputationHandler handler = new CpuFloat32Handler();
+
+			INDArray array = handler.NDArray(ArrayUtils.Range(1, 30), 5L, 3L, 2L);
+
+			Console.WriteLine(ArrayUtils.ToString(array, (ADNDArray<float>.ToStringElement)null, 0, true));
+
+			array.PermuteSelf(1, 0, 2);
+
+			Console.WriteLine(ArrayUtils.ToString(array, (ADNDArray<float>.ToStringElement)null, 0, true));
 		}
 
 		private static void SampleNetworkMerging()
