@@ -378,7 +378,8 @@ namespace Sigma.Tests.Internals.WPF
 								+ OutputLayer.Construct(10)
 								+ SoftMaxCrossEntropyCostLayer.Construct()
 			};
-			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
+			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network); // TODO outdated network files do not contain the updated registry entries 
+																									//  (e.g. when adding new parameters, like param count), maybe fix
 
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));

@@ -31,6 +31,7 @@ using System.Threading;
 using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
+using Sigma.Core.Monitors.WPF.ViewModel.Parameterisation;
 using Sigma.Core.Persistence.Selectors;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Training.Hooks.Saviors;

@@ -344,7 +344,7 @@ namespace Sigma.Core
 		{
 			foreach (ITrainer trainer in _trainersByName.Values)
 			{
-				trainer.Initialise(trainer.Operator.Handler);
+				trainer.Initialise(trainer.Operator.Handler);				
 			}
 		}
 

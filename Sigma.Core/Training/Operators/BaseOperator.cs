@@ -550,6 +550,7 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		// TODO possible allow hook invoke priorities to "carry" up to all hooks depending on them?
 		private void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
 		{
 			hookInvocationIndices.Clear();
@@ -565,7 +566,6 @@ namespace Sigma.Core.Training.Operators
 			{
 				IHook hook = hooksToTraverse.First();
 
-				// check if any sub required hook was already added to the order, if so, remove and readd them to queue so the ordering works
 				if (hook.RequiredHooks.Count > 0)
 				{
 					alreadyAddedRequiredHooks.Clear();
@@ -576,7 +576,7 @@ namespace Sigma.Core.Training.Operators
 						hookInvocationIndices.Remove(toRemove);
 						hookInvocationTargets.Remove(toRemove);
 						hooksToTraverse.Add(toRemove);
-						hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority);
+						//hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority);
 					}
 				}
 
