@@ -85,7 +85,7 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType TicTacToe = new DemoType("Tic-Tac-Toe", false, CreateTicTacToeTrainer, MaterialDesignValues.BlueGrey);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.TicTacToe;
+		private static readonly DemoType DemoMode = DemoType.Mnist;
 
 		private static void Main()
 		{
@@ -115,7 +115,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction");
+			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction", "Update");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -127,6 +127,7 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Validation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Reproduction"].GridSize = new GridSize(2, 5);
+				window.TabControl["Update"].GridSize = new GridSize(1, 1);
 
 				window.TabControl["Overview"].GridSize.Rows -= 1;
 				window.TabControl["Overview"].GridSize.Columns -= 1;
@@ -173,6 +174,9 @@ namespace Sigma.Tests.Internals.WPF
 				var learningBlock = (UserControlParameterVisualiser)parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 				learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
+				var paramCount = (UserControlParameterVisualiser)parameter.Content.Add("Parameter count", typeof(long), trainer.Operator.Registry, "network.parameter_count");
+				paramCount.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Start));
+
 				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: iris);
 				window.TabControl["Overview"].AddCumulativePanel(parameter);
 				//window.TabControl["Overview"].AddCumulativePanel(accuracy1, 1, 2, legend: iris);
@@ -180,7 +184,7 @@ namespace Sigma.Tests.Internals.WPF
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
 				//window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
 				//window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
+				window.TabControl["Update"].AddCumulativePanel(updateAverage, legend: iris);
 				if (accuracy2 != null)
 				{
 					window.TabControl["Metrics"].AddCumulativePanel(accuracy2, legend: iris);

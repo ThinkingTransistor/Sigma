@@ -576,6 +576,7 @@ namespace Sigma.Core.Training.Operators
 						hookInvocationIndices.Remove(toRemove);
 						hookInvocationTargets.Remove(toRemove);
 						hooksToTraverse.Add(toRemove);
+						hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority);
 					}
 				}
 

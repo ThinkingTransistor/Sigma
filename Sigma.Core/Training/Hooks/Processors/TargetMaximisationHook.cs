@@ -51,6 +51,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 			ParameterRegistry["max_optimisation_attempts"] = 2;
 			ParameterRegistry["shared_result_input_key"] = sharedResultInputKey;
 			ParameterRegistry["shared_result_success_key"] = sharedResultSuccessKey;
+
+			InvokePriority = 10000;
 		}
 
 		/// <summary>

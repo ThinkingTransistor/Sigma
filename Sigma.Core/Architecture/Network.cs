@@ -237,6 +237,8 @@ namespace Sigma.Core.Architecture
             IRegistry layersRegistry = new Registry(Registry);
             Registry["layers"] = layersRegistry;
 
+	        long parameterCount = 0L;
+
             foreach (InternalLayerBuffer layerBuffer in _orderedLayerBuffers)
             {
                 IRegistry exposedInputs = new Registry(parent: layerBuffer.Layer.Parameters);
@@ -266,7 +268,26 @@ namespace Sigma.Core.Architecture
                 }
 
                 layersRegistry[layerBuffer.Layer.Name] = layerBuffer.Layer.Parameters;
+
+	            foreach (string trainableParameter in layerBuffer.Layer.TrainableParameters)
+	            {
+		            if (layerBuffer.Layer.Parameters[trainableParameter] is INumber)
+		            {
+			            parameterCount++;
+		            }
+		            else
+		            {
+			            INDArray array = layerBuffer.Layer.Parameters[trainableParameter] as INDArray;
+
+			            if (array != null)
+			            {
+				            parameterCount += array.Length;
+			            }
+		            }
+	            }
             }
+
+	        Registry["parameter_count"] = parameterCount;
         }
 
         /// <inheritdoc />
