@@ -197,6 +197,13 @@ namespace Sigma.Core.Handlers
 		INDArray FlattenAllButLast(INDArray array);
 
 		/// <summary>
+		/// Get an ndarray with the time and batch dimensions permuted.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <returns></returns>
+		//INDArray PermuteBatchAndTime(INDArray array);
+
+		/// <summary>
 		/// Transform an ndarray row-wise to another type (may also be ndarray).
 		/// This is not required to be a traceable operation (and typically isn't).
 		/// Note: Traceability should be consistent independent of type of <see cref="TOther"/>.  
