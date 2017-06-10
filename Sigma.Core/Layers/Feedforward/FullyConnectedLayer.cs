@@ -39,7 +39,7 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 
 			INDArray output = handler.Dot(activations, weights);
-			output = handler.RowWise(output, row => handler.Add(row, biases));
+			output = handler.RowWise(output, row => handler.Add(row, biases)); // TODO maybe it's faster to just duplicate the biases into a matrix of the same size as the output?
 			output = handler.Activation(buffer.Parameters.Get<string>("activation"), output);
 
 			buffer.Outputs["default"]["activations"] = output.Reshape(input.Shape[0], input.Shape[1], Parameters.Get<int>("size"));

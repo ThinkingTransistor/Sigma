@@ -172,16 +172,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return array.Reshape(newShape);
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenTimeAndFeatures(INDArray array)
 		{
 			return array.Reshape(array.Shape[0] * array.Shape[1], ArrayUtils.Product(2, array.Shape));
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenAllButLast(INDArray array)
 		{
 			return array.Reshape(ArrayUtils.Product(0, array.Rank - 1, array.Shape), array.Shape[array.Rank - 1]);
 		}
 
+		/// <inheritdoc />
+		public INDArray PermuteBatchAndTime(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			// swap batch and time dimensions
+			int[] permutedDimensions = ArrayUtils.Range(0, array.Rank - 1);
+			permutedDimensions[1] = 0;
+			permutedDimensions[0] = 1;
+
+			return new ADNDFloat32Array(DNDArray.Permute(internalArray._adArrayHandle, permutedDimensions));
+		}
+
+		/// <inheritdoc />
 		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
@@ -196,6 +212,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return transformedRows;
 		}
 
+		/// <inheritdoc />
 		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
 		{
 			// no need to slice if there's only one row

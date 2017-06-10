@@ -200,8 +200,8 @@ namespace Sigma.Core.Handlers
 		/// Get an ndarray with the time and batch dimensions permuted.
 		/// </summary>
 		/// <param name="array"></param>
-		/// <returns></returns>
-		//INDArray PermuteBatchAndTime(INDArray array);
+		/// <returns>A version of the given ndarray with the batch dimension permuted (data is affected).</returns>
+		INDArray PermuteBatchAndTime(INDArray array);
 
 		/// <summary>
 		/// Transform an ndarray row-wise to another type (may also be ndarray).

@@ -307,6 +307,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.FlattenTime(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenFeatures(INDArray array)
 		{
 			if (Enabled && array.Rank < 3)
@@ -317,6 +318,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.FlattenFeatures(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenTimeAndFeatures(INDArray array)
 		{
 			if (Enabled && array.Rank < 3)
@@ -327,11 +329,19 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.FlattenTimeAndFeatures(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenAllButLast(INDArray array)
 		{
 			return CheckNice(UnderlyingHandler.FlattenAllButLast(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
+		public INDArray PermuteBatchAndTime(INDArray array)
+		{
+			return CheckNice(UnderlyingHandler.PermuteBatchAndTime(CheckNice(array)));
+		}
+
+		/// <inheritdoc />
 		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
 		{
 			if (transformFunction == null)
@@ -342,6 +352,7 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return UnderlyingHandler.RowWiseTransform(CheckNice(array), transformFunction);
 		}
 
+		/// <inheritdoc />
 		public INDArray RowWise(INDArray array, Func<INDArray, INDArray> function)
 		{
 			if (function == null)

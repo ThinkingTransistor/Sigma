@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.Layers.Recurrent
@@ -23,6 +25,13 @@ namespace Sigma.Core.Layers.Recurrent
 		/// <param name="handler">The handler to use for ndarray parameter creation.</param>
 		public RecurrentLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
+			int size = parameters.Get<int>("size");
+			int inputSize = parameters.Get<int>("default_input_size");
+
+			parameters["weights"] = handler.NDArray(inputSize, size);
+			parameters["biases"] = handler.NDArray(size);
+
+			TrainableParameters = new[] { "weights", "biases" };
 		}
 
 		/// <summary>
@@ -33,7 +42,38 @@ namespace Sigma.Core.Layers.Recurrent
 		/// <param name="trainingPass">Indicate whether this is run is part of a training pass.</param>
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			throw new NotImplementedException();
+			INDArray activations = buffer.Inputs["default"].Get<INDArray>("activations");
+			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
+			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
+			string activation = buffer.Parameters.Get<string>("activation");
+			long batches = activations.Shape[0];
+			int size = Parameters.Get<int>("size");
+
+			activations = handler.PermuteBatchAndTime(activations);
+			activations = handler.RowWise(activations, timeSlice =>
+			{
+				timeSlice = handler.Dot(timeSlice, weights);
+				timeSlice = handler.RowWise(timeSlice, row => handler.Add(row, biases));
+				timeSlice = handler.Activation(activation, timeSlice);
+
+				return timeSlice.Reshape(1L, batches, size);
+			});
+
+			buffer.Outputs["default"]["activations"] = handler.PermuteBatchAndTime(activations); // TODO are those the right dimensions? they should be...
+		}
+
+		public static LayerConstruct Construct(int size, string activation = "sigmoid", string name = "#-fullyconnected")
+		{
+			LayerConstruct construct = new LayerConstruct(name, typeof(RecurrentLayer));
+
+			construct.Parameters["size"] = size;
+			construct.Parameters["activation"] = activation;
+
+			// input size is required for instantiation but not known at construction time, so update before instantiation
+			construct.UpdateBeforeInstantiationEvent +=
+				(sender, args) => args.Self.Parameters["default_input_size"] = args.Self.Inputs["default"].Parameters["size"];
+
+			return construct;
 		}
 	}
 }
