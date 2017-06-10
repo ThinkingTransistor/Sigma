@@ -9,6 +9,8 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
+using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
@@ -678,6 +680,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		    }
 
 		    return transposed;
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Permute_M"/>
+		public override ShapedDataBufferView<float> Permute_M(ShapedDataBufferView<float> array, int[] rearrangedDimensions)
+		{
+			long[] originaleShape = array.Shape;
+			long[] rearrangedShape = ArrayUtils.PermuteArray(originaleShape, rearrangedDimensions);
+
+			array = array.DeepCopy();
+			ISigmaDiffDataBuffer<float> dataBuffer = array.DataBuffer;
+
+			ADNDArray<float>._InternalPermuteSelf(dataBuffer.Data, dataBuffer.Offset, dataBuffer.Length, rearrangedDimensions, originaleShape, rearrangedShape);
+
+			return array;
 		}
 
 		private bool _InternalOptimisedMapOp_F_M(MapOp mapOp, ref ShapedDataBufferView<float> a)

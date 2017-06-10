@@ -68,6 +68,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract FSharpOption<ShapedDataBufferView<T>> Inverse_M(ShapedDataBufferView<T> a);
 		public abstract FSharpOption<T> Det_M(ShapedDataBufferView<T> a);
 		public abstract ShapedDataBufferView<T> Transpose_M(ShapedDataBufferView<T> a);
+		public abstract ShapedDataBufferView<T> Permute_M(ShapedDataBufferView<T> obj0, int[] obj1);
 		public abstract ShapedDataBufferView<T> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);

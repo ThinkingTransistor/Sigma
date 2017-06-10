@@ -281,7 +281,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 
 			ADNDArray<T> permuted = (ADNDArray<T>) Reshape(newShape);
 			
-			permuted._InternalPermuteSelf(rearrangedDimensions, Shape, newShape);
+			_InternalPermuteSelf(Data.Data, (int) Data.Offset, (int) Data.Length, rearrangedDimensions, Shape, newShape);
 
 			return permuted;
 		}
@@ -310,7 +310,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			_InternalPermuteSelf(rearrangedDimensions, Shape, newShape);
+			_InternalPermuteSelf(Data.Data, (int)Data.Offset, (int)Data.Length, rearrangedDimensions, Shape, newShape);
 
 			ReshapeSelf(newShape);
 
@@ -330,18 +330,17 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		}
 
 		/// <summary>
-		/// Permute this ndarray's data according to rearranged dimensions. 
+		/// Permute this ndarray's data according to rearranged dimensions in place. 
 		/// Note: Arguments are not checked for correctness (and are asssumed to be correct).
 		/// </summary>
 		/// <param name="rearrangedDimensions">The re-arranged dimensions (numbered 0 to rank - 1).</param>
 		/// <param name="originalShape">The original shape.</param>
 		/// <param name="rearrangedShape">The new, re-arranged shape.</param>
-		internal void _InternalPermuteSelf(int[] rearrangedDimensions, long[] originalShape, long[] rearrangedShape)
+		/// <param name="data">The data array.</param>
+		/// <param name="offset">The data array offset.</param>
+		/// <param name="length">The data array length.</param>
+		internal static void _InternalPermuteSelf(T[] data, int offset, int length, int[] rearrangedDimensions, long[] originalShape, long[] rearrangedShape)
 		{
-			T[] data = Data.Data;
-			int offset = (int) Data.Offset;
-			int length = (int) Data.Length;
-
 			long[] originalStrides = NDArrayUtils.GetStrides(originalShape);
 			long[] rearrangedStrides = NDArrayUtils.GetStrides(rearrangedShape);
 
