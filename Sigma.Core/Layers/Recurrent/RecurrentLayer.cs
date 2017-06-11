@@ -49,7 +49,7 @@ namespace Sigma.Core.Layers.Recurrent
 			long batches = activations.Shape[0];
 			int size = Parameters.Get<int>("size");
 
-			activations = handler.PermuteBatchAndTime(activations);
+			activations = handler.PermuteBatchAndTime(activations); // BatchTimeFeatures ordering by default, needs to be TimeBatchFeatures for layers operating on the time dimension
 			activations = handler.RowWise(activations, timeSlice =>
 			{
 				timeSlice = handler.Dot(timeSlice, weights);
