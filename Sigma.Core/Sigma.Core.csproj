@@ -150,7 +150,7 @@
     <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
-    <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
+    <Compile Include="Data\Extractors\ArrayRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
@@ -170,6 +170,7 @@
     <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\ShufflePreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
+    <Compile Include="Data\Readers\CharacterRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />

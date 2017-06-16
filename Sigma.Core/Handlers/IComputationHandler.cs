@@ -234,7 +234,7 @@ namespace Sigma.Core.Handlers
 		INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength);
 
 		#endregion
-
+		 
 		#region Primitive binary mathematical operations
 
 		/// <summary>

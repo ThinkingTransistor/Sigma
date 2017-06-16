@@ -53,6 +53,11 @@ namespace Sigma.Tests.Internals.Backend
 			Console.ReadKey();
 		}
 
+		private static void SampleRecurrent()
+		{
+			
+		}
+
 		private static void SampleXor()
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("logical");

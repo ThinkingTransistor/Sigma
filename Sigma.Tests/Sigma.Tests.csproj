@@ -126,7 +126,7 @@
     <Compile Include="Data\Datasets\TestExtractedDataset.cs" />
     <Compile Include="Data\Datasets\TestDatasetBlockwiseSlice.cs" />
     <Compile Include="Data\Datasets\TestDatasetRecordwiseSlice.cs" />
-    <Compile Include="Data\Extractors\TestByteRecordExtractor.cs" />
+    <Compile Include="Data\Extractors\TestArrayRecordExtractor.cs" />
     <Compile Include="Data\Extractors\TestCSVRecordExtractor.cs" />
     <Compile Include="Data\Iterators\TestMinibatchIterator.cs" />
     <Compile Include="Data\Iterators\TestUnifiedIterator.cs" />

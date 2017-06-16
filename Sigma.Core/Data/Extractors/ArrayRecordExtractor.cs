@@ -17,10 +17,10 @@ using System.Linq;
 namespace Sigma.Core.Data.Extractors
 {
 	/// <summary>
-	/// A byte record extractor, which extracts named ranges to ndarrays byte-wise from a byte record reader.
+	/// An array record extractor, which extracts named ranges to ndarrays T-wise from a record reader.
 	/// </summary>
 	[Serializable]
-	public class ByteRecordExtractor : BaseExtractor
+	public class ArrayRecordExtractor<T> : BaseExtractor
 	{
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -28,10 +28,10 @@ namespace Sigma.Core.Data.Extractors
 		private readonly Dictionary<string, long[][]> _indexMappings;
 
 		/// <summary>
-		/// Create a byte record extractor with a certain named index mapping.
+		/// Create a T array record extractor with a certain named index mapping.
 		/// </summary>
 		/// <param name="indexMappings">The named index mappings.</param>
-		public ByteRecordExtractor(Dictionary<string, long[][]> indexMappings)
+		public ArrayRecordExtractor(Dictionary<string, long[][]> indexMappings)
 		{
 			if (indexMappings == null)
 			{
@@ -58,7 +58,7 @@ namespace Sigma.Core.Data.Extractors
 				return null;
 			}
 
-			byte[][] rawRecords = (byte[][]) readData;
+			T[][] rawRecords = (T[][]) readData;
 
 			int numberOfRecordsToExtract = Math.Min(rawRecords.Length, numberOfRecords);
 
@@ -100,7 +100,7 @@ namespace Sigma.Core.Data.Extractors
 
 				for (int r = 0; r < numberOfRecordsToExtract; r++)
 				{
-					byte[] record = rawRecords[r];
+					T[] record = rawRecords[r];
 
 					globalBufferIndices[0] = r; //BatchTimeFeatures indexing
 					globalBufferIndices[1] = 0;
