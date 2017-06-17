@@ -42,23 +42,26 @@ namespace Sigma.Core.Layers.Recurrent
 		/// <param name="trainingPass">Indicate whether this is run is part of a training pass.</param>
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
-			INDArray activations = buffer.Inputs["default"].Get<INDArray>("activations");
+			INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
 			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 			string activation = buffer.Parameters.Get<string>("activation");
-			long batches = activations.Shape[0];
-			int size = Parameters.Get<int>("size");
+			long batches = inputs.Shape[0];
+			int inputSize = Parameters.Get<int>("default_input_size"), size = Parameters.Get<int>("size");
 
-			activations = handler.PermuteBatchAndTime(activations); // BatchTimeFeatures ordering by default, needs to be TimeBatchFeatures for layers operating on the time dimension
+			INDArray activations = handler.PermuteBatchAndTime(inputs); // BatchTimeFeatures ordering by default, needs to be TimeBatchFeatures for layers operating on the time dimension
+			activations = activations.Reshape(activations.Shape[0], activations.Shape[1] * ArrayUtils.Product(2, activations.Shape));
 			activations = handler.RowWise(activations, timeSlice =>
 			{
+				timeSlice = timeSlice.Reshape(inputs.Shape[0], inputSize);
 				timeSlice = handler.Dot(timeSlice, weights);
 				timeSlice = handler.RowWise(timeSlice, row => handler.Add(row, biases));
 				timeSlice = handler.Activation(activation, timeSlice);
 
-				return timeSlice.Reshape(1L, batches, size);
+				return timeSlice.Reshape(1L, batches * size);
 			});
 
+			activations = activations.Reshape(activations.Shape[0], batches, size);
 			buffer.Outputs["default"]["activations"] = handler.PermuteBatchAndTime(activations); // TODO are those the right dimensions? they should be...
 		}
 

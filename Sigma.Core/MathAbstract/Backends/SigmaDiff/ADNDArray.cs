@@ -236,7 +236,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
-				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
+				throw new ArgumentException($"Reshaping cannot change total ndarray length ({Length}), only array shape" +
+											$" (attempted change from [{string.Join(", ", Shape)}] to [{string.Join(", ", newShape)}]).");
 			}
 
 			return new ADNDArray<T>(Data, newShape);
@@ -247,7 +248,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
-				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
+				throw new ArgumentException($"Reshaping cannot change total ndarray length ({Length}), only array shape" +
+											$" (attempted change from [{string.Join(", ", Shape)}] to [{string.Join(", ", newShape)}]).");
 			}
 
 			Reinitialise(NDArrayUtils.CheckShape(newShape), NDArrayUtils.GetStrides(newShape));
@@ -258,6 +260,11 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		/// <inheritdoc />
 		public virtual INDArray Permute(params int[] rearrangedDimensions)
 		{
+			if (rearrangedDimensions.Length != Rank)
+			{
+				throw new ArgumentException($"Array of rearranged dimensions must be of same length as ndarray rank ({Rank}) but was {rearrangedDimensions.Length}.");
+			}
+
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
 			{
@@ -289,6 +296,11 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		/// <inheritdoc />
 		public virtual INDArray PermuteSelf(params int[] rearrangedDimensions)
 		{
+			if (rearrangedDimensions.Length != Rank)
+			{
+				throw new ArgumentException($"Array of rearranged dimensions must be of same length as ndarray rank ({Rank}) but was {rearrangedDimensions.Length}.");
+			}
+
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
 			{

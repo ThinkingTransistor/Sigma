@@ -57,7 +57,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SampleRecurrent()
 		{
-			const long timeWindowSize = 100L;
+			const long timeWindowSize = 10L;
 
 			SigmaEnvironment sigma = SigmaEnvironment.Create("recurrent");
 
@@ -73,9 +73,11 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("hutter");
 
 			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(1000) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
+			trainer.TrainingDataIterator = new MinibatchIterator(5, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
 			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration)));

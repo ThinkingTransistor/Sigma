@@ -693,6 +693,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			ADNDArray<float>._InternalPermuteSelf(dataBuffer.Data, dataBuffer.Offset, dataBuffer.Length, rearrangedDimensions, originaleShape, rearrangedShape);
 
+			for (int i = 0; i < array.Shape.Length; i++)
+			{
+				array.Shape[i] = rearrangedShape[i];
+			}
+
 			return array;
 		}
 

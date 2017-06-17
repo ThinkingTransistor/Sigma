@@ -33,12 +33,12 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 		{
 		}
 
-		public ADNDFloat32Array(DNDArray adArrayHandle) : base((IDataBuffer<float>) adArrayHandle.Buffer.DataBuffer, adArrayHandle.Buffer.Shape)
+		public ADNDFloat32Array(DNDArray adArrayHandle) : base((IDataBuffer<float>)adArrayHandle.Buffer.DataBuffer, adArrayHandle.Buffer.Shape)
 		{
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
 			_adArrayHandle = adArrayHandle;
-			_adArrayHandle.Buffer.Shape = Shape; 
+			_adArrayHandle.Buffer.Shape = Shape;
 		}
 
 		public ADNDFloat32Array(long backendTag, IDataBuffer<float> buffer, long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(buffer, 0, buffer.Length, backendTag), NDArrayUtils.CheckShape(shape)))
@@ -71,8 +71,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 			long absoluteEndOffset = NDArrayUtils.GetFlatIndex(Shape, Strides, endIndices);
 			long length = absoluteEndOffset - absoluteBeginOffset + 1;
 
-			return new ADNDFloat32Array(new DNDArray(new SigmaDiffDataBuffer<float>(Data, absoluteBeginOffset, length, backendTag: ((SigmaDiffDataBuffer<float>) Data).BackendTag), slicedShape));
-	}
+			return new ADNDFloat32Array(new DNDArray(new SigmaDiffDataBuffer<float>(Data, absoluteBeginOffset, length, backendTag: ((SigmaDiffDataBuffer<float>)Data).BackendTag), slicedShape));
+		}
 
 		public override INDArray Reshape(params long[] newShape)
 		{
