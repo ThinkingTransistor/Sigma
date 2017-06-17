@@ -168,6 +168,7 @@
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\PermutePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\ShufflePreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
     <Compile Include="Data\Readers\CharacterRecordReader.cs" />

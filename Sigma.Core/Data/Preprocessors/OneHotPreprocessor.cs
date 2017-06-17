@@ -26,7 +26,7 @@ namespace Sigma.Core.Data.Preprocessors
 	/// </example>
 	/// </summary>
 	[Serializable]
-	public class OneHotPreprocessor : BasePreprocessor
+	public class  OneHotPreprocessor : BasePreprocessor
 	{
 		/// <summary>
 		/// This boolean decides whether the datashape is affected or not.
@@ -87,22 +87,17 @@ namespace Sigma.Core.Data.Preprocessors
 	    /// <inheritdoc />
 	    internal override INDArray ProcessDirect(INDArray array, IComputationHandler handler)
 		{
-			//BTF with single feature dimension
+			//BTF with single feature dimension, TODO couldn't feature dimension just be flattened and ignored?
 			if (array.Rank != 3)
 			{
 				throw new ArgumentException($"Cannot one-hot encode ndarrays which are not of rank 3 (BTF with single feature dimension), but given ndarray was of rank {array.Rank}.");
 			}
 
-			if (array.Shape[2] != 1)
-			{
-				throw new ArgumentException($"Cannot one-hot encode ndarrays whose feature shape (index 2) is not 1, but ndarray.shape[2] was {array.Shape[2]}");
-			}
-
-			INDArray encodedArray = handler.NDArray(array.Shape[0], array.Shape[1], _valueToIndexMapping.Count);
+			INDArray encodedArray = handler.NDArray(array.Shape[0], array.Shape[1], array.Shape[2] * _valueToIndexMapping.Count);
 
 			long[] bufferIndices = new long[3];
 
-			for (long i = 0; i < array.Length; i++)
+			for (long i = 0; i < array.Shape[2]; i++)
 			{
 				bufferIndices = NDArrayUtils.GetIndices(i, array.Shape, array.Strides, bufferIndices);
 
@@ -113,7 +108,7 @@ namespace Sigma.Core.Data.Preprocessors
 					throw new ArgumentException($"Cannot one-hot encode unknown value {value}, value was not registered as a possible value.");
 				}
 
-				bufferIndices[2] = _valueToIndexMapping[value];
+				bufferIndices[2] = i * _valueToIndexMapping.Count + _valueToIndexMapping[value];
 
 				encodedArray.SetValue(1, bufferIndices);
 			}

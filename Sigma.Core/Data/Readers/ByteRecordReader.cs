@@ -59,6 +59,7 @@ namespace Sigma.Core.Data.Readers
 			_recordSizeBytes = recordSizeBytes;
 		}
 
+		/// <inheritdoc />
 		public void Prepare()
 		{
 			Source.Prepare();

@@ -7,6 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using log4net;
 using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Sources;
@@ -16,15 +19,36 @@ namespace Sigma.Core.Data.Readers
 	/// <summary>
 	/// A character-level reader, which reads records in characterwise.
 	/// </summary>
+	[Serializable]
 	public class CharacterRecordReader : IRecordReader
 	{
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
-		public void Dispose()
+		private readonly Encoding _encoding;
+		private readonly int _recordLengthInCharacters;
+		private bool _prepared;
+
+		/// <summary>
+		/// Create a character record reader with a specific record length.
+		/// </summary>
+		/// <param name="source">The underlying data source to use.</param>
+		/// <param name="recordLengthInCharacters">The record length in characters.</param>
+		public CharacterRecordReader(IDataSource source, int recordLengthInCharacters) : this(source, recordLengthInCharacters, Encoding.ASCII)
 		{
-			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Create a character record reader with a specific record length and encoding.
+		/// </summary>
+		/// <param name="source">The underlying data source to use.</param>
+		/// <param name="recordLengthInCharacters">The record length in characters.</param>
+		/// <param name="encoding">The encoding to use.</param>
+		public CharacterRecordReader(IDataSource source, int recordLengthInCharacters, Encoding encoding)
+		{
+			_recordLengthInCharacters = recordLengthInCharacters;
+			_encoding = encoding;
+			Source = source;
 		}
 
 		/// <summary>
@@ -38,7 +62,8 @@ namespace Sigma.Core.Data.Readers
 		/// </summary>
 		public void Prepare()
 		{
-			throw new NotImplementedException();
+			Source.Prepare();
+			_prepared = true;
 		}
 
 		/// <summary>
@@ -49,7 +74,37 @@ namespace Sigma.Core.Data.Readers
 		/// <returns>An object of the given type representing a collection of a given number of records.</returns>
 		public object Read(int numberOfRecords)
 		{
-			throw new NotImplementedException();
+			if (!_prepared)
+			{
+				throw new InvalidOperationException("Cannot read from source before preparing this reader (missing Prepare() call?).");
+			}
+
+			Stream stream = Source.Retrieve();
+
+			StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+			List<short[]> records = new List<short[]>(numberOfRecords);
+			int index = 0, charactersToRead = numberOfRecords * _recordLengthInCharacters;
+
+			while (!reader.EndOfStream && index < charactersToRead)
+			{
+				int recordIndex = index / _recordLengthInCharacters;
+
+				if (records.Count <= recordIndex || records[recordIndex] == null)
+				{
+					records.Insert(recordIndex, new short[_recordLengthInCharacters]);
+				}
+
+				records[recordIndex][index % _recordLengthInCharacters] = (short) reader.Read();
+
+				index++;
+			}
+
+			if (index % _recordLengthInCharacters != 0)
+			{
+				records.RemoveAt(records.Count - 1);
+			}
+
+			return records.ToArray();
 		}
 
 		/// <summary>
@@ -59,7 +114,14 @@ namespace Sigma.Core.Data.Readers
 		/// <returns>The given extractor (for convenience).</returns>
 		public IRecordExtractor Extractor(IRecordExtractor extractor)
 		{
-			throw new NotImplementedException();
+			extractor.Reader = this;
+
+			return extractor;
+		}
+
+		/// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+		public void Dispose()
+		{
 		}
 	}
 }

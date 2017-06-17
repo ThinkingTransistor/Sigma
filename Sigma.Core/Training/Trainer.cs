@@ -54,7 +54,7 @@ namespace Sigma.Core.Training
         public bool ForceInitialisation { get; set; }
 
         /// <inheritdoc />
-        public INetwork Network { get; set; }
+        public INetwork Network { get; set; } = new Network();
 
         /// <inheritdoc />
         public IOptimiser Optimiser { get; set; }

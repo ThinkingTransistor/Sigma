@@ -53,7 +53,7 @@ namespace Sigma.Core.Handlers
 		bool IsInterchangeable(IComputationHandler otherHandler);
 
 		/// <summary>
-		/// Create an ndarray of a certain shape.
+		/// Create an ndarray of a certain shape (zeroed out).
 		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
