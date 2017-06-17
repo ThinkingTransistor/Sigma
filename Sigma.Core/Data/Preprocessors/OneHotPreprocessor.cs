@@ -97,9 +97,9 @@ namespace Sigma.Core.Data.Preprocessors
 
 			long[] bufferIndices = new long[3];
 
-			for (long i = 0; i < array.Shape[2]; i++)
+			for (long i = 0; i < array.Shape[0]; i++)
 			{
-				bufferIndices = NDArrayUtils.GetIndices(i, array.Shape, array.Strides, bufferIndices);
+				bufferIndices = NDArrayUtils.GetIndices(i * array.Shape[1], array.Shape, array.Strides, bufferIndices);
 
 				object value = array.GetValue<int>(bufferIndices);
 
@@ -108,7 +108,7 @@ namespace Sigma.Core.Data.Preprocessors
 					throw new ArgumentException($"Cannot one-hot encode unknown value {value}, value was not registered as a possible value.");
 				}
 
-				bufferIndices[2] = i * _valueToIndexMapping.Count + _valueToIndexMapping[value];
+				bufferIndices[2] = _valueToIndexMapping[value];
 
 				encodedArray.SetValue(1, bufferIndices);
 			}
