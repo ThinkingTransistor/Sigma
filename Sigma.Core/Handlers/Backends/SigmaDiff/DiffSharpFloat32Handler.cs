@@ -952,6 +952,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
+		public void BeginSession()
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
+		public void EndSession()
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
+		public void ClearSession()
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc />
 		public INDArray MergeBatch(params INDArray[] arrays)
 		{
 			ADNDFloat32Array[] castArrays = arrays.As<INDArray, ADNDFloat32Array>();

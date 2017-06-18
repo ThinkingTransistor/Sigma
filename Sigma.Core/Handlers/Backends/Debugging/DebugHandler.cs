@@ -721,26 +721,31 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.SoftPlus(CheckNice(number)));
 		}
 
+		/// <inheritdoc />
 		public INDArray SoftMax(INDArray array)
 		{
 			return CheckNice(UnderlyingHandler.SoftMax(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INumber StandardDeviation(INDArray array)
 		{
 			return CheckNice(UnderlyingHandler.StandardDeviation(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INumber Variance(INDArray array)
 		{
 			return CheckNice(UnderlyingHandler.Variance(CheckNice(array)));
 		}
 
+		/// <inheritdoc />
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
 			return CheckNice(UnderlyingHandler.Clip(CheckNice(array), CheckNice(minValue), CheckNice(maxValue)));
 		}
 
+		/// <inheritdoc />
 		public void FillWithProbabilityMask(INDArray array, double probability)
 		{
 			if (Enabled && (probability < 0.0 || probability > 1.0))
@@ -752,46 +757,73 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			CheckNice(array);
 		}
 
+		/// <inheritdoc />
 		public uint BeginTrace()
 		{
 			return UnderlyingHandler.BeginTrace();
 		}
 
+		/// <inheritdoc />
 		public TTraceable Trace<TTraceable>(TTraceable traceable, uint traceTag) where TTraceable : ITraceable
 		{
 			return UnderlyingHandler.Trace(traceable, traceTag);
 		}
 
+		/// <inheritdoc />
 		public TTraceable ClearTrace<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
 			return UnderlyingHandler.ClearTrace(traceable);
 		}
 
+		/// <inheritdoc />
 		public void ComputeDerivativesTo(ITraceable traceable)
 		{
 			UnderlyingHandler.ComputeDerivativesTo(traceable);
 		}
 
+		/// <inheritdoc />
 		public TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable
 		{
 			return UnderlyingHandler.GetDerivative(traceable);
 		}
 
+		/// <inheritdoc />
+		public void BeginSession()
+		{
+			UnderlyingHandler.BeginSession();
+		}
+
+		/// <inheritdoc />
+		public void EndSession()
+		{
+			UnderlyingHandler.EndSession();
+		}
+
+		/// <inheritdoc />
+		public void ClearSession()
+		{
+			UnderlyingHandler.ClearSession();
+		}
+
+		/// <inheritdoc />
 		public bool IsNaN(INDArray array)
 		{
 			return UnderlyingHandler.IsNaN(array);
 		}
 
+		/// <inheritdoc />
 		public bool IsNotFinite(INDArray number)
 		{
 			return UnderlyingHandler.IsNotFinite(number);
 		}
 
+		/// <inheritdoc />
 		public bool IsNaN(INumber number)
 		{
 			return UnderlyingHandler.IsNaN(number);
 		}
 
+		/// <inheritdoc />
 		public bool IsNotFinite(INumber number)
 		{
 			return UnderlyingHandler.IsNotFinite(number);
