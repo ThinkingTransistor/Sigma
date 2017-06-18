@@ -35,6 +35,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);
+		public abstract T[] CreateZeroArray(int length);
+		public abstract T[] CreateValueArray(int length, T initialValue);
 		public abstract T Mul_Dot_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> n);
 		public abstract T L1Norm_V(ISigmaDiffDataBuffer<T> value);
 		public abstract T L2Norm_V(ISigmaDiffDataBuffer<T> value);

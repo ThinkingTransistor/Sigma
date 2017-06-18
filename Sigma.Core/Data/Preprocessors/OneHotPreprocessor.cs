@@ -97,9 +97,9 @@ namespace Sigma.Core.Data.Preprocessors
 
 			long[] bufferIndices = new long[3];
 
-			for (long i = 0; i < array.Shape[0]; i++)
+			for (long i = 0; i < array.Shape[0] * array.Shape[1]; i++)
 			{
-				bufferIndices = NDArrayUtils.GetIndices(i * array.Shape[1], array.Shape, array.Strides, bufferIndices);
+				bufferIndices = NDArrayUtils.GetIndices(i, array.Shape, array.Strides, bufferIndices);
 
 				object value = array.GetValue<int>(bufferIndices);
 

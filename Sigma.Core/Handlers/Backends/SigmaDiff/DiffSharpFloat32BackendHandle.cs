@@ -36,6 +36,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new SigmaDiffDataBuffer<float>(values, backendTag: BackendTag);
 		}
 
+		public override float[] CreateZeroArray(int length)
+		{
+			return new float[length];
+		}
+
+		public override float[] CreateValueArray(int length, float initialValue)
+		{
+			float[] array = CreateZeroArray(length);
+
+			for (var i = 0; i < array.Length; i++)
+			{
+				array[i] = initialValue;
+			}
+
+			return array;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.L1Norm_V"/>
 		public override float L1Norm_V(ISigmaDiffDataBuffer<float> value)
 		{
@@ -530,7 +547,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				data[i] = a - data[i];
 			}
-			 
+
 			return b;
 		}
 
@@ -551,7 +568,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				char transa = 'N', transb = 'N';
 				float alpha = 1.0f, beta = 0.0f;
 				int m = a.Rows, n = b.Cols, k = b.Rows;
-				
+
 				BlasBackend.Sgemm(&transa, &transb, &n, &m, &k, &alpha, bref, &n, aref, &k, &beta, zref, &n);
 			}
 
@@ -667,19 +684,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				transposed.Shape[i] = a.Shape[a.Shape.Length - 1 - i];
 			}
 
-		    fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
-		    fixed (float* bref = &transposed.DataBuffer.Data[transposed.DataBuffer.Offset])
-		    {
-		        int ordering = 101; // CBLAS_LAYOUT - CblasRowMajor
-		        int trans = 112; // CBLAS_TRANSPOSE - CblasTrans
-		        int rows = a.Rows, cols = a.Cols;
-		        int lda = a.Cols, ldb = a.Rows;
-		        float alpha = 1.0f;
+			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
+			fixed (float* bref = &transposed.DataBuffer.Data[transposed.DataBuffer.Offset])
+			{
+				int ordering = 101; // CBLAS_LAYOUT - CblasRowMajor
+				int trans = 112; // CBLAS_TRANSPOSE - CblasTrans
+				int rows = a.Rows, cols = a.Cols;
+				int lda = a.Cols, ldb = a.Rows;
+				float alpha = 1.0f;
 
-		        BlasBackend.Somatcopy(ordering, trans, rows, cols, alpha, aref, lda, bref, ldb);
-		    }
+				BlasBackend.Somatcopy(ordering, trans, rows, cols, alpha, aref, lda, bref, ldb);
+			}
 
-		    return transposed;
+			return transposed;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Permute_M"/>
@@ -716,7 +733,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
 				for (int i = a.DataBuffer.Offset; i < upper; i++)
 				{
-					a.DataBuffer.Data[i] = (float) Math.Exp(a.DataBuffer.Data[i]);
+					a.DataBuffer.Data[i] = (float)Math.Exp(a.DataBuffer.Data[i]);
 				}
 
 				return true;
@@ -727,7 +744,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
 				for (int i = a.DataBuffer.Offset; i < upper; i++)
 				{
-					a.DataBuffer.Data[i] = (float) Math.Sqrt(a.DataBuffer.Data[i]);
+					a.DataBuffer.Data[i] = (float)Math.Sqrt(a.DataBuffer.Data[i]);
 				}
 
 				return true;

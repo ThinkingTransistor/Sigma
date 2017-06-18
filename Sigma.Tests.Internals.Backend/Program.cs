@@ -49,7 +49,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleHutter();
+			SampleMnist();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -57,7 +57,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SampleHutter()
 		{
-			const long timeWindowSize = 10L;
+			const long timeWindowSize = 50L;
 
 			SigmaEnvironment sigma = SigmaEnvironment.Create("recurrent");
 
@@ -75,7 +75,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(256) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Optimiser = new AdadeltaOptimiser(decayRate: 0.9);
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
