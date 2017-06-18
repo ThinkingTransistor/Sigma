@@ -81,11 +81,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			DNDArray adArrayHandleCopy = _adArrayHandle.ShallowCopy();
-
-			adArrayHandleCopy.Buffer.Shape = newShape;
-
-			return new ADNDFloat32Array(adArrayHandleCopy);
+			return new ADNDFloat32Array(DNDArray.Reshape(_adArrayHandle, newShape));
 		}
 
 		public override object DeepCopy()

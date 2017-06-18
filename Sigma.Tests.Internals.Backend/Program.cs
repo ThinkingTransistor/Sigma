@@ -49,13 +49,13 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleRecurrent();
+			SampleHutter();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
 		}
 
-		private static void SampleRecurrent()
+		private static void SampleHutter()
 		{
 			const long timeWindowSize = 10L;
 
@@ -72,14 +72,14 @@ namespace Sigma.Tests.Internals.Backend
 
 			ITrainer trainer = sigma.CreateTrainer("hutter");
 
-			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(1000) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(5, dataset);
+			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(256) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
-			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), averageValues: true));
+			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), averageValues: true));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration)));
 
 			sigma.PrepareAndRun();

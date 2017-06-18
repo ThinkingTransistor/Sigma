@@ -701,6 +701,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return array;
 		}
 
+		public override ShapedDataBufferView<float> Reshape_M(ShapedDataBufferView<float> array, long[] newShape)
+		{
+			ShapedDataBufferView<float> reshaped = new ShapedDataBufferView<float>(array.DataBuffer, newShape);
+
+			return reshaped;
+		}
+
 		private bool _InternalOptimisedMapOp_F_M(MapOp mapOp, ref ShapedDataBufferView<float> a)
 		{
 			if (mapOp.IsExp)
