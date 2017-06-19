@@ -95,6 +95,12 @@ namespace Sigma.Core.Training.Operators
 		public int EpochNumber { get; protected set; }
 
 		/// <summary>
+		///		Enable the use of sessions in this operator. 
+		///		Computation handlers will attempt to speed up computation sessions at the possible expense of higher memory requirements.
+		/// </summary>
+		public bool UseSessions { get; set; }
+
+		/// <summary>
 		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
 		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; }

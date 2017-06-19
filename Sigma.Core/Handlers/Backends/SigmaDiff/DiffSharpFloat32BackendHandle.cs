@@ -7,6 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
@@ -34,23 +36,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public override ISigmaDiffDataBuffer<float> CreateDataBuffer(float[] values)
 		{
 			return new SigmaDiffDataBuffer<float>(values, backendTag: BackendTag);
-		}
-
-		public override float[] CreateZeroArray(int length)
-		{
-			return new float[length];
-		}
-
-		public override float[] CreateValueArray(int length, float initialValue)
-		{
-			float[] array = CreateZeroArray(length);
-
-			for (var i = 0; i < array.Length; i++)
-			{
-				array[i] = initialValue;
-			}
-
-			return array;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.L1Norm_V"/>

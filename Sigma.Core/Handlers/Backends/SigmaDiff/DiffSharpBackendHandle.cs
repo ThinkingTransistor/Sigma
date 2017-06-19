@@ -7,9 +7,13 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
 using DiffSharp.Backend;
 using static DiffSharp.Util;
 using Microsoft.FSharp.Core;
+using Sigma.Core.Persistence;
+using Sigma.Core.Utils;
+using Array = System.Array;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
@@ -18,8 +22,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	/// <typeparam name="T">The primitive data type processed by this backend handle.</typeparam>
 	[Serializable]
-	public abstract class DiffSharpBackendHandle<T> : Backend<T>
+	public abstract class DiffSharpBackendHandle<T> : Backend<T>, ISerialisationNotifier
 	{
+		private IDictionary<int, IList<T[]>> _bufferedSessionArrays;
+		private IDictionary<int, IList<T[]>> _currentSessionArrays;
+
+		public bool BufferSessions { get; set; }
 		public long BackendTag { get; set; }
 		public IBlasBackend BlasBackend { get; set; }
 		public ILapackBackend LapackBackend { get; set; }
@@ -32,11 +40,95 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			BlasBackend = blasBackend;
 			LapackBackend = lapackBackend;
 			BackendTag = backendTag;
+
+			_bufferedSessionArrays = new Dictionary<int, IList<T[]>>();
+			_currentSessionArrays = new Dictionary<int, IList<T[]>>();
+		}
+
+		private void _InternalAddToCurrentSession(T[] array)
+		{
+			if (!_currentSessionArrays.ContainsKey(array.Length))
+			{
+				_currentSessionArrays.Add(array.Length, new List<T[]>());
+			}
+
+			_currentSessionArrays[array.Length].Add(array);
+		}
+
+		private T[] _InternalGetBufferedArray(int length)
+		{
+			if (!_bufferedSessionArrays.ContainsKey(length) || _bufferedSessionArrays[length].Count == 0)
+			{
+				return null;
+			}
+
+			IList<T[]> buffer = _bufferedSessionArrays[length];
+
+			lock (buffer)
+			{
+				T[] array = buffer[buffer.Count - 1];
+
+				buffer.RemoveAt(buffer.Count - 1);
+
+				return array;
+			}
+		}
+
+		internal void ClearSessionBuffers()
+		{
+			_bufferedSessionArrays.Clear();
+			_currentSessionArrays.Clear();
+		}
+
+		internal void TransferSessionBuffers()
+		{
+			_bufferedSessionArrays.Clear();
+			_bufferedSessionArrays.AddAll(_currentSessionArrays);
+			_currentSessionArrays.Clear();
+		}
+
+		/// <inheritdoc />
+		public T[] CreateZeroArray(int length)
+		{
+			return CreateValueArray(length, default(T));
+		}
+
+		/// <inheritdoc />
+		public T[] CreateValueArray(int length, T initialValue)
+		{
+			T[] array;
+			bool alreadyInitialised = false;
+
+			if (!BufferSessions || (array = _InternalGetBufferedArray(length)) == null)
+			{
+				array = new T[length];
+				alreadyInitialised = true;
+			}
+
+			if (BufferSessions)
+			{
+				_InternalAddToCurrentSession(array);
+			}
+
+			if (!alreadyInitialised)
+			{
+				if (initialValue.Equals(default(T)))
+				{
+					Array.Clear(array, 0, array.Length);
+				}
+				else
+				{
+					for (var i = 0; i < array.Length; i++)
+					{
+						array[i] = initialValue;
+					}
+				}
+			}
+
+			return array;
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);
-		public abstract T[] CreateZeroArray(int length);
-		public abstract T[] CreateValueArray(int length, T initialValue);
 		public abstract T Mul_Dot_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> n);
 		public abstract T L1Norm_V(ISigmaDiffDataBuffer<T> value);
 		public abstract T L2Norm_V(ISigmaDiffDataBuffer<T> value);
@@ -55,7 +147,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract FSharpOption<ISigmaDiffDataBuffer<T>> Solve_M_V(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract FSharpOption<ISigmaDiffDataBuffer<T>> SolveSymmetric_M_V(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ISigmaDiffDataBuffer<T> Diagonal_M(ShapedDataBufferView<T> a);
-	    public abstract ISigmaDiffDataBuffer<T> ReshapeCopy_MRows_V(ShapedDataBufferView<T> value);
+		public abstract ISigmaDiffDataBuffer<T> ReshapeCopy_MRows_V(ShapedDataBufferView<T> value);
 		public abstract ShapedDataBufferView<T> Mul_Out_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ShapedDataBufferView<T> Add_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Add_S_M(T a, ShapedDataBufferView<T> b);
@@ -75,11 +167,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);
-	    public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
-	    public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
-	    public abstract ISigmaDiffDataBuffer<T> Map2_F_V_V(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
-	    public abstract ShapedDataBufferView<T> Map_F_M(MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
-	    public abstract ShapedDataBufferView<T> Map_F_S_M(T other, MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
-	    public abstract ShapedDataBufferView<T> Map2_F_M_M(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
+		public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
+		public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
+		public abstract ISigmaDiffDataBuffer<T> Map2_F_V_V(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
+		public abstract ShapedDataBufferView<T> Map_F_M(MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
+		public abstract ShapedDataBufferView<T> Map_F_S_M(T other, MapOp mapOp, FSharpFunc<T, T> function, ShapedDataBufferView<T> value);
+		public abstract ShapedDataBufferView<T> Map2_F_M_M(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			_bufferedSessionArrays = new Dictionary<int, IList<T[]>>();
+			_currentSessionArrays = new Dictionary<int, IList<T[]>>();
+		}
 	}
 }

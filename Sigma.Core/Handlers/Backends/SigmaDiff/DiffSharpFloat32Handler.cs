@@ -954,19 +954,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public void BeginSession()
 		{
-			throw new NotImplementedException();
+			_diffsharpBackendHandle.BufferSessions = true;
+			_diffsharpBackendHandle.TransferSessionBuffers();
 		}
 
 		/// <inheritdoc />
 		public void EndSession()
 		{
-			throw new NotImplementedException();
+			_diffsharpBackendHandle.BufferSessions = false;
 		}
 
 		/// <inheritdoc />
 		public void ClearSession()
 		{
-			throw new NotImplementedException();
+			_diffsharpBackendHandle.ClearSessionBuffers();
 		}
 
 		/// <inheritdoc />

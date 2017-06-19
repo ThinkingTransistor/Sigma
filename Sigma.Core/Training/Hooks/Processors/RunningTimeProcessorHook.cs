@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Training.Hooks.Processors
 {
@@ -70,12 +71,7 @@ namespace Sigma.Core.Training.Hooks.Processors
 					lastRunningTimes.RemoveFirst();
 				}
 
-				long averageTime = 0L;
-
-				foreach (long pastTime in lastRunningTimes)
-				{
-					averageTime += pastTime;
-				}
+				long averageTime = lastRunningTimes.Sum();
 
 				averageTime /= numberRunningTimes;
 
