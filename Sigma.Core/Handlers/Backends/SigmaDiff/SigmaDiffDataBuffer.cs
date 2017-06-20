@@ -29,7 +29,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length);
+		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length); // TODO possible performance points (pool, buffer, whatever) here 
+																											   //  (the SubData thing)
+																											   //  also OfRows.ToArray (SeqModule.ToArray in F#) from RowWise
+																											   //  also AddSubMatrix (the tupledArg_2@something)
+																											   //  also op_Addition in DNDArray?
+																											   //  also Map_F_M
 
 		#endregion
 
@@ -84,7 +89,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
-			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
+			T[] stackedData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateZeroArray((int)newSize);
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(stackedData, BackendTag);
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
