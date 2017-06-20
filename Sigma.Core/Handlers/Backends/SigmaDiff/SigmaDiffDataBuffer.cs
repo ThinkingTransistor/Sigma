@@ -99,11 +99,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>. DeepCopy()
 		{
-			T[] copyData = new T[Length];
+			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateZeroArray((int) Length);
 
-			System.Array.Copy(Data, Offset, copyData, 0, Length); // TODO pool array creates, they're a heavy performance hit
+			System.Array.Copy(Data, Offset, copyData, 0, Length);
 
-			// deep copy only core data for diffsharp
 			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
 		}
 
