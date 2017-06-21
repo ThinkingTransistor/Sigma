@@ -806,6 +806,18 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 		}
 
 		/// <inheritdoc />
+		public void MarkLimbo(INDArray array)
+		{
+			UnderlyingHandler.MarkLimbo(array);
+		}
+
+		/// <inheritdoc />
+		public void FreeLimbo(INDArray array)
+		{
+			UnderlyingHandler.FreeLimbo(array);
+		}
+
+		/// <inheritdoc />
 		public bool IsNaN(INDArray array)
 		{
 			return UnderlyingHandler.IsNaN(array);

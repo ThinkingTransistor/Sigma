@@ -129,7 +129,13 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 						gradientRegistry[parameterIdentifier] = gradient;
 
-						layerBuffer.Parameters[trainableParameter] = Optimise(parameterIdentifier, handler.ClearTrace(asArray), gradient, handler);
+						handler.FreeLimbo(asArray);
+
+						INDArray newParameter = Optimise(parameterIdentifier, handler.ClearTrace(asArray), gradient, handler);
+
+						handler.MarkLimbo(newParameter);
+
+						layerBuffer.Parameters[trainableParameter] = newParameter;
 					}
 
 					layerBuffer.Parameters[trainableParameter] = handler.ClearTrace(layerBuffer.Parameters.Get<ITraceable>(trainableParameter));

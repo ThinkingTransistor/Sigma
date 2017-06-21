@@ -136,6 +136,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+			trainer.Operator.UseSessions = true;
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
@@ -240,10 +241,10 @@ namespace Sigma.Tests.Internals.Backend
 											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
+			//trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9); // should use adagrad after performance testing is over, way faster
 			trainer.Operator = new CpuSinglethreadedOperator();
 			trainer.Operator.UseSessions = true;
 
@@ -251,8 +252,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
 			//trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
-			//trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
-			//	.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
 			//trainer.AddLocalHook(new DiskSaviorHook<INetwork>("network.self", Namers.Static("mnist_mincost.sgnet"), verbose: true)
 			//	.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));

@@ -832,6 +832,22 @@ namespace Sigma.Core.Handlers
 		/// </summary>
 		void ClearSession();
 
+		/// <summary>
+		/// Mark an ndarray to be placed into session "limbo". 
+		/// The array will not be automatically reused until explicitly freed using <see cref="FreeLimbo"/>.
+		/// Note: If sessions are not enabled, this has no effect.
+		/// <param name="array">The array.</param>
+		/// </summary>
+		void MarkLimbo(INDArray array);
+
+		/// <summary>
+		/// Free an ndarray from the session "limbo".
+		/// The array will now be automatically reused.
+		/// Note: If sessions are not enabled, this has no effect.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		void FreeLimbo(INDArray array);
+
 		#endregion
 
 		#region Debugging helpers

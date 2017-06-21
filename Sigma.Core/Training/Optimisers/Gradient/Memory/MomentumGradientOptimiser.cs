@@ -20,7 +20,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 	///     parameter = parameter + velocity
 	/// </summary>
 	[Serializable]
-	public class MomentumGradientOptimiser : BaseMemoryGradientOptimiser<INDArray>
+	public class MomentumGradientOptimiser : BaseArrayMemoryGradientOptimiser
 	{
 		/// <summary>
 		/// Create a momentum gradient optimiser using a basic momentum gradient optimisation algorithm with a certain learning rate and momentum.
@@ -42,7 +42,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 
 			velocity = handler.Add(handler.Multiply(velocity, momentum), handler.Multiply(gradient, learningRate));
 
-			SetMemory(paramIdentifier, velocity);
+			SetProtectedMemory(paramIdentifier, velocity, handler);
 
 			INDArray update = handler.Multiply(velocity, -1.0);
 

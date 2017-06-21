@@ -16,7 +16,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 	/// An adagrad optimiser which adapts the learning rate for each parameter basted on the sum of past squared gradients.
 	/// </summary>
 	[Serializable]
-	public class AdagradOptimiser : BaseMemoryGradientOptimiser<INDArray>
+	public class AdagradOptimiser : BaseArrayMemoryGradientOptimiser
 	{
 		/// <summary>
 		/// Create an adagrad optimiser which adapts the learning rate for each parameter basted on the sum of past squared gradients.
@@ -44,7 +44,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 			INDArray squaredGradientSum = GetMemory(paramIdentifier, () => handler.NDArray((long[]) parameter.Shape.Clone()));
 
 			squaredGradientSum = handler.Add(squaredGradientSum, handler.Multiply(gradient, gradient));
-			SetMemory(paramIdentifier, squaredGradientSum);
+			SetProtectedMemory(paramIdentifier, squaredGradientSum, handler);
 
 			INDArray adaptedLearningRate = handler.Divide(learningRate, handler.SquareRoot(handler.Add(squaredGradientSum, smoothing)));
 

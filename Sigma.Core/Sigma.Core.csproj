@@ -297,6 +297,7 @@
     <Compile Include="Training\Optimisers\Gradient\Memory\AdadeltaOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\AdagradOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\BaseArrayMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\BaseMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />

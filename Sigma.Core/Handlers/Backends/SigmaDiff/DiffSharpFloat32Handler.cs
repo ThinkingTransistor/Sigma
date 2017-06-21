@@ -971,6 +971,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
+		public void MarkLimbo(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			_diffsharpBackendHandle.MarkLimbo(internalArray.Data.Data);
+		}
+
+		/// <inheritdoc />
+		public void FreeLimbo(INDArray array)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(array);
+
+			_diffsharpBackendHandle.FreeLimbo(internalArray.Data.Data);
+		}
+
+		/// <inheritdoc />
 		public INDArray MergeBatch(params INDArray[] arrays)
 		{
 			ADNDFloat32Array[] castArrays = arrays.As<INDArray, ADNDFloat32Array>();

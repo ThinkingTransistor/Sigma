@@ -26,6 +26,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	{
 		private IDictionary<int, IList<T[]>> _bufferedSessionArrays;
 		private IDictionary<int, IList<T[]>> _currentSessionArrays;
+		private ISet<T[]> _limboSessionArrays; // arrays that aren't automatically freed at the end of a session, have to be especially marked (e.g. for parameters)
 
 		public bool BufferSessions { get; set; }
 		public long BackendTag { get; set; }
@@ -43,6 +44,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			_bufferedSessionArrays = new Dictionary<int, IList<T[]>>();
 			_currentSessionArrays = new Dictionary<int, IList<T[]>>();
+			_limboSessionArrays = new HashSet<T[]>();
 		}
 
 		private void _InternalAddToCurrentSession(T[] array)
@@ -78,6 +80,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			_bufferedSessionArrays.Clear();
 			_currentSessionArrays.Clear();
+			_limboSessionArrays.Clear();
 		}
 
 		internal void TransferSessionBuffers()
@@ -85,6 +88,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			_bufferedSessionArrays.Clear();
 			_bufferedSessionArrays.AddAll(_currentSessionArrays);
 			_currentSessionArrays.Clear();
+		}
+
+		internal void MarkLimbo(T[] array)
+		{
+			if (BufferSessions && _currentSessionArrays.ContainsKey(array.Length) && _currentSessionArrays[array.Length].Remove(array))
+			{
+				_limboSessionArrays.Add(array);
+			}
+		}
+
+		internal void FreeLimbo(T[] array)
+		{
+			if (BufferSessions && _limboSessionArrays.Contains(array))
+			{
+				_limboSessionArrays.Remove(array);
+				_InternalAddToCurrentSession(array);
+			}
 		}
 
 		/// <inheritdoc />
