@@ -841,16 +841,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(clipped);
 		}
 
+		private uint _x, _y, _z, _w;
+
 		/// <inheritdoc />
-		public void FillWithProbabilityMask(INDArray array, double probability)
+		public unsafe void FillWithProbabilityMask(INDArray array, double probability)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
-			int begin = (int) internalArray.Data.Offset, end = (int) internalArray.Data.Length;
+			float probabilityAsFloat = (float) probability;
+			int begin = (int) internalArray.Data.Offset, end = (int) (begin + internalArray.Data.Length);
+			uint x = _x, y = _y, z = _z, w = _w;
 
+			// credit to Marsaglia for this Xorshift fast RNG implementation
 			for (int i = begin; i < end; i++)
 			{
-				if (_probabilityMaskRng.NextDouble() < probability)
+				uint t = x ^ (x << 11);
+				x = y; y = z; z = w;
+				uint randomInt = w = w ^ (w >> 19) ^ (t ^ (t >> 8)); 
+				float randomFloat = *(float*) (&randomInt);
+
+				if (randomFloat < probabilityAsFloat)
 				{
 					data[i] = 1;
 				}
@@ -859,6 +869,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 					data[i] = 0;
 				}
 			}
+
+			_x = x;
+			_y = y;
+			_z = z;
+			_w = w;
 		}
 
 		/// <inheritdoc />
