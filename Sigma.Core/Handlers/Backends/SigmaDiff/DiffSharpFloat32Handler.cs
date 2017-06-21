@@ -276,6 +276,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
+		public INDArray StackRows(int numberRows, INDArray row)
+		{
+			ADNDFloat32Array internalArray = InternaliseArray(row);
+
+			return new ADNDFloat32Array(DNDArray.OfRows(numberRows, internalArray._adArrayHandle, _diffsharpBackendHandle));
+		}
+
+		/// <inheritdoc />
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
 			ADNDFloat32Array internalArray = InternaliseArray(array);

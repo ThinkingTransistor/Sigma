@@ -44,10 +44,10 @@ namespace Sigma.Core.Layers.Recurrent
 		{
 			INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
-			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
 			string activation = buffer.Parameters.Get<string>("activation");
 			long batches = inputs.Shape[0];
 			int inputSize = Parameters.Get<int>("default_input_size"), size = Parameters.Get<int>("size");
+			INDArray biases = handler.StackRows((int) batches, buffer.Parameters.Get<INDArray>("biases"));
 
 			INDArray activations = handler.PermuteBatchAndTime(inputs); // BatchTimeFeatures ordering by default, needs to be TimeBatchFeatures for layers operating on the time dimension
 			activations = activations.Reshape(activations.Shape[0], activations.Shape[1] * ArrayUtils.Product(2, activations.Shape));
@@ -55,7 +55,7 @@ namespace Sigma.Core.Layers.Recurrent
 			{
 				timeSlice = timeSlice.Reshape(inputs.Shape[0], inputSize);
 				timeSlice = handler.Dot(timeSlice, weights);
-				timeSlice = handler.RowWise(timeSlice, row => handler.Add(row, biases));
+				timeSlice = handler.Add(timeSlice, biases);
 				timeSlice = handler.Activation(activation, timeSlice);
 
 				return timeSlice.Reshape(1L, batches * size);

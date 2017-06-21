@@ -233,6 +233,14 @@ namespace Sigma.Core.Handlers
 		/// <returns>A slice of the given ndarray along the given range.</returns>
 		INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength);
 
+		/// <summary>
+		/// Get a traceable matrix stack of (identical) ndarray rows.
+		/// </summary>
+		/// <param name="numberRows">The number of rows.</param>
+		/// <param name="row">The ndarray row.</param>
+		/// <returns>A matrix stack with numberRows rows of the given row.</returns>
+		INDArray StackRows(int numberRows, INDArray row);
+
 		#endregion
 
 		#region Primitive binary mathematical operations

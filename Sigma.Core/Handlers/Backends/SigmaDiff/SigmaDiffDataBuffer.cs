@@ -29,9 +29,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => _InternalGetSubData(); //  also AddSubMatrix (the tupledArg_2@something)
-																	  //  also op_Addition in DNDArray?
-																	  //  also Map_F_M
+		T[] ISigmaDiffDataBuffer<T>.SubData => _InternalGetSubData(); 
 
 		#endregion
 

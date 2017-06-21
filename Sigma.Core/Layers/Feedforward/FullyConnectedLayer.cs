@@ -38,10 +38,10 @@ namespace Sigma.Core.Layers.Feedforward
 			INDArray input = buffer.Inputs["default"].Get<INDArray>("activations");
 			INDArray activations = handler.FlattenTimeAndFeatures(input);
 			INDArray weights = buffer.Parameters.Get<INDArray>("weights");
-			INDArray biases = buffer.Parameters.Get<INDArray>("biases");
+			INDArray biases = handler.StackRows((int) (input.Shape[0] * input.Shape[1]), buffer.Parameters.Get<INDArray>("biases"));
 
 			INDArray output = handler.Dot(activations, weights);
-			output = handler.RowWise(output, row => handler.Add(row, biases)); // TODO maybe it's faster to just duplicate the biases into a matrix of the same size as the output?
+			output = handler.Add(output, biases); 
 			output = handler.Activation(buffer.Parameters.Get<string>("activation"), output);
 
 			buffer.Outputs["default"]["activations"] = output.Reshape(input.Shape[0], input.Shape[1], Parameters.Get<int>("size"));

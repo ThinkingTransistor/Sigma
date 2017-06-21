@@ -388,6 +388,21 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return CheckNice(UnderlyingHandler.GetSlice(CheckNice(array), rowIndex, columnIndex, rowLength, columnLength));
 		}
 
+		public INDArray StackRows(int numberRows, INDArray row)
+		{
+			if (numberRows < 1)
+			{
+				Report($"number of rows must be >= 1 but was {numberRows}", numberRows);
+			}
+
+			if (!row.IsVector)
+			{
+				Report($"row must be vector", row);
+			}
+
+			return CheckNice(UnderlyingHandler.StackRows(numberRows, CheckNice(row)));
+		}
+
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
 			return CheckNice(UnderlyingHandler.Add(CheckNice(array), value));

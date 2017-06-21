@@ -204,7 +204,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> Permute_M(ShapedDataBufferView<T> array, int[] rearrangedDimensions);
 		public abstract ShapedDataBufferView<T> Reshape_M(ShapedDataBufferView<T> array, long[] newShape);
 		public abstract ShapedDataBufferView<T> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
-		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
+		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> row);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);

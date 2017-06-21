@@ -863,9 +863,27 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.RepeatReshapeCopy_V_MRows"/>
-		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> value)
+		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> row)
 		{
-			throw new NotImplementedException();
+			if (row.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			int rowLength = row.Length;
+			float[] result = CreateUninitialisedArray(rows * rowLength);
+			float[] rowData = row.Data;
+			int sourceOffset = row.Offset;
+			int destinationOffset = 0;
+
+			for (int i = 0; i < rows; i++)
+			{
+				System.Array.Copy(rowData, sourceOffset, result, destinationOffset, rowLength);
+
+				destinationOffset += rowLength;
+			}
+
+			return new ShapedDataBufferView<float>(CreateDataBuffer(result), rows, rowLength);
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.RepeatReshapeCopy_V_MCols"/>
