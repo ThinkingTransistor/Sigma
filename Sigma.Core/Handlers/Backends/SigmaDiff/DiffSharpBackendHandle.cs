@@ -174,6 +174,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract T Sum_V(ISigmaDiffDataBuffer<T> value);
 		public abstract T Sum_M(ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Add_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
+		public abstract ISigmaDiffDataBuffer<T> Add_V_V_InPlace(ISigmaDiffDataBuffer<T> obj0, int obj1, ISigmaDiffDataBuffer<T> obj2, int obj3, int obj4);
 		public abstract ISigmaDiffDataBuffer<T> Add_S_V(T a, ISigmaDiffDataBuffer<T> b);
 		public abstract ISigmaDiffDataBuffer<T> Sub_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ISigmaDiffDataBuffer<T> Sub_S_V(T a, ISigmaDiffDataBuffer<T> b);

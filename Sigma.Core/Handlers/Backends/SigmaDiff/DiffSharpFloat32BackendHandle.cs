@@ -142,6 +142,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return b;
 		}
 
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_V_V_InPlace"/>
+		public override ISigmaDiffDataBuffer<float> Add_V_V_InPlace(ISigmaDiffDataBuffer<float> a, int aOffset, ISigmaDiffDataBuffer<float> b, int bOffset, int len)
+		{
+			if (len == 0)
+			{
+				return b;
+			}
+
+			fixed (float* aref = &a.Data[a.Offset + aOffset])
+			fixed (float* bref = &b.Data[b.Offset + bOffset])
+			{
+				int inca = 1, incb = 1;
+				float alpha = 1.0f;
+
+				BlasBackend.Saxpy(&len, &alpha, aref, &inca, bref, &incb);
+			}
+
+			return b;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_S_V"/>
 		public override ISigmaDiffDataBuffer<float> Add_S_V(float a, ISigmaDiffDataBuffer<float> b)
 		{
