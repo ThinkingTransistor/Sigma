@@ -21,7 +21,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	{
 		public long BackendTag { get; set; }
 
-		#region DiffSharp SigmaDiffDataBuffer interop properties
+		#region DiffSharp <=> SigmaDiffDataBuffer interop properties
 
 		int ISigmaDiffDataBuffer<T>.Length => (int)Length;
 
@@ -29,12 +29,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length); // TODO possible performance points (pool, buffer, whatever) here 
-																											   //  (the SubData thing)
-																											   //  also OfRows.ToArray (SeqModule.ToArray in F#) from RowWise
-																											   //  also AddSubMatrix (the tupledArg_2@something)
-																											   //  also op_Addition in DNDArray?
-																											   //  also Map_F_M
+		T[] ISigmaDiffDataBuffer<T>.SubData => _InternalGetSubData(); //  also OfRows.ToArray (SeqModule.ToArray in F#) from RowWise
+																	  //  also AddSubMatrix (the tupledArg_2@something)
+																	  //  also op_Addition in DNDArray?
+																	  //  also Map_F_M
 
 		#endregion
 
@@ -89,7 +87,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
-			T[] stackedData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateZeroArray((int)newSize);
+			T[] stackedData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)newSize);
 			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(stackedData, BackendTag);
 
 			for (int m = rowStart; m <= rowFinish; m++)
@@ -103,13 +101,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return values;
 		}
 
-		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>. DeepCopy()
+		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
-			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateZeroArray((int) Length);
+			T[] copyData = _InternalGetSubData();
+
+			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
+		}
+
+		private T[] _InternalGetSubData()
+		{
+			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
 
 			System.Array.Copy(Data, Offset, copyData, 0, Length);
 
-			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
+			return copyData;
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.ShallowCopy()

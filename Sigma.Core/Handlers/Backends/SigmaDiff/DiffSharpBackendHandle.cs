@@ -88,6 +88,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
+		public T[] CreateUninitialisedArray(int length)
+		{
+			T[] array;
+
+			if (!BufferSessions || (array = _InternalGetBufferedArray(length)) == null)
+			{
+				array = new T[length];
+			}
+
+			if (BufferSessions)
+			{
+				_InternalAddToCurrentSession(array);
+			}
+
+			return array;
+		}
+
+		/// <inheritdoc />
 		public T[] CreateZeroArray(int length)
 		{
 			return CreateValueArray(length, default(T));
