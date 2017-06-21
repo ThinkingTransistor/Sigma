@@ -180,7 +180,7 @@ namespace Sigma.Core.Data.Datasets
                     const long estimatedRecordSizeBytes = 1024;
                     const double memoryToConsume = 0.2f;
                     const long optimalNumberBlocks = 8;
-                    const int maxBlockSizeRecords = 4096;
+                    const int maxBlockSizeRecords = 65536;
                     long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
                     TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int)(availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
