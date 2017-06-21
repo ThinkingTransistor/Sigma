@@ -20,6 +20,7 @@ namespace Sigma.Core.Layers.Feedforward
 	[Serializable]
 	public class FullyConnectedLayer : BaseLayer
 	{
+		/// <inheritdoc />
 		public FullyConnectedLayer(string name, IRegistry parameters, IComputationHandler handler) : base(name, parameters, handler)
 		{
 			int size = parameters.Get<int>("size");
@@ -31,6 +32,7 @@ namespace Sigma.Core.Layers.Feedforward
 			TrainableParameters = new[] { "weights", "biases" };
 		}
 
+		/// <inheritdoc />
 		public override void Run(ILayerBuffer buffer, IComputationHandler handler, bool trainingPass)
 		{
 			INDArray input = buffer.Inputs["default"].Get<INDArray>("activations");

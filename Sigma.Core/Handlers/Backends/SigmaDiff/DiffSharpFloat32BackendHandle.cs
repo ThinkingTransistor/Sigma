@@ -754,6 +754,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return true;
 			}
+			else if (mapOp.IsSign)
+			{
+				a = a.DeepCopy();
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					a.DataBuffer.Data[i] = (float)Math.Sign(a.DataBuffer.Data[i]);
+				}
+
+				return true;
+			}
 
 			return false;
 		}

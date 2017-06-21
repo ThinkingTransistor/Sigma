@@ -259,12 +259,11 @@ namespace Sigma.Tests.Internals.Backend
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
-			//trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
+			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 50));
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 1));
-			trainer.AddHook(new StopTrainingHook(atEpoch: 1));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 30));
+			trainer.AddHook(new StopTrainingHook(atEpoch: 100));
 
 			sigma.Run();
 		}
