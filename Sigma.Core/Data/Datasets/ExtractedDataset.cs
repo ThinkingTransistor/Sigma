@@ -135,7 +135,7 @@ namespace Sigma.Core.Data.Datasets
         /// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
         /// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
         public ExtractedDataset(string name, int blockSizeRecords, bool flushCache, params IRecordExtractor[] recordExtractors)
-            : this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
+            : this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), flushCache, recordExtractors)
         {
         }
 
@@ -356,8 +356,9 @@ namespace Sigma.Core.Data.Datasets
                 }
 
                 RegisterActiveBlock(block, blockIndex, handler);
+	            CacheBlockConstrained(block, blockIndex, handler);
 
-                return block;
+				return block;
             }
             else
             {
@@ -476,6 +477,7 @@ namespace Sigma.Core.Data.Datasets
                 if (block != null)
                 {
                     RegisterActiveBlock(block, blockIndex, handler);
+					CacheBlockConstrained(block, blockIndex, handler);
 
                     return block;
                 }
