@@ -607,7 +607,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Had_M_M"/>
-		public override ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
+		public override unsafe ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
 			{
@@ -618,15 +618,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[a.Length]), a.Shape);
 			}
 
-			//TODO update with BLAS hadamard implementation
+			//TODO update with faster optimised hadamard implementation
 			b = b.DeepCopy();
 			int len = Math.Min(a.Length, b.Length);
-			int offsetA = a.DataBuffer.Offset, offsetB = b.DataBuffer.Offset;
-			float[] dataA = a.DataBuffer.Data;
-			float[] dataB = b.DataBuffer.Data;
-			for (int i = 0; i < len; i++)
+
+			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
+			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{
-				dataB[i + offsetB] = dataA[i + offsetA] * dataB[i + offsetB];
+				for (int i = 0; i < len; i++)
+				{
+					bref[i] = aref[i] + bref[i];
+				}
 			}
 
 			return b;
@@ -758,21 +760,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			a = a.DeepCopy();
 			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			float[] data = a.DataBuffer.Data;
+
 			for (int i = a.DataBuffer.Offset; i < upper; i++)
 			{
-				float value = a.DataBuffer.Data[i];
+				float value = data[i];
 
 				if (value > 0)
 				{
-					a.DataBuffer.Data[i] = 1;
+					data[i] = 1;
 				}
 				else if (value < 0)
 				{
-					a.DataBuffer.Data[i] = -1;
+					data[i] = -1;
 				}
 				else
 				{
-					a.DataBuffer.Data[i] = 0;
+					data[i] = 0;
 				}
 			}
 		}
