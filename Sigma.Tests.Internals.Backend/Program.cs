@@ -240,8 +240,9 @@ namespace Sigma.Tests.Internals.Backend
 			//trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
+			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
+			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			//trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
 			trainer.Operator = new CpuSinglethreadedOperator();
 			trainer.Operator.UseSessions = true;
 

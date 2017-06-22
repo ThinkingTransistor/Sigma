@@ -762,21 +762,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
 			float[] data = a.DataBuffer.Data;
 
+			System.Array.Clear(data, a.DataBuffer.Offset, a.DataBuffer.Length);
+
 			for (int i = a.DataBuffer.Offset; i < upper; i++)
 			{
 				float value = data[i];
 
-				if (value > 0)
+				if (value > 0.0f)
 				{
-					data[i] = 1;
+					data[i] = 1.0f;
 				}
-				else if (value < 0)
+				else if (value < 0.0f)
 				{
-					data[i] = -1;
-				}
-				else
-				{
-					data[i] = 0;
+					data[i] = -1.0f;
 				}
 			}
 		}
@@ -845,9 +843,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			a = a.DeepCopy();
 
 			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			float[] data = a.DataBuffer.Data;
+
 			for (int i = a.DataBuffer.Offset; i < upper; i++)
 			{
-				a.DataBuffer.Data[i] = f.Invoke(a.DataBuffer.Data[i]);
+				data[i] = f.Invoke(data[i]);
 			}
 
 			return a;

@@ -42,6 +42,7 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using Sigma.Core.Layers.Regularisation;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -208,7 +209,7 @@ namespace Sigma.Tests.Internals.WPF
 
 					for (int i = 0; i < 10; i++)
 					{
-						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
+						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(3, TimeScale.Epoch)));
 					}
 				}
 
@@ -361,35 +362,34 @@ namespace Sigma.Tests.Internals.WPF
 		/// <returns>The newly created trainer.</returns>
 		private static ITrainer CreateMnistTrainer(SigmaEnvironment sigma)
 		{
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+			IDataset dataset = Defaults.Datasets.Mnist();
+			ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
 
-			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
-
-			IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
-			ITrainer trainer = sigma.CreateTrainer("test");
-
-			trainer.Network = new Network
-			{
-				Architecture = InputLayer.Construct(28, 28)
-								+ FullyConnectedLayer.Construct(28 * 28)
-								+ FullyConnectedLayer.Construct(10)
-								+ OutputLayer.Construct(10)
-								+ SoftMaxCrossEntropyCostLayer.Construct()
-			};
-			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network); // TODO outdated network files do not contain the updated registry entries 
-																									//  (e.g. when adding new parameters, like param count), maybe fix
-
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(28, 28)
+											+ DropoutLayer.Construct(0.2)
+											+ FullyConnectedLayer.Construct(1000, activation: "tanh")
+											+ DropoutLayer.Construct(0.5)
+											+ FullyConnectedLayer.Construct(800, activation: "tanh")
+											+ DropoutLayer.Construct(0.5)
+											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
+											+ OutputLayer.Construct(10)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
+			//trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
 			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator.UseSessions = true;
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
+			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 
 			return trainer;
 		}
