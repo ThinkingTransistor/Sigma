@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
@@ -618,20 +619,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[a.Length]), a.Shape);
 			}
 
-			//TODO update with faster optimised hadamard implementation
-			b = b.DeepCopy();
 			int len = Math.Min(a.Length, b.Length);
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])b.Shape.Clone());
 
-			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
-			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			fixed (float* resref = &resData[resOffset])
 			{
-				for (int i = 0; i < len; i++)
+				int simdLength = Vector<float>.Count, i;
+
+				for (i = 0; i <= len - simdLength; i += simdLength)
 				{
-					bref[i] = aref[i] * bref[i];
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					Vector<float> vb = new Vector<float>(bData, i + bOffset);
+					(va * vb).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = aref[i] * bref[i];
 				}
 			}
 
-			return b;
+			return result;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Inverse_M"/>
@@ -686,7 +699,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			ShapedDataBufferView<float> transposed = a.DeepCopy();
 
-			for (var i = 0; i < transposed.Shape.Length; i++)
+			for (int i = 0; i < transposed.Shape.Length; i++)
 			{
 				transposed.Shape[i] = a.Shape[a.Shape.Length - 1 - i];
 			}
@@ -779,16 +792,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		private static void _InternalOptimisedSqrt(ref ShapedDataBufferView<float> a)
+		private void _InternalOptimisedSqrt(ref ShapedDataBufferView<float> a)
 		{
-			a = a.DeepCopy();
-			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-			float[] data = a.DataBuffer.Data;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
-			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			int len = a.Length;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
 			{
-				data[i] = (float) Math.Sqrt(data[i]);
+				int simdLength = Vector<float>.Count, i;
+
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					Vector.SquareRoot(va).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = (float)Math.Sqrt(aref[i]);
+				}
 			}
+
+			a = result; // write out result to ref
 		}
 
 		private static void _InternalOptimisedExp(ref ShapedDataBufferView<float> a)
@@ -799,7 +828,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			for (int i = a.DataBuffer.Offset; i < upper; i++)
 			{
-				data[i] = (float) Math.Exp(data[i]);
+				data[i] = (float)Math.Exp(data[i]);
 			}
 		}
 
@@ -815,16 +844,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return false;
 		}
 
-		private static void _InternalOptimisedDiv(float other, ref ShapedDataBufferView<float> a)
+		private void _InternalOptimisedDiv(float other, ref ShapedDataBufferView<float> a)
 		{
-			a = a.DeepCopy();
-			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-			float[] data = a.DataBuffer.Data;
+			int simdLength = Vector<float>.Count, i;
+			int len = a.Length;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
+			float[] aData = a.DataBuffer.Data, bData = CreateValueArray(simdLength, other), resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			Vector<float> vc = new Vector<float>(bData, 0); // filled with constant value of other
 
-			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[0])
+			fixed (float* resref = &resData[resOffset])
 			{
-				data[i] = other / data[i];
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					(vc / va).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = other / aref[i];
+				}
 			}
+
+			a = result;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_M"/>
