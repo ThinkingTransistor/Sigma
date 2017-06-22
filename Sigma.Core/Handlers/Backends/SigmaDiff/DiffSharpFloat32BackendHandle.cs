@@ -734,34 +734,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			if (mapOp.IsExp)
 			{
-				a = a.DeepCopy();
-				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-				for (int i = a.DataBuffer.Offset; i < upper; i++)
-				{
-					a.DataBuffer.Data[i] = (float)Math.Exp(a.DataBuffer.Data[i]);
-				}
+				_InternalOptimisedExp(ref a);
 
 				return true;
 			}
 			else if (mapOp.IsSqrt)
 			{
-				a = a.DeepCopy();
-				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-				for (int i = a.DataBuffer.Offset; i < upper; i++)
-				{
-					a.DataBuffer.Data[i] = (float)Math.Sqrt(a.DataBuffer.Data[i]);
-				}
+				_InternalOptimisedSqrt(ref a);
 
 				return true;
 			}
 			else if (mapOp.IsSign)
 			{
-				a = a.DeepCopy();
-				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-				for (int i = a.DataBuffer.Offset; i < upper; i++)
-				{
-					a.DataBuffer.Data[i] = (float)Math.Sign(a.DataBuffer.Data[i]);
-				}
+				_InternalOptimisedSign(ref a);
 
 				return true;
 			}
@@ -769,21 +754,75 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return false;
 		}
 
+		private static void _InternalOptimisedSign(ref ShapedDataBufferView<float> a)
+		{
+			a = a.DeepCopy();
+			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			{
+				float value = a.DataBuffer.Data[i];
+
+				if (value > 0)
+				{
+					a.DataBuffer.Data[i] = 1;
+				}
+				else if (value < 0)
+				{
+					a.DataBuffer.Data[i] = -1;
+				}
+				else
+				{
+					a.DataBuffer.Data[i] = 0;
+				}
+			}
+		}
+
+		private static void _InternalOptimisedSqrt(ref ShapedDataBufferView<float> a)
+		{
+			a = a.DeepCopy();
+			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			float[] data = a.DataBuffer.Data;
+
+			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			{
+				data[i] = (float) Math.Sqrt(data[i]);
+			}
+		}
+
+		private static void _InternalOptimisedExp(ref ShapedDataBufferView<float> a)
+		{
+			a = a.DeepCopy();
+			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			float[] data = a.DataBuffer.Data;
+
+			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			{
+				data[i] = (float) Math.Exp(data[i]);
+			}
+		}
+
 		private bool _InternalOptimisedMapOp_F_S_M(float other, MapOp mapOp, ref ShapedDataBufferView<float> a)
 		{
 			if (mapOp.IsDiv)
 			{
-				a = a.DeepCopy();
-				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-				for (int i = a.DataBuffer.Offset; i < upper; i++)
-				{
-					a.DataBuffer.Data[i] = other / a.DataBuffer.Data[i];
-				}
+				_InternalOptimisedDiv(other, ref a);
 
 				return true;
 			}
 
 			return false;
+		}
+
+		private static void _InternalOptimisedDiv(float other, ref ShapedDataBufferView<float> a)
+		{
+			a = a.DeepCopy();
+			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			float[] data = a.DataBuffer.Data;
+
+			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			{
+				data[i] = other / data[i];
+			}
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_M"/>

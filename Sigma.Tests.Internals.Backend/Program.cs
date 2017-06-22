@@ -263,7 +263,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			//trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(32, TimeScale.Iteration), 32));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 32));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 100));
 
