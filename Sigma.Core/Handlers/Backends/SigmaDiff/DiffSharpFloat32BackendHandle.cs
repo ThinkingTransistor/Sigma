@@ -627,7 +627,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				for (int i = 0; i < len; i++)
 				{
-					bref[i] = aref[i] + bref[i];
+					bref[i] = aref[i] * bref[i];
 				}
 			}
 
