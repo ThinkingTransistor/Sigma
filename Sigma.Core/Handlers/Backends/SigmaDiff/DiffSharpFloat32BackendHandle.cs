@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using DiffSharp;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
@@ -889,7 +890,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				for (int y = 0; y < len; y++)
 				{
-					resref[y] = (float) Math.Exp(-aref[y]);
+					resref[y] = (float)Math.Exp(-aref[y]);
 				}
 
 				int i;
@@ -950,6 +951,48 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			a = result;
 		}
 
+		private bool _InternalOptimisedMapOp_F_M_M(MapOp mapOp, ShapedDataBufferView<float> a, ref ShapedDataBufferView<float> b)
+		{
+			if (mapOp.IsDiv)
+			{
+				_InternalOptimisedDiv(a, ref b);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private void _InternalOptimisedDiv(ShapedDataBufferView<float> a, ref ShapedDataBufferView<float> b)
+		{
+			int len = Math.Min(a.Length, b.Length);
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])b.Shape.Clone());
+
+			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				int simdLength = Vector<float>.Count, i;
+
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					Vector<float> vb = new Vector<float>(bData, i + bOffset);
+					(va / vb).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = aref[i] / bref[i];
+				}
+			}
+
+			b = result;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map_F_M"/>
 		public override ShapedDataBufferView<float> Map_F_M(MapOp mapOp, FSharpFunc<float, float> f, ShapedDataBufferView<float> a)
 		{
@@ -984,7 +1027,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return value;
 			}
 
-			return Map_F_M(mapOp, function, value);
+			return Map_F_M(mapOp, function, value); // this is correct, the "other" constant is only passed to speed up computation in optimised versions without using the lambda
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Map2_F_M_M"/>
@@ -994,14 +1037,31 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
-
-			b = b.DeepCopy();
-			for (int i = 0; i < a.Length; i++)
+			if (b.Length == 0)
 			{
-				b.DataBuffer.Data[i] = f.Invoke(a.DataBuffer.Data[i + a.DataBuffer.Offset]).Invoke(b.DataBuffer.Data[i + b.DataBuffer.Offset]);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			return a;
+			if (_InternalOptimisedMapOp_F_M_M(mapOp, a, ref b))
+			{
+				return b;
+			}
+
+			b = b.DeepCopy();
+
+			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			{
+				for (int i = 0; i < a.Length; i++)
+				{
+					bref[i] = f.Invoke(aref[i]).Invoke(bData[i]);
+				}
+			}
+
+			return b;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.ReshapeCopy_MRows_V"/>
