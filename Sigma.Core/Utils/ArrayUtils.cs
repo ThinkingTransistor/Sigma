@@ -161,6 +161,27 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Permute an array in-place according to the rearranged dimension array (the permutation array).
+		/// </summary>
+		/// <param name="array">The array to permute.</param>
+		/// <param name="buffer">A buffer array of the same size (this can be reused).</param>
+		/// <param name="rearrangedDimensions">The permutation array, how each dimension should be rearranged.</param>
+		/// <returns>The given array (for convenience), permuted according to the permutation array (rearrangedDimensions).</returns>
+		public static long[] PermuteArrayInPlace(long[] array, long[] buffer, int[] rearrangedDimensions)
+		{
+			int length = array.Length;
+
+			System.Array.Copy(array, 0, buffer, 0, length);
+
+			for (int i = 0; i < length; i++)
+			{
+				array[i] = buffer[rearrangedDimensions[i]];
+			}
+
+			return array;
+		}
+
+		/// <summary>
 		/// Get a permuted COPY of an array according to the rearranged dimension array (the permutation array).
 		/// </summary>
 		/// <param name="array">The array to get a permuted copy of.</param>
@@ -168,7 +189,6 @@ namespace Sigma.Core.Utils
 		/// <returns>A permuted copy of the given array according to the permutation array (rearrangedDimensions).</returns>
 		public static long[] PermuteArray(long[] array, int[] rearrangedDimensions)
 		{
-			// TODO PermuteArrayInPlace version
 			int length = array.Length;
 			long[] result = new long[length];
 

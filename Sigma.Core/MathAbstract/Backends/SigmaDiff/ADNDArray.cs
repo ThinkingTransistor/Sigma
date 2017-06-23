@@ -353,6 +353,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		/// <param name="length">The data array length.</param>
 		internal static void _InternalPermuteSelf(T[] data, int offset, int length, int[] rearrangedDimensions, long[] originalShape, long[] rearrangedShape)
 		{
+			// TODO optimise heavily
 			long[] originalStrides = NDArrayUtils.GetStrides(originalShape);
 			long[] rearrangedStrides = NDArrayUtils.GetStrides(rearrangedShape);
 
