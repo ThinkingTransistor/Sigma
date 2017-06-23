@@ -136,11 +136,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			T[] array;
 			bool alreadyInitialised = false;
+			bool initialIsDefault = initialValue.Equals(default(T));
 
 			if (!BufferSessions || (array = _InternalGetBufferedArray(length)) == null)
 			{
 				array = new T[length];
-				alreadyInitialised = true;
+				alreadyInitialised = initialIsDefault;
 			}
 
 			if (BufferSessions)
@@ -150,7 +151,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			if (!alreadyInitialised)
 			{
-				if (initialValue.Equals(default(T)))
+				if (initialIsDefault)
 				{
 					Array.Clear(array, 0, array.Length);
 				}

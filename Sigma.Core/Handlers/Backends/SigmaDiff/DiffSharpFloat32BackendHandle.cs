@@ -765,6 +765,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return true;
 			}
+			else if (mapOp.IsReL)
+			{
+				_InternalOptimisedRel(ref a);
+
+				return true;
+			}
+			else if (mapOp.IsSigmoid)
+			{
+				_InternalOptimisedSigmoid(ref a);
+
+				return true;
+			}
 
 			return false;
 		}
@@ -832,6 +844,72 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
+		private void _InternalOptimisedRel(ref ShapedDataBufferView<float> a)
+		{
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+
+			int simdLength = Vector<float>.Count;
+			int len = a.Length;
+			float[] aData = a.DataBuffer.Data, cData = CreateValueArray(simdLength, 0.0f), resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			Vector<float> vc = new Vector<float>(cData);
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				int i;
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					Vector.Max(va, vc).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = Math.Max(aref[i], 0.0f);
+				}
+			}
+
+			a = result;
+		}
+
+		// number1 / (number1 + exp -v))
+		private void _InternalOptimisedSigmoid(ref ShapedDataBufferView<float> a)
+		{
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+
+			int simdLength = Vector<float>.Count;
+			int len = a.Length;
+			float[] aData = a.DataBuffer.Data, cData = CreateValueArray(simdLength, 1.0f), resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			Vector<float> vc = new Vector<float>(cData);
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				for (int y = 0; y < len; y++)
+				{
+					resref[y] = (float) Math.Exp(-aref[y]);
+				}
+
+				int i;
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					int absResOffset = i + resOffset;
+					Vector<float> vres = new Vector<float>(resData, absResOffset); // TODO optimise offsets
+					vres = vres + vc;
+					(vc / vres).CopyTo(resData, absResOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = 1.0f / (1.0f + resref[i]);
+				}
+			}
+
+			a = result;
+		}
+
 		private bool _InternalOptimisedMapOp_F_S_M(float other, MapOp mapOp, ref ShapedDataBufferView<float> a)
 		{
 			if (mapOp.IsDiv)
@@ -846,17 +924,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		private void _InternalOptimisedDiv(float other, ref ShapedDataBufferView<float> a)
 		{
-			int simdLength = Vector<float>.Count, i;
+			int simdLength = Vector<float>.Count;
 			int len = a.Length;
 			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
 			float[] aData = a.DataBuffer.Data, bData = CreateValueArray(simdLength, other), resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
-			Vector<float> vc = new Vector<float>(bData, 0); // filled with constant value of other
+			Vector<float> vc = new Vector<float>(bData); // filled with constant value of other
 
 			fixed (float* aref = &aData[aOffset])
-			fixed (float* bref = &bData[0])
 			fixed (float* resref = &resData[resOffset])
 			{
+				int i;
 				for (i = 0; i <= len - simdLength; i += simdLength)
 				{
 					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
