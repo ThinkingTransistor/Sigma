@@ -59,17 +59,17 @@ namespace Sigma.Core.Utils
 			switch (unit)
 			{
 				case TimeUnit.Year:
-					return format == TimeUnitFormat.Full ? " years" : "y";
+					return format == TimeUnitFormat.Full ? " years" : "yr";
 				case TimeUnit.Month:
 					return format == TimeUnitFormat.Full ? " months" : "M";
 				case TimeUnit.Day:
-					return format == TimeUnitFormat.Full ? " days" : "d";
+					return format == TimeUnitFormat.Full ? " days" : "day";
 				case TimeUnit.Hour:
-					return format == TimeUnitFormat.Full ? " hours" : "h";
+					return format == TimeUnitFormat.Full ? " hours" : "hr";
 				case TimeUnit.Minute:
-					return format == TimeUnitFormat.Full ? " minutes" : "m";
+					return format == TimeUnitFormat.Full ? " minutes" : "min";
 				case TimeUnit.Second:
-					return format == TimeUnitFormat.Full ? " seconds" : "s";
+					return format == TimeUnitFormat.Full ? " seconds" : "sec";
 				case TimeUnit.Millisecond:
 					return format == TimeUnitFormat.Full ? " milliseconds" : "ms";
 				default:

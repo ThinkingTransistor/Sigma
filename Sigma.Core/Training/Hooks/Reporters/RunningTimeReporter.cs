@@ -60,7 +60,15 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="averageTime">The average time between occurrences.</param>
 		protected virtual void Report(TimeScale timeScale, long lastTime, long averageTime)
 		{
-			_logger.Info($"Time per {timeScale}: average {PrintUtils.FormatTimeSimple(averageTime)}, last {PrintUtils.FormatTimeSimple(lastTime)}");
+			if (lastTime != -1 && averageTime != -1)
+			{
+				TimeUnit unit;
+				var inverseTime = PrintUtils.GetInverseTime(averageTime, out unit);
+
+				string lowerCaseTimescale = timeScale.ToString().ToLower();
+
+				_logger.Info($"{inverseTime:###.0} {lowerCaseTimescale}s/{unit.GetTimeUnitInFormat(TimeUnitFormat.Minimum)} (time/{lowerCaseTimescale}: average {PrintUtils.FormatTimeSimple(averageTime)}, last {PrintUtils.FormatTimeSimple(lastTime)})");
+			}
 		}
 	}
 }

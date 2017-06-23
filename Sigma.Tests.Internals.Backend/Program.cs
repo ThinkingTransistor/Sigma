@@ -242,7 +242,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.016);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
 			trainer.Operator = new CpuSinglethreadedOperator();
 			trainer.Operator.UseSessions = true;
 
@@ -264,9 +264,9 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 128));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(600, TimeScale.Iteration), 256));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
-			trainer.AddHook(new StopTrainingHook(atEpoch: 10));
+			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 
 			sigma.Run();
 		}

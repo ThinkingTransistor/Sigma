@@ -33,12 +33,28 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		public static readonly char[] AsciiDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
+		/// <summary>
+		/// Format a millisecond time to a simple string, e.g. "12.423min". 
+		/// </summary>
+		/// <param name="timeMilliseconds">The time in milliseconds.</param>
+		/// <param name="format">The time unit format.</param>
+		/// <returns>The time string.</returns>
 		public static string FormatTimeSimple(double timeMilliseconds, TimeUnitFormat format = TimeUnitFormat.Minimum)
 		{
-			return FormatTime(timeMilliseconds, separator: ".", format: format, depth: 1, printFirstUnitLast: true, padSubUnits: true);
+			return FormatTime(timeMilliseconds, separator: ".", format: format, depth: 1, putFirstUnitLast: true, padSubUnits: true);
 		}
 
-		public static string FormatTime(double timeMilliseconds, string separator = ", ", TimeUnitFormat format = TimeUnitFormat.Minimum, int depth = 1, bool printFirstUnitLast = false, bool padSubUnits = false)
+		/// <summary>
+		/// Format a millisecond time to a string with a certain time unit and depth (e.g. "3min, 14sec, 15ms" with depth 3).
+		/// </summary>
+		/// <param name="timeMilliseconds">The time in milliseconds.</param>
+		/// <param name="separator">The seperator between each unit (", " by default).</param>
+		/// <param name="format">The time unit format.</param>
+		/// <param name="depth">The depth to represent units with (depth 0 = just top unit, depth 1 = top unit and 1 specific unit, ...)</param>
+		/// <param name="putFirstUnitLast">Indicate if no other unit than the first unit should be put in the string. First unit will be put at the end of the string (for e.g. "3.14min").</param>
+		/// <param name="padSubUnits">Indicate if sub units should be left-padded with zeros </param>
+		/// <returns>The time string.</returns>
+		public static string FormatTime(double timeMilliseconds, string separator = ", ", TimeUnitFormat format = TimeUnitFormat.Minimum, int depth = 1, bool putFirstUnitLast = false, bool padSubUnits = false)
 		{
 			TimeUnit localUnit = TimeUnit.Millisecond;
 
@@ -77,7 +93,7 @@ namespace Sigma.Core.Utils
 			{
 				builder.Append(localTimes[i]);
 
-				if (!printFirstUnitLast) builder.Append(localUnit.GetTimeUnitInFormat(format));
+				if (!putFirstUnitLast) builder.Append(localUnit.GetTimeUnitInFormat(format));
 
 				if (i - 1 >= printDepth)
 				{
@@ -87,9 +103,24 @@ namespace Sigma.Core.Utils
 				}
 			}
 
-			if (printFirstUnitLast) builder.Append(first.GetTimeUnitInFormat(format));
+			if (putFirstUnitLast) builder.Append(first.GetTimeUnitInFormat(format));
 
 			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Get the inverse time for a certain time (e.g. 40ms for an iteration, how many iterations per what is that?).
+		/// </summary>
+		{
+			resultUnit = TimeUnit.Millisecond;
+
+			while (inverseTime < 1.0)
+			{
+				resultUnit = resultUnit.GetBigger().Value;
+				inverseTime *= resultUnit.GetTimeUnitParts();
+			}
+
+			return inverseTime;
 		}
 	}
 }
