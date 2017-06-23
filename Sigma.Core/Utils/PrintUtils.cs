@@ -111,7 +111,12 @@ namespace Sigma.Core.Utils
 		/// <summary>
 		/// Get the inverse time for a certain time (e.g. 40ms for an iteration, how many iterations per what is that?).
 		/// </summary>
+		/// <param name="timeMilliseconds">The time in milliseconds.</param>
+		/// <param name="resultUnit">The unit of the returned result.</param>
+		/// <returns>The result time value corresondping to the resultUnit.</returns>
+		public static double GetInverseTime(double timeMilliseconds, out TimeUnit resultUnit)
 		{
+			double inverseTime = 1.0 / timeMilliseconds;
 			resultUnit = TimeUnit.Millisecond;
 
 			while (inverseTime < 1.0)
