@@ -72,20 +72,33 @@ namespace Sigma.Core.Training.Hooks.Processors
 				if (numberRunningTimes > averageSpan)
 				{
 					lastRunningTimes.RemoveFirst();
+					numberRunningTimes--;
 				}
 
 				long averageTime = lastRunningTimes.Sum();
 
-				if (removeExtremas && lastRunningTimes.Count >= 5) // TODO magic number
+				if (removeExtremas)
 				{
-					averageTime -= lastRunningTimes.Max() + lastRunningTimes.Min();
-					numberRunningTimes -= 2;
+					LinkedList<long> runningTimesCopy = new LinkedList<long>(lastRunningTimes);
+					int timesToRemove = (int) Math.Sqrt(lastRunningTimes.Count / 2.0f); // TODO magic number
+
+					while (timesToRemove-- > 0)
+					{
+						long removedTime = timesToRemove % 2 == 0 ? runningTimesCopy.Max() : runningTimesCopy.Min();
+
+						runningTimesCopy.Remove(removedTime);
+					}
+
+					averageTime = runningTimesCopy.Sum();
+					numberRunningTimes = runningTimesCopy.Count;
 				}
 
 				averageTime /= numberRunningTimes;
 
 				resolver.ResolveSet(sharedResultBaseKey + "_last", elapsedTime, addIdentifierIfNotExists: true);
 				resolver.ResolveSet(sharedResultBaseKey + "_average", averageTime, addIdentifierIfNotExists: true);
+				resolver.ResolveSet(sharedResultBaseKey + "_min", lastRunningTimes.Min(), addIdentifierIfNotExists: true);
+				resolver.ResolveSet(sharedResultBaseKey + "_max", lastRunningTimes.Max(), addIdentifierIfNotExists: true);
 			}
 
 			ParameterRegistry["last_time"] = Operator.RunningTimeMilliseconds;

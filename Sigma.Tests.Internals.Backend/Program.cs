@@ -231,9 +231,9 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.Network.Architecture = InputLayer.Construct(28, 28)
 											+ DropoutLayer.Construct(0.2)
 											+ FullyConnectedLayer.Construct(1000, activation: "rel")
-											+ DropoutLayer.Construct(0.5)
+											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(800, activation: "rel")
-											+ DropoutLayer.Construct(0.5)
+											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
@@ -242,7 +242,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.016);
 			trainer.Operator = new CpuSinglethreadedOperator();
 			trainer.Operator.UseSessions = true;
 
@@ -258,15 +258,15 @@ namespace Sigma.Tests.Internals.Backend
 			//trainer.AddGlobalHook(new DiskSaviorHook<INetwork>(TimeStep.Every(1, TimeScale.Epoch), "network.self", Namers.Static("mnist_maxacc.sgnet"), verbose: true)
 			//	.On(new ExtremaCriteria("shared.classification_accuracy_top1", ExtremaTarget.Max)));
 
-			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
+			var validationTimeStep = TimeStep.Every(1, TimeScale.Stop);
 
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 32));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
-			trainer.AddHook(new StopTrainingHook(atEpoch: 100));
+			trainer.AddHook(new StopTrainingHook(atEpoch: 10));
 
 			sigma.Run();
 		}

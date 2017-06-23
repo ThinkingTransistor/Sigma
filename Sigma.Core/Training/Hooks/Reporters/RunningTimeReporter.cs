@@ -60,7 +60,7 @@ namespace Sigma.Core.Training.Hooks.Reporters
 		/// <param name="averageTime">The average time between occurrences.</param>
 		protected virtual void Report(TimeScale timeScale, long lastTime, long averageTime)
 		{
-			_logger.Info($"Time per {timeScale}: average {PrintUtils.GetFormattedTime(averageTime)}, last {PrintUtils.GetFormattedTime(lastTime)}");
+			_logger.Info($"Time per {timeScale}: average {PrintUtils.FormatTimeSimple(averageTime)}, last {PrintUtils.FormatTimeSimple(lastTime)}");
 		}
 	}
 }
