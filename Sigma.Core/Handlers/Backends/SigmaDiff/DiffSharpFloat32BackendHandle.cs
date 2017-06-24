@@ -1156,7 +1156,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			for (int i = 0; i < rows; i++)
 			{
-				System.Array.Copy(rowData, sourceOffset, result, destinationOffset, rowLength);
+				Buffer.BlockCopy(rowData, sourceOffset * sizeof(float), result, destinationOffset * sizeof(float), rowLength * sizeof(float));
 
 				destinationOffset += rowLength;
 			}

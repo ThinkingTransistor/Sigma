@@ -92,7 +92,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				long sourceIndex = Offset + m * totalCols + colStart;
 				long destinationIndex = (m - rowStart) * colLength;
 
-				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
+				Buffer.BlockCopy(Data, (int) (sourceIndex * Type.SizeBytes), values.Data, (int) (destinationIndex * Type.SizeBytes), colLength);
 			}
 
 			return values;
@@ -108,8 +108,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		private T[] _InternalGetSubData()
 		{
 			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
-
-			System.Array.Copy(Data, Offset, copyData, 0, Length);
+			
+			Buffer.BlockCopy(Data, (int) (Offset * Type.SizeBytes), copyData, 0, (int) (Length * Type.SizeBytes));
 
 			return copyData;
 		}
