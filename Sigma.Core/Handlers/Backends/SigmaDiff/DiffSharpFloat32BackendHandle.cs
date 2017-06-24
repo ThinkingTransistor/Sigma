@@ -118,6 +118,58 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return Sum_V(value);
 		}
 
+		public override int MaxIndex_V(ISigmaDiffDataBuffer<float> value)
+		{
+			if (value.Length == 0)
+			{
+				return 0;
+			}
+
+			float[] aData = value.Data;
+			int aOffset = value.Offset, len = value.Length, maxIndex = 0;
+			float maxValue = float.NegativeInfinity;
+
+			fixed (float* aref = &aData[aOffset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					if (aref[i] > maxValue)
+					{
+						maxIndex = i;
+						maxValue = aref[i];
+					}
+				}
+			}
+
+			return maxIndex;
+		}
+
+		public override int MinIndex_V(ISigmaDiffDataBuffer<float> value)
+		{
+			if (value.Length == 0)
+			{
+				return 0;
+			}
+
+			float[] aData = value.Data;
+			int aOffset = value.Offset, len = value.Length, minIndex = 0;
+			float minValue = float.PositiveInfinity;
+
+			fixed (float* aref = &aData[aOffset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					if (aref[i] < minValue)
+					{
+						minIndex = i;
+						minValue = aref[i];
+					}
+				}
+			}
+
+			return minIndex;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Add_V_V"/>
 		public override ISigmaDiffDataBuffer<float> Add_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> b)
 		{
