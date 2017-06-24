@@ -92,7 +92,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				long sourceIndex = Offset + m * totalCols + colStart;
 				long destinationIndex = (m - rowStart) * colLength;
 
-				Buffer.BlockCopy(Data, (int) (sourceIndex * Type.SizeBytes), values.Data, (int) (destinationIndex * Type.SizeBytes), colLength);
+				Buffer.BlockCopy(Data, (int)(sourceIndex * Type.SizeBytes), values.Data, (int)(destinationIndex * Type.SizeBytes), colLength * Type.SizeBytes);
 			}
 
 			return values;
