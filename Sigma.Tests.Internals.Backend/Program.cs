@@ -45,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleHutter();
+			SampleIris();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -64,7 +64,7 @@ namespace Sigma.Tests.Internals.Backend
 					.Offset("targets", 1L))
 				.Preprocess(new PermutePreprocessor(0, 2, 1))
 				.Preprocess(new OneHotPreprocessor(0, 255));
-			IDataset dataset = new ExtractedDataset("hutter", extractor);
+			IDataset dataset = new ExtractedDataset("hutter", ExtractedDataset.BlockSizeAuto, false, extractor);
 
 			ITrainer trainer = sigma.CreateTrainer("hutter");
 
@@ -265,7 +265,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(600, TimeScale.Iteration), 256));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(599, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 

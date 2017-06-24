@@ -830,6 +830,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return true;
 			}
+			else if (mapOp.IsLog)
+			{
+				//_InternalOptimisedLog(ref a);
+
+				//return true;
+			}
 
 			return false;
 		}
@@ -957,6 +963,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				for (; i < len; ++i)
 				{
 					resref[i] = 1.0f / (1.0f + resref[i]);
+				}
+			}
+
+			a = result;
+		}
+
+		private void _InternalOptimisedLog(ref ShapedDataBufferView<float> a)
+		{
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+
+			int len = a.Length;
+			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					resref[i] = (float) Math.Log(aref[i]);
 				}
 			}
 
