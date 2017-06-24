@@ -983,7 +983,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1008,7 +1008,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1038,7 +1038,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("paused");
+				ReportBadStateRequested("paused");
 			}
 		}
 
@@ -1066,7 +1066,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("resumed");
+				ReportBadStateRequested("resumed");
 			}
 		}
 
@@ -1098,7 +1098,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("stopped");
+				ReportBadStateRequested("stopped");
 			}
 		}
 
@@ -1151,17 +1151,18 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("reset");
+				ReportBadStateRequested("reset");
 			}
 		}
 
 		/// <summary>
+		///		Report a bad proposed target state.
 		/// </summary>
-		/// <param name="targetState"></param>
+		/// <param name="targetState">The bad target state.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		private void ThrowBadState(string targetState)
+		private void ReportBadStateRequested(string targetState)
 		{
-			throw new InvalidOperationException($"The operator cannot be {targetState} because the current state is: {State}!");
+			_logger.Warn($"The operator cannot be {targetState} because the current state is {State.ToString().ToLower()}!");
 		}
 
 		#endregion
