@@ -13,6 +13,7 @@ using System.Numerics;
 using DiffSharp;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
@@ -773,22 +774,62 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Permute_M"/>
-		public override ShapedDataBufferView<float> Permute_M(ShapedDataBufferView<float> array, int[] rearrangedDimensions)
+		public override ShapedDataBufferView<float> Permute_M(ShapedDataBufferView<float> a, int[] permutedDimensions)
 		{
-			long[] originaleShape = array.Shape;
-			long[] rearrangedShape = ArrayUtils.PermuteArray(originaleShape, rearrangedDimensions);
+			long[] originalShape = a.Shape;
+			long[] permutedShape = ArrayUtils.PermuteArray(originalShape, permutedDimensions);
+			long[] originalStrides = NDArrayUtils.GetStrides(originalShape), permutedStrides = NDArrayUtils.GetStrides(permutedShape);
+			int rank = originalShape.Length, unitSize = 1;
 
-			array = array.DeepCopy();
-			ISigmaDiffDataBuffer<float> dataBuffer = array.DataBuffer;
-
-			ADNDArray<float>._InternalPermuteSelf(dataBuffer.Data, dataBuffer.Offset, dataBuffer.Length, rearrangedDimensions, originaleShape, rearrangedShape);
-
-			for (int i = 0; i < array.Shape.Length; i++)
+			for (int i = permutedDimensions.Length - 1; i >= 0; i--)
 			{
-				array.Shape[i] = rearrangedShape[i];
+				if (permutedDimensions[i] != i)
+				{
+					break;
+				}
+
+				unitSize = checked (unitSize * (int) originalShape[i]);
 			}
 
-			return array;
+			int unitSizeBytes = unitSize * sizeof(float), len = a.Length;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), permutedShape);
+			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				long[] bufferIndices = new long[rank];
+
+				if (unitSize > 1) // TODO maybe set a limit for when block copy outperforms manual copy (don't forget to change i++ in else branc)
+				{
+					for (int i = 0; i < len; i += unitSize)
+					{
+						NDArrayUtils.GetIndices(i, originalShape, originalStrides, bufferIndices);
+
+						bufferIndices = ArrayUtils.PermuteArray(bufferIndices, permutedDimensions);
+
+						int resultIndex = (int) NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
+
+						Buffer.BlockCopy(aData, aOffset * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
+					}
+				}
+				else
+				{
+					for (int i = 0; i < len; i++)
+					{
+						NDArrayUtils.GetIndices(i, originalShape, originalStrides, bufferIndices);
+
+						bufferIndices = ArrayUtils.PermuteArray(bufferIndices, permutedDimensions);
+
+						int resultIndex = (int) NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
+
+						resref[resultIndex] = aref[i];
+					}
+				}
+			}
+
+			return result;
 		}
 
 		public override ShapedDataBufferView<float> Reshape_M(ShapedDataBufferView<float> array, long[] newShape)
