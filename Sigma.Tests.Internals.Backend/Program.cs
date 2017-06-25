@@ -53,7 +53,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SampleHutter()
 		{
-			const long timeWindowSize = 10L;
+			const long timeWindowSize = 5L;
 
 			SigmaEnvironment sigma = SigmaEnvironment.Create("recurrent");
 

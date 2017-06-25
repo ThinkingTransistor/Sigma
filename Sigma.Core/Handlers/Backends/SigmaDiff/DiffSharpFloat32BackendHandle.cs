@@ -95,22 +95,38 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sum_V"/>
-		public override float Sum_V(ISigmaDiffDataBuffer<float> value)
+		public override float Sum_V(ISigmaDiffDataBuffer<float> a)
 		{
-			if (value.Length == 0)
+			if (a.Length == 0)
 			{
 				return 0.0f;
 			}
 
-			float sum = 0.0f;
+			int simdLength = Vector<float>.Count, len = a.Length;
+			float[] aData = a.Data, tempData = CreateZeroArray(simdLength);
+			int aOffset = a.Offset;
+			float result = 0.0f;
 
-			int upper = value.Offset + value.Length;
-			for (int i = value.Offset; i < upper; i++)
+			fixed (float* aref = &aData[aOffset])
 			{
-				sum += value.Data[i];
+				Vector<float> vt = new Vector<float>(tempData);
+
+				int i;
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					vt += va;
+				}
+
+				for (; i < len; ++i)
+				{
+					result += aref[i];
+				}
+
+				result += Vector.Dot<float>(vt, Vector<float>.One);
 			}
 
-			return sum;
+			return result;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sum_M"/>
@@ -873,9 +889,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 			else if (mapOp.IsLog)
 			{
-				//_InternalOptimisedLog(ref a);
+				_InternalOptimisedLog(ref a);
 
-				//return true;
+				return true;
 			}
 
 			return false;
