@@ -135,25 +135,79 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return Sum_V(value);
 		}
 
-		public override int MaxIndex_V(ISigmaDiffDataBuffer<float> value)
+		public override int MaxIndex_V(ISigmaDiffDataBuffer<float> a)
 		{
-			if (value.Length == 0)
+			if (a.Length == 0)
 			{
 				return 0;
 			}
 
-			float[] aData = value.Data;
-			int aOffset = value.Offset, len = value.Length, maxIndex = 0;
-			float maxValue = float.NegativeInfinity;
+			int simdLength = Vector<float>.Count, len = a.Length;
+			float[] aData = a.Data;
+			int aOffset = a.Offset, maxIndex = 0;
+			float maxValue = 0.0f;
 
 			fixed (float* aref = &aData[aOffset])
 			{
-				for (int i = 0; i < len; i++)
+				if (len < simdLength * 4)
 				{
-					if (aref[i] > maxValue)
+					for (int k = 0; k < len; k++)
 					{
-						maxIndex = i;
-						maxValue = aref[i];
+						if (aref[k] > maxValue)
+						{
+							maxValue = aref[k];
+							maxIndex = k;
+						}
+					}
+				}
+				else
+				{
+					int i = 0;
+
+					for (; i < simdLength; i++)
+					{
+						if (aref[i] > maxValue)
+						{
+							maxValue = aref[i];
+							maxIndex = i;
+						}
+					}
+
+					float[] maxData = CreateValueArray(simdLength, maxValue);
+					Vector<float> vt = new Vector<float>(maxData);
+
+					for (; i <= len - simdLength; i += simdLength)
+					{
+						Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+
+						if (Vector.GreaterThanAny(va, vt))
+						{
+							int upper = i + simdLength;
+							for (int y = i; y < upper; y++)
+							{
+								if (aref[y] > maxValue)
+								{
+									maxValue = aref[y];
+									maxIndex = y;
+								}
+							}
+
+							for (var j = 0; j < maxData.Length; j++)
+							{
+								maxData[j] = maxValue;
+							}
+
+							vt = new Vector<float>(maxData);
+						}
+					}
+
+					for (; i < len; ++i)
+					{
+						if (aref[i] > maxValue)
+						{
+							maxValue = aref[i];
+							maxIndex = i;
+						}
 					}
 				}
 			}
@@ -618,36 +672,39 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Sub_S_M"/>
-		public override ShapedDataBufferView<float> Sub_S_M(float a, ShapedDataBufferView<float> b)
+		public override ShapedDataBufferView<float> Sub_S_M(float other, ShapedDataBufferView<float> a)
 		{
-			if (b.Length == 0)
+			if (a.Length == 0)
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			b = b.DeepCopy();
-			// note: doesn't work like this with blas since result inc cannot be 0
-			//fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
-			//{
-			//	int len = b.Length;
-			//	int inca = 0, incb = 1;
-			//	float alpha = -1.0f;
+			a = a.DeepCopy();
 
-			//	BlasBackend.Saxpy(&len, &alpha, bref, &incb, &a, &inca);
-			//}
+			int simdLength = Vector<float>.Count;
+			int len = a.Length;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
+			float[] aData = a.DataBuffer.Data, bData = CreateValueArray(simdLength, other), resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			Vector<float> vc = new Vector<float>(bData); // filled with constant value of other
 
-			// TODO update with blas implementation if applicable
-			//  it doesn't work like this because the result second parameter y cannot have an inc of 0 because then the result isn't actually stored
-			float[] data = b.DataBuffer.Data;
-			int offset = b.DataBuffer.Offset;
-			int len = b.DataBuffer.Length + offset;
-
-			for (int i = offset; i < len; i++)
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
 			{
-				data[i] = a - data[i];
+				int i;
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					(vc - va).CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					resref[i] = other - aref[i];
+				}
 			}
 
-			return b;
+			return result;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_M_M"/>
@@ -827,7 +884,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 					break;
 				}
 
-				unitSize = checked (unitSize * (int) originalShape[i]);
+				unitSize = checked(unitSize * (int)originalShape[i]);
 			}
 
 			int unitSizeBytes = unitSize * sizeof(float), len = a.Length;
@@ -848,7 +905,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 						bufferIndices = ArrayUtils.PermuteArray(bufferIndices, permutedDimensions);
 
-						int resultIndex = (int) NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
+						int resultIndex = (int)NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
 
 						Buffer.BlockCopy(aData, aOffset * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
 					}
@@ -861,7 +918,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 						bufferIndices = ArrayUtils.PermuteArray(bufferIndices, permutedDimensions);
 
-						int resultIndex = (int) NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
+						int resultIndex = (int)NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
 
 						resref[resultIndex] = aref[i];
 					}
@@ -1062,7 +1119,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				for (int i = 0; i < len; i++)
 				{
-					resref[i] = (float) Math.Log(aref[i]);
+					resref[i] = (float)Math.Log(aref[i]);
 				}
 			}
 

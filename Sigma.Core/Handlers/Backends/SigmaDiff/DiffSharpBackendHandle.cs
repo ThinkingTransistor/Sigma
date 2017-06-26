@@ -90,6 +90,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			_currentSessionArrays.Clear();
 		}
 
+		internal void Flush(T[] array)
+		{
+			if (BufferSessions && _currentSessionArrays.ContainsKey(array.Length) && _currentSessionArrays[array.Length].Remove(array))
+			{
+				if (!_bufferedSessionArrays.ContainsKey(array.Length))
+				{
+					_bufferedSessionArrays.Add(array.Length, new List<T[]>());
+				}
+
+				_bufferedSessionArrays[array.Length].Add(array);
+			}
+		}
+
 		internal void MarkLimbo(T[] array)
 		{
 			if (BufferSessions && _currentSessionArrays.ContainsKey(array.Length) && _currentSessionArrays[array.Length].Remove(array))
