@@ -485,7 +485,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			fixed (float* zref = &z.Data[z.Offset])
 			{
 				int inca = 1, incb = 1;
-
 				float alpha = 1.0f;
 
 				BlasBackend.Sger(&m, &n, &alpha, aref, &inca, bref, &incb, zref, &m);
@@ -507,6 +506,30 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			b = b.DeepCopy();
+			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
+			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
+			{
+				int len = Math.Min(a.Length, b.Length);
+				int inca = 1, incb = 1;
+				float alpha = 1.0f;
+
+				BlasBackend.Saxpy(&len, &alpha, aref, &inca, bref, &incb);
+			}
+
+			return b;
+		}
+
+		public override ShapedDataBufferView<float> Add_M_M_InPlace(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
+		{
+			if (a.Length == 0)
+			{
+				return b;
+			}
+			if (b.Length == 0)
+			{
+				return a;
+			}
+
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
 			{

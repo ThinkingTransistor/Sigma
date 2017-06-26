@@ -157,9 +157,33 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				}
 				else
 				{
-					for (var i = 0; i < array.Length; i++)
+					if (array.Length <= 8)
 					{
-						array[i] = initialValue;
+						for (var i = 0; i < array.Length; i++)
+						{
+							array[i] = initialValue;
+						}
+					}
+					else
+					{
+						array[0] = initialValue;
+						array[1] = initialValue;
+						array[2] = initialValue;
+						array[3] = initialValue;
+						array[4] = initialValue;
+						array[5] = initialValue;
+						array[6] = initialValue;
+						array[7] = initialValue;
+
+						int arrayToFillHalfLength = array.Length / 2;
+						int copyLength;
+
+						for (copyLength = 8; copyLength < arrayToFillHalfLength; copyLength <<= 1)
+						{
+							Array.Copy(array, 0, array, copyLength, copyLength);
+						}
+
+						Array.Copy(array, 0, array, copyLength, array.Length - copyLength);
 					}
 				}
 			}
@@ -192,6 +216,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ISigmaDiffDataBuffer<T> ReshapeCopy_MRows_V(ShapedDataBufferView<T> value);
 		public abstract ShapedDataBufferView<T> Mul_Out_V_V(ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ShapedDataBufferView<T> Add_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
+		public abstract ShapedDataBufferView<T> Add_M_M_InPlace(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Add_S_M(T a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Add_V_MCols(ISigmaDiffDataBuffer<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Sub_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
