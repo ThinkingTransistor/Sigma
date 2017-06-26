@@ -1031,12 +1031,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		private static void _InternalOptimisedExp(ref ShapedDataBufferView<float> a)
 		{
 			a = a.DeepCopy();
-			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+			int aOffset = a.DataBuffer.Offset;
+			int upper = aOffset + a.DataBuffer.Length;
 			float[] data = a.DataBuffer.Data;
 
-			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			fixed (float* aref = &data[aOffset])
 			{
-				data[i] = (float)Math.Exp(data[i]);
+				for (int i = 0; i < upper; i++)
+				{
+					aref[i] = (float) Math.Exp(aref[i]);
+				}
 			}
 		}
 
