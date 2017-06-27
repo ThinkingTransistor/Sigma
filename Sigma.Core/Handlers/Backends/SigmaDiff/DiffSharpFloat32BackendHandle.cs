@@ -977,19 +977,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
 			float[] data = a.DataBuffer.Data;
 
-			System.Array.Clear(data, a.DataBuffer.Offset, a.DataBuffer.Length);
-
 			for (int i = a.DataBuffer.Offset; i < upper; i++)
 			{
 				float value = data[i];
 
-				if (value > 0.0f)
+				if (value > 0.0f) 
 				{
 					data[i] = 1.0f;
 				}
 				else if (value < 0.0f)
 				{
 					data[i] = -1.0f;
+				}
+				else
+				{
+					data[i] = 0.0f;
 				}
 			}
 		}
