@@ -219,7 +219,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int simdLength = Vector<float>.Count, len = a.Length;
 			float[] aData = a.Data;
 			int aOffset = a.Offset, minIndex = 0;
-			float minValue = float.NegativeInfinity;
+			float minValue = float.PositiveInfinity;
 
 			fixed (float* aref = &aData[aOffset])
 			{
@@ -254,20 +254,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 
-					int modMaxIndex = -1;
+					int modMinIndex = -1;
 
 					for (int y = 0; y < simdLength; y++)
 					{
 						if (vt[y] < minValue)
 						{
 							minValue = vt[y];
-							modMaxIndex = y;
+							modMinIndex = y;
 						}
 					}
 
-					if (modMaxIndex != -1)
+					if (modMinIndex != -1)
 					{
-						for (i = modMaxIndex; i < len; i += simdLength)
+						for (i = modMinIndex; i < len; i += simdLength)
 						{
 							if (aref[i] == minValue)
 							{
@@ -939,7 +939,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				long[] bufferIndices = new long[rank];
 
-				if (unitSize > 1) // TODO maybe set a limit for when block copy outperforms manual copy (don't forget to change i++ in else branc)
+				if (unitSize > 1) // TODO maybe set a limit for when block copy outperforms manual copy (don't forget to change i++ in else branch)
 				{
 					for (int i = 0; i < len; i += unitSize)
 					{
@@ -1045,7 +1045,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				for (; i < len; ++i)
 				{
 					resref[i] = 1.0f;
-					*(uint*)&resref[i] |= *(uint*)&aref[i] & signFlag;
+					resref[i] = *(uint*)&resref[i] | (*(uint*)&aref[i] & signFlag);
 				}
 			}
 
