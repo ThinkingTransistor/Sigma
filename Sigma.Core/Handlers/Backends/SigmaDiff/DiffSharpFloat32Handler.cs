@@ -849,7 +849,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new ADNDFloat32Array(clipped);
 		}
 
-		private uint _x, _y, _z, _w;
+		private uint _x = 123456789, _y = 362436069, _z = 521288629, _w = 88675123;
 
 		/// <inheritdoc />
 		public unsafe void FillWithProbabilityMask(INDArray array, double probability)
@@ -857,14 +857,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			ADNDFloat32Array internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
 			float probabilityAsFloat = (float)probability;
-			ushort approximateProbability = (ushort)Math.Round(probabilityAsFloat * ushort.MaxValue); // TODO unpack two ushorts from each random int
+			ushort approximateProbability = (ushort)Math.Round(probabilityAsFloat * ushort.MaxValue);
 
 			int begin = (int)internalArray.Data.Offset, end = (int)(begin + internalArray.Data.Length);
 			uint x = _x, y = _y, z = _z, w = _w;
 
 			// credit to Marsaglia for this Xorshift fast RNG implementation (which this is based on)
 			int i = begin;
-			while (i < end - 4)
+			while (i < end - 8)
 			{
 				uint tx = x ^ (x << 11);
 				uint ty = y ^ (y << 11);
@@ -872,13 +872,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				uint tw = w ^ (w << 11);
 
 				x = w ^ (w >> 19) ^ (tx ^ (tx >> 8));
-				data[i++] = *(float*)&x < probabilityAsFloat ? 1 : 0;
+				data[i++] = *(ushort*)&x < approximateProbability ? 1 : 0;
+				data[i++] = ((ushort*)&x)[1] < approximateProbability ? 1 : 0;
 				y = x ^ (x >> 19) ^ (ty ^ (ty >> 8));
-				data[i++] = *(float*)&y < probabilityAsFloat ? 1 : 0;
+				data[i++] = *(ushort*)&y < approximateProbability ? 1 : 0;
+				data[i++] = ((ushort*)&y)[1] < approximateProbability ? 1 : 0;
 				z = y ^ (y >> 19) ^ (tz ^ (tz >> 8));
-				data[i++] = *(float*)&z < probabilityAsFloat ? 1 : 0;
+				data[i++] = *(ushort*)&z < approximateProbability ? 1 : 0;
+				data[i++] = ((ushort*)&z)[1] < approximateProbability ? 1 : 0;
 				w = z ^ (z >> 19) ^ (tw ^ (tw >> 8));
-				data[i++] = *(float*)&w < probabilityAsFloat ? 1 : 0;
+				data[i++] = *(ushort*)&w < approximateProbability ? 1 : 0;
+				data[i++] = ((ushort*)&w)[1] < approximateProbability ? 1 : 0;
 			}
 
 			for (; i < end; i++)
