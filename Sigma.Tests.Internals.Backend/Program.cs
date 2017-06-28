@@ -45,7 +45,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleMnist();
+			SampleHutter();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -268,7 +268,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddHook(new StopTrainingHook(new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, 0.9), validationTimeStep));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(599, TimeScale.Iteration), 128));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(5, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 

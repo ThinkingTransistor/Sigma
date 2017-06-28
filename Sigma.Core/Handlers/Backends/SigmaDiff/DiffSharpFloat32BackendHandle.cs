@@ -209,25 +209,73 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return maxIndex;
 		}
 
-		public override int MinIndex_V(ISigmaDiffDataBuffer<float> value)
+		public override int MinIndex_V(ISigmaDiffDataBuffer<float> a)
 		{
-			if (value.Length == 0)
+			if (a.Length == 0)
 			{
 				return 0;
 			}
 
-			float[] aData = value.Data;
-			int aOffset = value.Offset, len = value.Length, minIndex = 0;
-			float minValue = float.PositiveInfinity;
+			int simdLength = Vector<float>.Count, len = a.Length;
+			float[] aData = a.Data;
+			int aOffset = a.Offset, minIndex = 0;
+			float minValue = float.NegativeInfinity;
 
 			fixed (float* aref = &aData[aOffset])
 			{
-				for (int i = 0; i < len; i++)
+				if (len < simdLength * 4)
 				{
-					if (aref[i] < minValue)
+					for (int k = 0; k < len; k++)
 					{
-						minIndex = i;
-						minValue = aref[i];
+						if (aref[k] < minValue)
+						{
+							minValue = aref[k];
+							minIndex = k;
+						}
+					}
+				}
+				else
+				{
+					Vector<float> vt = new Vector<float>(float.PositiveInfinity);
+
+					int i = 0;
+					for (; i <= len - simdLength; i += simdLength)
+					{
+						Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+						vt = Vector.Min(va, vt);
+					}
+
+					for (; i < len; ++i)
+					{
+						if (aref[i] < minValue)
+						{
+							minValue = aref[i];
+							minIndex = i;
+						}
+					}
+
+					int modMaxIndex = -1;
+
+					for (int y = 0; y < simdLength; y++)
+					{
+						if (vt[y] < minValue)
+						{
+							minValue = vt[y];
+							modMaxIndex = y;
+						}
+					}
+
+					if (modMaxIndex != -1)
+					{
+						for (i = modMaxIndex; i < len; i += simdLength)
+						{
+							if (aref[i] == minValue)
+							{
+								minIndex = i;
+
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -971,29 +1019,37 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return false;
 		}
 
-		private static void _InternalOptimisedSign(ref ShapedDataBufferView<float> a)
+		private unsafe void _InternalOptimisedSign(ref ShapedDataBufferView<float> a)
 		{
-			a = a.DeepCopy();
-			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-			float[] data = a.DataBuffer.Data;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
-			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			int len = a.Length;
+
+			uint signFlag = 0x80000000;
+			Vector<float> vc = new Vector<float>(*(float*) &signFlag);
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
 			{
-				float value = data[i];
+				int simdLength = Vector<float>.Count, i;
 
-				if (value > 0.0f) 
+				for (i = 0; i <= len - simdLength; i += simdLength)
 				{
-					data[i] = 1.0f;
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+					Vector<float> vr = Vector<float>.One;
+					(vr | (va & vc)).CopyTo(resData, i + resOffset); // TODO should zero be considered as well? (right now it's 1 / -1 only)
 				}
-				else if (value < 0.0f)
+
+				for (; i < len; ++i)
 				{
-					data[i] = -1.0f;
-				}
-				else
-				{
-					data[i] = 0.0f;
+					resref[i] = 1.0f;
+					*(uint*)&resref[i] |= *(uint*)&aref[i] & signFlag;
 				}
 			}
+
+			a = result; 
 		}
 
 		private void _InternalOptimisedSqrt(ref ShapedDataBufferView<float> a)
@@ -1054,7 +1110,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				for (; i < len; ++i)
 				{
-					aref[i] = (float) Math.Exp(aref[i]);
+					aref[i] = (float)Math.Exp(aref[i]);
 				}
 			}
 		}
