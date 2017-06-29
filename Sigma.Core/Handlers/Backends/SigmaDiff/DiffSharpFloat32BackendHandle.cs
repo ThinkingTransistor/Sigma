@@ -1028,7 +1028,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int len = a.Length;
 
 			uint signFlag = 0x80000000;
-			Vector<float> vc = new Vector<float>(*(float*) &signFlag);
+			Vector<float> vf = new Vector<float>(*(float*)&signFlag);
 
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
@@ -1039,7 +1039,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				{
 					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
 					Vector<float> vr = Vector<float>.One;
-					(vr | (va & vc)).CopyTo(resData, i + resOffset); // TODO should zero be considered as well? (right now it's 1 / -1 only)
+					(vr | (va & vf)).CopyTo(resData, i + resOffset); // TODO should zero be considered as well? (right now it's 1 / -1 only)
 				}
 
 				for (; i < len; ++i)
@@ -1049,7 +1049,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				}
 			}
 
-			a = result; 
+			a = result;
 		}
 
 		private void _InternalOptimisedSqrt(ref ShapedDataBufferView<float> a)
@@ -1191,14 +1191,48 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
+			int simdLength = Vector<float>.Count;
 			int len = a.Length;
 			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
+			// https://github.com/etheory/fastapprox/blob/master/fastapprox/src/fastlog.h
+
+			uint exponentMask = 0x3f000000, mantissaMask = 0x007fffff;
+			Vector<float> vf1 = new Vector<float>(*(float*) &exponentMask);
+			Vector<float> vf2 = new Vector<float>(*(float*) &mantissaMask);
+			Vector<float> vc1 = new Vector<float>(1.1920928955078125e-7f);
+			Vector<float> vc2 = new Vector<float>(124.22551499f);
+			Vector<float> vc3 = new Vector<float>(1.498030302f);
+			Vector<float> vc4 = new Vector<float>(1.72587999f);
+			Vector<float> vc5 = new Vector<float>(0.3520887068f);
+			Vector<float> vc6 = new Vector<float>(0.69314718f);
+			float[] vaiBuffer = CreateUninitialisedArray(simdLength);
+
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
-				for (int i = 0; i < len; i++)
+				int i;
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
+
+					for (int y = 0; y < simdLength; y++)
+					{
+						vaiBuffer[y] = *(uint*) &aref[i + y];
+					}
+
+					Vector<float> vai = new Vector<float>(vaiBuffer);
+					Vector<float> vt1 = (va & vf2) | vf1;
+					Vector<float> vres = vc1 * vai;
+					Vector<float> vt2 = (vc3 * vt1);
+					Vector<float> vt3 = (vc4 / (vc5 + vt1));
+					vres = (vres - vc2 - vt2 - vt3) * vc6; 
+
+					vres.CopyTo(resData, i + resOffset);
+				}
+
+				for (; i < len; ++i)
 				{
 					resref[i] = (float)Math.Log(aref[i]);
 				}
