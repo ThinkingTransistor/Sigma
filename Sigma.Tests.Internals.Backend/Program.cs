@@ -72,7 +72,6 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
-			trainer.Operator.UseSessions = true;
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
@@ -133,7 +132,6 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
 			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
-			trainer.Operator.UseSessions = true;
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
@@ -225,8 +223,6 @@ namespace Sigma.Tests.Internals.Backend
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
 
-			sigma.Prepare();
-
 			IDataset dataset = Defaults.Datasets.Mnist();
 
 			ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
@@ -245,9 +241,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 			trainer.Operator = new CpuSinglethreadedOperator();
-			trainer.Operator.UseSessions = true;
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
@@ -263,7 +258,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 
-			sigma.Run();
+			sigma.PrepareAndRun();
 		}
 
 		private static void SampleTicTacToe()

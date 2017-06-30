@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Layers;
@@ -34,6 +35,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// </summary>
 		protected readonly string ExternalCostAlias;
 
+		private readonly ISet<Regex> _internalFilterMasks;
 		private bool _prepared;
 		private uint _traceTag;
 
@@ -48,7 +50,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			ExternalCostAlias = externalCostAlias;
 			Registry = new Registry(tags: "optimiser");
 			Registry["updates"] = new Dictionary<string, INDArray>();
+			Registry["filter_masks"] = new HashSet<string>();
+			Registry["filtered_identifiers"] = new HashSet<string>();
 			Registry["self"] = this;
+
+			_internalFilterMasks = new HashSet<Regex>();
 		}
 
 		/// <summary>
@@ -59,13 +65,46 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// <param name="handler">THe handler to use.</param>
 		public void PrepareRun(INetwork network, IComputationHandler handler)
 		{
+			ISet<string> filterMasks = Registry.Get<ISet<string>>("filter_masks");
+			ISet<string> filteredIdentifiers = Registry.Get<ISet<string>>("filtered_identifiers");
+
+			filteredIdentifiers.Clear();
+			_internalFilterMasks.Clear();
+
+			foreach (string filterMask in filterMasks)
+			{
+				_internalFilterMasks.Add(new Regex(filterMask));
+			}
+
 			_traceTag = handler.BeginTrace();
 
 			foreach (ILayerBuffer layerBuffer in network.YieldLayerBuffersOrdered())
 			{
-				foreach (string identifier in layerBuffer.Layer.TrainableParameters)
+				string layerIdentifier = layerBuffer.Layer.Name;
+
+				foreach (string trainableParameter in layerBuffer.Layer.TrainableParameters)
 				{
-					layerBuffer.Layer.Parameters[identifier] = handler.Trace(layerBuffer.Layer.Parameters.Get<ITraceable>(identifier), _traceTag);
+					string parameterIdentifier = layerIdentifier + "." + trainableParameter;
+
+					bool anyFilterApplies = false;
+
+					foreach (Regex filterMask in _internalFilterMasks)
+					{
+						if (filterMask.IsMatch(parameterIdentifier))
+						{
+							anyFilterApplies = true;
+							break;
+						}
+					}
+
+					if (!anyFilterApplies)
+					{
+						layerBuffer.Layer.Parameters[trainableParameter] = handler.Trace(layerBuffer.Layer.Parameters.Get<ITraceable>(trainableParameter), _traceTag);
+					}
+					else
+					{
+						filteredIdentifiers.Add(parameterIdentifier);
+					}
 				}
 			}
 
@@ -82,14 +121,14 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 				throw new InvalidOperationException($"Cannot run network optimisation on network {network} in optimiser {this} before {nameof(PrepareRun)} is called.");
 			}
 
+			ISet<string> filteredIdentifiers = Registry.Get<ISet<string>>("filtered_identifiers");
 			IRegistry costRegistry = new Registry(Registry, tags: "costs");
-			Registry["cost_partials"] = costRegistry;
-
 			IRegistry gradientRegistry = new Registry(Registry, tags: "gradients");
-			Registry["gradients"] = gradientRegistry;
-
 			INumber cost = GetTotalCost(network, handler, costRegistry);
+
 			Registry["cost_total"] = cost.GetValueAs<double>();
+			Registry["cost_partials"] = costRegistry;
+			Registry["gradients"] = gradientRegistry;
 
 			handler.ComputeDerivativesTo(cost);
 
@@ -101,6 +140,11 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 				{
 					object parameter = layerBuffer.Parameters[trainableParameter];
 					string parameterIdentifier = layerIdentifier + "." + trainableParameter;
+
+					if (filteredIdentifiers.Contains(parameterIdentifier))
+					{
+						continue;
+					}
 
 					INumber asNumber = parameter as INumber;
 					INDArray asArray = parameter as INDArray;
@@ -145,6 +189,33 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 				_InternalClearAllTraces(layerBuffer.Inputs, handler);
 				_InternalClearAllTraces(layerBuffer.Outputs, handler);
 			}
+		}
+
+		/// <summary>
+		/// Add a specific filter mask ("freeze" a specific part of the model).
+		/// Filter masks are registry resolve strings for the model, e.g. layer1.*, *.weights.
+		/// </summary>
+		/// <param name="filterMask">The filter mask to add ("freeze").</param>
+		public void AddFilter(string filterMask)
+		{
+			Registry.Get<ISet<string>>("filtered_identifiers").Add(filterMask);
+		}
+
+		/// <summary>
+		/// Remove a specific filter mask ("unfreeze" a specific part of the model).
+		/// </summary>
+		/// <param name="filterMask">The filter mask to remove ("unfreeze").</param>
+		public void RemoveFilter(string filterMask)
+		{
+			Registry.Get<ISet<string>>("filtered_identifiers").Remove(filterMask);
+		}
+
+		/// <summary>
+		/// Clear all existing filter masks ("unfreeze" the entire model).
+		/// </summary>
+		public void ClearFilters()
+		{
+			Registry.Get<ISet<string>>("filtered_identifiers").Clear();
 		}
 
 		private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
@@ -224,6 +295,6 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// Deep copy this object.
 		/// </summary>
 		/// <returns>A deep copy of this object.</returns>
-		public abstract object DeepCopy();
+		public abstract object DeepCopy(); // TODO fix deep-copying being abused for replication to workers in optimisers, use specific shallowcopy instead (also to replicate newly added filters)
 	}
 }
