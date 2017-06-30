@@ -140,7 +140,7 @@ namespace Sigma.Core
 		/// <param name="seed"></param>
 		public void SetRandomSeed(int seed)
 		{
-			_logger.Debug($"Using random initial seed {seed} in sigma environment \"{Name}\".");
+			_logger.Info($"Using random initial seed {seed} for sigma environment \"{Name}\".");
 
 			RandomSeed = seed;
 			Random = new Random(seed);
