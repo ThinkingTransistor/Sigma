@@ -910,8 +910,8 @@ namespace Sigma.Core.Training.Operators
 			{
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
-				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = (IOptimiser)Trainer?.Optimiser?.DeepCopy();
+				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, it's only to pass operator/worker tests without trainer
+				workers[i].LocalOptimiser = Trainer?.Optimiser?.ShallowCopy(); 
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}

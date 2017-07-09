@@ -52,7 +52,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		}
 
 		/// <inheritdoc />
-		public override object DeepCopy()
+		protected override BaseGradientOptimiser ShallowCopyParameters()
 		{
 			return new MomentumGradientOptimiser(learningRate: Registry.Get<double>("learning_rate"), momentum: Registry.Get<double>("momentum"));
 		}

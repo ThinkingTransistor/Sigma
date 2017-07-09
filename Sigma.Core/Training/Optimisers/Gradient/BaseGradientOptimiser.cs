@@ -218,6 +218,29 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 			Registry.Get<ISet<string>>("filtered_identifiers").Clear();
 		}
 
+		/// <summary>
+		/// Get a shallow copy of this optimiser with the same parameters (etc. learning / decay rates, filters).		
+		/// </summary>
+		/// <returns>A shallow copy of this optimiser.</returns>
+		public IOptimiser ShallowCopy()
+		{
+			IOptimiser copy = ShallowCopyParameters();
+			ISet<string> filterMasks = Registry.Get<ISet<string>>("filter_masks");
+
+			foreach (string filterMask in filterMasks)
+			{
+				copy.AddFilter(filterMask);
+			}
+
+			return copy;
+		}
+
+		/// <summary>
+		/// Get a shallow copy of this optimiser with the same specific parameters (all parameters not specified in the <see cref="BaseGradientOptimiser"/>).
+		/// </summary>
+		/// <returns>A shallow copy of this optimiser with the same specific parameters.</returns>
+		protected abstract BaseGradientOptimiser ShallowCopyParameters();
+
 		private static void _InternalClearAllTraces(IReadOnlyDictionary<string, IRegistry> layerExternalBuffer, IComputationHandler handler)
 		{
 			foreach (string output in layerExternalBuffer.Keys.ToArray())
@@ -295,6 +318,13 @@ namespace Sigma.Core.Training.Optimisers.Gradient
 		/// Deep copy this object.
 		/// </summary>
 		/// <returns>A deep copy of this object.</returns>
-		public abstract object DeepCopy(); // TODO fix deep-copying being abused for replication to workers in optimisers, use specific shallowcopy instead (also to replicate newly added filters)
+		public object DeepCopy()
+		{
+			IOptimiser copy = ShallowCopy();
+
+			copy.Registry.AddAll((IDictionary<string, object>) copy.Registry.DeepCopy());
+
+			return copy;
+		}
 	}
 }

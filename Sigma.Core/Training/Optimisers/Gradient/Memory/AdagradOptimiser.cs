@@ -55,11 +55,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 			return handler.Add(parameter, update);
 		}
 
-		/// <summary>
-		/// Deep copy this object.
-		/// </summary>
-		/// <returns>A deep copy of this object.</returns>
-		public override object DeepCopy()
+		/// <inheritdoc />
+		protected override BaseGradientOptimiser ShallowCopyParameters()
 		{
 			return new AdagradOptimiser(Registry.Get<double>("base_learning_rate"), Registry.Get<double>("smoothing"), ExternalCostAlias);
 		}

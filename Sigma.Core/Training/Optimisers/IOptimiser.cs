@@ -55,5 +55,11 @@ namespace Sigma.Core.Training.Optimisers
 		/// Clear all existing filter masks ("unfreeze" the entire model).
 		/// </summary>
 		void ClearFilters();
+
+		/// <summary>
+		/// Get a shallow copy of this optimiser with the same parameters (etc. learning / decay rates, filters).		
+		/// </summary>
+		/// <returns>A shallow copy of this optimiser.</returns>
+		IOptimiser ShallowCopy();
 	}
 }
