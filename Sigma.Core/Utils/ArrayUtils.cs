@@ -444,6 +444,7 @@ namespace Sigma.Core.Utils
 
 			System.Array.Copy(array, offset, array, 0, array.Length - offset);
 
+			for (var i = array.Length - offset; i < array.Length; i++)
 			{
 				array[i] = fillValue;
 			}
