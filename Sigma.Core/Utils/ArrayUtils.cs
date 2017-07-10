@@ -428,5 +428,27 @@ namespace Sigma.Core.Utils
 
 			return result;
 		}
+
+		/// <summary>
+		/// Shift an array left in-place by a certain offset, optionally fill the right remainder with a certain value (otherwise default for given type).
+		/// </summary>
+		/// <typeparam name="T">The array type.</typeparam>
+		/// <param name="array">The array to shift back.</param>
+		/// <param name="offset">The offset by which to shift the array to the left.</param>
+		/// <param name="fillValue">The optional value to fill the right remainder of the array with.</param>
+		/// <returns>The given array (for convenience).</returns>
+		public static T[] ShiftLeftInPlace<T>(T[] array, int offset, T fillValue = default(T))
+		{
+			if (offset < 0) throw new ArgumentOutOfRangeException($"Array shift-back offset must be non-negative but was {offset}.");
+			if (offset == 0) return array;
+
+			System.Array.Copy(array, offset, array, 0, array.Length - offset);
+
+			{
+				array[i] = fillValue;
+			}
+
+			return array;
+		}
 	}
 }
