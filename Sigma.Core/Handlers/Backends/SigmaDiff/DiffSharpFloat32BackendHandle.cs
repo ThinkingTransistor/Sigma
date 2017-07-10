@@ -107,6 +107,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.Offset;
 			float result = 0.0f;
 
+			// Use SIMD instructions to sum all elements into a temporary vector vt, then sum that and the remaining items to result.
 			fixed (float* aref = &aData[aOffset])
 			{
 				Vector<float> vt = Vector<float>.Zero;
@@ -147,8 +148,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.Offset, maxIndex = 0;
 			float maxValue = float.NegativeInfinity;
 
+			// Pick between per-item (for smaller arrays) and SIMD max index search (for larger arrays).
 			fixed (float* aref = &aData[aOffset])
 			{
+				// In case of smaller array, use standard manual max index search.
 				if (len < simdLength * 4)
 				{
 					for (int k = 0; k < len; k++)
@@ -160,10 +163,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 				}
+				// In case of larger array, use SIMD max index search.
+				// In an optimal case, this should perform around 4-5x times faster for large enough arrays with evenly distributed values.
 				else
 				{
 					Vector<float> vt = new Vector<float>(float.NegativeInfinity);
 
+					// Find the maximum values for each simdLength vector slot.
 					int i = 0;
 					for (; i <= len - simdLength; i += simdLength)
 					{
@@ -171,6 +177,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						vt = Vector.Max(va, vt);
 					}
 
+					// Find the maximum value within the remaining data.
 					for (; i < len; ++i)
 					{
 						if (aref[i] > maxValue)
@@ -180,8 +187,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 
+					// If any of the maximum value slots of the SIMD vector is larger than the already picked value, set the mod max index (slot index within the SIMD vector).
 					int modMaxIndex = -1;
-
 					for (int y = 0; y < simdLength; y++)
 					{
 						if (vt[y] > maxValue)
@@ -191,6 +198,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 
+					// If the slot ("mod") index was set, find the actual max index in simdLength increments.
 					if (modMaxIndex != -1)
 					{
 						for (i = modMaxIndex; i < len; i += simdLength)
@@ -221,8 +229,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.Offset, minIndex = 0;
 			float minValue = float.PositiveInfinity;
 
+			// Pick between per-item (for smaller arrays) and SIMD min index search (for larger arrays).
 			fixed (float* aref = &aData[aOffset])
 			{
+				// In case of smaller array, use standard manual max index search.
 				if (len < simdLength * 4)
 				{
 					for (int k = 0; k < len; k++)
@@ -234,10 +244,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 				}
+				// In case of larger array, use SIMD min index search.
+				// In an optimal case, this should perform around 4-5x times faster for large enough arrays with evenly distributed values.
 				else
 				{
 					Vector<float> vt = new Vector<float>(float.PositiveInfinity);
 
+					// Find the minimum values for each simdLength vector slot.
 					int i = 0;
 					for (; i <= len - simdLength; i += simdLength)
 					{
@@ -245,6 +258,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						vt = Vector.Min(va, vt);
 					}
 
+					// Find the minimum value within the remaining data.
 					for (; i < len; ++i)
 					{
 						if (aref[i] < minValue)
@@ -254,8 +268,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 
+					// If any of the minimum value slots of the SIMD vector is smaller than the already picked value, set the mod min index (slot index within the SIMD vector).
 					int modMinIndex = -1;
-
 					for (int y = 0; y < simdLength; y++)
 					{
 						if (vt[y] < minValue)
@@ -265,6 +279,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 						}
 					}
 
+					// If the slot ("mod") index was set, find the actual min index in simdLength increments.
 					if (modMinIndex != -1)
 					{
 						for (i = modMinIndex; i < len; i += simdLength)
@@ -730,6 +745,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 			Vector<float> vc = new Vector<float>(other); // filled with constant value of other
 
+			// Use SIMD instructions to subtract an array from a constant factor (using a vc array filled with the constant a).
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -817,6 +833,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
+			// Use SIMD instructions to multiply two arrays element-wise.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* bref = &bData[bOffset])
 			fixed (float* resref = &resData[resOffset])
@@ -1030,6 +1047,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			uint signFlag = 0x80000000;
 			Vector<float> vf = new Vector<float>(*(float*)&signFlag);
 
+			// Use SIMD instructions with a few bit-twiddling "hacks" to quickly get the sign for each element in a large array.
+			// This works because the sign if the first bit in the binary floating point representation which can be easily extracted using bitwise operations.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -1060,6 +1079,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 			int len = a.Length;
 
+			// Use SIMD instructions to quickly get the square root of each element of an array.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -1088,6 +1108,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			Vector<float> vc = Vector<float>.One;
 			int len = a.Length, simdLength = Vector<float>.Count, aOffset = a.DataBuffer.Offset;
 
+			// Use SIMD instructions and an exponent estimation to quickly get the exponent of each element of an array.
+			// This works because the exponential function e^x can be considered as the limit of (1 + x/n)^n for n -> infinity.
+			// For any reasonably small value for machine learning (< ~7) the error is extremely small when approximated with
+			//  x = 1 + x / 256
+			//	x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; // 8 times, because 2^8 is 256 and that's reasonably accurate.
 			fixed (float* aref = &aData[aOffset])
 			{
 				int i;
@@ -1125,6 +1150,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 			Vector<float> vc = Vector<float>.Zero;
 
+			// Use SIMD instructions and an exponent estimation to quickly get the exponent of each element of an array.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -1156,6 +1182,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			Vector<float> vc = Vector<float>.One;
 			Vector<float> vf = new Vector<float>(1.0f / 256.0f);
 
+			// Use SIMD instructions and an exponent estimation to quickly get the sigmoid of each element of an array.
+			// The exponent estimation works because the exponential function e^x can be considered as the limit of (1 + x/n)^n for n -> infinity.
+			// For any reasonably small value for machine learning (< ~7) the error is extremely small when approximated with
+			//  x = 1 + x / 256
+			//	x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; x *= x; // 8 times, because 2^8 is 256 and that's reasonably accurate.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -1196,8 +1227,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
-			// https://github.com/etheory/fastapprox/blob/master/fastapprox/src/fastlog.h
-
+			// Using SIMD instructions, bit-twiddling and rational approximation to quickly get the log of each element of an array.
+			// Quite frankly, I'm not quite sure yet just why this works, it just does, and with quite high accuracy (avg error of 1.60712e-05 for [0, 20])
+			// See https://github.com/etheory/fastapprox/blob/master/fastapprox/src/fastlog.h
 			uint exponentMask = 0x3f000000, mantissaMask = 0x007fffff;
 			Vector<float> vf1 = new Vector<float>(*(float*) &exponentMask);
 			Vector<float> vf2 = new Vector<float>(*(float*) &mantissaMask);
@@ -1217,6 +1249,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				{
 					Vector<float> va = new Vector<float>(aData, i + aOffset); // TODO optimise offsets
 
+					// TODO the manual float bits as int then back cast to float conversion is taking a lot of time (~70% of the entire method)
 					for (int y = 0; y < simdLength; y++)
 					{
 						vaiBuffer[y] = *(uint*) &aref[i + y];
@@ -1262,6 +1295,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 			Vector<float> vc = new Vector<float>(other); // filled with constant value of other
 
+			// Use SIMD instructions to divide an array by a constant factor (using a vc array filled with the constant a).
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* resref = &resData[resOffset])
 			{
@@ -1301,6 +1335,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
+			// Use SIMD instructions to divide an array by another array.
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* bref = &bData[bOffset])
 			fixed (float* resref = &resData[resOffset])
@@ -1377,6 +1412,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return b;
 			}
 
+			// If no optimised versions exist for the given map operation, manually invoke the given function for each element (slow).
 			b = b.DeepCopy();
 
 			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data;
