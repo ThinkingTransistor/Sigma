@@ -209,7 +209,7 @@ namespace Sigma.Tests.Internals.WPF
 
 					for (int i = 0; i < 10; i++)
 					{
-						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(3, TimeScale.Epoch)));
+						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Epoch)));
 					}
 				}
 
@@ -356,32 +356,31 @@ namespace Sigma.Tests.Internals.WPF
 
 
 		/// <summary>
-		/// Create a MNIST trainer (writing recognition) will be added to an environemnt.
+		/// Create a MNIST trainer (writing recognition) that will be added to an environemnt.
 		/// </summary>
 		/// <param name="sigma">The sigma environemnt this trainer will be assigned to.</param>
 		/// <returns>The newly created trainer.</returns>
 		private static ITrainer CreateMnistTrainer(SigmaEnvironment sigma)
 		{
 			IDataset dataset = Defaults.Datasets.Mnist();
+
 			ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
 
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28)
 											+ DropoutLayer.Construct(0.2)
 											+ FullyConnectedLayer.Construct(1000, activation: "tanh")
-											+ DropoutLayer.Construct(0.5)
+											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(800, activation: "tanh")
-											+ DropoutLayer.Construct(0.5)
+											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
-			//trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
-			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.015);
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
+
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 			trainer.Operator = new CpuSinglethreadedOperator();
-			trainer.Operator.UseSessions = true;
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));

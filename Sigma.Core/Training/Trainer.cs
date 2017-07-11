@@ -442,7 +442,7 @@ namespace Sigma.Core.Training
         {
             CheckInitialised();
 
-            DataProviderUtils.ProvideExternalInputData(DataProvider, localNetwork, currentBlock);
+            DataUtils.ProvideExternalInputData(DataProvider, localNetwork, currentBlock);
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace Sigma.Core.Training
         /// <param name="currentBlock">The current record block.</param>
         public void ProvideExternalOutputData(INetwork localNetwork, IDictionary<string, INDArray> currentBlock)
         {
-            DataProviderUtils.ProvideExternalOutputData(DataProvider, localNetwork, currentBlock);
+            DataUtils.ProvideExternalOutputData(DataProvider, localNetwork, currentBlock);
         }
 
         /// <summary>

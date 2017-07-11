@@ -259,6 +259,7 @@
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
     <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
+    <Compile Include="Training\Hooks\Processors\TimeSeriesGeneratorHook.cs" />
     <Compile Include="Training\Hooks\Reporters\TargetMaximisationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\UniClassificationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporter.cs" />
@@ -309,7 +310,7 @@
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
-    <Compile Include="Utils\DataProviderUtils.cs" />
+    <Compile Include="Utils\DataUtils.cs" />
     <Compile Include="Utils\Defaults.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
