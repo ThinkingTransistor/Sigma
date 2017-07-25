@@ -14,12 +14,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32Handler : DiffSharpFloat32Handler
 	{
-		public CudaFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend) : base(blasBackend, lapackBackend)
+		public CudaFloat32Handler(int gpuID = 0) : base(new CudaFloat32BackendHandle(gpuID, backendTag: -1))
 		{
 		}
 
 		/// <summary>The underlying data type processed and used in this computation handler.</summary>
 		public override IDataType DataType { get; }
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public override void OnDeserialised()
+		{
+			throw new NotImplementedException();
+		}
 
 		/// <inheritdoc />
 		public override void InitAfterDeserialisation(INDArray array)

@@ -7,14 +7,10 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Numerics;
-using DiffSharp;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
@@ -25,14 +21,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	public unsafe class DiffSharpFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
+		public IBlasBackend BlasBackend { get; }
+		public ILapackBackend LapackBackend { get; }
+
 		/// <summary>
 		/// Create a DiffSharpFloat32BackendHandle with a certain BLAS and LAPACK backend and an associated handle tag. 
 		/// </summary>
 		/// <param name="blasBackend">The BLAS backend to use (must use 32-bit floats).</param>
 		/// <param name="lapackBackend">The LAPACK backend to use (must use 32-bit floats).</param>
 		/// <param name="backendTag">The backend tag to use.</param>
-		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(blasBackend, lapackBackend, backendTag)
+		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(backendTag)
 		{
+			if (blasBackend == null) throw new ArgumentNullException(nameof(blasBackend));
+			if (lapackBackend == null) throw new ArgumentNullException(nameof(lapackBackend));
+
+			BlasBackend = blasBackend;
+			LapackBackend = lapackBackend;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CreateDataBuffer"/>

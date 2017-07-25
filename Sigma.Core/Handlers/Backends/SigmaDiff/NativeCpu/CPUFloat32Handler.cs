@@ -28,6 +28,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		public override IDataType DataType => DataTypes.Float32;
 
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public override void OnDeserialised()
+		{
+			InitialiseBackend(new DiffSharpFloat32BackendHandle(BlasBackend, LapackBackend, backendTag: -1));
+		}
+
 		/// <inheritdoc />
 		public override IDataBuffer<T> DataBuffer<T>(T[] values)
 		{

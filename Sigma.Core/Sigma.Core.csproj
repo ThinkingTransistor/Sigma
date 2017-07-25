@@ -190,6 +190,7 @@
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32Handler.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />

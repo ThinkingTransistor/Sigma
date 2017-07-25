@@ -21,7 +21,7 @@ using Sigma.Core.Persistence;
 namespace Sigma.Core.Handlers.Backends.SigmaDiff
 {
 	/// <summary>
-	/// An abstract DiffSharp computation handle for 32-bit floats with dynamic Blas and Lapack backends.
+	/// An abstract DiffSharp computation handle for 32-bit floats with dynamic backends (e.g. BLAS / LAPACK).
 	/// </summary>
 	[Serializable]
 	public abstract class DiffSharpFloat32Handler : IComputationHandler, ISerialisationNotifier
@@ -47,6 +47,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		private DiffSharpBackendHandle<float> _diffsharpBackendHandle;
 		private long _backendTag;
 
+		protected DiffSharpFloat32Handler(DiffSharpBackendHandle<float> backendHandle)
+		{
+			if (backendHandle == null) throw new ArgumentNullException(nameof(backendHandle));
+
+			InitialiseBackend(backendHandle);
+		}
+
 		protected DiffSharpFloat32Handler(IBlasBackend blasBackend, ILapackBackend lapackBackend)
 		{
 			if (blasBackend == null) throw new ArgumentNullException(nameof(blasBackend));
@@ -57,14 +64,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 			Registry = new Registry(tags: "handler");
 
-			InitialiseBackend(blasBackend, lapackBackend);
+			InitialiseBackend(new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1));
 
 			_probabilityMaskRng = new Random();
 		}
 
-		private void InitialiseBackend(IBlasBackend blasBackend, ILapackBackend lapackBackend)
+		protected void InitialiseBackend(DiffSharpBackendHandle<float> backendHandle)
 		{
-			DiffsharpBackendHandle = new DiffSharpFloat32BackendHandle(blasBackend, lapackBackend, backendTag: -1);
+			DiffsharpBackendHandle = backendHandle;
 			_backendTag = SigmaDiffSharpBackendProvider.Instance.Register(CreateBackendConfig());
 			SigmaDiffSharpBackendProvider.AssignToDiffSharpGlobal();
 			DiffsharpBackendHandle.BackendTag = _backendTag;
@@ -87,10 +94,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <summary>
 		/// Called after this object was de-serialised. 
 		/// </summary>
-		public void OnDeserialised()
-		{
-			InitialiseBackend(BlasBackend, LapackBackend);
-		}
+		public abstract void OnDeserialised();
 
 		protected BackendConfig<float> CreateBackendConfig()
 		{
