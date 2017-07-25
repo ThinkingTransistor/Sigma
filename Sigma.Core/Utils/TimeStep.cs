@@ -93,6 +93,7 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Create a time step interval based on a given time scale. Optionally specify time to live. 
 		/// An easily readable version of the <see cref="TimeStep"/> constructor.
 		/// </summary>
 		/// <param name="interval">The time step interval in <see cref="TimeScale"/> units.</param>
@@ -102,6 +103,17 @@ namespace Sigma.Core.Utils
 		public static TimeStep Every(int interval, TimeScale timeScale, int liveTime = LiveTimeForever)
 		{
 			return new TimeStep(timeScale, interval, liveTime);
+		}
+
+		/// <summary>
+		/// Create a time step interval based on a given time scale that has a time to live of 1 (is invoked once per context).
+		/// </summary>
+		/// <param name="interval">The time step interval in <see cref="TimeScale"/> units.</param>
+		/// <param name="timeScale">The time scale unit.</param>
+		/// <returns></returns>
+		public static TimeStep After(int interval, TimeScale timeScale)
+		{
+			return Every(interval, timeScale, liveTime: 1);
 		}
 
 		/// <summary>

@@ -59,6 +59,7 @@ namespace Sigma.Core.Data.Readers
 			_recordSizeBytes = recordSizeBytes;
 		}
 
+		/// <inheritdoc />
 		public void Prepare()
 		{
 			Source.Prepare();
@@ -122,14 +123,14 @@ namespace Sigma.Core.Data.Readers
 		{
 		}
 
-		public ByteRecordExtractor Extractor(params object[] parameters)
+		public ArrayRecordExtractor<byte> Extractor(params object[] parameters)
 		{
-			return (ByteRecordExtractor) Extractor(ByteRecordExtractor.ParseExtractorParameters(parameters));
+			return (ArrayRecordExtractor<byte>) Extractor(ArrayRecordExtractor<byte>.ParseExtractorParameters(parameters));
 		}
 
 		public IRecordExtractor Extractor(Dictionary<string, long[][]> indexMappings)
 		{
-			return Extractor(new ByteRecordExtractor(indexMappings));
+			return Extractor(new ArrayRecordExtractor<byte>(indexMappings));
 		}
 
 		public IRecordExtractor Extractor(IRecordExtractor extractor)

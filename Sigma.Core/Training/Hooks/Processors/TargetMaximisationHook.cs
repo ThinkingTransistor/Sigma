@@ -51,6 +51,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 			ParameterRegistry["max_optimisation_attempts"] = 2;
 			ParameterRegistry["shared_result_input_key"] = sharedResultInputKey;
 			ParameterRegistry["shared_result_success_key"] = sharedResultSuccessKey;
+
+			InvokePriority = 10000;
 		}
 
 		/// <summary>
@@ -62,15 +64,13 @@ namespace Sigma.Core.Training.Hooks.Processors
 		{
 			// we need copies of network and optimiser as to not affect the current internal state
 			INetwork network = (INetwork)resolver.ResolveGetSingle<INetwork>("network.self").DeepCopy();
-			BaseGradientOptimiser optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			BaseGradientOptimiser optimiser = (BaseGradientOptimiser) resolver.ResolveGetSingle<BaseGradientOptimiser>("optimiser.self").ShallowCopy(); 
 			INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
 			IComputationHandler handler = new DebugHandler(Operator.Handler);
 
 			long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
 
-			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
-
-			block["targets"] = desiredTargets; // desired targets don't change during execution
+			IDictionary<string, INDArray> block = DataUtils.MakeBlock("targets", desiredTargets); // desired targets don't change during execution
 
 			double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost = Double.MaxValue;
 			int maxOptimisationAttempts = ParameterRegistry.Get<int>("max_optimisation_attempts");
@@ -88,20 +88,31 @@ namespace Sigma.Core.Training.Hooks.Processors
 					uint traceTag = handler.BeginTrace();
 					block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] {1L, 1L}, inputShape)), traceTag);
 
-					DataProviderUtils.ProvideExternalInputData(network, block);
+					DataUtils.ProvideExternalInputData(network, block);
 					network.Run(handler, trainingPass: false);
 
 					// fetch current outputs and optimise against them (towards desired targets)
-					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
+					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(buffer => buffer.ExternalOutputs.Contains("external_default"))
 						.Outputs["external_default"].Get<INDArray>("activations");
-					INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
+					currentTargets = handler.RowWise(handler.FlattenTimeAndFeatures(currentTargets), handler.SoftMax);
 
-					handler.ComputeDerivativesTo(squaredDifference);
+					INDArray logPredictions = handler.Log(currentTargets);
+					INDArray a = handler.Multiply(desiredTargets, logPredictions);
+
+					INDArray inverseTargets = handler.Subtract(1, desiredTargets);
+					INDArray inversePredictions = handler.Subtract(1 + 1e-6, currentTargets);
+					INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
+
+					INumber cost = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
+					//INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -currentTargets.Shape[0]); // TODO change to softmax ce cost, not sure why it doesn't work right now
+																											   // (it's even using the same optimiser?)
+
+					handler.ComputeDerivativesTo(cost);
 
 					INDArray gradient = handler.GetDerivative(block["inputs"]);
 					maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));
 
-					currentCost = squaredDifference.GetValueAs<double>();
+					currentCost = cost.GetValueAs<double>();
 
 					if (currentCost <= desiredCost)
 					{

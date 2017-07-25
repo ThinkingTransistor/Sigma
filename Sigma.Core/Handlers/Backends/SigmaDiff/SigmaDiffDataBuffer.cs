@@ -21,7 +21,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	{
 		public long BackendTag { get; set; }
 
-		#region DiffSharp SigmaDiffDataBuffer interop properties
+		#region DiffSharp <=> SigmaDiffDataBuffer interop properties
 
 		int ISigmaDiffDataBuffer<T>.Length => (int)Length;
 
@@ -29,7 +29,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length);
+		T[] ISigmaDiffDataBuffer<T>.SubData => _InternalGetSubData(); 
 
 		#endregion
 
@@ -84,14 +84,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
-			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
+			T[] stackedData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)newSize);
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(stackedData, BackendTag);
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
 				long sourceIndex = Offset + m * totalCols + colStart;
 				long destinationIndex = (m - rowStart) * colLength;
 
-				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
+				Buffer.BlockCopy(Data, (int)(sourceIndex * Type.SizeBytes), values.Data, (int)(destinationIndex * Type.SizeBytes), colLength * Type.SizeBytes);
 			}
 
 			return values;
@@ -99,11 +100,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
-			T[] copyData = new T[Length];
-			System.Array.Copy(Data, Offset, copyData, 0, Length);
+			T[] copyData = _InternalGetSubData();
 
-			// deep copy only core data for diffsharp
 			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
+		}
+
+		private T[] _InternalGetSubData()
+		{
+			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
+			
+			Buffer.BlockCopy(Data, (int) (Offset * Type.SizeBytes), copyData, 0, (int) (Length * Type.SizeBytes));
+
+			return copyData;
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.ShallowCopy()

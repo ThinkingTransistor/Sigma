@@ -125,6 +125,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.3.0\lib\portable-net45+win8+wp8+wpa81\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -150,7 +153,7 @@
     <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
-    <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
+    <Compile Include="Data\Extractors\ArrayRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
@@ -168,8 +171,10 @@
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\PermutePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\ShufflePreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
+    <Compile Include="Data\Readers\CharacterRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />
@@ -203,6 +208,7 @@
     <Compile Include="Layers\External\OutputLayer.cs" />
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="Layers\Recurrent\RecurrentLayer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\ArrayPool.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
@@ -253,6 +259,7 @@
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
     <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
+    <Compile Include="Training\Hooks\Processors\TimeSeriesGeneratorHook.cs" />
     <Compile Include="Training\Hooks\Reporters\TargetMaximisationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\UniClassificationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporter.cs" />
@@ -294,6 +301,7 @@
     <Compile Include="Training\Optimisers\Gradient\Memory\AdadeltaOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\AdagradOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\BaseArrayMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\BaseMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
@@ -302,7 +310,7 @@
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
-    <Compile Include="Utils\DataProviderUtils.cs" />
+    <Compile Include="Utils\DataUtils.cs" />
     <Compile Include="Utils\Defaults.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
@@ -334,7 +342,6 @@
   <ItemGroup>
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
-    <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>

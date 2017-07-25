@@ -16,7 +16,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 	/// An adagrad optimiser which adapts the learning rate for each parameter basted on the sum of past squared gradients.
 	/// </summary>
 	[Serializable]
-	public class AdagradOptimiser : BaseMemoryGradientOptimiser<INDArray>
+	public class AdagradOptimiser : BaseArrayMemoryGradientOptimiser
 	{
 		/// <summary>
 		/// Create an adagrad optimiser which adapts the learning rate for each parameter basted on the sum of past squared gradients.
@@ -44,7 +44,7 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 			INDArray squaredGradientSum = GetMemory(paramIdentifier, () => handler.NDArray((long[]) parameter.Shape.Clone()));
 
 			squaredGradientSum = handler.Add(squaredGradientSum, handler.Multiply(gradient, gradient));
-			SetMemory(paramIdentifier, squaredGradientSum);
+			SetProtectedMemory(paramIdentifier, squaredGradientSum, handler);
 
 			INDArray adaptedLearningRate = handler.Divide(learningRate, handler.SquareRoot(handler.Add(squaredGradientSum, smoothing)));
 
@@ -55,11 +55,8 @@ namespace Sigma.Core.Training.Optimisers.Gradient.Memory
 			return handler.Add(parameter, update);
 		}
 
-		/// <summary>
-		/// Deep copy this object.
-		/// </summary>
-		/// <returns>A deep copy of this object.</returns>
-		public override object DeepCopy()
+		/// <inheritdoc />
+		protected override BaseGradientOptimiser ShallowCopyParameters()
 		{
 			return new AdagradOptimiser(Registry.Get<double>("base_learning_rate"), Registry.Get<double>("smoothing"), ExternalCostAlias);
 		}

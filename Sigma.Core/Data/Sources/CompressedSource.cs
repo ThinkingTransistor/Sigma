@@ -122,7 +122,7 @@ namespace Sigma.Core.Data.Sources
 
 				FileStream decompressedFileStream = new FileStream(_localUnpackPath, FileMode.OpenOrCreate);
 
-				unpackedStream.CopyTo(decompressedFileStream);
+				unpackedStream.CopyTo(decompressedFileStream); // TODO decompression doesn't work for certain files, see SharpZipLib
 
 				_logger.Info($"Done unpacking source stream using unpacker {Unpacker} to local unpack path \"{_localUnpackPath}\" (unpacked size {decompressedFileStream.Length / 1024L}kB).");
 
