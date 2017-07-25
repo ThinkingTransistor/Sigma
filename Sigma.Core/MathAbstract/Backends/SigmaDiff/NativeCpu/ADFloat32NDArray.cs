@@ -23,7 +23,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 	[Serializable]
 	public class ADFloat32NDArray : ADNDArray<float>
 	{
-		public DNDArray _adArrayHandle;
+		internal DNDArray _adArrayHandle;
 
 		public ADFloat32NDArray(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), NDArrayUtils.CheckShape(shape)))
 		{

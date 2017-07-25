@@ -7,7 +7,6 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using DiffSharp;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using Sigma.Core.Data;
@@ -16,12 +15,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T> where T : struct
 	{
-		private readonly SizeT _cudaZero = new SizeT(0);
-
 		internal CudaDeviceVariable<T> CudaBuffer;
-		private SizeT _cudaOffsetBytes, _cudaLengthBytes;
+		internal CudaContext CudaContext;
 
-		private CudaContext _cudaContext;
+		private readonly SizeT _cudaZero = new SizeT(0);
+		private SizeT _cudaOffsetBytes, _cudaLengthBytes;
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length, long backendTag, CudaContext cudaContext) : base(underlyingBuffer, offset, length, backendTag)
@@ -63,12 +61,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaBuffer = new CudaDeviceVariable<T>(cudaContext.AllocateMemory(new SizeT(length)));
 			CopyFromHostToDevice();
 
-			_cudaContext = cudaContext;
+			CudaContext = cudaContext;
 		}
 
 		internal void CopyFromHostToDevice()
 		{
-			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
+			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes / Type.SizeBytes); // TODO is it bytes or just length? API doc says bytes, error says nope
 		}
 
 		internal void CopyFromDeviceToHost()

@@ -9,13 +9,18 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32Handler : DiffSharpFloat32Handler
 	{
+		private CudaFloat32BackendHandle _cudaBackendHandle;
+
 		public CudaFloat32Handler(int deviceId = 0) : base(new CudaFloat32BackendHandle(deviceId, backendTag: -1))
 		{
+			_cudaBackendHandle = (CudaFloat32BackendHandle) DiffsharpBackendHandle;
 		}
 
 		/// <summary>The underlying data type processed and used in this computation handler.</summary>
@@ -44,19 +49,30 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override bool IsInterchangeable(IComputationHandler otherHandler)
 		{
-			throw new NotImplementedException();
+			return this.GetType() == otherHandler.GetType();
 		}
 
 		/// <inheritdoc />
 		public override INDArray NDArray(params long[] shape)
 		{
-			throw new NotImplementedException();
+			long backendTag = _cudaBackendHandle.BackendTag;
+
+			return AssignTag(new CudaFloat32NDArray(backendTag, new CudaSigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag, _cudaBackendHandle.CudaContext), shape));
 		}
 
 		/// <inheritdoc />
 		public override INDArray NDArray<TOther>(TOther[] values, params long[] shape)
 		{
-			throw new NotImplementedException();
+			long backendTag = _cudaBackendHandle.BackendTag;
+			float[] convertedValues = new float[values.Length];
+			Type floatType = typeof(float);
+
+			for (int i = 0; i < values.Length; i++)
+			{
+				convertedValues[i] = (float)System.Convert.ChangeType(values[i], floatType);
+			}
+
+			return AssignTag(new CudaFloat32NDArray(backendTag, new CudaSigmaDiffDataBuffer<float>(convertedValues, backendTag, _cudaBackendHandle.CudaContext), shape));
 		}
 
 		/// <inheritdoc />

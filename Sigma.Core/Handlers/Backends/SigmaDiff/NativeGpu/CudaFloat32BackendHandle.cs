@@ -17,20 +17,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
-		private readonly CudaBlas _cudaBlasHandle;
-		private CudaContext _cudaContext;
+		internal readonly CudaBlas CudaBlasHandle;
+		internal readonly CudaContext CudaContext;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{ 
-			_cudaBlasHandle = new CudaBlas();
-			_cudaContext = new CudaContext(deviceId); // TODO move control to create / destroy context methods for GpuWorkers (context is thread-bound) - begin session perhaps? 
-			_cudaContext.SetCurrent();
+			CudaBlasHandle = new CudaBlas();
+			CudaContext = new CudaContext(deviceId); // TODO move control to create / destroy context methods for GpuWorkers (context is thread-bound) - begin session perhaps? 
+			CudaContext.SetCurrent();
 		}
 
 		/// <inheritdoc />
 		public override ISigmaDiffDataBuffer<float> CreateDataBuffer(float[] values)
 		{
-			return new CudaSigmaDiffDataBuffer<float>(values, BackendTag, _cudaContext);
+			return new CudaSigmaDiffDataBuffer<float>(values, BackendTag, CudaContext);
 		}
 
 		/// <inheritdoc />

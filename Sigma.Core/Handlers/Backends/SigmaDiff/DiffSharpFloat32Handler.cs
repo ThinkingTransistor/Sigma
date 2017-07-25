@@ -15,6 +15,7 @@ using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using System;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Persistence;
 
@@ -114,7 +115,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ADFloat32Number)number;
 		}
 
-		protected ADFloat32NDArray AssignTag(ADFloat32NDArray array)
+		protected T AssignTag<T>(T array) where T : ADNDArray<float>
 		{
 			((SigmaDiffDataBuffer<float>)array.Data).BackendTag = _backendTag;
 
