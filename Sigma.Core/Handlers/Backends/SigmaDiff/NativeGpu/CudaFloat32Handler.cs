@@ -14,7 +14,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32Handler : DiffSharpFloat32Handler
 	{
-		public CudaFloat32Handler(int gpuID = 0) : base(new CudaFloat32BackendHandle(gpuID, backendTag: -1))
+		public CudaFloat32Handler(int deviceId = 0) : base(new CudaFloat32BackendHandle(deviceId, backendTag: -1))
 		{
 		}
 

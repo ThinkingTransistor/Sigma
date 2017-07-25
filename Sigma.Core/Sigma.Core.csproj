@@ -297,6 +297,8 @@
     <Compile Include="Training\Modifiers\ScaleValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\CudaSinglethreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\Workers\CudaWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />

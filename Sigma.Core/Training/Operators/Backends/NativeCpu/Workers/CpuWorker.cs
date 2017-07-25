@@ -6,14 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using log4net;
 using Sigma.Core.Handlers;
-using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Operators.Workers;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 {

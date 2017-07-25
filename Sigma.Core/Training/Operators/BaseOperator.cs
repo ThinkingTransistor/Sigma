@@ -1245,8 +1245,6 @@ namespace Sigma.Core.Training.Operators
 		/// <returns>The selector for this operator.</returns>
 		public abstract IOperatorSelector<IOperator> Select();
 
-		#region AbstractWorkerMethods
-
 		/// <summary>
 		///     This method creates an <see cref="IWorker" />.
 		/// </summary>
@@ -1257,35 +1255,58 @@ namespace Sigma.Core.Training.Operators
 		///     This method starts a worker.
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		protected abstract void StartWorker(IWorker worker);
+		protected virtual void StartWorker(IWorker worker)
+		{
+			Logger.Debug($"Starting worker {worker} in operator {this}...");
+
+			worker.Start();
+		}
 
 		/// <summary>
 		///     This method starts a worker for a single iteration.
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		protected abstract void RunWorkerOnce(IWorker worker);
+		protected virtual void RunWorkerOnce(IWorker worker)
+		{
+			Logger.Debug($"Running worker {worker} once in operator {this}...");
+
+			worker.RunOnce();
+		}
 
 		/// <summary>
 		///     This method pauses a worker. It will also be
 		///     called if the worker is stopped.
 		/// </summary>
 		/// <param name="worker">The worker that will be paused.</param>
-		protected abstract void PauseWorker(IWorker worker);
+		protected virtual void PauseWorker(IWorker worker)
+		{
+			Logger.Debug($"Signalling pause to worker {worker} in operator {this}...");
+
+			worker.SignalPause();
+		}
 
 		/// <summary>
 		///     This method resumes a worker from it's paused state.
 		/// </summary>
 		/// <param name="worker">The worker that will be resumed.</param>
-		protected abstract void ResumeWorker(IWorker worker);
+		protected virtual void ResumeWorker(IWorker worker)
+		{
+			Logger.Debug($"Signalling resume to worker {worker} in operator {this}...");
+
+			worker.SignalResume();
+		}
 
 		/// <summary>
 		///     This method stops a worker. All resources should
 		///     be freed.
 		/// </summary>
 		/// <param name="worker">The worker that will be paused and stopped.</param>
-		protected abstract void StopWorker(IWorker worker);
+		protected virtual void StopWorker(IWorker worker)
+		{
+			Logger.Debug($"Stopping worker {worker} in operator {this}...");
 
-		#endregion AbstractWorkerMethods
+			worker.SignalStop();
+		}
 
 		/// <summary>
 		/// A hook that invokes a callback as soon as possible

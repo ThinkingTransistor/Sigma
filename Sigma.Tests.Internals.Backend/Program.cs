@@ -33,6 +33,7 @@ using Sigma.Core.Layers.Recurrent;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training.Hooks.Saviors;
+using Sigma.Core.Training.Operators.Backends.NativeGpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
@@ -242,7 +243,7 @@ namespace Sigma.Tests.Internals.Backend
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
