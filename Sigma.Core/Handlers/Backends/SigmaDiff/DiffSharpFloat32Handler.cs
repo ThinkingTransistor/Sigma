@@ -100,9 +100,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new BackendConfig<float>(DiffsharpBackendHandle, epsilon, 1.0f / epsilon, 0.5f / epsilon, fpeps, 100, 1.2f);
 		}
 
-		protected ADNDFloat32Array InternaliseArray(object array)
+		protected ADFloat32NDArray InternaliseArray(object array)
 		{
-			return AssignTag((ADNDFloat32Array)array);
+			return AssignTag((ADFloat32NDArray)array);
 		}
 
 		protected ADFloat32Number InternaliseNumber(object number)
@@ -110,7 +110,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ADFloat32Number)number;
 		}
 
-		protected ADNDFloat32Array AssignTag(ADNDFloat32Array array)
+		protected ADFloat32NDArray AssignTag(ADFloat32NDArray array)
 		{
 			((SigmaDiffDataBuffer<float>)array.Data).BackendTag = _backendTag;
 
@@ -149,9 +149,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public abstract void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices);
 
-		protected ADNDFloat32Array ConvertInternal(INDArray array)
+		protected ADFloat32NDArray ConvertInternal(INDArray array)
 		{
-			return new ADNDFloat32Array(_backendTag, array.GetDataAs<float>(), array.Shape);
+			return new ADFloat32NDArray(_backendTag, array.GetDataAs<float>(), array.Shape);
 		}
 
 		/// <inheritdoc />
@@ -189,20 +189,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray PermuteBatchAndTime(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			// swap batch and time dimensions
 			int[] permutedDimensions = ArrayUtils.Range(0, array.Rank - 1);
 			permutedDimensions[1] = 0;
 			permutedDimensions[0] = 1;
 
-			return new ADNDFloat32Array(DNDArray.Permute(internalArray._adArrayHandle, permutedDimensions));
+			return new ADFloat32NDArray(DNDArray.Permute(internalArray._adArrayHandle, permutedDimensions));
 		}
 
 		/// <inheritdoc />
 		public TOther[] RowWiseTransform<TOther>(INDArray array, Func<INDArray, TOther> transformFunction)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			INDArray[] rows = SliceRowWise(array, internalArray);
 			TOther[] transformedRows = new TOther[rows.Length];
 
@@ -223,7 +223,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return function.Invoke(array);
 			}
 
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)
@@ -237,10 +237,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				internalRowHandles[i] = InternaliseArray(rows[i])._adArrayHandle;
 			}
 
-			return new ADNDFloat32Array(new DNDArray(DNDArray.OfRows(internalRowHandles, DiffsharpBackendHandle)));
+			return new ADFloat32NDArray(new DNDArray(DNDArray.OfRows(internalRowHandles, DiffsharpBackendHandle)));
 		}
 
-		private static INDArray[] SliceRowWise(INDArray array, ADNDFloat32Array internalArray)
+		private static INDArray[] SliceRowWise(INDArray array, ADFloat32NDArray internalArray)
 		{
 			// no need to slice if there's only one row
 			if (array.Shape[0] == 1)
@@ -257,7 +257,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			{
 				var row = FSharpOption<int>.Some(i);
 
-				rows[i] = new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(row, row, colStart, colFinish));
+				rows[i] = new ADFloat32NDArray(internalArray._adArrayHandle.GetSlice(row, row, colStart, colFinish));
 			}
 
 			return rows;
@@ -266,48 +266,48 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			FSharpOption<int> rowStart = FSharpOption<int>.Some(rowIndex);
 			FSharpOption<int> rowEnd = FSharpOption<int>.Some(rowIndex + rowLength - 1);
 			FSharpOption<int> columnStart = FSharpOption<int>.Some(columnIndex);
 			FSharpOption<int> columnEnd = FSharpOption<int>.Some(columnIndex + columnLength - 1);
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle.GetSlice(rowStart, rowEnd, columnStart, columnEnd));
+			return new ADFloat32NDArray(internalArray._adArrayHandle.GetSlice(rowStart, rowEnd, columnStart, columnEnd));
 		}
 
 		/// <inheritdoc />
 		public INDArray StackRows(int numberRows, INDArray row)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(row);
+			ADFloat32NDArray internalArray = InternaliseArray(row);
 
-			return new ADNDFloat32Array(DNDArray.OfRows(numberRows, internalArray._adArrayHandle, _diffsharpBackendHandle));
+			return new ADFloat32NDArray(DNDArray.OfRows(numberRows, internalArray._adArrayHandle, _diffsharpBackendHandle));
 		}
 
 		/// <inheritdoc />
 		public INDArray Add<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = (ADFloat32Number)Number((float)System.Convert.ChangeType(value, typeof(float)));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue._adNumberHandle);
+			return new ADFloat32NDArray(internalArray._adArrayHandle + internalValue._adNumberHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Add(INDArray array, INumber value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle + internalValue._adNumberHandle);
+			return new ADFloat32NDArray(internalArray._adArrayHandle + internalValue._adNumberHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Add(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = InternaliseArray(a);
-			ADNDFloat32Array internalB = InternaliseArray(b);
+			ADFloat32NDArray internalA = InternaliseArray(a);
+			ADFloat32NDArray internalB = InternaliseArray(b);
 
-			return new ADNDFloat32Array(internalA._adArrayHandle + internalB._adArrayHandle);
+			return new ADFloat32NDArray(internalA._adArrayHandle + internalB._adArrayHandle);
 		}
 
 		/// <inheritdoc />
@@ -331,46 +331,46 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Subtract<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue);
+			return new ADFloat32NDArray(internalArray._adArrayHandle - internalValue);
 		}
 
 		/// <inheritdoc />
 		public INDArray Subtract(INDArray array, INumber value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle - internalValue._adNumberHandle);
+			return new ADFloat32NDArray(internalArray._adArrayHandle - internalValue._adNumberHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Subtract(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = InternaliseArray(a);
-			ADNDFloat32Array internalB = InternaliseArray(b);
+			ADFloat32NDArray internalA = InternaliseArray(a);
+			ADFloat32NDArray internalB = InternaliseArray(b);
 
-			return new ADNDFloat32Array(internalA._adArrayHandle - internalB._adArrayHandle);
+			return new ADFloat32NDArray(internalA._adArrayHandle - internalB._adArrayHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Subtract<TOther>(TOther value, INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(internalValue - internalArray._adArrayHandle);
+			return new ADFloat32NDArray(internalValue - internalArray._adArrayHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Subtract(INumber value, INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(internalValue._adNumberHandle - internalArray._adArrayHandle);
+			return new ADFloat32NDArray(internalValue._adNumberHandle - internalArray._adArrayHandle);
 		}
 
 		/// <inheritdoc />
@@ -403,28 +403,28 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Multiply<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle * internalValue);
+			return new ADFloat32NDArray(internalArray._adArrayHandle * internalValue);
 		}
 
 		/// <inheritdoc />
 		public INDArray Multiply(INDArray array, INumber value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(internalValue._adNumberHandle * internalArray._adArrayHandle);
+			return new ADFloat32NDArray(internalValue._adNumberHandle * internalArray._adArrayHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Multiply(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = InternaliseArray(a);
-			ADNDFloat32Array internalB = InternaliseArray(b);
+			ADFloat32NDArray internalA = InternaliseArray(a);
+			ADFloat32NDArray internalB = InternaliseArray(b);
 
-			return new ADNDFloat32Array(DNDArray.op_DotMultiply(internalA._adArrayHandle, internalB._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.op_DotMultiply(internalA._adArrayHandle, internalB._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -448,46 +448,46 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Dot(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = InternaliseArray(a);
-			ADNDFloat32Array internalB = InternaliseArray(b);
+			ADFloat32NDArray internalA = InternaliseArray(a);
+			ADFloat32NDArray internalB = InternaliseArray(b);
 
-			return new ADNDFloat32Array(internalA._adArrayHandle * internalB._adArrayHandle);
+			return new ADFloat32NDArray(internalA._adArrayHandle * internalB._adArrayHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Divide<TOther>(TOther value, INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(internalValue / internalArray._adArrayHandle);
+			return new ADFloat32NDArray(internalValue / internalArray._adArrayHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Divide<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue);
+			return new ADFloat32NDArray(internalArray._adArrayHandle / internalValue);
 		}
 
 		/// <inheritdoc />
 		public INDArray Divide(INDArray array, INumber value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(internalArray._adArrayHandle / internalValue._adNumberHandle);
+			return new ADFloat32NDArray(internalArray._adArrayHandle / internalValue._adNumberHandle);
 		}
 
 		/// <inheritdoc />
 		public INDArray Divide(INDArray a, INDArray b)
 		{
-			ADNDFloat32Array internalA = InternaliseArray(a);
-			ADNDFloat32Array internalB = InternaliseArray(b);
+			ADFloat32NDArray internalA = InternaliseArray(a);
+			ADFloat32NDArray internalB = InternaliseArray(b);
 
-			return new ADNDFloat32Array(DNDArray.op_DotDivide(internalA._adArrayHandle, internalB._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.op_DotDivide(internalA._adArrayHandle, internalB._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -511,19 +511,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Pow(INDArray array, INumber value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalValue = InternaliseNumber(value);
 
-			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue._adNumberHandle));
+			return new ADFloat32NDArray(DNDArray.Pow(internalArray._adArrayHandle, internalValue._adNumberHandle));
 		}
 
 		/// <inheritdoc />
 		public INDArray Pow<TOther>(INDArray array, TOther value)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float internalValue = (float)System.Convert.ChangeType(value, typeof(float));
 
-			return new ADNDFloat32Array(DNDArray.Pow(internalArray._adArrayHandle, internalValue));
+			return new ADFloat32NDArray(DNDArray.Pow(internalArray._adArrayHandle, internalValue));
 		}
 
 		/// <inheritdoc />
@@ -555,15 +555,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Abs(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Abs(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Abs(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
 		public INumber Sum(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.Sum(internalArray._adArrayHandle));
 		}
@@ -571,7 +571,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INumber Max(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MaxIndex(internalArray._adArrayHandle))));
 		}
@@ -579,7 +579,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public int MaxIndex(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return DNDArray.MaxIndex(internalArray._adArrayHandle);
 		}
@@ -587,7 +587,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INumber Min(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(new DNumber(internalArray.Data.GetValue(DNDArray.MinIndex(internalArray._adArrayHandle))));
 		}
@@ -595,7 +595,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public int MinIndex(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return DNDArray.MinIndex(internalArray._adArrayHandle);
 		}
@@ -603,9 +603,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray SquareRoot(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Sqrt(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Sqrt(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -619,9 +619,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Log(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Log(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Log(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -635,7 +635,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INumber Determinate(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.Det(internalArray._adArrayHandle));
 		}
@@ -643,9 +643,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Sin(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Sin(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Sin(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -659,9 +659,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Asin(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Asin(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Asin(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -675,9 +675,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Cos(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Cos(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Cos(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -691,9 +691,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Acos(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Acos(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Acos(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -707,9 +707,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Tan(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Tan(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Tan(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -723,9 +723,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Atan(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Atan(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Atan(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -739,9 +739,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray ReL(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.ReLU(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.ReLU(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -755,9 +755,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Sigmoid(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Sigmoid(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Sigmoid(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -771,9 +771,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray SoftPlus(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.SoftPlus(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.SoftPlus(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -787,17 +787,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray SoftMax(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.SoftMax(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.SoftMax(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
 		public INDArray Tanh(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
-			return new ADNDFloat32Array(DNDArray.Tanh(internalArray._adArrayHandle));
+			return new ADFloat32NDArray(DNDArray.Tanh(internalArray._adArrayHandle));
 		}
 
 		/// <inheritdoc />
@@ -823,7 +823,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INumber StandardDeviation(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.StandardDev(internalArray._adArrayHandle));
 		}
@@ -831,7 +831,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INumber Variance(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			return new ADFloat32Number(DNDArray.Variance(internalArray._adArrayHandle));
 		}
@@ -839,14 +839,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray Clip(INDArray array, INumber minValue, INumber maxValue)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			ADFloat32Number internalMinValue = InternaliseNumber(minValue);
 			ADFloat32Number internalMaxValue = InternaliseNumber(maxValue);
 
 			DNDArray lowerClipped = DNDArray.Max(internalMinValue._adNumberHandle, internalArray._adArrayHandle);
 			DNDArray clipped = DNDArray.Min(internalMaxValue._adNumberHandle, lowerClipped);
 
-			return new ADNDFloat32Array(clipped);
+			return new ADFloat32NDArray(clipped);
 		}
 
 		private uint _x = 123456789, _y = 362436069, _z = 521288629, _w = 88675123;
@@ -854,7 +854,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public unsafe void FillWithProbabilityMask(INDArray array, double probability)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
 			float probabilityAsFloat = (float)probability;
 			ushort approximateProbability = (ushort)Math.Round(probabilityAsFloat * ushort.MaxValue);
@@ -915,11 +915,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return (TTraceable)((object)new ADFloat32Number(internalNumber._adNumberHandle.GetReverse(traceTag)));
 			}
-			else if (traceable is ADNDFloat32Array)
+			else if (traceable is ADFloat32NDArray)
 			{
-				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+				ADFloat32NDArray internalArray = traceable as ADFloat32NDArray;
 
-				return (TTraceable)((object)new ADNDFloat32Array(internalArray._adArrayHandle.GetReverse(traceTag)));
+				return (TTraceable)((object)new ADFloat32NDArray(internalArray._adArrayHandle.GetReverse(traceTag)));
 			}
 			else
 			{
@@ -936,11 +936,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return (TTraceable)((object)new ADFloat32Number(internalNumber._adNumberHandle.P));
 			}
-			else if (traceable is ADNDFloat32Array)
+			else if (traceable is ADFloat32NDArray)
 			{
-				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+				ADFloat32NDArray internalArray = traceable as ADFloat32NDArray;
 
-				return (TTraceable)((object)new ADNDFloat32Array(internalArray._adArrayHandle.P));
+				return (TTraceable)((object)new ADFloat32NDArray(internalArray._adArrayHandle.P));
 			}
 			else
 			{
@@ -957,9 +957,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				AD.ReverseProp(new DNumber(1.0f).asADD, number._adNumberHandle.asADD);
 			}
-			else if (traceable is ADNDFloat32Array)
+			else if (traceable is ADFloat32NDArray)
 			{
-				ADNDFloat32Array array = (ADNDFloat32Array)traceable;
+				ADFloat32NDArray array = (ADFloat32NDArray)traceable;
 
 				AD.ReverseProp(new DNumber(1.0f).asADD, array._adArrayHandle.asADDND);
 			}
@@ -978,11 +978,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 				return (TTraceable)((object)new ADFloat32Number(internalNumber._adNumberHandle.A));
 			}
-			else if (traceable is ADNDFloat32Array)
+			else if (traceable is ADFloat32NDArray)
 			{
-				ADNDFloat32Array internalArray = traceable as ADNDFloat32Array;
+				ADFloat32NDArray internalArray = traceable as ADFloat32NDArray;
 
-				return (TTraceable)((object)new ADNDFloat32Array(internalArray._adArrayHandle.A));
+				return (TTraceable)((object)new ADFloat32NDArray(internalArray._adArrayHandle.A));
 			}
 			else
 			{
@@ -1012,7 +1012,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public void MarkLimbo(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			_diffsharpBackendHandle.MarkLimbo(internalArray.Data.Data);
 		}
@@ -1020,7 +1020,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public void FreeLimbo(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 
 			_diffsharpBackendHandle.FreeLimbo(internalArray.Data.Data);
 		}
@@ -1028,22 +1028,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public INDArray MergeBatch(params INDArray[] arrays)
 		{
-			ADNDFloat32Array[] castArrays = arrays.As<INDArray, ADNDFloat32Array>();
+			ADFloat32NDArray[] castArrays = arrays.As<INDArray, ADFloat32NDArray>();
 
 			long[] totalShape = new long[castArrays[0].Rank];
 
 			Array.Copy(arrays[0].Shape, 1, totalShape, 1, totalShape.Length - 1);
 
-			foreach (ADNDFloat32Array array in castArrays)
+			foreach (ADFloat32NDArray array in castArrays)
 			{
 				totalShape[0] += array.Shape[0];
 			}
 
-			ADNDFloat32Array merged = new ADNDFloat32Array(_backendTag, totalShape);
+			ADFloat32NDArray merged = new ADFloat32NDArray(_backendTag, totalShape);
 			DataBuffer<float> mergedData = (DataBuffer<float>)merged.Data;
 
 			long lastIndex = 0L;
-			foreach (ADNDFloat32Array array in castArrays)
+			foreach (ADFloat32NDArray array in castArrays)
 			{
 				DataBuffer<float> arrayData = (DataBuffer<float>)array.Data;
 
@@ -1058,7 +1058,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public bool IsNaN(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
 			int begin = (int)internalArray.Data.Offset, end = (int)internalArray.Data.Length;
 
@@ -1076,7 +1076,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public bool IsNotFinite(INDArray array)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
 			int begin = (int)internalArray.Data.Offset, end = (int)internalArray.Data.Length;
 

@@ -13,7 +13,7 @@ using DiffSharp.Interop.Float32;
 namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 {
 	/// <summary>
-	/// A number with a float32 backend Sigma.DiffSharp handle for tracing and AD operations.
+	/// A number with a float32 CPU-based in-system-memory backend Sigma.DiffSharp handle for tracing and AD operations.
 	/// </summary>
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	[Serializable]

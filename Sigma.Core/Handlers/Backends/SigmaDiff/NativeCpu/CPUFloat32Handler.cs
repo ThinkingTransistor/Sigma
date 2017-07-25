@@ -10,9 +10,7 @@ using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using System;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
@@ -39,7 +37,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		public override INDArray NDArray(params long[] shape)
 		{
-			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
@@ -53,7 +51,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 				convertedValues[i] = (float) System.Convert.ChangeType(values[i], floatType);
 			}
 
-			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
@@ -67,13 +65,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			ADFloat32Number internalNumber = InternaliseNumber(number);
 
-			return AssignTag(new ADNDFloat32Array(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
+			return AssignTag(new ADFloat32NDArray(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
 		}
 
 		/// <inheritdoc />
 		public override INumber AsNumber(INDArray array, params long[] indices)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
 
 			return new ADFloat32Number(DNDArray.ToDNumber(internalArray._adArrayHandle, (int) flatIndex));
