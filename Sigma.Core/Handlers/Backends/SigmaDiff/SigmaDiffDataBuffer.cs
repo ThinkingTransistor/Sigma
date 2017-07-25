@@ -17,7 +17,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	internal class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
+	public class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
 	{
 		public long BackendTag { get; set; }
 

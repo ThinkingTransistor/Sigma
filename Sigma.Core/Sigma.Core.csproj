@@ -192,6 +192,7 @@
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaSigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
