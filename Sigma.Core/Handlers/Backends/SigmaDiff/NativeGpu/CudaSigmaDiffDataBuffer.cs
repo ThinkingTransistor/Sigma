@@ -11,14 +11,19 @@ using DiffSharp;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using Sigma.Core.Data;
+using Sigma.Core.Persistence;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	[Serializable]
-	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T> where T : struct
+	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T>, ISerialisationNotifier where T : struct
 	{
+		[NonSerialized]
 		internal CudaDeviceVariable<T> CudaBuffer;
+		[NonSerialized]
 		internal CudaContext CudaContext;
+
+		private int _cudaContextDeviceId;
 
 		private readonly SizeT _cudaZero = new SizeT(0);
 		private SizeT _cudaOffsetBytes, _cudaLengthBytes;
@@ -73,10 +78,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaOffsetBytes = new SizeT(offset * Type.SizeBytes);
 			_cudaLengthBytes = new SizeT(length * Type.SizeBytes);
 
+			CudaContext = cudaContext;
 			CudaBuffer = new CudaDeviceVariable<T>(cudaContext.AllocateMemory(_cudaLengthBytes));
 			CopyFromHostToDevice();
 
-			CudaContext = cudaContext;
+			_cudaContextDeviceId = cudaContext.DeviceId;
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
+
+			InitialiseCudaBuffer(restoredContext, Data, Offset, Length);
 		}
 
 		internal void CopyFromHostToDevice()
@@ -99,6 +115,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		protected override Util.ISigmaDiffDataBuffer<T> _InternalShallowCopy()
 		{
 			return new CudaSigmaDiffDataBuffer<T>(this);
+		}
+
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was serialised.
+		/// </summary>
+		public void OnSerialised()
+		{
 		}
 	}
 }

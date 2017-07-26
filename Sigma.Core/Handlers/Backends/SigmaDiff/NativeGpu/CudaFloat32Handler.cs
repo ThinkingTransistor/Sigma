@@ -7,7 +7,9 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Runtime.CompilerServices;
 using DiffSharp.Interop.Float32;
+using ManagedCuda;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
@@ -29,6 +31,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			_cudaBackendHandle = (CudaFloat32BackendHandle)DiffsharpBackendHandle;
 			DeviceId = _cudaBackendHandle.CudaContext.DeviceId;
+
+			RegisterContext(_cudaBackendHandle.CudaContext);
 		}
 
 		/// <summary>The underlying data type processed and used in this computation handler.</summary>
@@ -204,7 +208,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		protected override CudaFloat32Number CreateNumberFromHandle(DNumber handle)
 		{
-			return new CudaFloat32Number(handle);
+			return new CudaFloat32Number(handle, _cudaBackendHandle.CudaContext);
 		}
 
 		/// <inheritdoc />
@@ -229,6 +233,52 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			arrayToFillData.CopyFromHostToDevice();
+		}
+
+		private static readonly WeakList<CudaContext> RegisteredContexts;
+
+		static CudaFloat32Handler()
+		{
+			RegisteredContexts = new WeakList<CudaContext>();
+		}
+
+		/// <summary>
+		/// Register a cuda context for reference via <see cref="GetContextForDeviceId"/> (used for context restoration).
+		/// </summary>
+		/// <param name="context"></param>
+		internal static void RegisterContext(CudaContext context)
+		{
+			if (!RegisteredContexts.Contains(context))
+			{
+				RegisteredContexts.Add(context);
+			}
+		}
+
+		/// <summary>
+		/// Get a CUDA context with preference for a certain deviceId, optionally accept any device.
+		/// </summary>
+		/// <param name="deviceId">The device id.</param>
+		/// <param name="acceptOtherDevices">Optionally indicate if any device is acceptable (if preferred deviceId is not available).</param>
+		/// <returns></returns>
+		internal static CudaContext GetContextForDeviceId(int deviceId, bool acceptOtherDevices = true)
+		{
+			foreach (CudaContext context in RegisteredContexts)
+			{
+				if (context.DeviceId == deviceId)
+				{
+					return context;
+				}
+			}
+
+			if (acceptOtherDevices && RegisteredContexts.Count > 0)
+			{
+				return RegisteredContexts.FirstAvailable();
+			}
+
+			if (acceptOtherDevices) throw new InvalidOperationException($"No valid cuda context is currently registered.");
+
+			throw new InvalidOperationException($"No valid cuda context with the device id {deviceId} is currently registered " +
+												$"(use {nameof(acceptOtherDevices)} flag to accept any devices if the preferred one is unavailable).");
 		}
 	}
 }
