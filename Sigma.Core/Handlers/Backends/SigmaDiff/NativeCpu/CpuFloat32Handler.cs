@@ -136,7 +136,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 			IDataBuffer<float> fillerData = InternaliseArray(filler).Data;
 
-			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, arrayToFillData.Offset, Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, 0, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		/// <inheritdoc />

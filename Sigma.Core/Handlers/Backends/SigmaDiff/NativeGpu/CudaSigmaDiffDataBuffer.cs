@@ -80,7 +80,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 		internal void CopyFromHostToDevice()
 		{
-			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes); 
+			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
 		}
 
 		internal void CopyFromDeviceToHost()
