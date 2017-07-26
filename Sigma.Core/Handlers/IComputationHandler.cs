@@ -46,6 +46,13 @@ namespace Sigma.Core.Handlers
 		long GetSizeBytes(params INDArray[] array);
 
 		/// <summary>
+		/// Check whether a certain ndarray is of this handler's format.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating whether the given ndarray is of this handler's format.</returns>
+		bool IsOwnFormat(INDArray array);
+
+		/// <summary>
 		/// Check whether this handler and another handler and its contents are interchangeable (i.e. same format). 
 		/// </summary>
 		/// <param name="otherHandler">The other handler to check for.</param>

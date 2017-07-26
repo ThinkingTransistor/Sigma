@@ -20,6 +20,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 	/// <summary>
 	/// An ndarray with a float32 CUDA-based in-GPU-memory backend Sigma.DiffSharp handle for tracing and AD operations.
 	/// </summary>
+	[Serializable]
 	public class CudaFloat32NDArray : ADNDArray<float>, IADFloat32NDArrayHandle
 	{
 		public DNDArray Handle { get; private set; }

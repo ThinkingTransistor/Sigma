@@ -563,13 +563,27 @@ namespace Sigma.Core.Data.Datasets
 				{
 					Dictionary<string, INDArray> block = _cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
 
-					//if its != null we could read it correctly in the right format
+					//if its != null we could read it correctly with the right data type
 					if (block != null)
 					{
-						//register this cache entry as a properly loaded block in case the cache wasn't flushed and the cache map is outdated
-						RegisterCachedBlock(block, blockIndex, handler, keepReference: false);
+						if (handler.IsOwnFormat(block.First().Value))
+						{
+							return block;
+						}
+						else
+						{
+							Dictionary<string, INDArray> convertedBlock = ConvertNamedBlocks(block, handler);
 
-						return block;
+							if (convertedBlock != null)
+							{
+								_cacheProvider.Store(blockIdentifierInCache, convertedBlock); // overwrite version in cache with converted and more recent version 
+
+								//register this cache entry as a properly loaded block in case the cache wasn't flushed and the cache map is outdated
+								RegisterCachedBlock(convertedBlock, blockIndex, handler, keepReference: false);
+
+								return convertedBlock;
+							}
+						}
 					}
 				}
 			}
@@ -729,7 +743,7 @@ namespace Sigma.Core.Data.Datasets
 				{
 					_lastAvailableBlockIndex = blockIndex - 1;
 
-					_logger.Debug($"Cannot  extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
+					_logger.Debug($"Cannot extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
 
 					SigmaEnvironment.TaskManager.CancelTask(extractTask);
 

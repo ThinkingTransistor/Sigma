@@ -82,6 +82,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
+		public override bool IsOwnFormat(INDArray array)
+		{
+			return array is CudaFloat32NDArray;
+		}
+
+		/// <inheritdoc />
 		public override bool IsInterchangeable(IComputationHandler otherHandler)
 		{
 			return this.GetType() == otherHandler.GetType();
@@ -137,13 +143,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override bool CanConvert(INDArray array, IComputationHandler otherHandler)
 		{
-			throw new NotImplementedException();
+			return otherHandler.DataType.BaseUnderlyingType == DataType.BaseUnderlyingType && otherHandler.DataType.SizeBytes >= DataType.SizeBytes;
 		}
 
 		/// <inheritdoc />
 		public override INDArray Convert(INDArray array, IComputationHandler otherHandler)
 		{
-			throw new NotImplementedException();
+			return ConvertInternal(array);
 		}
 
 		/// <inheritdoc />
@@ -189,19 +195,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			arrayToFillData.CopyFromHostToDevice();
 		}
 
+		/// <inheritdoc />
 		protected override CudaFloat32NDArray CreateArrayFromHandle(DNDArray handle)
 		{
-			throw new NotImplementedException();
+			return new CudaFloat32NDArray(handle);
 		}
 
+		/// <inheritdoc />
 		protected override CudaFloat32Number CreateNumberFromHandle(DNumber handle)
 		{
-			throw new NotImplementedException();
+			return new CudaFloat32Number(handle);
 		}
 
+		/// <inheritdoc />
 		protected override CudaFloat32NDArray ConvertInternal(INDArray array)
 		{
-			throw new NotImplementedException();
+			CudaFloat32NDArray @internal = array as CudaFloat32NDArray;
+
+			if (@internal != null) return @internal;
+
+			return new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(array.GetDataAs<float>(), 0L, array.Length, _cudaBackendHandle.BackendTag, _cudaBackendHandle.CudaContext), (long[]) array.Shape.Clone());
 		}
 
 		/// <inheritdoc />

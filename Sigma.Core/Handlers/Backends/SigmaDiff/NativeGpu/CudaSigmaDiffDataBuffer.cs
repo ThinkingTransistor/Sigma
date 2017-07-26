@@ -14,6 +14,7 @@ using Sigma.Core.Data;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
+	[Serializable]
 	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T> where T : struct
 	{
 		internal CudaDeviceVariable<T> CudaBuffer;

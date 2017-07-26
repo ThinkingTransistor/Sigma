@@ -145,6 +145,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <inheritdoc />
 		public abstract long GetSizeBytes(params INDArray[] array);
 		/// <inheritdoc />
+		public abstract bool IsOwnFormat(INDArray array);
+		/// <inheritdoc />
 		public abstract bool IsInterchangeable(IComputationHandler otherHandler);
 		/// <inheritdoc />
 		public abstract INDArray NDArray(params long[] shape);
@@ -186,10 +188,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		protected abstract TNumber CreateNumberFromHandle(DNumber handle);
 
 		/// <summary>
-		/// Convert an array of another type to an internal array.
+		/// Convert an array of another type to an internal array or return the given array if it is already of the right type.
 		/// </summary>
 		/// <param name="array">The array to convert.</param>
-		/// <returns>A converted COPY of the given array.</returns>
+		/// <returns>A converted version of the given array (copy if wrong type).</returns>
 		protected abstract TNDArray ConvertInternal(INDArray array);
 
 		/// <inheritdoc />

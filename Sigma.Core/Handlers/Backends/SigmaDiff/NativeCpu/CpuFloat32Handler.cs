@@ -56,7 +56,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 			for (int i = 0; i < values.Length; i++)
 			{
-				convertedValues[i] = (float) System.Convert.ChangeType(values[i], floatType);
+				convertedValues[i] = (float)System.Convert.ChangeType(values[i], floatType);
 			}
 
 			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
@@ -65,7 +65,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		public override INumber Number(object value)
 		{
-			return new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
+			return new ADFloat32Number((float)System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
@@ -82,7 +82,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			ADFloat32NDArray internalArray = InternaliseArray(array);
 			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
 
-			return new ADFloat32Number(DNDArray.ToDNumber(internalArray.Handle, (int) flatIndex));
+			return new ADFloat32Number(DNDArray.ToDNumber(internalArray.Handle, (int)flatIndex));
 		}
 
 		/// <inheritdoc />
@@ -108,6 +108,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			}
 
 			return totalSizeBytes;
+		}
+
+		/// <inheritdoc />
+		public override bool IsOwnFormat(INDArray array)
+		{
+			return array is ADFloat32NDArray;
 		}
 
 		/// <inheritdoc />
@@ -144,7 +150,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float)System.Convert.ChangeType(value, typeof(float));
 
 			for (int i = 0; i < arrayToFillData.Length; i++)
 			{
@@ -158,10 +164,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> fillerData = InternaliseArray(filler).Data;
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			int sourceOffset = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceBeginIndices);
-			int sourceLength = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices) - sourceOffset + 1; // +1 because end is inclusive
-			int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-			int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // same here
+			int sourceOffset = (int)NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceBeginIndices);
+			int sourceLength = (int)NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices) - sourceOffset + 1; // +1 because end is inclusive
+			int destinationOffset = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
+			int destinationLength = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // same here
 
 			if (sourceLength < 0) throw new ArgumentOutOfRangeException($"Source begin indices must be smaller than source end indices, but source length was {sourceLength}.");
 			if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
@@ -175,8 +181,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-			int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
+			int destinationOffset = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
+			int destinationLength = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
 
 			if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
 
@@ -198,6 +204,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		protected override ADFloat32NDArray ConvertInternal(INDArray array)
 		{
+			ADFloat32NDArray @internal = array as ADFloat32NDArray;
+
+			if (@internal != null) return @internal;
+
 			return new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, array.GetDataAs<float>(), array.Shape);
 		}
 	}
