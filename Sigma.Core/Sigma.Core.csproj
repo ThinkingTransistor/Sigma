@@ -196,7 +196,7 @@
     <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
-    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CuFloat32Handler.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
