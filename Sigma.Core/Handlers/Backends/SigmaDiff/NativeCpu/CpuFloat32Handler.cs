@@ -18,7 +18,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
 	/// </summary>
 	[Serializable]
-	public class CpuFloat32Handler : DiffSharpFloat32Handler
+	public class CpuFloat32Handler : DiffSharpFloat32Handler<ADFloat32NDArray, ADFloat32Number>
 	{
 		/// <inheritdoc />
 		public CpuFloat32Handler() : base(new OpenBlasBlasBackend(), new OpenBlasLapackBackend())
@@ -73,7 +73,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			ADFloat32Number internalNumber = InternaliseNumber(number);
 
-			return AssignTag(new ADFloat32NDArray(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
+			return AssignTag(new ADFloat32NDArray(DNDArray.OfDNumber(internalNumber.Handle, DiffsharpBackendHandle)));
 		}
 
 		/// <inheritdoc />
@@ -82,7 +82,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			ADFloat32NDArray internalArray = InternaliseArray(array);
 			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
 
-			return new ADFloat32Number(DNDArray.ToDNumber(internalArray._adArrayHandle, (int) flatIndex));
+			return new ADFloat32Number(DNDArray.ToDNumber(internalArray.Handle, (int) flatIndex));
 		}
 
 		/// <inheritdoc />
@@ -181,6 +181,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
 
 			Array.Copy(filler, 0, arrayToFillData.Data, destinationOffset, destinationLength);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32NDArray CreateArrayFromHandle(DNDArray handle)
+		{
+			return new ADFloat32NDArray(handle);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32Number CreateNumberFromHandle(DNumber handle)
+		{
+			return new ADFloat32Number(handle);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32NDArray ConvertInternal(INDArray array)
+		{
+			return new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, array.GetDataAs<float>(), array.Shape);
 		}
 	}
 }

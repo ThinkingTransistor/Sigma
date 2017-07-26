@@ -21,9 +21,9 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 	/// </summary>
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	[Serializable]
-	public class ADFloat32NDArray : ADNDArray<float>
+	public class ADFloat32NDArray : ADNDArray<float>, IADFloat32NDArrayHandle
 	{
-		internal DNDArray _adArrayHandle;
+		public DNDArray Handle { get; private set; }
 
 		public ADFloat32NDArray(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), NDArrayUtils.CheckShape(shape)))
 		{
@@ -37,8 +37,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 		{
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
-			_adArrayHandle = adArrayHandle;
-			_adArrayHandle.Buffer.Shape = Shape;
+			Handle = adArrayHandle;
+			Handle.Buffer.Shape = Shape;
 		}
 
 		public ADFloat32NDArray(long backendTag, IDataBuffer<float> buffer, long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(buffer, 0, buffer.Length, backendTag), NDArrayUtils.CheckShape(shape)))
@@ -47,11 +47,11 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 
 		protected override void Reinitialise(long[] shape, long[] strides)
 		{
-			_adArrayHandle = _adArrayHandle.ShallowCopy();
+			Handle = Handle.ShallowCopy();
 
 			base.Reinitialise(shape, strides);
 
-			_adArrayHandle.Buffer.Shape = shape;
+			Handle.Buffer.Shape = shape;
 		}
 
 		/// <summary>
@@ -81,12 +81,12 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			return new ADFloat32NDArray(DNDArray.Reshape(_adArrayHandle, newShape));
+			return new ADFloat32NDArray(DNDArray.Reshape(Handle, newShape));
 		}
 
 		public override object DeepCopy()
 		{
-			return new ADFloat32NDArray(_adArrayHandle.DeepCopy());
+			return new ADFloat32NDArray(Handle.DeepCopy());
 		}
 	}
 }

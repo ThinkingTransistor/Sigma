@@ -20,17 +20,18 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 	/// <summary>
 	/// An ndarray with a float32 CUDA-based in-GPU-memory backend Sigma.DiffSharp handle for tracing and AD operations.
 	/// </summary>
-	public class CudaFloat32NDArray : ADNDArray<float>
+	public class CudaFloat32NDArray : ADNDArray<float>, IADFloat32NDArrayHandle
 	{
-		public DNDArray _adArrayHandle;
-		private CudaSigmaDiffDataBuffer<float> _underlyingCudaBuffer;
+		public DNDArray Handle { get; private set; }
+
+		private readonly CudaSigmaDiffDataBuffer<float> _underlyingCudaBuffer;
 
 		public CudaFloat32NDArray(DNDArray adArrayHandle) : base(CheckCudaBuffer(adArrayHandle.Buffer.DataBuffer), adArrayHandle.Buffer.Shape)
 		{
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
 
-			_adArrayHandle = adArrayHandle;
-			_adArrayHandle.Buffer.Shape = Shape;
+			Handle = adArrayHandle;
+			Handle.Buffer.Shape = Shape;
 			_underlyingCudaBuffer = (CudaSigmaDiffDataBuffer<float>) Data;
 		}
 
@@ -48,14 +49,13 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 			return (IDataBuffer<float>)dataBuffer;
 		}
 
-
 		protected override void Reinitialise(long[] shape, long[] strides)
 		{
-			_adArrayHandle = _adArrayHandle.ShallowCopy();
+			Handle = Handle.ShallowCopy();
 
 			base.Reinitialise(shape, strides);
 
-			_adArrayHandle.Buffer.Shape = shape;
+			Handle.Buffer.Shape = shape;
 		}
 
 		/// <summary>
@@ -85,12 +85,12 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
 			}
 
-			return new CudaFloat32NDArray(DNDArray.Reshape(_adArrayHandle, newShape));
+			return new CudaFloat32NDArray(DNDArray.Reshape(Handle, newShape));
 		}
 
 		public override object DeepCopy()
 		{
-			return new CudaFloat32NDArray(_adArrayHandle.DeepCopy());
+			return new CudaFloat32NDArray(Handle.DeepCopy());
 		}
 	}
 }

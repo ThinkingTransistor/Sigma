@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
@@ -15,7 +16,7 @@ using Sigma.Core.Utils;
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	[Serializable]
-	public class CudaFloat32Handler : DiffSharpFloat32Handler
+	public class CudaFloat32Handler : DiffSharpFloat32Handler<CudaFloat32NDArray, CudaFloat32Number>
 	{
 		/// <summary>
 		/// The id of the GPU / CUDA device used in this handler.
@@ -186,6 +187,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			Array.Copy(filler, 0, arrayToFillData.Data, destinationOffset, destinationLength);
 			arrayToFillData.CopyFromHostToDevice();
+		}
+
+		protected override CudaFloat32NDArray CreateArrayFromHandle(DNDArray handle)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override CudaFloat32Number CreateNumberFromHandle(DNumber handle)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override CudaFloat32NDArray ConvertInternal(INDArray array)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc />
