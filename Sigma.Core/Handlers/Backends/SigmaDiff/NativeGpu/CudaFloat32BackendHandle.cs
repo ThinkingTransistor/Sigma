@@ -23,8 +23,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{ 
 			CudaBlasHandle = new CudaBlas();
-			CudaContext = new CudaContext(deviceId); // TODO move control to create / destroy context methods for GpuWorkers (context is thread-bound) - begin session perhaps? 
-			CudaContext.SetCurrent();
+			CudaContext = new CudaContext(deviceId); 
 		}
 
 		/// <inheritdoc />

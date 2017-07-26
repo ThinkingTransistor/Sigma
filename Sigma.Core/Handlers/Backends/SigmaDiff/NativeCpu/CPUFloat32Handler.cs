@@ -99,7 +99,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 			foreach (INDArray array in arrays)
 			{
-				long sizeBytes = 52L; // let's just assume 52bytes of base fluff, I really have no idea
+				long sizeBytes = 32L; // let's just assume this many bytes of base fluff, I really have no idea
 
 				sizeBytes += array.Length * DataType.SizeBytes;
 				sizeBytes += (array.Shape.Length) * 8L * 2;

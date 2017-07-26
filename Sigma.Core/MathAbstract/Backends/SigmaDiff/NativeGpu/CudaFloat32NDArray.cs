@@ -13,7 +13,6 @@ using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.Handlers.Backends.SigmaDiff;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
@@ -26,14 +25,6 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 		public DNDArray _adArrayHandle;
 		private CudaSigmaDiffDataBuffer<float> _underlyingCudaBuffer;
 
-		public CudaFloat32NDArray(long backendTag, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag), NDArrayUtils.CheckShape(shape)))
-		{
-		}
-
-		public CudaFloat32NDArray(long backendTag, float[] data, params long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(data, backendTag), NDArrayUtils.CheckShape(shape)))
-		{
-		}
-
 		public CudaFloat32NDArray(DNDArray adArrayHandle) : base(CheckCudaBuffer(adArrayHandle.Buffer.DataBuffer), adArrayHandle.Buffer.Shape)
 		{
 			if (adArrayHandle == null) throw new ArgumentNullException(nameof(adArrayHandle));
@@ -43,6 +34,10 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 			_underlyingCudaBuffer = (CudaSigmaDiffDataBuffer<float>) Data;
 		}
 
+		public CudaFloat32NDArray(CudaSigmaDiffDataBuffer<float> buffer, long[] shape) : this(new DNDArray(buffer, NDArrayUtils.CheckShape(shape)))
+		{
+		}
+
 		private static IDataBuffer<float> CheckCudaBuffer(Util.ISigmaDiffDataBuffer<float> dataBuffer)
 		{
 			if (!(dataBuffer is CudaSigmaDiffDataBuffer<float>))
@@ -50,12 +45,9 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 				throw new InvalidOperationException($"Data buffer passed to {nameof(CudaFloat32NDArray)} must be of type {nameof(CudaSigmaDiffDataBuffer<float>)} but was of type {dataBuffer.GetType()}.");
 			}
 
-			return (IDataBuffer<float>) dataBuffer;
+			return (IDataBuffer<float>)dataBuffer;
 		}
 
-		public CudaFloat32NDArray(long backendTag, IDataBuffer<float> buffer, long[] shape) : this(new DNDArray(new SigmaDiffDataBuffer<float>(buffer, 0, buffer.Length, backendTag), NDArrayUtils.CheckShape(shape)))
-		{
-		}
 
 		protected override void Reinitialise(long[] shape, long[] strides)
 		{

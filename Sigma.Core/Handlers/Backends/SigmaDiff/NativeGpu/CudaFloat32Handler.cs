@@ -16,15 +16,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32Handler : DiffSharpFloat32Handler
 	{
+		public int DeviceId { get; }
 		private CudaFloat32BackendHandle _cudaBackendHandle;
 
 		public CudaFloat32Handler(int deviceId = 0) : base(new CudaFloat32BackendHandle(deviceId, backendTag: -1))
 		{
 			_cudaBackendHandle = (CudaFloat32BackendHandle) DiffsharpBackendHandle;
+			DeviceId = _cudaBackendHandle.CudaContext.DeviceId;
 		}
 
 		/// <summary>The underlying data type processed and used in this computation handler.</summary>
-		public override IDataType DataType { get; }
+		public override IDataType DataType => DataTypes.Float32;
+
+		internal void BindToContext()
+		{
+			_cudaBackendHandle.CudaContext.SetCurrent();
+		}
 
 		/// <summary>
 		/// Called after this object was de-serialised. 
@@ -41,9 +48,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override long GetSizeBytes(params INDArray[] array)
+		public override long GetSizeBytes(params INDArray[] arrays)
 		{
-			throw new NotImplementedException();
+			long totalSizeBytes = 0L;
+
+			foreach (INDArray array in arrays)
+			{
+				long sizeBytes = 64L; // let's just assume this many bytes of base fluff, I really have no idea (but it has to be more than the CPU version because of all the CUDA handles)
+
+				sizeBytes += array.Length * DataType.SizeBytes;
+				sizeBytes += (array.Shape.Length) * 8L * 2;
+
+				totalSizeBytes += sizeBytes;
+			}
+
+			return totalSizeBytes;
 		}
 
 		/// <inheritdoc />
@@ -57,7 +76,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			long backendTag = _cudaBackendHandle.BackendTag;
 
-			return AssignTag(new CudaFloat32NDArray(backendTag, new CudaSigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag, _cudaBackendHandle.CudaContext), shape));
+			return AssignTag(new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag, _cudaBackendHandle.CudaContext), shape));
 		}
 
 		/// <inheritdoc />
@@ -72,7 +91,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				convertedValues[i] = (float)System.Convert.ChangeType(values[i], floatType);
 			}
 
-			return AssignTag(new CudaFloat32NDArray(backendTag, new CudaSigmaDiffDataBuffer<float>(convertedValues, backendTag, _cudaBackendHandle.CudaContext), shape));
+			return AssignTag(new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(convertedValues, backendTag, _cudaBackendHandle.CudaContext), shape));
 		}
 
 		/// <inheritdoc />

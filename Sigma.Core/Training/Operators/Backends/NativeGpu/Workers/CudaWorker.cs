@@ -9,19 +9,22 @@ For full license see LICENSE in the root directory of this project.
 using System.Threading;
 using log4net;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Training.Operators.Workers;
 
 namespace Sigma.Core.Training.Operators.Backends.NativeGpu.Workers
 {
 	public class CudaWorker : BaseWorker
 	{
+		private readonly CudaFloat32Handler _cudaHandler;
 		private ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
 		private ILog _logger;
 
 		private bool _requireContextBinding;
 
-		public CudaWorker(IOperator @operator, IComputationHandler handler, ThreadPriority priority = ThreadPriority.Highest) : base(@operator, handler, priority)
+		public CudaWorker(IOperator @operator, CudaFloat32Handler handler, ThreadPriority priority = ThreadPriority.Highest) : base(@operator, handler, priority)
 		{
+			_cudaHandler = handler;
 		}
 
 		/// <summary>
@@ -41,7 +44,9 @@ namespace Sigma.Core.Training.Operators.Backends.NativeGpu.Workers
 		{
 			if (_requireContextBinding)
 			{
-				Logger.Debug($"");
+				_cudaHandler.BindToContext();
+
+				Logger.Debug($"Bound CUDA handler for device {_cudaHandler.DeviceId} to current worker context (tid: {Thread.CurrentThread.ManagedThreadId}).");
 
 				_requireContextBinding = false;
 			}
