@@ -95,6 +95,12 @@ namespace Sigma.Core.Training.Operators
 		public int EpochNumber { get; protected set; }
 
 		/// <summary>
+		///		Enable the use of sessions in this operator. 
+		///		Computation handlers will attempt to speed up computation sessions at the possible expense of higher memory requirements.
+		/// </summary>
+		public bool UseSessions { get; set; } = true;
+
+		/// <summary>
 		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
 		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
@@ -550,6 +556,7 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		// TODO possible allow hook invoke priorities to "carry" up to all hooks depending on them?
 		private void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
 		{
 			hookInvocationIndices.Clear();
@@ -565,7 +572,6 @@ namespace Sigma.Core.Training.Operators
 			{
 				IHook hook = hooksToTraverse.First();
 
-				// check if any sub required hook was already added to the order, if so, remove and readd them to queue so the ordering works
 				if (hook.RequiredHooks.Count > 0)
 				{
 					alreadyAddedRequiredHooks.Clear();
@@ -576,6 +582,7 @@ namespace Sigma.Core.Training.Operators
 						hookInvocationIndices.Remove(toRemove);
 						hookInvocationTargets.Remove(toRemove);
 						hooksToTraverse.Add(toRemove);
+						//hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority);
 					}
 				}
 
@@ -903,8 +910,8 @@ namespace Sigma.Core.Training.Operators
 			{
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
-				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = (IOptimiser)Trainer?.Optimiser?.DeepCopy();
+				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, it's only to pass operator/worker tests without trainer
+				workers[i].LocalOptimiser = Trainer?.Optimiser?.ShallowCopy(); 
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
@@ -976,7 +983,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1001,7 +1008,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1031,7 +1038,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("paused");
+				ReportBadStateRequested("paused");
 			}
 		}
 
@@ -1059,7 +1066,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("resumed");
+				ReportBadStateRequested("resumed");
 			}
 		}
 
@@ -1091,7 +1098,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("stopped");
+				ReportBadStateRequested("stopped");
 			}
 		}
 
@@ -1144,17 +1151,18 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("reset");
+				ReportBadStateRequested("reset");
 			}
 		}
 
 		/// <summary>
+		///		Report a bad proposed target state.
 		/// </summary>
-		/// <param name="targetState"></param>
+		/// <param name="targetState">The bad target state.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		private void ThrowBadState(string targetState)
+		private void ReportBadStateRequested(string targetState)
 		{
-			throw new InvalidOperationException($"The operator cannot be {targetState} because the current state is: {State}!");
+			_logger.Warn($"The operator cannot be {targetState} because the current state is {State.ToString().ToLower()}!");
 		}
 
 		#endregion

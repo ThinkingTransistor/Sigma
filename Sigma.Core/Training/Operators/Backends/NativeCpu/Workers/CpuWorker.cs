@@ -81,9 +81,15 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu.Workers
 
 			Operator.PullProgress(this);
 
+			bool useSessions = Operator.UseSessions;
+
+			if (useSessions) Operator.Handler.BeginSession();
+
 			Operator.Trainer.ProvideExternalInputData(LocalNetwork, _epochBlockYield.Current);
 			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, GetPopulatedBufferRegistry(), Operator.Handler);
 			Operator.Trainer.ProvideExternalOutputData(LocalNetwork, _epochBlockYield.Current);
+
+			if (useSessions) Operator.Handler.EndSession();
 
 			InvokeTimeScaleEvent(TimeScale.Iteration);
 

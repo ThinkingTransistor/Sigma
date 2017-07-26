@@ -54,6 +54,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return tag;
 		}
 
+		public BackendConfig<T> GetBackend<T>(long backendTag)
+		{
+			return (BackendConfig<T>)_registeredBackendConfigs[backendTag];
+		}
+
 		public BackendConfig<T> GetBackend<T>(object obj)
 		{
 			if (obj is DiffSharp.AD.Float32.DNDArray)

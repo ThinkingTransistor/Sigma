@@ -17,21 +17,22 @@ using System.Linq;
 namespace Sigma.Core.Data.Extractors
 {
 	/// <summary>
-	/// A byte record extractor, which extracts named ranges to ndarrays byte-wise from a byte record reader.
+	/// An array record extractor, which extracts named ranges to ndarrays T-wise from a record reader.
 	/// </summary>
 	[Serializable]
-	public class ByteRecordExtractor : BaseExtractor
+	public class ArrayRecordExtractor<T> : BaseExtractor
 	{
 		[NonSerialized]
 		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly Dictionary<string, long[][]> _indexMappings;
+		private readonly Dictionary<string, long> _sectionOffsets;
 
 		/// <summary>
-		/// Create a byte record extractor with a certain named index mapping.
+		/// Create a T array record extractor with a certain named index mapping.
 		/// </summary>
 		/// <param name="indexMappings">The named index mappings.</param>
-		public ByteRecordExtractor(Dictionary<string, long[][]> indexMappings)
+		public ArrayRecordExtractor(Dictionary<string, long[][]> indexMappings)
 		{
 			if (indexMappings == null)
 			{
@@ -47,6 +48,7 @@ namespace Sigma.Core.Data.Extractors
 			}
 
 			_indexMappings = indexMappings;
+			_sectionOffsets = new Dictionary<string, long>();
 			SectionNames = indexMappings.Keys.ToArray();
 		}
 
@@ -58,7 +60,7 @@ namespace Sigma.Core.Data.Extractors
 				return null;
 			}
 
-			byte[][] rawRecords = (byte[][]) readData;
+			T[][] rawRecords = (T[][]) readData;
 
 			int numberOfRecordsToExtract = Math.Min(rawRecords.Length, numberOfRecords);
 
@@ -97,10 +99,11 @@ namespace Sigma.Core.Data.Extractors
 				INDArray array = handler.NDArray(shape);
 
 				long[] globalBufferIndices = new long[shape.Length];
+				long sectionOffset = _sectionOffsets.ContainsKey(name) ? _sectionOffsets[name] : 0L;
 
 				for (int r = 0; r < numberOfRecordsToExtract; r++)
 				{
-					byte[] record = rawRecords[r];
+					T[] record = rawRecords[r];
 
 					globalBufferIndices[0] = r; //BatchTimeFeatures indexing
 					globalBufferIndices[1] = 0;
@@ -121,7 +124,7 @@ namespace Sigma.Core.Data.Extractors
 
 							Array.Copy(localBufferIndices, 0, globalBufferIndices, 2, localBufferIndices.Length);
 
-							array.SetValue(record[beginFlatIndex + y], globalBufferIndices);
+							array.SetValue(record[beginFlatIndex + y + sectionOffset], globalBufferIndices);
 						}
 					}
 				}
@@ -132,6 +135,16 @@ namespace Sigma.Core.Data.Extractors
 			_logger.Debug($"Done extracting {numberOfRecordsToExtract} records from reader {Reader} (requested: {numberOfRecords}).");
 
 			return namedArrays;
+		}
+
+		public ArrayRecordExtractor<T> Offset(string section, long offset)
+		{
+			if (offset < 0L) throw new ArgumentOutOfRangeException($"Offset must be >= 0L but was {offset}.");
+			if (!_indexMappings.ContainsKey(section)) throw new InvalidOperationException($"Cannot set offset for section not used in this array record extractor.");
+
+			_sectionOffsets[section] = offset;
+
+			return this;
 		}
 
 		public override void Dispose()

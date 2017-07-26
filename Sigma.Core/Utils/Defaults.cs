@@ -84,7 +84,7 @@ namespace Sigma.Core.Utils
 			}
 
 			/// <summary>
-			/// Create an extracted MNIST dataset, automatically download any required resources (may take a while).
+			/// Create an extracted MNIST training dataset, automatically download any required resources (may take a while).
 			/// This dataset is normalised and one-hot-target-preprocessed.
 			/// </summary>
 			/// <param name="name">The optional name.</param>
@@ -102,6 +102,24 @@ namespace Sigma.Core.Utils
 				return new ExtractedDataset(name, ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
 			}
 
+			/// <summary>
+			/// Create an extracted MNIST validation dataset, automatically download any required resources (may take a while).
+			/// This dataset is normalised and one-hot-target-preprocessed.
+			/// </summary>
+			/// <param name="name">The optional name.</param>
+			/// <returns>The MNIST dataset.</returns>
+			public static IDataset MnistValidation(string name = "mnist-validation")
+			{
+				IRecordExtractor mnistImageExtractor = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28,
+						source: new CompressedSource(new MultiSource(new FileSource("t10k-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz"))))
+					.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+
+				IRecordExtractor mnistTargetExtractor = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1,
+						source: new CompressedSource(new MultiSource(new FileSource("t10k-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz"))))
+					.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+
+				return new ExtractedDataset(name, ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
+			}
 
 			/// <summary>
 			/// Create an extracted WDBC (Wisconsin Diagnostic Breast Cancer) dataset, automatically download any required resources.

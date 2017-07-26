@@ -57,9 +57,9 @@ namespace Sigma.Core.Training.Hooks
 			IDataProvider provider = new DefaultDataProvider();
 			provider.SetExternalOutputLink("external_default", (targetsRegistry, layer, targetBlock) => { receiver.ReceivePass((INDArray) targetsRegistry["activations"]); });
 
-			DataProviderUtils.ProvideExternalInputData(provider, network, block);
+			DataUtils.ProvideExternalInputData(provider, network, block);
 			network.Run(Operator.Handler, false);
-			DataProviderUtils.ProvideExternalOutputData(provider, network, block);
+			DataUtils.ProvideExternalOutputData(provider, network, block);
 		}
 	}
 }

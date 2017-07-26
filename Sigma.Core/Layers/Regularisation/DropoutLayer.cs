@@ -42,15 +42,11 @@ namespace Sigma.Core.Layers.Regularisation
 			if (trainingPass)
 			{
 				INDArray inputs = buffer.Inputs["default"].Get<INDArray>("activations");
-				INDArray activations = handler.FlattenTimeAndFeatures(inputs);
-				INDArray dropoutMask = Parameters.Get<INDArray>("dropout_mask");
+				INDArray dropoutMask = handler.NDArray((long[]) inputs.Shape.Clone());
 
-				activations = handler.RowWise(activations, row =>
-				{
-					handler.FillWithProbabilityMask(dropoutMask, 1.0 - Parameters.Get<double>("dropout_probability"));
+				handler.FillWithProbabilityMask(dropoutMask, 1.0 - Parameters.Get<double>("dropout_probability"));
 
-					return handler.Multiply(row, dropoutMask);
-				});
+				INDArray activations = handler.Multiply(inputs, dropoutMask);
 
 				buffer.Outputs["default"]["activations"] = activations.Reshape((long[]) inputs.Shape.Clone());
 			}

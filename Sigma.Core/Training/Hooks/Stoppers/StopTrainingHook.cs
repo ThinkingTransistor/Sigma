@@ -57,6 +57,8 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 			DefaultTargetMode = TargetMode.Global;
 			InvokePriority = 10000; // typically the training should be stopped after all other hooks have been invoked
 									//  (hooks would be invoked anyway, it just looks cleaner)
+
+			ParameterRegistry.Set("requested_stop", false, typeof(bool));
 		}
 
 		/// <summary>
@@ -66,9 +68,18 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 		/// <param name="resolver">A helper resolver for complex registry entries (automatically cached).</param>
 		public override void SubInvoke(IRegistry registry, IRegistryResolver resolver)
 		{
-			_logger.Info($"Stopping training because condition {InvokeCriteria} was met.");
+			if (!ParameterRegistry.Get<bool>("requested_stop")) // TODO should there be a flag to always stop / reset this parameter (e.g. if training is restarted with the same hooks)?
+			{
+				_logger.Info($"Stopping training because condition {InvokeCriteria} was met.");
 
-			Operator.SignalStop();
+				Operator.SignalStop();
+
+				ParameterRegistry["requested_stop"] = true;
+			}
+			else
+			{
+				_logger.Debug($"Should stop training but stop signal was already sent.");
+			}
 		}
 	}
 

@@ -17,7 +17,7 @@ using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 
 namespace Sigma.Tests.Data.Extractors
 {
-	public class TestByteRecordExtractor
+	public class TestArrayRecordExtractor
 	{
 		private static void CreateCsvTempFile(string name)
 		{
@@ -41,10 +41,10 @@ namespace Sigma.Tests.Data.Extractors
 
 			FileSource source = new FileSource(filename, Path.GetTempPath());
 
-			Assert.Throws<ArgumentNullException>(() => new ByteRecordExtractor(null));
-			Assert.Throws<ArgumentException>(() => new ByteRecordExtractor(new Dictionary<string, long[][]>() { ["test"] = new long[1][] { new long[] { 1, 2, 3 } } }));
+			Assert.Throws<ArgumentNullException>(() => new ArrayRecordExtractor<byte>(null));
+			Assert.Throws<ArgumentException>(() => new ArrayRecordExtractor<byte>(new Dictionary<string, long[][]>() { ["test"] = new long[1][] { new long[] { 1, 2, 3 } } }));
 
-			ByteRecordExtractor extractor = new ByteRecordExtractor(ByteRecordExtractor.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
+			ArrayRecordExtractor<byte> extractor = new ArrayRecordExtractor<byte>(ArrayRecordExtractor<byte>.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
 
 			Assert.AreEqual(new[] { "inputs" }, extractor.SectionNames);
 
@@ -56,7 +56,7 @@ namespace Sigma.Tests.Data.Extractors
 		[TestCase]
 		public void TestByteRecordExtractorExtract()
 		{
-			ByteRecordExtractor extractor = new ByteRecordExtractor(ByteRecordExtractor.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
+			ArrayRecordExtractor<byte> extractor = new ArrayRecordExtractor<byte>(ArrayRecordExtractor<byte>.ParseExtractorParameters("inputs", new[] { 0L }, new[] { 1L }));
 			IComputationHandler handler = new CpuFloat32Handler();
 
 			Assert.Throws<InvalidOperationException>(() => extractor.ExtractDirect(10, handler));

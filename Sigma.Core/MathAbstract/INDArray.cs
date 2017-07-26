@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using Sigma.Core.Data;
 using System.Diagnostics.CodeAnalysis;
+using Sigma.Core.Handlers;
 using Sigma.Core.Utils;
 
 namespace Sigma.Core.MathAbstract
@@ -109,6 +110,7 @@ namespace Sigma.Core.MathAbstract
 		/// <summary>
 		/// Get a NEW ndarray with the same data but another permuted shape (and also different strides).
 		/// Permutation occurs according to the content of the rearranged dimensions array, where each element represents the number of a dimension to swap with. The permutation array has to have the same number of dimensions as the actual shape.
+		/// Note: This operation is not traceable. For a traceable version see <see cref="IComputationHandler"/>.
 		/// </summary>
 		/// <param name="rearrangedDimensions">The dimensions to swap.</param>
 		/// <returns>A NEW ndarray with the same data and a new permuted shape.</returns>
@@ -117,6 +119,7 @@ namespace Sigma.Core.MathAbstract
 		/// <summary>
 		/// Permute THIS ndarray to another permuted shape (and also different strides).
 		/// Permutation occurs according to the content of the rearranged dimensions array, where each element represents the number of a dimension to swap with. The permutation array has to have the same number of dimensions as the actual shape.
+		/// Note: This operation is not traceable. For a traceable version see <see cref="IComputationHandler"/>.
 		/// </summary>
 		/// <param name="rearrangedDimensions">The dimensions to swap.</param>
 		/// <returns>This ndarray (for convenience).</returns>

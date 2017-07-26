@@ -46,6 +46,8 @@ namespace Sigma.Core.Training.Hooks.Reporters
 			ParameterRegistry["desired_targets"] = desiredTargets;
 
 			RequireHook(new TargetMaximisationHook(timestep, desiredTargets, $"shared.target_maximisation_result_{uid}_success", $"shared.target_maximisation_result_{uid}_input", desiredCost));
+
+			InvokePriority = 10000;
 		}
 
 		/// <summary>
