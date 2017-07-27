@@ -21,15 +21,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaContext CudaContext;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
-		{ 
+		{
 			CudaBlasHandle = new CudaBlas();
-			CudaContext = new CudaContext(deviceId); 
+			CudaContext = new CudaContext(deviceId);
 		}
 
 		/// <inheritdoc />
 		public override ISigmaDiffDataBuffer<float> CreateDataBuffer(float[] values)
 		{
 			return new CudaSigmaDiffDataBuffer<float>(values, BackendTag, CudaContext);
+		}
+
+		private CudaSigmaDiffDataBuffer<float> _InternalInternalise(ISigmaDiffDataBuffer<float> value)
+		{
+			return (CudaSigmaDiffDataBuffer<float>)value;
+		}
+
+		private CudaSigmaDiffDataBuffer<float> _InternalInternalise(ShapedDataBufferView<float> value)
+		{
+			return (CudaSigmaDiffDataBuffer<float>)value.DataBuffer;
 		}
 
 		/// <inheritdoc />
@@ -239,7 +249,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)
 		{
-			throw new NotImplementedException();
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			a = a.DeepCopy();
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+
+			aData.CopyFromHostToDevice();
+
+			CudaBlasHandle.Axpy(1.0f, new[] { b }, 0, aData.CudaBuffer, 1);
+
+			aData.CopyFromDeviceToHost();
+
+			return a;
 		}
 
 		/// <inheritdoc />

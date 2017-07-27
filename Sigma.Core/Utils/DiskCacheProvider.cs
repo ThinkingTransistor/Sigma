@@ -97,7 +97,7 @@ namespace Sigma.Core.Utils
 
 			using (fileStream)
 			{
-				_serialisationFormatter.Serialize(fileStream, data);
+				Serialisation.Write(data, fileStream, Serialisers.BinarySerialiser);
 			}
 
 			_logger.Debug($"Done caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\".");
@@ -127,7 +127,7 @@ namespace Sigma.Core.Utils
 			{
 				try
 				{
-					T obj = (T) _serialisationFormatter.Deserialize(fileStream);
+					T obj = Serialisation.Read<T>(fileStream, Serialisers.BinarySerialiser);
 
 					_logger.Debug($"Done loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
 

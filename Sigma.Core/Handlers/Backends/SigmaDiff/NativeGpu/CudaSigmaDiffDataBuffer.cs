@@ -25,7 +25,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 		private int _cudaContextDeviceId;
 
-		private readonly SizeT _cudaZero = new SizeT(0);
+		[NonSerialized]
+		private SizeT _cudaZero;
+		[NonSerialized]
 		private SizeT _cudaOffsetBytes, _cudaLengthBytes;
 
 		/// <inheritdoc />
@@ -75,6 +77,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (cudaContext == null) throw new ArgumentNullException(nameof(cudaContext));
 
+			_cudaZero = new SizeT(0);
 			_cudaOffsetBytes = new SizeT(offset * Type.SizeBytes);
 			_cudaLengthBytes = new SizeT(length * Type.SizeBytes);
 
