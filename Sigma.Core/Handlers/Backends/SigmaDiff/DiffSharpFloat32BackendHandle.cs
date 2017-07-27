@@ -465,7 +465,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return CreateDataBuffer(new float[0]);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Rows]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(a.Rows));
 
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.Data[b.Offset])
@@ -502,7 +502,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return CreateDataBuffer(new float[0]);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[b.Rows]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(b.Rows));
 
 			fixed (float* aref = &a.Data[a.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
@@ -567,11 +567,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			if (a.Length == 0)
 			{
-				return Map2_F_V_V(mapOp, function, CreateDataBuffer(new float[b.Length]), b);
+				return Map2_F_V_V(mapOp, function, CreateDataBuffer(CreateZeroArray(b.Length)), b);
 			}
 			if (b.Length == 0)
 			{
-				return Map2_F_V_V(mapOp, function, a, CreateDataBuffer(new float[a.Length]));
+				return Map2_F_V_V(mapOp, function, a, CreateDataBuffer(CreateZeroArray(a.Length)));
 			}
 
 			b = b.DeepCopy();
@@ -592,7 +592,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Length * b.Length]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(a.Length * b.Length));
 			int m = b.Length, n = a.Length;
 
 			fixed (float* aref = &a.Data[a.Offset])
@@ -824,11 +824,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			if (a.Length == 0)
 			{
-				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[b.Length]), b.Shape);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(CreateZeroArray(b.Length)), b.Shape);
 			}
 			if (b.Length == 0)
 			{
-				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[a.Length]), a.Shape);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(CreateZeroArray(a.Length)), a.Shape);
 			}
 
 			int len = Math.Min(a.Length, b.Length);

@@ -7,6 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Sigma.Core.Data;
 using static DiffSharp.Util;
 

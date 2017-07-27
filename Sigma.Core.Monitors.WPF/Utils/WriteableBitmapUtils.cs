@@ -34,7 +34,7 @@ namespace Sigma.Core.Monitors.WPF.Utils
 		/// <param name="data">The data that will be written to the new bitmap.</param>
 		/// <param name="xOffset">The x-offset.</param>
 		/// <param name="transformationFuncs">The functions that map the data to bytes.</param>
-		public static void RenderStream<T>(this WriteableBitmap bitmap, INDArray data, int xOffset, params Func<T, byte>[] transformationFuncs)
+		public static void RenderStream<T>(this WriteableBitmap bitmap, INDArray data, int xOffset, params Func<T, byte>[] transformationFuncs) where T : struct
 		{
 			bitmap.RenderStreamRaw(ApplyTransformation(data.GetDataAs<T>().ToArray(), transformationFuncs), xOffset);
 		}
@@ -58,7 +58,7 @@ namespace Sigma.Core.Monitors.WPF.Utils
 		/// <param name="bitmap">The bitmap that will be written to.</param>
 		/// <param name="data">The data that will be written to the new bitmap.</param>
 		/// <param name="transformationFuncs">The functions that map the data to bytes.</param>
-		public static void Render<T>(this WriteableBitmap bitmap, INDArray data, params Func<T, byte>[] transformationFuncs)
+		public static void Render<T>(this WriteableBitmap bitmap, INDArray data, params Func<T, byte>[] transformationFuncs) where T : struct
 		{
 			bitmap.Render(data.GetDataAs<T>().ToArray(), transformationFuncs);
 		}
@@ -86,7 +86,7 @@ namespace Sigma.Core.Monitors.WPF.Utils
 		/// <param name="xOffset">The x-offset.</param>
 		/// <param name="yOffset">The y-offste.</param>
 		/// <param name="transformationFuncs">The functions that map the data to bytes.</param>
-		public static void RenderRectangle<T>(this WriteableBitmap bitmap, INDArray data, int xOffset, int yOffset, params Func<T, byte>[] transformationFuncs)
+		public static void RenderRectangle<T>(this WriteableBitmap bitmap, INDArray data, int xOffset, int yOffset, params Func<T, byte>[] transformationFuncs) where T : struct
 		{
 			bitmap.RenderRectangle(data.GetDataAs<T>().ToArray(), (int)data.Shape[1], (int)data.Shape[0], xOffset, yOffset, transformationFuncs);
 		}

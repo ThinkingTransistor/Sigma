@@ -99,6 +99,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			InitialiseCudaBuffer(restoredContext, Data, Offset, Length);
 		}
 
+		/// <inheritdoc />
+		public override IDataBuffer<T> GetValues(long startIndex, long length)
+		{
+			return new CudaSigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag, CudaContext);
+		}
+
+		/// <inheritdoc />
+		public override IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		{
+			return new CudaSigmaDiffDataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length, BackendTag, CudaContext);
+		}
+
 		internal void CopyFromHostToDevice()
 		{
 			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);

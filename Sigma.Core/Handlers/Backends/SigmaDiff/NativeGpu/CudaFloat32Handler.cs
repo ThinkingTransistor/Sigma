@@ -12,6 +12,7 @@ using DiffSharp.Interop.Float32;
 using ManagedCuda;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Utils;
 
@@ -123,7 +124,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override INumber Number(object value)
 		{
-			throw new NotImplementedException();
+			return new CudaFloat32Number((float)System.Convert.ChangeType(value, typeof(float)), _cudaBackendHandle.CudaContext).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
@@ -188,7 +189,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices)
 		{
-			CudaSigmaDiffDataBuffer<float> arrayToFillData = (CudaSigmaDiffDataBuffer<float>) InternaliseArray(arrayToFill).Data;
+			CudaSigmaDiffDataBuffer<float> arrayToFillData = (CudaSigmaDiffDataBuffer<float>)InternaliseArray(arrayToFill).Data;
 
 			int destinationOffset = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
 			int destinationLength = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
@@ -218,7 +219,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			if (@internal != null) return @internal;
 
-			return new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(array.GetDataAs<float>(), 0L, array.Length, _cudaBackendHandle.BackendTag, _cudaBackendHandle.CudaContext), (long[]) array.Shape.Clone());
+			return new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(array.GetDataAs<float>(), 0L, array.Length, _cudaBackendHandle.BackendTag, _cudaBackendHandle.CudaContext), (long[])array.Shape.Clone());
 		}
 
 		/// <inheritdoc />

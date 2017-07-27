@@ -164,7 +164,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
-		public IDataBuffer<TOther> GetDataAs<TOther>()
+		public IDataBuffer<TOther> GetDataAs<TOther>() where TOther : struct
 		{
 			return Data.GetValuesAs<TOther>(0L, Data.Length);
 		}

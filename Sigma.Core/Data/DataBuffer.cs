@@ -187,7 +187,7 @@ namespace Sigma.Core.Data
 			return new DataBuffer<T>(this, startIndex, length);
 		}
 
-		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length) where TOther : struct
 		{
 			return new DataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length);
 		}
