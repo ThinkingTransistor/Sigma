@@ -90,7 +90,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			RawDataset dataset = new RawDataset("xor");
 			dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
-			dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
+			dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
 
 			ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
@@ -98,6 +98,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 

@@ -12,6 +12,7 @@ using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.CudaBlas;
 using Microsoft.FSharp.Core;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
@@ -389,7 +390,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)
+		public override unsafe ShapedDataBufferView<float> Sub_M_S(ShapedDataBufferView<float> a, float b)
 		{
 			if (a.Length == 0)
 			{
@@ -399,11 +400,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			a = a.DeepCopy();
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
-			aData.CopyFromHostToDevice();
+			int len = (int) aData.Length;
 
-			CudaBlasHandle.Axpy(1.0f, b, 0, aData.CudaBuffer, 1);
-
-			aData.CopyFromDeviceToHost();
+			// TODO optimise using kernel for (matrix - scalar) operation
+			// unlike openblas, cublas does not support zero-stride vectors (the scalar b), so we will have to write our own kernel
+			fixed (float* aref = &aData.Data[aData.Offset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					aref[i] = aref[i] - b; 
+				}
+			}
 
 			return a;
 		}
@@ -549,7 +556,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			aData.CopyFromHostToDevice();
 			tData.CopyFromHostToDevice();
 
-			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.CudaBuffer, m, tData.CudaBuffer, m, beta, tData.CudaBuffer, m);
+			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.CudaBuffer, n, tData.CudaBuffer, m, beta, tData.CudaBuffer, m);
 
 			tData.CopyFromDeviceToHost();
 
