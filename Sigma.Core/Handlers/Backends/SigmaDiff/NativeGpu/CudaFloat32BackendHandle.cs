@@ -323,7 +323,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> Reshape_M(ShapedDataBufferView<float> array, long[] newShape)
 		{
-			throw new NotImplementedException();
+			ShapedDataBufferView<float> reshaped = new ShapedDataBufferView<float>(array.DataBuffer, newShape);
+
+			return reshaped;
 		}
 
 		/// <inheritdoc />

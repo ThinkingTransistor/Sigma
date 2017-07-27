@@ -46,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleMnist();
+			SampleIris();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -132,7 +132,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(50, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
-			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
@@ -150,8 +150,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(599, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 
-			Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
-			trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
+			//Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
+			//trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
 
 			sigma.AddTrainer(trainer);
 

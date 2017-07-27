@@ -8,6 +8,7 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using DiffSharp;
+using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using Sigma.Core.Data;
@@ -118,6 +119,27 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		protected override Util.ISigmaDiffDataBuffer<T> _InternalShallowCopy()
 		{
 			return new CudaSigmaDiffDataBuffer<T>(this);
+		}
+
+		/// <inheritdoc />
+		public override Util.ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		{
+			int colLength = colFinish - colStart + 1;
+			int newSize = (rowFinish - rowStart + 1) * colLength;
+			Backend<T> backendHandle = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+			CudaSigmaDiffDataBuffer<T> values = (CudaSigmaDiffDataBuffer<T>) backendHandle.CreateDataBuffer(backendHandle.CreateUninitialisedArray(newSize));
+
+			for (int m = rowStart; m <= rowFinish; m++)
+			{
+				long sourceIndex = Offset + m * totalCols + colStart;
+				long destinationIndex = (m - rowStart) * colLength;
+
+				Buffer.BlockCopy(Data, (int)(sourceIndex * Type.SizeBytes), values.Data, (int)(destinationIndex * Type.SizeBytes), colLength * Type.SizeBytes);
+			}
+
+			values.CopyFromHostToDevice();
+
+			return values;
 		}
 
 		/// <summary>

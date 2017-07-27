@@ -80,7 +80,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ISigmaDiffDataBuffer<T>)GetValues(startIndex, length);
 		}
 
-		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		public virtual ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
