@@ -41,7 +41,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 		internal void BindToContext()
 		{
-			_cudaBackendHandle.CudaContext.SetCurrent();
+			_cudaBackendHandle.BindToContext();
 		}
 
 		protected new CudaFloat32NDArray InternaliseArray(object array)

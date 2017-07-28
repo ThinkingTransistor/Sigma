@@ -19,13 +19,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
 	public class CudaFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
-		internal readonly CudaBlas CudaBlasHandle;
+		internal CudaBlas CudaBlasHandle;
 		internal readonly CudaContext CudaContext;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{
-			CudaBlasHandle = new CudaBlas();
 			CudaContext = new CudaContext(deviceId);
+
+			BindToContext();
+		}
+
+		internal void BindToContext()
+		{
+			CudaContext.SetCurrent();
+			CudaBlasHandle = new CudaBlas();
 		}
 
 		/// <inheritdoc />
@@ -159,7 +166,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			float alpha = 1.0f;
 
-			CudaBlasHandle.Axpy(alpha, aData.CudaBuffer, 1, bData.CudaBuffer, 1);
+			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
 			bData.CopyFromDeviceToHost();
 
@@ -167,9 +174,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ISigmaDiffDataBuffer<float> Add_V_V_InPlace(ISigmaDiffDataBuffer<float> obj0, int obj1, ISigmaDiffDataBuffer<float> obj2, int obj3, int obj4)
+		public override unsafe ISigmaDiffDataBuffer<float> Add_V_V_InPlace(ISigmaDiffDataBuffer<float> a, int aOffset, ISigmaDiffDataBuffer<float> b, int bOffset, int len)
 		{
-			throw new NotImplementedException();
+			if (len == 0)
+			{
+				return b;
+			}
+
+			// TODO optimise using custom kernel for offset / limited vector addition (reallocating device pointer would be too cumbersome and slow)
+			fixed (float* aref = &a.Data[a.Offset + aOffset])
+			fixed (float* bref = &b.Data[b.Offset + bOffset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					bref[i] = aref[i] + bref[i];
+				}
+			}
+
+			return b;
 		}
 
 		/// <inheritdoc />
@@ -284,9 +306,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> Map2_F_M_M(MapOp mapOp, FSharpFunc<float, FSharpFunc<float, float>> function, ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
+		public override unsafe ShapedDataBufferView<float> Map2_F_M_M(MapOp mapOp, FSharpFunc<float, FSharpFunc<float, float>> f, ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
-			throw new NotImplementedException();
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+			if (b.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			b = b.DeepCopy();
+
+			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset;
+
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			{
+				for (int i = 0; i < a.Length; i++)
+				{
+					bref[i] = f.Invoke(aref[i]).Invoke(bData[i]);
+				}
+			}
+
+			return b;
 		}
 
 		/// <inheritdoc />
@@ -324,7 +369,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			float alpha = 1.0f;
 
-			CudaBlasHandle.Axpy(alpha, aData.CudaBuffer, 1, bData.CudaBuffer, 1);
+			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
 			bData.CopyFromDeviceToHost();
 
@@ -347,7 +392,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			float alpha = 1.0f;
 
-			CudaBlasHandle.Axpy(alpha, aData.CudaBuffer, 1, bData.CudaBuffer, 1);
+			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
 			bData.CopyFromDeviceToHost();
 
@@ -355,9 +400,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> Add_S_M(float a, ShapedDataBufferView<float> b)
+		public override unsafe ShapedDataBufferView<float> Add_S_M(float other, ShapedDataBufferView<float> a)
 		{
-			throw new NotImplementedException();
+			int len = a.Length;
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
+			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+
+			// TODO optimise using custom kernel for adding array to constant (doesn't work with blas incx trick because cublas doesn't support zero strides)
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* resref = &resData[resOffset])
+			{
+				for (int i = 0; i < len; i++)
+				{
+					resref[i] = other + aref[i];
+				}
+			}
+
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -382,7 +442,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			float alpha = -1.0f;
 
-			CudaBlasHandle.Axpy(alpha, bData.CudaBuffer, 1, aData.CudaBuffer, 1);
+			CudaBlasHandle.Axpy(alpha, bData.GetContextBuffer(), 1, aData.GetContextBuffer(), 1);
 
 			aData.CopyFromDeviceToHost();
 
@@ -454,7 +514,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = b.Cols, k = b.Rows;
 
-			CudaBlasHandle.Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.CudaBuffer, n, aData.CudaBuffer, k, beta, zData.CudaBuffer, n);
+			new CudaBlas().Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n, 
+				aData.GetContextBuffer(), k, beta, zData.GetContextBuffer(), n);
 
 			zData.CopyFromDeviceToHost();
 
@@ -475,7 +536,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			bData.CopyFromHostToDevice();
 
-			CudaBlasHandle.Scale(a, bData.CudaBuffer, 1);
+			CudaBlasHandle.Scale(a, bData.GetContextBuffer(), 1);
 
 			bData.CopyFromDeviceToHost();
 
@@ -556,7 +617,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			aData.CopyFromHostToDevice();
 			tData.CopyFromHostToDevice();
 
-			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.CudaBuffer, n, tData.CudaBuffer, m, beta, tData.CudaBuffer, m);
+			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.GetContextBuffer(), n, tData.GetContextBuffer(), m, beta, tData.GetContextBuffer(), m);
 
 			tData.CopyFromDeviceToHost();
 

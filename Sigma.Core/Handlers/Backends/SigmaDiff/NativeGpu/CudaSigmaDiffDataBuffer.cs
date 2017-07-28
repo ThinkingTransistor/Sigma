@@ -11,6 +11,7 @@ using DiffSharp;
 using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
+using ManagedCuda.CudaBlas;
 using Sigma.Core.Data;
 using Sigma.Core.Persistence;
 
@@ -20,12 +21,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T>, ISerialisationNotifier where T : struct
 	{
 		[NonSerialized]
-		internal CudaDeviceVariable<T> CudaBuffer;
-		[NonSerialized]
 		internal CudaContext CudaContext;
+
+		[NonSerialized]
+		private bool _initialisedInContext;
 
 		private int _cudaContextDeviceId;
 
+		[NonSerialized]
+		private CudaDeviceVariable<T> _cudaBuffer;
 		[NonSerialized]
 		private SizeT _cudaZero;
 		[NonSerialized]
@@ -34,31 +38,31 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length, long backendTag, CudaContext cudaContext) : base(underlyingBuffer, offset, length, backendTag)
 		{
-			InitialiseCudaBuffer(cudaContext, Data, Offset, Length);
+			PrepareCudaBuffer(cudaContext, Data, Offset, Length);
 		}
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(T[] data, long backendTag, CudaContext cudaContext, IDataType underlyingType = null) : base(data, backendTag, underlyingType)
 		{
-			InitialiseCudaBuffer(cudaContext, Data, Offset, Length);
+			PrepareCudaBuffer(cudaContext, Data, Offset, Length);
 		}
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(T[] data, long offset, long length, long backendTag, CudaContext cudaContext, IDataType underlyingType = null) : base(data, offset, length, backendTag, underlyingType)
 		{
-			InitialiseCudaBuffer(cudaContext, Data, Offset, Length);
+			PrepareCudaBuffer(cudaContext, Data, Offset, Length);
 		}
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(long length, long backendTag, CudaContext cudaContext, IDataType underlyingType = null) : base(length, backendTag, underlyingType)
 		{
-			InitialiseCudaBuffer(cudaContext, Data, Offset, Length);
+			PrepareCudaBuffer(cudaContext, Data, Offset, Length);
 		}
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(DataBuffer<T> other, long backendTag, CudaContext cudaContext) : base(other, backendTag)
 		{
-			InitialiseCudaBuffer(cudaContext, Data, Offset, Length);
+			PrepareCudaBuffer(cudaContext, Data, Offset, Length);
 		}
 
 		/// <summary>
@@ -67,26 +71,42 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <param name="other"></param>
 		internal CudaSigmaDiffDataBuffer(CudaSigmaDiffDataBuffer<T> other) : base(other, other.BackendTag)
 		{
-			CudaBuffer = other.CudaBuffer;
+			_cudaBuffer = other._cudaBuffer;
 			CudaContext = other.CudaContext;
 
 			_cudaOffsetBytes = other._cudaOffsetBytes;
 			_cudaLengthBytes = other._cudaLengthBytes;
 		}
 
-		private void InitialiseCudaBuffer(CudaContext cudaContext, T[] data, long offset, long length)
+		private void PrepareCudaBuffer(CudaContext cudaContext, T[] data, long offset, long length)
 		{
-			if (cudaContext == null) throw new ArgumentNullException(nameof(cudaContext));
+			CudaContext = cudaContext;
 
 			_cudaZero = new SizeT(0);
 			_cudaOffsetBytes = new SizeT(offset * Type.SizeBytes);
 			_cudaLengthBytes = new SizeT(length * Type.SizeBytes);
 
-			CudaContext = cudaContext;
-			CudaBuffer = new CudaDeviceVariable<T>(cudaContext.AllocateMemory(_cudaLengthBytes));
-			CopyFromHostToDevice();
-
 			_cudaContextDeviceId = cudaContext.DeviceId;
+		}
+
+		private void InitialiseCudaBuffer()
+		{
+			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
+
+			_cudaBuffer = new CudaDeviceVariable<T>(CudaContext.AllocateMemory(_cudaLengthBytes), true);
+			_initialisedInContext = true;
+
+			CopyFromHostToDevice();
+		}
+
+		internal CudaDeviceVariable<T> GetContextBuffer()
+		{
+			if (!_initialisedInContext)
+			{
+				InitialiseCudaBuffer();
+			}
+
+			return _cudaBuffer;
 		}
 
 		/// <summary>
@@ -96,7 +116,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
 
-			InitialiseCudaBuffer(restoredContext, Data, Offset, Length);
+			PrepareCudaBuffer(restoredContext, Data, Offset, Length);
 		}
 
 		/// <inheritdoc />
@@ -113,12 +133,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 		internal void CopyFromHostToDevice()
 		{
-			CudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
+			if (!_initialisedInContext)
+			{
+				InitialiseCudaBuffer();
+			}
+
+			_cudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
 		}
 
 		internal void CopyFromDeviceToHost()
 		{
-			CudaBuffer.CopyToHost(Data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
+			if (!_initialisedInContext)
+			{
+				InitialiseCudaBuffer();
+			}
+
+			_cudaBuffer.CopyToHost(Data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
 		}
 
 		/// <inheritdoc />
@@ -139,7 +169,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
 			Backend<T> backendHandle = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
-			CudaSigmaDiffDataBuffer<T> values = (CudaSigmaDiffDataBuffer<T>) backendHandle.CreateDataBuffer(backendHandle.CreateUninitialisedArray(newSize));
+			CudaSigmaDiffDataBuffer<T> values = (CudaSigmaDiffDataBuffer<T>)backendHandle.CreateDataBuffer(backendHandle.CreateUninitialisedArray(newSize));
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
@@ -149,9 +179,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				Buffer.BlockCopy(Data, (int)(sourceIndex * Type.SizeBytes), values.Data, (int)(destinationIndex * Type.SizeBytes), colLength * Type.SizeBytes);
 			}
 
-			values.CopyFromHostToDevice();
+			if (_initialisedInContext)
+			{
+				values.CopyFromHostToDevice();
+			}
 
 			return values;
+		}
+
+		~CudaSigmaDiffDataBuffer()
+		{
+			if (_initialisedInContext)
+			{
+				_cudaBuffer.Dispose();
+			}
 		}
 
 		/// <summary>
