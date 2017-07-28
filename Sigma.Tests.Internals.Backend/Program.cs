@@ -46,7 +46,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleIris();
+			SampleMnist();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();

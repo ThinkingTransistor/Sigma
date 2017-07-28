@@ -8,8 +8,10 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using DiffSharp.Backend;
 using ManagedCuda;
+using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
@@ -21,10 +23,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 	{
 		internal CudaBlas CudaBlasHandle;
 		internal readonly CudaContext CudaContext;
+		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{
 			CudaContext = new CudaContext(deviceId);
+
+			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
 
 			BindToContext();
 		}
@@ -33,6 +38,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			CudaContext.SetCurrent();
 			CudaBlasHandle = new CudaBlas();
+		}
+
+		/// <summary>
+		/// Allocate a CUDA buffer on the used device for a certain host array.
+		/// </summary>
+		/// <typeparam name="T">The buffer type (only float32 supported here).</typeparam>
+		/// <param name="hostData">The host version this data.</param>
+		/// <param name="cudaLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
+		/// <returns>A CUDA buffer corresponding to the host array of the required size (cached if already exists, otherwise newly allocated).</returns>
+		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, SizeT cudaLengthBytes) where T : struct
+		{
+			// TODO this casting and type checking is absolutely horribly, need to improve the way the data buffer accesses this so that it can be either truly dynamic or fixed type
+			if (typeof(T) != typeof(float)) throw new InvalidOperationException($"{nameof(CudaFloat32BackendHandle)} can only allocate float32 device buffers, given type {typeof(T)} is not valid.");
+
+			// The caching here works because I'm essentially tagging along with the system memory caching done in DiffSharpBackendHandle<T>.
+			// Basically, the idea is that every host array has a corresponding device buffer, and because the host arrays are already reused as necessary,
+			//  the device buffers are too as they are weakly associated with the host arrays in a weak table. This also automatically takes care of "freeing" device buffers.
+			CudaDeviceVariable<float> deviceBuffer;
+			if (_allocatedDeviceBuffers.TryGetValue(hostData, out deviceBuffer))
+			{
+				return (CudaDeviceVariable<T>) (object) deviceBuffer;
+			}
+
+			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(cudaLengthBytes), true);
+
+			_allocatedDeviceBuffers.Add(hostData, deviceBuffer);
+
+			return (CudaDeviceVariable<T>)(object) deviceBuffer;
 		}
 
 		/// <inheritdoc />

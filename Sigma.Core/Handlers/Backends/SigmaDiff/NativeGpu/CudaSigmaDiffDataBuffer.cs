@@ -23,6 +23,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		[NonSerialized]
 		internal CudaContext CudaContext;
 
+		// TODO implement more intelligent host <-> device synchronisation by flagging these whenever meaningful host read / device write access occurs
+		private bool _flagDeviceModified;
+		private bool _flagHostModified;
+
 		[NonSerialized]
 		private bool _initialisedInContext;
 
@@ -93,7 +97,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 
-			_cudaBuffer = new CudaDeviceVariable<T>(CudaContext.AllocateMemory(_cudaLengthBytes), true);
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+
+			_cudaBuffer = backendHandle.AllocateDeviceBuffer(Data, _cudaLengthBytes);
 			_initialisedInContext = true;
 
 			CopyFromHostToDevice();
@@ -185,14 +191,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			return values;
-		}
-
-		~CudaSigmaDiffDataBuffer()
-		{
-			if (_initialisedInContext)
-			{
-				_cudaBuffer.Dispose();
-			}
 		}
 
 		/// <summary>
