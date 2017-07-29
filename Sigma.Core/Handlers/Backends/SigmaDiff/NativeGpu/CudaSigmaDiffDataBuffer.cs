@@ -93,11 +93,28 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaContextDeviceId = cudaContext.DeviceId;
 		}
 
+		/// <summary>
+		/// Called before this object is serialised.
+		/// </summary>
+		public void OnSerialising()
+		{
+		}
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public void OnDeserialised()
+		{
+			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
+
+			PrepareCudaBuffer(restoredContext, Data, Offset, Length);
+		}
+
 		private void InitialiseCudaBuffer()
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 
-			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
 			_cudaBuffer = backendHandle.AllocateDeviceBuffer(Data, _cudaLengthBytes);
 			_initialisedInContext = true;
@@ -112,29 +129,77 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				InitialiseCudaBuffer();
 			}
 
+			SynchroniseFromHostToDevice();
+
 			return _cudaBuffer;
 		}
 
 		/// <summary>
-		/// Called after this object was de-serialised. 
+		/// Called before any operation that reads from the local data.
 		/// </summary>
-		public void OnDeserialised()
+		protected override void OnReadAccess()
 		{
-			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
-
-			PrepareCudaBuffer(restoredContext, Data, Offset, Length);
+			SynchroniseFromDeviceToHost();
 		}
 
-		/// <inheritdoc />
-		public override IDataBuffer<T> GetValues(long startIndex, long length)
+		/// <summary>
+		/// Called before any operation that writes to the local data.
+		/// </summary>
+		protected override void OnWriteAccess()
 		{
-			return new CudaSigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag, CudaContext);
+			SynchroniseFromDeviceToHost();
+
+			_flagHostModified = true;
 		}
 
-		/// <inheritdoc />
-		public override IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		/// <summary>
+		/// Called before any operation that reads from and writes to the local data.
+		/// </summary>
+		protected override void OnReadWriteAccess()
 		{
-			return new CudaSigmaDiffDataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length, BackendTag, CudaContext);
+			SynchroniseFromDeviceToHost();
+
+			_flagHostModified = true;
+		}
+
+		internal void FlagDeviceModified()
+		{
+			_flagDeviceModified = true;
+		}
+
+		internal void FlagHostModified()
+		{
+			_flagHostModified = true;
+		}
+
+		internal void SynchroniseFromHostToDevice()
+		{
+			if (_flagHostModified)
+			{
+				if (_flagDeviceModified)
+				{
+					throw new InvalidOperationException($"Unable to synchronise buffers from host to device, both device and host buffers are marked modified.");
+				}
+
+				CopyFromHostToDevice();
+
+				_flagHostModified = false;
+			}
+		}
+
+		internal void SynchroniseFromDeviceToHost()
+		{
+			if (_flagDeviceModified)
+			{
+				if (_flagHostModified)
+				{
+					throw new InvalidOperationException($"Unable to synchronise buffers from device to host, both device and host buffers are marked modified.");
+				}
+
+				CopyFromDeviceToHost();
+
+				_flagDeviceModified = false;
+			}
 		}
 
 		internal void CopyFromHostToDevice()
@@ -144,7 +209,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				InitialiseCudaBuffer();
 			}
 
-			_cudaBuffer.CopyToDevice(Data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
+			_cudaBuffer.CopyToDevice(_data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
 		}
 
 		internal void CopyFromDeviceToHost()
@@ -154,7 +219,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				InitialiseCudaBuffer();
 			}
 
-			_cudaBuffer.CopyToHost(Data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
+			_cudaBuffer.CopyToHost(_data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
 		}
 
 		/// <inheritdoc />
@@ -193,11 +258,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			return values;
 		}
 
-		/// <summary>
-		/// Called before this object is serialised.
-		/// </summary>
-		public void OnSerialising()
+		/// <inheritdoc />
+		public override IDataBuffer<T> GetValues(long startIndex, long length)
 		{
+			OnReadAccess();
+
+			return new CudaSigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag, CudaContext);
+		}
+
+		/// <inheritdoc />
+		public override IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		{
+			OnReadAccess();
+
+			return new CudaSigmaDiffDataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length, BackendTag, CudaContext);
 		}
 
 		/// <summary>

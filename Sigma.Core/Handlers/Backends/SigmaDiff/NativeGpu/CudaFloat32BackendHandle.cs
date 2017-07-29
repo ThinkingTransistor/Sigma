@@ -61,7 +61,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return (CudaDeviceVariable<T>) (object) deviceBuffer;
 			}
 
-			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(cudaLengthBytes), true);
+			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(cudaLengthBytes), true, cudaLengthBytes);
 
 			_allocatedDeviceBuffers.Add(hostData, deviceBuffer);
 
@@ -192,16 +192,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			// TODO check in CudaBuffer if there is host access, otherwise keep in device all the time until it is accessed
-			//  (i.e. reduce host <-> device transfers by a lot for better performance)
-			aData.CopyFromHostToDevice();
-			bData.CopyFromHostToDevice();
-
 			float alpha = 1.0f;
 
 			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
-			bData.CopyFromDeviceToHost();
+			bData.FlagDeviceModified();
 
 			return b;
 		}
@@ -395,16 +390,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			// TODO check in CudaBuffer if there is host access, otherwise keep in device all the time until it is accessed
-			//  (i.e. reduce host <-> device transfers by a lot for better performance)
-			aData.CopyFromHostToDevice();
-			bData.CopyFromHostToDevice();
-
 			float alpha = 1.0f;
 
 			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
-			bData.CopyFromDeviceToHost();
+			bData.FlagDeviceModified();
 
 			return b;
 		}
@@ -418,16 +408,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			// TODO check in CudaBuffer if there is host access, otherwise keep in device all the time until it is accessed
-			//  (i.e. reduce host <-> device transfers by a lot for better performance)
-			aData.CopyFromHostToDevice();
-			bData.CopyFromHostToDevice();
-
 			float alpha = 1.0f;
 
 			CudaBlasHandle.Axpy(alpha, aData.GetContextBuffer(), 1, bData.GetContextBuffer(), 1);
 
-			bData.CopyFromDeviceToHost();
+			bData.FlagDeviceModified();
 
 			return b;
 		}
@@ -470,14 +455,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			aData.CopyFromHostToDevice();
-			bData.CopyFromHostToDevice();
-
 			float alpha = -1.0f;
 
 			CudaBlasHandle.Axpy(alpha, bData.GetContextBuffer(), 1, aData.GetContextBuffer(), 1);
 
-			aData.CopyFromDeviceToHost();
+			aData.FlagDeviceModified();
 
 			return a;
 		}
@@ -541,16 +523,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 			CudaSigmaDiffDataBuffer<float> zData = (CudaSigmaDiffDataBuffer<float>)CreateDataBuffer(CreateUninitialisedArray(a.Rows * b.Cols));
 
-			aData.CopyFromHostToDevice();
-			bData.CopyFromHostToDevice();
-
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = b.Cols, k = b.Rows;
 
 			new CudaBlas().Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n, 
 				aData.GetContextBuffer(), k, beta, zData.GetContextBuffer(), n);
 
-			zData.CopyFromDeviceToHost();
+			zData.FlagDeviceModified();
 
 			return new ShapedDataBufferView<float>(zData, a.Rows, b.Cols);
 		}
@@ -567,11 +546,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			bData.CopyFromHostToDevice();
-
 			CudaBlasHandle.Scale(a, bData.GetContextBuffer(), 1);
 
-			bData.CopyFromDeviceToHost();
+			bData.FlagDeviceModified();
 
 			return b;
 		}
@@ -647,12 +624,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = a.Cols;
 
-			aData.CopyFromHostToDevice();
-			tData.CopyFromHostToDevice();
-
 			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.GetContextBuffer(), n, tData.GetContextBuffer(), m, beta, tData.GetContextBuffer(), m);
 
-			tData.CopyFromDeviceToHost();
+			tData.FlagDeviceModified();
 
 			return transposed;
 		}

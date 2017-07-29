@@ -257,7 +257,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10), TimeStep.Every(1, TimeScale.Epoch)));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(600, TimeScale.Iteration), 128));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 
