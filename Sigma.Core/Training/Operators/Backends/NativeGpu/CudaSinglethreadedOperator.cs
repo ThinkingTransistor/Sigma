@@ -43,7 +43,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeGpu
 		/// <returns>The newly created <see cref="IWorker" />.</returns>
 		protected override IWorker CreateWorker()
 		{
-			return new CudaWorker(this, new CudaFloat32Handler(DeviceId));
+			return new CudaWorker(this, (CudaFloat32Handler) Handler);
 		}
 
 		/// <summary>

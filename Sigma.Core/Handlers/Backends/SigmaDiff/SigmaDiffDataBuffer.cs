@@ -102,6 +102,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
+			return _InternalDeepCopy();
+		}
+
+		protected virtual ISigmaDiffDataBuffer<T> _InternalDeepCopy()
+		{
 			T[] copyData = _InternalGetSubData();
 
 			return _InternalDeepCopy(copyData);
@@ -122,7 +127,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return new SigmaDiffDataBuffer<T>(this, BackendTag);
 		}
 
-		protected T[] _InternalGetSubData()
+		protected virtual T[] _InternalGetSubData()
 		{
 			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
 

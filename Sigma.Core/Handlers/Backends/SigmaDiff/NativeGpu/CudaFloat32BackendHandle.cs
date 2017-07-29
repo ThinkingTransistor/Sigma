@@ -526,7 +526,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = b.Cols, k = b.Rows;
 
-			new CudaBlas().Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n, 
+			CudaBlasHandle.Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n, 
 				aData.GetContextBuffer(), k, beta, zData.GetContextBuffer(), n);
 
 			zData.FlagDeviceModified();

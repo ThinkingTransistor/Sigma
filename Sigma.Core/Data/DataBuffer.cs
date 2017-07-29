@@ -335,6 +335,8 @@ namespace Sigma.Core.Data
 		/// <inheritdoc />
 		public override string ToString()
 		{
+			OnReadAccess();
+
 			return $"databuffer {Type}x{Length}: " + "[" + string.Join(",", Data.SubArray((int) Offset, (int) Length)) + "]";
 		}
 	}
