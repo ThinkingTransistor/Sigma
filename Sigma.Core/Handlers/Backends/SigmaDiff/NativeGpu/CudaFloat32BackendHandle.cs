@@ -58,14 +58,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaDeviceVariable<float> deviceBuffer;
 			if (_allocatedDeviceBuffers.TryGetValue(hostData, out deviceBuffer))
 			{
-				return (CudaDeviceVariable<T>) (object) deviceBuffer;
+				// TODO temp fix to make sure the returned data is of the right size, maybe manage offset / length separately for host data, unfortunately cuda doesn't support buffer overlap					 
+				if (deviceBuffer.SizeInBytes == cudaLengthBytes)
+				{
+					return (CudaDeviceVariable<T>)(object)deviceBuffer;
+				}
+				else
+				{
+					_allocatedDeviceBuffers.Remove(hostData);
+				}
 			}
 
 			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(cudaLengthBytes), true, cudaLengthBytes);
 
 			_allocatedDeviceBuffers.Add(hostData, deviceBuffer);
 
-			return (CudaDeviceVariable<T>)(object) deviceBuffer;
+			return (CudaDeviceVariable<T>)(object)deviceBuffer;
 		}
 
 		/// <inheritdoc />
@@ -475,7 +483,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			a = a.DeepCopy();
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
-			int len = (int) aData.Length;
+			int len = (int)aData.Length;
 
 			// TODO optimise using kernel for (matrix - scalar) operation
 			// unlike openblas, cublas does not support zero-stride vectors (the scalar b), so we will have to write our own kernel
@@ -483,7 +491,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				for (int i = 0; i < len; i++)
 				{
-					aref[i] = aref[i] - b; 
+					aref[i] = aref[i] - b;
 				}
 			}
 
@@ -494,7 +502,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		public override unsafe ShapedDataBufferView<float> Sub_S_M(float other, ShapedDataBufferView<float> a)
 		{
 			int len = a.Length;
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[]) a.Shape.Clone());
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
 			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
@@ -526,7 +534,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = b.Cols, k = b.Rows;
 
-			CudaBlasHandle.Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n, 
+			CudaBlasHandle.Gemm(Operation.NonTranspose, Operation.NonTranspose, n, m, k, alpha, bData.GetContextBuffer(), n,
 				aData.GetContextBuffer(), k, beta, zData.GetContextBuffer(), n);
 
 			zData.FlagDeviceModified();
@@ -572,7 +580,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			int len = Math.Min(a.Length, b.Length);
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[]) b.Shape.Clone());
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])b.Shape.Clone());
 
 			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
 			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
