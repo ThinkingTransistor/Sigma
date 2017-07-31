@@ -50,6 +50,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Sub_V_S", new CudaKernel("_Z7Sub_V_SPffi", kernelModule, CudaContext));
 			loadedKernels.Add("Sub_S_V", new CudaKernel("_Z7Sub_S_VfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
+			loadedKernels.Add("Add_V_V", new CudaKernel("_Z7Add_V_VPKfiPfii", kernelModule, CudaContext));
 			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
 
 			return loadedKernels;
@@ -61,6 +62,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				throw new InvalidOperationException($"Unable to run kernel, kernel with name {kernelName} is not loaded.");
 			}
+
+			// TODO optimise kernel runs using asynchronous CUDA streams (requiring less Synchronise calls), probably need to safe guard for that in CUDA sigma buffers also though 
 
 			CudaKernel kernel = _loadedKernels[kernelName];
 
@@ -253,15 +256,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return b;
 			}
 
-			// TODO optimise using custom kernel for offset / limited vector addition (reallocating device pointer would be too cumbersome and slow)
-			fixed (float* aref = &a.Data[a.Offset + aOffset])
-			fixed (float* bref = &b.Data[b.Offset + bOffset])
-			{
-				for (int i = 0; i < len; i++)
-				{
-					bref[i] = aref[i] + bref[i];
-				}
-			}
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
+
+			RunKernel("Add_V_V", len, aData.GetContextBuffer().DevicePointer, aOffset, bData.GetContextBuffer().DevicePointer, bOffset, len);
+
+			bData.FlagDeviceModified();
 
 			return b;
 		}

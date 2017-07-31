@@ -25,7 +25,7 @@ namespace Sigma.Core.Data
 		[NonSerialized]
 		private readonly IDataBuffer<T> _underlyingRootBuffer;
 
-		protected readonly T[] _data;
+		protected internal readonly T[] _data;
 
 		/// <inheritdoc />
 		public long Length { get; }

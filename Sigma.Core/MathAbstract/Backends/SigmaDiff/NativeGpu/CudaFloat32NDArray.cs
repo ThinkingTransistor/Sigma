@@ -25,6 +25,8 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 	{
 		public DNDArray Handle { get; private set; }
 
+		internal float[] UnsafeRawData { get { return _underlyingCudaBuffer._data;  } }
+
 		private readonly CudaSigmaDiffDataBuffer<float> _underlyingCudaBuffer;
 
 		public CudaFloat32NDArray(DNDArray adArrayHandle) : base(CheckCudaBuffer(adArrayHandle.Buffer.DataBuffer), adArrayHandle.Buffer.Shape)

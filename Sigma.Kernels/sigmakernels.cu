@@ -34,6 +34,16 @@ __global__ void Add_V_S(float* a, const float b, int n)
 	}
 }
 
+__global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		b[i + bOffset] = a[i + aOffset] + b[i + bOffset];
+	}
+}
+
 __global__ void Mul_Had_V_V(const float* a, float* b, int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;

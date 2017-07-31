@@ -236,6 +236,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			arrayToFillData.CopyFromHostToDevice();
 		}
 
+		/// <inheritdoc />
+		public override void MarkLimbo(INDArray array)
+		{
+			CudaFloat32NDArray internalArray = InternaliseArray(array);
+
+			_cudaBackendHandle.MarkLimbo(internalArray.UnsafeRawData);
+		}
+
+		/// <inheritdoc />
+		public override void FreeLimbo(INDArray array)
+		{
+			CudaFloat32NDArray internalArray = InternaliseArray(array);
+
+			_cudaBackendHandle.FreeLimbo(internalArray.UnsafeRawData);
+		}
+
 		private static readonly WeakList<CudaContext> RegisteredContexts;
 
 		static CudaFloat32Handler()

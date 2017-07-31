@@ -1050,7 +1050,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
-		public void MarkLimbo(INDArray array)
+		public virtual void MarkLimbo(INDArray array)
 		{
 			TNDArray internalArray = InternaliseArray(array);
 
@@ -1058,7 +1058,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc />
-		public void FreeLimbo(INDArray array)
+		public virtual void FreeLimbo(INDArray array)
 		{
 			TNDArray internalArray = InternaliseArray(array);
 
