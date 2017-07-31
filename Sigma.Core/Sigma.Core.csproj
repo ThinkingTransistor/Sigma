@@ -354,6 +354,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Dependencies\sigmakernels.ptx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="libopenblas.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

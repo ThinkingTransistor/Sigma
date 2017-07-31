@@ -7,12 +7,14 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
+using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using static DiffSharp.Util;
@@ -25,13 +27,47 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaContext CudaContext;
 		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
+		private const int ThreadsPerBlock = 256;
+		private CUmodule _kernelModule;
+		private IDictionary<string, CudaKernel> _loadedKernels;
+
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{
 			CudaContext = new CudaContext(deviceId);
 
+			_kernelModule = CudaContext.LoadModulePTX("Dependencies/sigmakernels.ptx");
+			_loadedKernels = LoadKernels(_kernelModule);
+
 			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
 
 			BindToContext();
+		}
+
+		private IDictionary<string, CudaKernel> LoadKernels(CUmodule kernelModule)
+		{
+			IDictionary<string, CudaKernel> loadedKernels = new Dictionary<string, CudaKernel>();
+
+			loadedKernels.Add("Sub_V_S", new CudaKernel("_Z7Sub_V_SPffi", kernelModule, CudaContext));
+			loadedKernels.Add("Sub_S_V", new CudaKernel("_Z7Sub_S_VfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
+			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
+
+			return loadedKernels;
+		}
+
+		private void RunKernel(string kernelName, int elementCount, params object[] kernelParameters)
+		{
+			if (!_loadedKernels.ContainsKey(kernelName))
+			{
+				throw new InvalidOperationException($"Unable to run kernel, kernel with name {kernelName} is not loaded.");
+			}
+
+			CudaKernel kernel = _loadedKernels[kernelName];
+
+			kernel.BlockDimensions = ThreadsPerBlock;
+			kernel.GridDimensions = (elementCount + ThreadsPerBlock - 1) / ThreadsPerBlock;
+
+			kernel.Run(kernelParameters);
 		}
 
 		internal void BindToContext()
@@ -429,21 +465,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		public override unsafe ShapedDataBufferView<float> Add_S_M(float other, ShapedDataBufferView<float> a)
 		{
 			int len = a.Length;
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
-			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
-			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
 
-			// TODO optimise using custom kernel for adding array to constant (doesn't work with blas incx trick because cublas doesn't support zero strides)
-			fixed (float* aref = &aData[aOffset])
-			fixed (float* resref = &resData[resOffset])
-			{
-				for (int i = 0; i < len; i++)
-				{
-					resref[i] = other + aref[i];
-				}
-			}
+			a = a.DeepCopy();
 
-			return result;
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+
+			RunKernel("Add_V_S", len, aData.GetContextBuffer().DevicePointer, other, len);
+
+			aData.FlagDeviceModified();
+
+			return a;
 		}
 
 		/// <inheritdoc />
@@ -485,15 +516,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			int len = (int)aData.Length;
 
-			// TODO optimise using kernel for (matrix - scalar) operation
-			// unlike openblas, cublas does not support zero-stride vectors (the scalar b), so we will have to write our own kernel
-			fixed (float* aref = &aData.Data[aData.Offset])
-			{
-				for (int i = 0; i < len; i++)
-				{
-					aref[i] = aref[i] - b;
-				}
-			}
+			RunKernel("Sub_V_S", len, aData.GetContextBuffer().DevicePointer, b, len);
+
+			aData.FlagDeviceModified();
 
 			return a;
 		}
@@ -501,22 +526,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override unsafe ShapedDataBufferView<float> Sub_S_M(float other, ShapedDataBufferView<float> a)
 		{
-			int len = a.Length;
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])a.Shape.Clone());
-			float[] aData = a.DataBuffer.Data, resData = result.DataBuffer.Data;
-			int aOffset = a.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
-
-			// TODO optimise using custom kernel for subtracting array from constant (doesn't work with blas incx trick because then the result is inaccessible)
-			fixed (float* aref = &aData[aOffset])
-			fixed (float* resref = &resData[resOffset])
+			if (a.Length == 0)
 			{
-				for (int i = 0; i < len; i++)
-				{
-					resref[i] = other - aref[i];
-				}
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			return result;
+			a = a.DeepCopy();
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+
+			int len = (int)aData.Length;
+
+			RunKernel("Sub_S_V", len, other, aData.GetContextBuffer().DevicePointer, len);
+
+			aData.FlagDeviceModified();
+
+			return a;
 		}
 
 		/// <inheritdoc />
@@ -580,23 +604,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			int len = Math.Min(a.Length, b.Length);
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(len)), (long[])b.Shape.Clone());
+			b = b.DeepCopy();
 
-			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, resData = result.DataBuffer.Data;
-			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, resOffset = result.DataBuffer.Offset;
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			// TODO optimise using custom kernel for hadamard product (no support in cublas either)
-			fixed (float* aref = &aData[aOffset])
-			fixed (float* bref = &bData[bOffset])
-			fixed (float* resref = &resData[resOffset])
-			{
-				for (int i = 0; i < len; ++i)
-				{
-					resref[i] = aref[i] * bref[i];
-				}
-			}
+			RunKernel("Mul_Had_V_V", len, aData.GetContextBuffer().DevicePointer, bData.GetContextBuffer().DevicePointer, len);
 
-			return result;
+			bData.FlagDeviceModified();
+			
+			return b;
 		}
 
 		/// <inheritdoc />
