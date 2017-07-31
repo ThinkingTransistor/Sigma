@@ -24,8 +24,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal CudaContext CudaContext;
 
 		// TODO implement more intelligent host <-> device synchronisation by flagging these whenever meaningful host read / device write access occurs
-		private bool _flagDeviceModified;
 		private bool _flagHostModified;
+		private bool _flagDeviceModified;
 
 		[NonSerialized]
 		private bool _initialisedInContext;
@@ -38,8 +38,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private SizeT _cudaZero;
 		[NonSerialized]
 		private SizeT _cudaOffsetBytes, _cudaLengthBytes;
-
-		private bool _debugFlagDontForgetToRemove;
 
 		/// <inheritdoc />
 		public CudaSigmaDiffDataBuffer(IDataBuffer<T> underlyingBuffer, long offset, long length, long backendTag, CudaContext cudaContext) : base(underlyingBuffer, offset, length, backendTag)
@@ -232,25 +230,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaBuffer.CopyToHost(_data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
 		}
 
+		/// <inheritdoc />
 		protected override Util.ISigmaDiffDataBuffer<T> _InternalDeepCopy()
 		{
 			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
 			CudaSigmaDiffDataBuffer<T> copy = new CudaSigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, CudaContext, Type);
 
-			//if (_initialisedInContext)
-			//{
-			//	copy.InitialiseCudaBuffer(copyHostToDevice: false);
-			//	copy._cudaBuffer.PeerCopyToDevice(CudaContext, _cudaBuffer, CudaContext);
+			if (_initialisedInContext && !_flagHostModified)
+			{
+				copy.InitialiseCudaBuffer(copyHostToDevice: false);
+				copy._cudaBuffer.PeerCopyToDevice(CudaContext, _cudaBuffer, CudaContext);
 
-			//	copy._flagHostModified = false;
-			//	copy.FlagDeviceModified(); // TODO figure out why this doesn't work, even though the data is also manually copied back to host (something with initialisation?)
-
-			//	copy.CopyFromDeviceToHost(); 
-			//	CopyFromDeviceToHost();
-
-			//	copy._debugFlagDontForgetToRemove = true;
-			//}
-			//else
+				copy._flagHostModified = false;
+				copy._flagDeviceModified = true;
+			}
+			else
 			{
 				Buffer.BlockCopy(Data, (int) (Offset * Type.SizeBytes), copyData, 0, (int) (Length * Type.SizeBytes));
 			}

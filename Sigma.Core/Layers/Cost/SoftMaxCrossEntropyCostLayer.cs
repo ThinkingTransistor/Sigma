@@ -30,16 +30,16 @@ namespace Sigma.Core.Layers.Cost
 
 		protected override INumber CalculateCost(INDArray predictions, INDArray targets, IRegistry parameters, IComputationHandler handler)
 		{
-			predictions = handler.RowWise(predictions, handler.SoftMax);
+			INDArray predictionsSoftmax = handler.RowWise(predictions, handler.SoftMax);
 
-			INDArray logPredictions = handler.Log(predictions);
+			INDArray logPredictions = handler.Log(predictionsSoftmax);
 			INDArray a = handler.Multiply(targets, logPredictions);
 
 			INDArray inverseTargets = handler.Subtract(1, targets);
-			INDArray inversePredictions = handler.Subtract(1 + 1e-6, predictions);
+			INDArray inversePredictions = handler.Subtract(1 + 1e-6, predictionsSoftmax);
 			INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
 
-			INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -predictions.Shape[0]);
+			INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -predictionsSoftmax.Shape[0]);
 
 			return cost;
 		}
