@@ -52,6 +52,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
 			loadedKernels.Add("Add_V_V", new CudaKernel("_Z7Add_V_VPKfiPfii", kernelModule, CudaContext));
 			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Exp_V", new CudaKernel("_Z5Exp_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Log_V", new CudaKernel("_Z5Log_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sqrt_V", new CudaKernel("_Z6Sqrt_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
 
 			return loadedKernels;
 		}
@@ -360,16 +365,59 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			a = a.DeepCopy();
 
-			int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-			float[] data = a.DataBuffer.Data;
-
-			for (int i = a.DataBuffer.Offset; i < upper; i++)
+			if (!_InternalOptimisedMap_F_M(mapOp, a))
 			{
-				data[i] = f.Invoke(data[i]);
+				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
+				float[] data = a.DataBuffer.Data;
+
+				for (int i = a.DataBuffer.Offset; i < upper; i++)
+				{
+					data[i] = f.Invoke(data[i]);
+				}
 			}
 
 			return a;
 		}
+
+		private bool _InternalOptimisedMap_F_M(MapOp mapOp, ShapedDataBufferView<float> a)
+		{
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			int len = (int) aData.Length;
+
+			if (mapOp.IsExp)
+			{
+				RunKernel("Exp_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+			else if (mapOp.IsSqrt)
+			{
+				RunKernel("Sqrt_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+			else if (mapOp.IsSign)
+			{
+				RunKernel("Sign_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+			else if (mapOp.IsReL)
+			{
+				RunKernel("Rel_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+			else if (mapOp.IsLog)
+			{
+				RunKernel("Log_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+
+			return false;
+		}
+
 
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> Map_F_S_M(float other, MapOp mapOp, FSharpFunc<float, float> function, ShapedDataBufferView<float> value)

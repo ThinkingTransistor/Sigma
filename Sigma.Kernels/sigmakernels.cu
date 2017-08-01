@@ -54,6 +54,56 @@ __global__ void Mul_Had_V_V(const float* a, float* b, int n)
 	}
 }
 
+__global__ void Exp_V(float* a, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = __expf(a[i]);
+	}
+}
+
+__global__ void Sqrt_V(float* a, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = sqrtf(a[i]);
+	}
+}
+
+__global__ void Sign_V(float* a, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = copysignf(1.0f, a[i]);
+	}
+}
+
+__global__ void Rel_V(float* a, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = (copysignf(a[i], 1.0f) + a[i]) / 2.0f;
+	}
+}
+
+__global__ void Log_V(float* a, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = __logf(a[i]);
+	}
+}
+
 int main()
 {
 	// do nothing
