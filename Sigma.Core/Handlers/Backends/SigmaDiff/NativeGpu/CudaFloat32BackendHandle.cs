@@ -27,7 +27,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaContext CudaContext;
 		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
-		private const int ThreadsPerBlock = 256;
+		private const int ThreadsPerBlock = 32;
 		private CUmodule _kernelModule;
 		private IDictionary<string, CudaKernel> _loadedKernels;
 
@@ -52,28 +52,36 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
 			loadedKernels.Add("Add_V_V", new CudaKernel("_Z7Add_V_VPKfiPfii", kernelModule, CudaContext));
 			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Div_S_V", new CudaKernel("_Z7Div_S_VfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Exp_V", new CudaKernel("_Z5Exp_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Log_V", new CudaKernel("_Z5Log_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sqrt_V", new CudaKernel("_Z6Sqrt_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
 
 			return loadedKernels;
 		}
 
 		private void RunKernel(string kernelName, int elementCount, params object[] kernelParameters)
 		{
+			RunKernel(kernelName, elementCount, 0, kernelParameters);
+		}
+
+		private void RunKernel(string kernelName, int elementCount, uint sharedMemoryBytes, params object[] kernelParameters)
+		{
 			if (!_loadedKernels.ContainsKey(kernelName))
 			{
 				throw new InvalidOperationException($"Unable to run kernel, kernel with name {kernelName} is not loaded.");
 			}
 
-			// TODO optimise kernel runs using asynchronous CUDA streams (requiring less Synchronise calls), probably need to safe guard for that in CUDA sigma buffers also though 
+			// TODO optimise kernel runs using async CUDA streams (requiring less synchronisation), probably need to safe guard for that in CUDA sigma buffers (maybe not due to implicit sync)
 
 			CudaKernel kernel = _loadedKernels[kernelName];
 
 			kernel.BlockDimensions = ThreadsPerBlock;
 			kernel.GridDimensions = (elementCount + ThreadsPerBlock - 1) / ThreadsPerBlock;
+			kernel.DynamicSharedMemory = sharedMemoryBytes;
 
 			kernel.Run(kernelParameters);
 		}
@@ -163,20 +171,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override unsafe float Sum_V(ISigmaDiffDataBuffer<float> a)
 		{
-			float[] aData = a.Data;
-			int aOffset = a.Offset, len = a.Length;
-			float result = 0.0f;
+			int len = a.Length, lenPartials = (len + ThreadsPerBlock - 1) / ThreadsPerBlock;
 
-			// TODO optimise using custom kernel for relative sum (not using absolutes like in the cublas implementation)
-			fixed (float* aref = &aData[aOffset])
-			{
-				for (int i = 0; i < len; ++i)
-				{
-					result += aref[i];
-				}
-			}
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> partialSums = (CudaSigmaDiffDataBuffer<float>) CreateDataBuffer(CreateUninitialisedArray(lenPartials));
 
-			return result;
+			RunKernel("Sum_V", len, (uint) (ThreadsPerBlock * sizeof(float)), aData.GetContextBuffer().DevicePointer, partialSums.GetContextBuffer().DevicePointer, len);
+			RunKernel("Sum_V", lenPartials, (uint) (ThreadsPerBlock * sizeof(float)), partialSums.GetContextBuffer().DevicePointer, partialSums.GetContextBuffer().DevicePointer, lenPartials);
+
+			partialSums.FlagDeviceModified();
+
+			return partialSums.Data[0];
 		}
 
 		/// <inheritdoc />
@@ -422,7 +427,29 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> Map_F_S_M(float other, MapOp mapOp, FSharpFunc<float, float> function, ShapedDataBufferView<float> value)
 		{
+			if (_InternalOptimisedMapOp_F_S_M(other, mapOp, ref value))
+			{
+				return value;
+			}
+
 			return Map_F_M(mapOp, function, value);
+		}
+
+		private bool _InternalOptimisedMapOp_F_S_M(float other, MapOp mapOp, ref ShapedDataBufferView<float> a)
+		{
+			int len = a.Length;
+
+			if (mapOp.IsDiv)
+			{
+				a = a.DeepCopy();
+				CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+
+				RunKernel("Div_S_V", len, other, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <inheritdoc />

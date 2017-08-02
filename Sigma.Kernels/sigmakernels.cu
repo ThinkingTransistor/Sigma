@@ -54,6 +54,16 @@ __global__ void Mul_Had_V_V(const float* a, float* b, int n)
 	}
 }
 
+__global__ void Div_S_V(const float a, float* b, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		b[i] = a / b[i];
+	}
+}
+
 __global__ void Exp_V(float* a, int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -90,7 +100,7 @@ __global__ void Rel_V(float* a, int n)
 
 	if (i < n)
 	{
-		a[i] = (copysignf(a[i], 1.0f) + a[i]) / 2.0f;
+		a[i] = (fabsf(a[i]) + a[i]) / 2.0f;
 	}
 }
 
@@ -102,6 +112,40 @@ __global__ void Log_V(float* a, int n)
 	{
 		a[i] = __logf(a[i]);
 	}
+}
+
+__global__ void Sum_V(const float* a, float* partial_sums, int n) 
+{
+	 extern __shared__ float sdata[]; 
+
+	 int i = threadIdx.x + blockIdx.x * blockDim.x;
+	 int ti = threadIdx.x;
+
+	 // move global input data to shared memory, pad with zeros
+	 float x = 0.0f;
+	 if (i < n)
+	 {
+		x = a[i];
+	 }
+	 sdata[ti] = x;
+
+	 __syncthreads();
+
+	 // use parallel reduction to contiguously reduce to partial sums
+	 for (int offset = blockDim.x / 2; offset > 0; offset >>= 1) 
+	 {
+		if (ti < offset)
+		{
+			sdata[ti] += sdata[ti + offset];
+		}
+
+		__syncthreads();
+	 }
+
+	 if (ti == 0) 
+	 {
+		partial_sums[blockIdx.x] = sdata[0];
+	 }
 }
 
 int main()
