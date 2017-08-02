@@ -144,6 +144,36 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			return (CudaSigmaDiffDataBuffer<float>)value.DataBuffer;
 		}
 
+		internal enum CustomOp
+		{
+			RowWiseSoftmax
+		}
+
+		/// <inheritdoc />
+		public override ShapedDataBufferView<float> CustomOp_DM_Forward(ShapedDataBufferView<float> a, object customInfo)
+		{
+			if (!(customInfo is CustomOp))
+			{
+				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOp)}).");
+			}
+
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CustomOp op = (CustomOp) customInfo;
+
+			if (op == CustomOp.RowWiseSoftmax)
+			{
+				//RunKernel("Softmax_RowWise_M", );
+			}
+
+			throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
+		}
+
+		/// <inheritdoc />
+		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <inheritdoc />
 		public override float Mul_Dot_V_V(ISigmaDiffDataBuffer<float> a, ISigmaDiffDataBuffer<float> n)
 		{
@@ -181,7 +211,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			partialSums.FlagDeviceModified();
 
-			return partialSums.Data[0];
+			return partialSums.Data[0]; // this is sub-optimal as we lose the advantages of having asynchronous GPU execution when explictly awaiting a result on host (e.g. the sum)
 		}
 
 		/// <inheritdoc />

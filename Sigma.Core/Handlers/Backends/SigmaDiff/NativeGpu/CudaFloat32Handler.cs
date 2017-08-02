@@ -252,6 +252,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaBackendHandle.FreeLimbo(internalArray.UnsafeRawData);
 		}
 
+		/// <inheritdoc />
+		protected override bool _RowWiseOptimised(ref CudaFloat32NDArray array, Func<INDArray, INDArray> function)
+		{
+			if (function == SoftMax)
+			{
+				CudaFloat32NDArray internalArray = InternaliseArray(array);
+
+				array = CreateArrayFromHandle(DNDArray.CustomOp(internalArray.Handle, CudaFloat32BackendHandle.CustomOp.RowWiseSoftmax));
+
+				return true;
+			}
+
+			return false;
+		}
+
 		private static readonly WeakList<CudaContext> RegisteredContexts;
 
 		static CudaFloat32Handler()

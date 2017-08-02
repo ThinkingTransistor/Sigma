@@ -264,6 +264,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			TNDArray internalArray = InternaliseArray(array);
+
+			if (_RowWiseOptimised(ref internalArray, function))
+			{
+				return internalArray;
+			}
+
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)
@@ -278,6 +284,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			return CreateArrayFromHandle(new DNDArray(DNDArray.OfRows(internalRowHandles, DiffsharpBackendHandle)));
+		}
+
+		/// <summary>
+		/// Invoke an optimised version of a <see cref="RowWise"/> application for a specific function if applicable, return false if not supported (for that function or in general).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="function">The function to apply row-wise.</param>
+		/// <returns>A boolean indicating whether an optimised version of the function was available and used (if not, standard row-wise handling is applied).</returns>
+		protected virtual bool _RowWiseOptimised(ref TNDArray array, Func<INDArray, INDArray> function)
+		{
+			return false;
 		}
 
 		private INDArray[] SliceRowWise(INDArray array, TNDArray internalArray)
