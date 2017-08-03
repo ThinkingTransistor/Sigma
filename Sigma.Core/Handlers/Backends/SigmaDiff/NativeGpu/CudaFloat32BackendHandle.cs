@@ -59,6 +59,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfiiii", kernelModule, CudaContext));
 
 			return loadedKernels;
 		}
@@ -157,15 +158,36 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOp)}).");
 			}
 
-			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CustomOp op = (CustomOp) customInfo;
+
+			if (!Enum.IsDefined(typeof(CustomOp), op))
+			{
+				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
+			}
+
+			int len = a.Length;
+			a = a.DeepCopy();
+
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
 			if (op == CustomOp.RowWiseSoftmax)
 			{
-				//RunKernel("Softmax_RowWise_M", );
+				int colsNextPowerOf2 = a.Cols;
+
+				// bit twiddling hacks to get next highest power of 2 for integer
+				// see https://web.archive.org/web/20160703165415/https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+				colsNextPowerOf2--;
+				colsNextPowerOf2 |= colsNextPowerOf2 >> 1;
+				colsNextPowerOf2 |= colsNextPowerOf2 >> 2;
+				colsNextPowerOf2 |= colsNextPowerOf2 >> 4;
+				colsNextPowerOf2 |= colsNextPowerOf2 >> 8;
+				colsNextPowerOf2 |= colsNextPowerOf2 >> 16;
+				colsNextPowerOf2++;
+
+				RunKernel("Softmax_Rowwise_M", len, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
 			}
 
-			throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
+			return a;
 		}
 
 		/// <inheritdoc />

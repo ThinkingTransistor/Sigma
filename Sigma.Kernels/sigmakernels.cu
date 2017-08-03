@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-__global__ void Sub_V_S(float *a, const float b, int n)
+__global__ void Sub_V_S(float *a, const float b, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -14,7 +14,7 @@ __global__ void Sub_V_S(float *a, const float b, int n)
 	}
 }
 
-__global__ void Sub_S_V(const float a, float* b, int n)
+__global__ void Sub_S_V(const float a, float* b, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -24,7 +24,7 @@ __global__ void Sub_S_V(const float a, float* b, int n)
 	}
 }
 
-__global__ void Add_V_S(float* a, const float b, int n)
+__global__ void Add_V_S(float* a, const float b, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -34,7 +34,7 @@ __global__ void Add_V_S(float* a, const float b, int n)
 	}
 }
 
-__global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, int n)
+__global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -44,7 +44,7 @@ __global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, int 
 	}
 }
 
-__global__ void Mul_Had_V_V(const float* a, float* b, int n)
+__global__ void Mul_Had_V_V(const float* a, float* b, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -54,7 +54,7 @@ __global__ void Mul_Had_V_V(const float* a, float* b, int n)
 	}
 }
 
-__global__ void Div_S_V(const float a, float* b, int n)
+__global__ void Div_S_V(const float a, float* b, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -64,7 +64,7 @@ __global__ void Div_S_V(const float a, float* b, int n)
 	}
 }
 
-__global__ void Exp_V(float* a, int n)
+__global__ void Exp_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -74,7 +74,7 @@ __global__ void Exp_V(float* a, int n)
 	}
 }
 
-__global__ void Sqrt_V(float* a, int n)
+__global__ void Sqrt_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -84,7 +84,7 @@ __global__ void Sqrt_V(float* a, int n)
 	}
 }
 
-__global__ void Sign_V(float* a, int n)
+__global__ void Sign_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -94,7 +94,7 @@ __global__ void Sign_V(float* a, int n)
 	}
 }
 
-__global__ void Rel_V(float* a, int n)
+__global__ void Rel_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -104,7 +104,7 @@ __global__ void Rel_V(float* a, int n)
 	}
 }
 
-__global__ void Log_V(float* a, int n)
+__global__ void Log_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -114,7 +114,7 @@ __global__ void Log_V(float* a, int n)
 	}
 }
 
-__global__ void Sum_V(const float* a, float* partial_sums, int n) 
+__global__ void Sum_V(const float* a, float* partial_sums, const int n) 
 {
 	 extern __shared__ float sdata[]; 
 
@@ -146,6 +146,50 @@ __global__ void Sum_V(const float* a, float* partial_sums, int n)
 	 {
 		partial_sums[blockIdx.x] = sdata[0];
 	 }
+}
+
+__global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, const int cols2, const int n)
+{
+	extern __shared__ float sdata[];
+	float* rowBuffer = &sdata[blockDim.x];
+
+	int rowsPerBlock = blockDim.x / cols;
+	int usedPerBlock = rowsPerBlock * cols;
+	int unusedPerBlock = blockDim.x - usedPerBlock;
+
+	int ti = threadIdx.x;
+	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int ri = i / cols;
+	int riLocal = ri % rowsPerBlock;
+
+	float x = 0.0f;
+	if (i < n && ti < usedPerBlock)
+	{
+		x = a[i];
+	}
+	sdata[ti] = rowBuffer[ti] = x;
+
+	__syncthreads();
+
+	for (int offset = cols2 / 2; offset > 0; offset >>= 1) 
+	{
+		if (ti < offset)
+		{
+			float currentMax = rowBuffer[ti];
+			float other = (ti + offset) / cols == riLocal ? rowBuffer[ti + offset] : 0.0f;
+
+			rowBuffer[ti] = other > currentMax ? other : currentMax;
+
+			printf("comp at %2d cur %f with %f => %f\n", ti, currentMax, other, rowBuffer[ti]);
+		}
+
+		__syncthreads();
+	}
+	
+	if (ti % cols == 0)
+	{
+		printf("max[%3d] = %f\n", ri, rowBuffer[ti]);
+	}
 }
 
 int main()
