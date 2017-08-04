@@ -19,6 +19,25 @@ namespace Sigma.Core.Utils
 	public static class ArrayUtils
 	{
 		/// <summary>
+		/// Get the next highest power of 2 for a given integer.
+		/// </summary>
+		/// <param name="value">The value.</param>
+		/// <returns>The next highest power of 2.</returns>
+		public static int NextHighestPowerOf2(int value)
+		{
+			// bit twiddling hacks to get next highest power of 2 for integer
+			// see https://web.archive.org/web/20160703165415/https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+			value--;
+			value |= value >> 1;
+			value |= value >> 2;
+			value |= value >> 4;
+			value |= value >> 8;
+			value |= value >> 16;
+
+			return value + 1;
+		}
+
+		/// <summary>
 		/// Concatenate two given arrays into one result array (b is appended after a).
 		/// </summary>
 		/// <typeparam name="T">The array element type.</typeparam>

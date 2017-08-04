@@ -17,6 +17,7 @@ using ManagedCuda.CudaBlas;
 using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
@@ -172,20 +173,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			if (op == CustomOp.RowWiseSoftmax)
 			{
-				int colsNextPowerOf2 = a.Cols;
-
-				// bit twiddling hacks to get next highest power of 2 for integer
-				// see https://web.archive.org/web/20160703165415/https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-				colsNextPowerOf2--;
-				colsNextPowerOf2 |= colsNextPowerOf2 >> 1;
-				colsNextPowerOf2 |= colsNextPowerOf2 >> 2;
-				colsNextPowerOf2 |= colsNextPowerOf2 >> 4;
-				colsNextPowerOf2 |= colsNextPowerOf2 >> 8;
-				colsNextPowerOf2 |= colsNextPowerOf2 >> 16;
-				colsNextPowerOf2++;
+				int colsNextPowerOf2 = ArrayUtils.NextHighestPowerOf2(a.Cols);
 
 				RunKernel("Softmax_Rowwise_M", len, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
 			}
+
+			aData.FlagDeviceModified();
 
 			return a;
 		}
@@ -193,7 +186,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
 		{
-			throw new NotImplementedException();
+			if (!(customInfo is CustomOp))
+			{
+				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOp)}).");
+			}
+
+			CustomOp op = (CustomOp)customInfo;
+
+			//if (!Enum.IsDefined(typeof(CustomOp), op))
+			{
+				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
+			}
 		}
 
 		/// <inheritdoc />

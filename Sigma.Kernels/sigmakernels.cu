@@ -161,9 +161,11 @@ __global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, cons
 	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
 	int ri = i / cols;
 	int riLocal = ri % rowsPerBlock;
+	int tiLocal = ti - riLocal * cols;
+	bool inData = i < n && ti < usedPerBlock;
 
 	float x = 0.0f;
-	if (i < n && ti < usedPerBlock)
+	if (inData)
 	{
 		x = a[i];
 	}
@@ -171,24 +173,45 @@ __global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, cons
 
 	__syncthreads();
 
+	// find each rows max value
 	for (int offset = cols2 / 2; offset > 0; offset >>= 1) 
 	{
-		if (ti < offset)
+		if (tiLocal < offset)
 		{
 			float currentMax = rowBuffer[ti];
 			float other = (ti + offset) / cols == riLocal ? rowBuffer[ti + offset] : 0.0f;
 
 			rowBuffer[ti] = other > currentMax ? other : currentMax;
-
-			printf("comp at %2d cur %f with %f => %f\n", ti, currentMax, other, rowBuffer[ti]);
 		}
 
 		__syncthreads();
 	}
-	
-	if (ti % cols == 0)
+
+	// subtract each value from that row's maximum
+	if (inData)
 	{
-		printf("max[%3d] = %f\n", ri, rowBuffer[ti]);
+		sdata[ti] = __expf(sdata[ti] - rowBuffer[riLocal * cols]);
+	}
+	rowBuffer[ti] = sdata[ti];
+
+	__syncthreads();
+
+	// calculate each rows sum
+	for (int offset = cols2 / 2; offset > 0; offset >>= 1) 
+	{
+		if (tiLocal < offset)
+		{
+			float other = (ti + offset) / cols == riLocal ? rowBuffer[ti + offset] : 0.0f;
+
+			rowBuffer[ti] = rowBuffer[ti] + other;
+		}
+
+		__syncthreads();
+	}
+
+	if (inData)
+	{
+		a[i] = sdata[ti] / rowBuffer[riLocal * cols];
 	}
 }
 
