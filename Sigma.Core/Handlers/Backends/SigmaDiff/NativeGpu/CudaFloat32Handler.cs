@@ -259,7 +259,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				CudaFloat32NDArray internalArray = InternaliseArray(array);
 
-				array = CreateArrayFromHandle(DNDArray.CustomOp(internalArray.Handle, CudaFloat32BackendHandle.CustomOp.RowWiseSoftmax));
+				array = CreateArrayFromHandle(DNDArray.CustomOp(internalArray.Handle, new CudaFloat32BackendHandle.CustomOpHandle(CudaFloat32BackendHandle.CustomOpType.RowWiseSoftmax)));
 
 				return true;
 			}

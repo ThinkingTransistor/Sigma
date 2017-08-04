@@ -1495,7 +1495,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CustomOp_DM_Backward"/>
-		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
+		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> origin, 
+			ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
 		{
 			throw new NotImplementedException($"Custom DM ops are not supported in default {nameof(DiffSharpFloat32BackendHandle)} implementation.");
 		}

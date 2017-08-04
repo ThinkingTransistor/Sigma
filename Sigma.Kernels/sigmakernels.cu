@@ -148,7 +148,7 @@ __global__ void Sum_V(const float* a, float* partial_sums, const int n)
 	 }
 }
 
-__global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, const int cols2, const int n)
+__global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* sumPerRow, const int rows, const int cols, const int cols2, const int n)
 {
 	extern __shared__ float sdata[];
 	float* rowBuffer = &sdata[blockDim.x];
@@ -191,6 +191,11 @@ __global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, cons
 	if (inData)
 	{
 		sdata[ti] = __expf(sdata[ti] - rowBuffer[riLocal * cols]);
+	
+		if (tiLocal == 0)
+		{
+			maxPerRow[ri] = rowBuffer[riLocal * cols];
+		}
 	}
 	rowBuffer[ti] = sdata[ti];
 
@@ -212,8 +217,52 @@ __global__ void Softmax_Rowwise_M(float* a, const int rows, const int cols, cons
 	if (inData)
 	{
 		a[i] = sdata[ti] / rowBuffer[riLocal * cols];
+
+		if (tiLocal == 0)
+		{
+			sumPerRow[ri] = rowBuffer[riLocal * cols];
+		}
 	}
 }
+
+__global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adjoint, const float* primal, const float* prevMaxs, const float* prevSums, 
+											float* out, const int rows, const int cols, const int cols2, const int n)
+{
+	extern __shared__ float sdata[];
+	float* rowBuffer = &sdata[blockDim.x];
+	float* originData = &sdata[blockDim.x * 2];
+	float* adjointData = &sdata[blockDim.x * 3];
+	float* primalData = &sdata[blockDim.x * 4];
+	float* outData = &sdata[blockDim.x * 5];
+
+	int rowsPerBlock = blockDim.x / cols;
+	int usedPerBlock = rowsPerBlock * cols;
+	int unusedPerBlock = blockDim.x - usedPerBlock;
+
+	int ti = threadIdx.x;
+	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int ri = i / cols;
+	int riLocal = ri % rowsPerBlock;
+	int tiLocal = ti - riLocal * cols;
+	bool inData = i < n && ti < usedPerBlock;
+
+	float prevMax = prevMaxs[ri];
+	float prevSum = prevSums[ri];
+
+	if (inData)
+	{
+		originData[ti] = origin[i];
+		adjointData[ti] = adjoint[i];
+		primalData[ti] = primal[i];
+	}
+
+	rowBuffer[ti] = adjointData[ti] * (originData[ti] / (prevSum * prevSum)) + adjointData[ti] / prevSum;
+
+	__syncthreads();
+
+	// TODO complete backprop
+}
+
 
 int main()
 {

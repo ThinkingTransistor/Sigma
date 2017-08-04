@@ -60,7 +60,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfiiii", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfS_S_iiii", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
 
 			return loadedKernels;
 		}
@@ -146,7 +147,24 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			return (CudaSigmaDiffDataBuffer<float>)value.DataBuffer;
 		}
 
-		internal enum CustomOp
+		internal class CustomOpHandle
+		{
+			internal CustomOpType Type { get; }
+			internal IDictionary<string, object> AdditionalInfo { get; }
+
+			internal CustomOpHandle(CustomOpType type)
+			{
+				Type = type;
+				AdditionalInfo = new Dictionary<string, object>();
+			}
+
+			internal void AttachInfo(string identifier, object obj)
+			{
+				AdditionalInfo.Add(identifier, obj);
+			}
+		}
+
+		internal enum CustomOpType
 		{
 			RowWiseSoftmax
 		}
@@ -154,14 +172,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override ShapedDataBufferView<float> CustomOp_DM_Forward(ShapedDataBufferView<float> a, object customInfo)
 		{
-			if (!(customInfo is CustomOp))
+			if (!(customInfo is CustomOpHandle))
 			{
-				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOp)}).");
+				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOpHandle)}).");
 			}
 
-			CustomOp op = (CustomOp) customInfo;
+			CustomOpHandle op = (CustomOpHandle) customInfo;
 
-			if (!Enum.IsDefined(typeof(CustomOp), op))
+			if (!Enum.IsDefined(typeof(CustomOpType), op.Type))
 			{
 				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
 			}
@@ -171,11 +189,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
-			if (op == CustomOp.RowWiseSoftmax)
+			if (op.Type == CustomOpType.RowWiseSoftmax)
 			{
 				int colsNextPowerOf2 = ArrayUtils.NextHighestPowerOf2(a.Cols);
+				CudaSigmaDiffDataBuffer<float> maxBuffer = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(a.Rows)));
+				CudaSigmaDiffDataBuffer<float> sumBuffer = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(a.Rows)));
 
-				RunKernel("Softmax_Rowwise_M", len, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
+				RunKernel("Softmax_Rowwise_M", len, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextBuffer().DevicePointer, maxBuffer.GetContextBuffer().DevicePointer, 
+					sumBuffer.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
+
+				maxBuffer.FlagDeviceModified();
+				sumBuffer.FlagDeviceModified();
+
+				op.AttachInfo("prevSums", sumBuffer);
+				op.AttachInfo("prevMaxs", maxBuffer);
 			}
 
 			aData.FlagDeviceModified();
@@ -184,19 +211,32 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
+		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> origin, 
+			ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
 		{
-			if (!(customInfo is CustomOp))
+			if (!(customInfo is CustomOpHandle))
 			{
-				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOp)}).");
+				throw new InvalidOperationException($"Cannot invoke {nameof(CustomOp_DM_Forward)} with invalid custom info of type {customInfo.GetType()} (must be of type {nameof(CustomOpHandle)}).");
 			}
 
-			CustomOp op = (CustomOp)customInfo;
+			CustomOpHandle op = (CustomOpHandle)customInfo;
 
-			//if (!Enum.IsDefined(typeof(CustomOp), op))
+			if (!Enum.IsDefined(typeof(CustomOpType), op.Type))
 			{
-				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Forward)}.");
+				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Backward)}.");
 			}
+
+			CudaSigmaDiffDataBuffer<float> result = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(origin.Length)));
+			int len = (int) result.Length;
+
+			if (op.Type == CustomOpType.RowWiseSoftmax)
+			{
+				
+			}
+
+			result.FlagDeviceModified();
+
+			return new ShapedDataBufferView<float>(result, origin.Rows, origin.Cols);
 		}
 
 		/// <inheritdoc />

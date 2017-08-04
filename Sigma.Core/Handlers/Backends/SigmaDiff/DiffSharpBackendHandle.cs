@@ -241,7 +241,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> row);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> CustomOp_DM_Forward(ShapedDataBufferView<T> value, object customInfo);
-		public abstract ShapedDataBufferView<T> CustomOp_DM_Backward(ShapedDataBufferView<T> adjoint, ShapedDataBufferView<T> primal, object customInfo);
+		public abstract ShapedDataBufferView<T> CustomOp_DM_Backward(ShapedDataBufferView<T> origin, ShapedDataBufferView<T> adjoint, ShapedDataBufferView<T> primal, object customInfo);
 
 		public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
