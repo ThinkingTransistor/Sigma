@@ -239,7 +239,7 @@ namespace Sigma.Tests.Internals.Backend
 											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(5, dataset);
+			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);

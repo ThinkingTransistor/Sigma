@@ -148,7 +148,7 @@ __global__ void Sum_V(const float* a, float* partial_sums, const int n)
 	 }
 }
 
-__global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* sumPerRow, const int rows, const int cols, const int cols2, const int n)
+__global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* maxPerRowIndices, float* sumPerRow, const int rows, const int cols, const int cols2, const int n)
 {
 	extern __shared__ float sdata[];
 	float* rowBuffer = &sdata[blockDim.x];
@@ -201,6 +201,12 @@ __global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* sumPerRow, 
 
 	__syncthreads();
 
+	// write out max index 
+	if (maxPerRow[ri] == a[i])
+	{
+		maxPerRowIndices[ri] = tiLocal;
+	}
+
 	// calculate each rows sum
 	for (int offset = cols2 / 2; offset > 0; offset >>= 1) 
 	{
@@ -225,15 +231,15 @@ __global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* sumPerRow, 
 	}
 }
 
-__global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adjoint, const float* primal, const float* prevMaxs, const int* prevMaxIndices, 
+__global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adjoint, const float* primal, const float* prevMaxs, const float* prevMaxIndices, 
 											const float* prevSums, float* out, const int rows, const int cols, const int cols2, const int n)
 {
 	extern __shared__ float sdata[];
-	float* rowBuffer = &sdata[blockDim.x];
-	float* originData = &sdata[blockDim.x * 2];
-	float* adjointData = &sdata[blockDim.x * 3];
-	float* primalData = &sdata[blockDim.x * 4];
-	float* outData = &sdata[blockDim.x * 5];
+	float* rowBuffer = sdata;
+	float* originData = &sdata[blockDim.x];
+	float* adjointData = &sdata[blockDim.x * 2];
+	float* primalData = &sdata[blockDim.x * 3];
+	float* outData = &sdata[blockDim.x * 4];
 
 	int rowsPerBlock = blockDim.x / cols;
 	int usedPerBlock = rowsPerBlock * cols;
@@ -262,20 +268,30 @@ __global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adj
 	
 	// Exp_DM				DM (direct)
 	rowBuffer[ti] = rowBuffer[ti] * __expf(originData[ti] - prevMax);
-
-	// Item_DM				D (indirect via Max)
-
-
-	// Sub_DM_D
-
-	if (tiLocal == prevMaxIndex)
-	{
-		// add gradient of sub max twice?
-	}
+	outData[ti] = rowBuffer[ti];
 
 	__syncthreads();
 
-	// TODO complete backprop
+	// calculate each rows derivatives (in rowBuffer) sum
+	for (int offset = cols2 / 2; offset > 0; offset >>= 1) 
+	{
+		if (tiLocal < offset)
+		{
+			float other = (ti + offset) / cols == riLocal ? rowBuffer[ti + offset] : 0.0f;
+
+			rowBuffer[ti] = rowBuffer[ti] + other;
+		}
+
+		__syncthreads();
+	}
+
+	// Item_DM		D (indirect via Max op via Sub_DM_D op (left part for DM is just passthrough of gradient, so nothing to do there))
+	if (tiLocal == prevMaxIndex)
+	{
+		outData[ti] = outData[ti] - rowBuffer[riLocal * cols]; 
+	}
+
+	out[i] = outData[ti];
 }
 
 

@@ -28,7 +28,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaContext CudaContext;
 		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
-		private const int ThreadsPerBlock = 32;
+		private const int ThreadsPerBlock = 256;
 		private CUmodule _kernelModule;
 		private IDictionary<string, CudaKernel> _loadedKernels;
 
@@ -60,8 +60,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfS_S_iiii", kernelModule, CudaContext));
-			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_PKiS0_Pfiiii", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfS_S_S_iiii", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
 
 			return loadedKernels;
 		}
@@ -150,7 +150,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal class CustomOpHandle
 		{
 			internal CustomOpType Type { get; }
-			internal IDictionary<string, object> AdditionalInfo { get; }
+			private IDictionary<string, object> AdditionalInfo { get; }
 
 			internal CustomOpHandle(CustomOpType type)
 			{
@@ -161,6 +161,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			internal void AttachInfo(string identifier, object obj)
 			{
 				AdditionalInfo.Add(identifier, obj);
+			}
+
+			internal T GetInfo<T>(string identifier)
+			{
+				return (T) AdditionalInfo[identifier];
 			}
 		}
 
@@ -193,16 +198,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				int colsNextPowerOf2 = ArrayUtils.NextHighestPowerOf2(a.Cols);
 				CudaSigmaDiffDataBuffer<float> maxBuffer = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(a.Rows)));
+				CudaSigmaDiffDataBuffer<float> maxIndicesBuffer = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(a.Rows)));
 				CudaSigmaDiffDataBuffer<float> sumBuffer = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(a.Rows)));
 
 				RunKernel("Softmax_Rowwise_M", len, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextBuffer().DevicePointer, maxBuffer.GetContextBuffer().DevicePointer, 
-					sumBuffer.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
+					maxIndicesBuffer.GetContextBuffer().DevicePointer, sumBuffer.GetContextBuffer().DevicePointer, a.Rows, a.Cols, colsNextPowerOf2, len);
 
 				maxBuffer.FlagDeviceModified();
+				maxIndicesBuffer.FlagDeviceModified();
 				sumBuffer.FlagDeviceModified();
 
-				op.AttachInfo("prevSums", sumBuffer);
 				op.AttachInfo("prevMaxs", maxBuffer);
+				op.AttachInfo("prevMaxIndices", maxBuffer);
+				op.AttachInfo("prevSums", sumBuffer);
 			}
 
 			aData.FlagDeviceModified();
@@ -226,17 +234,27 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				throw new NotImplementedException($"Custom op {op} is not supported in {nameof(CustomOp_DM_Backward)}.");
 			}
 
-			CudaSigmaDiffDataBuffer<float> result = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(origin.Length)));
-			int len = (int) result.Length;
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(CreateDataBuffer(CreateUninitialisedArray(origin.Length)));
+			int len = (int) rData.Length;
 
 			if (op.Type == CustomOpType.RowWiseSoftmax)
 			{
-				
+				CudaSigmaDiffDataBuffer<float> originData = _InternalInternalise(origin);
+				CudaSigmaDiffDataBuffer<float> adjointData = _InternalInternalise(adjoint);
+				CudaSigmaDiffDataBuffer<float> primalData = _InternalInternalise(primal);
+				CudaSigmaDiffDataBuffer<float> maxBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevMaxs");
+				CudaSigmaDiffDataBuffer<float> maxIndicesBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevMaxIndices"); ;
+				CudaSigmaDiffDataBuffer<float> sumBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevSums");
+
+				// TODO refactor x.GetContextBuffer().DevicePointer into single method for convenience
+				RunKernel("Softmax_Rowwise_M_Backward", len, ThreadsPerBlock * sizeof(float) * 5, originData.GetContextBuffer().DevicePointer, adjointData.GetContextBuffer().DevicePointer,
+					primalData.GetContextBuffer().DevicePointer, maxBuffer.GetContextBuffer().DevicePointer, maxIndicesBuffer.GetContextBuffer().DevicePointer, 
+					sumBuffer.GetContextBuffer().DevicePointer, rData.GetContextBuffer().DevicePointer, origin.Rows, origin.Cols, ArrayUtils.NextHighestPowerOf2(origin.Cols), len);
 			}
 
-			result.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return new ShapedDataBufferView<float>(result, origin.Rows, origin.Cols);
+			return new ShapedDataBufferView<float>(rData, origin.Rows, origin.Cols);
 		}
 
 		/// <inheritdoc />
