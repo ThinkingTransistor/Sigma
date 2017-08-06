@@ -113,7 +113,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			PrepareCudaBuffer(restoredContext, Data, Offset, Length);
 		}
 
-		private void InitialiseCudaBuffer(bool copyHostToDevice = true)
+		internal void InitialiseCudaBuffer(bool copyHostToDevice = true)
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 

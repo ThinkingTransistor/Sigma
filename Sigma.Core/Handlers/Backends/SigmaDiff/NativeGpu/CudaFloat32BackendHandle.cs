@@ -296,7 +296,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			partialSums.FlagDeviceModified();
 
-			return partialSums.Data[0]; // this is sub-optimal as we lose the advantages of having asynchronous GPU execution when explictly awaiting a result on host (e.g. the sum)
+			return partialSums.Data[0]; // TODO this is sub-optimal as we lose the advantages of having asynchronous GPU execution when explictly awaiting a result on host (e.g. the sum)
 		}
 
 		/// <inheritdoc />
@@ -914,14 +914,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			int rowLength = row.Length;
 			float[] result = CreateUninitialisedArray(rows * rowLength);
-			float[] rowData = row.Data;
-			int sourceOffset = row.Offset;
-			int destinationOffset = 0;
 			CudaSigmaDiffDataBuffer<float> rowSubData = _InternalInternalise(row);
 			CudaSigmaDiffDataBuffer<float> resultData = (CudaSigmaDiffDataBuffer<float>)CreateDataBuffer(result);
 
 			if (!rowSubData.IsInitialisedInContext())
 			{
+				float[] rowData = row.Data;
+				int sourceOffset = row.Offset;
+				int destinationOffset = 0;
+
 				for (int i = 0; i < rows; i++)
 				{
 					Buffer.BlockCopy(rowData, sourceOffset * sizeof(float), result, destinationOffset * sizeof(float), rowLength * sizeof(float));
@@ -931,6 +932,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 			else
 			{
+				resultData.InitialiseCudaBuffer(copyHostToDevice: false);
+
 				CudaDeviceVariable<float> subBuffer = rowSubData.GetContextBuffer();
 				CudaDeviceVariable<float> resultBuffer = resultData.GetContextBuffer();
 				SizeT cudaSourceOffset = new SizeT(0);
