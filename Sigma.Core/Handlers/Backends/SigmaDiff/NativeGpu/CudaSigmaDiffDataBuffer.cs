@@ -117,7 +117,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 
-			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
 			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, _cudaLengthBytes);
 			_initialisedInContext = true;
@@ -266,7 +266,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 			else
 			{
-				Buffer.BlockCopy(Data, (int) (Offset * Type.SizeBytes), copyData, 0, (int) (Length * Type.SizeBytes));
+				Buffer.BlockCopy(Data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
 			}
 
 			return copy;
@@ -310,9 +310,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override IDataBuffer<T> GetValues(long startIndex, long length)
 		{
-			OnReadAccess();
+			if (_initialisedInContext && !_flagHostModified)
+			{
+				CudaSigmaDiffDataBuffer<T> vData = new CudaSigmaDiffDataBuffer<T>(_data, startIndex, length, BackendTag, CudaContext);
 
-			return new CudaSigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag, CudaContext);
+				vData.InitialiseCudaBuffer(copyHostToDevice: false);
+
+				vData._cudaBuffer.CopyToDevice(_cudaBuffer.DevicePointer, new SizeT(startIndex * sizeof(float)), vData._cudaZero, vData._cudaLengthBytes);
+
+				vData._flagHostModified = false;
+				vData._flagDeviceModified = false;
+
+				return vData;
+			}
+			else
+			{
+				OnReadAccess();
+
+				return new CudaSigmaDiffDataBuffer<T>(this, startIndex, length, BackendTag, CudaContext);
+			}
 		}
 
 		/// <inheritdoc />
