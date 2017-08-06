@@ -180,6 +180,21 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_flagHostModified = true;
 		}
 
+		internal bool IsHostModified()
+		{
+			return _flagHostModified;
+		}
+
+		internal bool IsDeviceModified()
+		{
+			return _flagDeviceModified;
+		}
+
+		internal bool IsInitialisedInContext()
+		{
+			return _initialisedInContext;
+		}
+
 		internal void SynchroniseFromHostToDevice()
 		{
 			if (_flagHostModified)

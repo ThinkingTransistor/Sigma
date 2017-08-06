@@ -54,11 +54,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Add_V_V", new CudaKernel("_Z7Add_V_VPKfiPfii", kernelModule, CudaContext));
 			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Div_S_V", new CudaKernel("_Z7Div_S_VfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Div_V_V", new CudaKernel("_Z7Div_V_VPKfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Exp_V", new CudaKernel("_Z5Exp_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Log_V", new CudaKernel("_Z5Log_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sqrt_V", new CudaKernel("_Z6Sqrt_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sigmoid_V", new CudaKernel("_Z9Sigmoid_VPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfS_S_S_iiii", kernelModule, CudaContext));
 			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
@@ -532,6 +534,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 				return true;
 			}
+			else if (mapOp.IsSigmoid)
+			{
+				RunKernel("Sigmoid_V", len, aData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
 
 			return false;
 		}
@@ -577,6 +585,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
+			if (_InternalOptimisedMapOp_F_M_M(mapOp, a, ref b))
+			{
+				return b;
+			}
+
 			b = b.DeepCopy();
 
 			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data;
@@ -592,6 +605,25 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			return b;
+		}
+
+		private bool _InternalOptimisedMapOp_F_M_M(MapOp mapOp, ShapedDataBufferView<float> a, ref ShapedDataBufferView<float> b)
+		{
+			int len = b.Length;
+
+			b = b.DeepCopy();
+
+			if (mapOp.IsDiv)
+			{
+				CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+				CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
+
+				RunKernel("Div_V_V", len, aData.GetContextBuffer().DevicePointer, bData.GetContextBuffer().DevicePointer, len);
+
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <inheritdoc />
@@ -872,8 +904,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> row)
+		public override unsafe ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> row)
 		{
+			// TODO optimise with CUDA in device copies (if applicable)
 			if (row.Length == 0)
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
@@ -884,15 +917,36 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float[] rowData = row.Data;
 			int sourceOffset = row.Offset;
 			int destinationOffset = 0;
+			CudaSigmaDiffDataBuffer<float> rowSubData = _InternalInternalise(row);
+			CudaSigmaDiffDataBuffer<float> resultData = (CudaSigmaDiffDataBuffer<float>)CreateDataBuffer(result);
 
-			for (int i = 0; i < rows; i++)
+			if (!rowSubData.IsInitialisedInContext())
 			{
-				Buffer.BlockCopy(rowData, sourceOffset * sizeof(float), result, destinationOffset * sizeof(float), rowLength * sizeof(float));
+				for (int i = 0; i < rows; i++)
+				{
+					Buffer.BlockCopy(rowData, sourceOffset * sizeof(float), result, destinationOffset * sizeof(float), rowLength * sizeof(float));
 
-				destinationOffset += rowLength;
+					destinationOffset += rowLength;
+				}
+			}
+			else
+			{
+				CudaDeviceVariable<float> subBuffer = rowSubData.GetContextBuffer();
+				CudaDeviceVariable<float> resultBuffer = resultData.GetContextBuffer();
+				SizeT cudaSourceOffset = new SizeT(0);
+				SizeT cudaDestOffset = new SizeT(0);
+
+				for (int i = 0; i < rows; i++)
+				{
+					resultBuffer.CopyToDevice(subBuffer, cudaSourceOffset, cudaDestOffset, subBuffer.SizeInBytes);
+
+					cudaDestOffset += subBuffer.SizeInBytes;
+				}
+
+				resultData.FlagDeviceModified();
 			}
 
-			return new ShapedDataBufferView<float>(CreateDataBuffer(result), rows, rowLength);
+			return new ShapedDataBufferView<float>(resultData, rows, rowLength);
 		}
 
 		/// <inheritdoc />

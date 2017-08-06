@@ -64,6 +64,16 @@ __global__ void Div_S_V(const float a, float* b, const int n)
 	}
 }
 
+__global__ void Div_V_V(const float* a, float* b, const int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		b[i] = a[i] / b[i];
+	}
+}
+
 __global__ void Exp_V(float* a, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -111,6 +121,16 @@ __global__ void Log_V(float* a, const int n)
 	if (i < n)
 	{
 		a[i] = __logf(a[i]);
+	}
+}
+
+__global__ void Sigmoid_V(float* a, const int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (i < n)
+	{
+		a[i] = 1.0f / (1.0f + __expf(-a[i]));
 	}
 }
 
