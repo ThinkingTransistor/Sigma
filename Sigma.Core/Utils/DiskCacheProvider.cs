@@ -137,7 +137,8 @@ namespace Sigma.Core.Utils
 				}
 				catch (Exception e)
 				{
-					_logger.Warn($"Failed to load cache entry for identifier \"{identifier}\" with error \"{e}\", returning default value for type.");
+					_logger.Warn($"Failed to load cache entry for identifier \"{identifier}\" with error \"{e.GetType()}\", returning default value for type.");
+					_logger.Debug(e);
 
 					SigmaEnvironment.TaskManager.CancelTask(task);
 

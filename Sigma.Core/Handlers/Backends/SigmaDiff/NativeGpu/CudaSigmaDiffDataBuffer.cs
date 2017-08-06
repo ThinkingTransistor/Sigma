@@ -142,6 +142,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			return _cudaBuffer;
 		}
 
+		internal CUdeviceptr GetContextPointer()
+		{
+			return GetContextBuffer().DevicePointer;
+		}
+
 		/// <summary>
 		/// Called before any operation that reads from the local data.
 		/// </summary>
