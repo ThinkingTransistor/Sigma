@@ -33,7 +33,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaBackendHandle = (CudaFloat32BackendHandle)DiffsharpBackendHandle;
 			DeviceId = _cudaBackendHandle.CudaContext.DeviceId;
 
-			RegisterContext(_cudaBackendHandle.CudaContext);
+			RegisterContext(_cudaBackendHandle.CudaContext, _cudaBackendHandle.CudaStream);
 		}
 
 		/// <summary>The underlying data type processed and used in this computation handler.</summary>
@@ -268,22 +268,42 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		private static readonly WeakList<CudaContext> RegisteredContexts;
+		private static readonly ConditionalWeakTable<CudaContext, CudaStream> RegisteredStreamsByContext;
 
 		static CudaFloat32Handler()
 		{
 			RegisteredContexts = new WeakList<CudaContext>();
+			RegisteredStreamsByContext = new ConditionalWeakTable<CudaContext, CudaStream>();
 		}
 
 		/// <summary>
 		/// Register a cuda context for reference via <see cref="GetContextForDeviceId"/> (used for context restoration).
 		/// </summary>
 		/// <param name="context"></param>
-		internal static void RegisterContext(CudaContext context)
+		internal static void RegisterContext(CudaContext context, CudaStream stream)
 		{
 			if (!RegisteredContexts.Contains(context))
 			{
 				RegisteredContexts.Add(context);
+				RegisteredStreamsByContext.Add(context, stream);
 			}
+		}
+
+		/// <summary>
+		/// Get a CUDA stream for a certain CUDA context.
+		/// </summary>
+		/// <param name="context">The context.</param>
+		/// <returns>The stream.</returns>
+		internal static CudaStream GetStreamForContext(CudaContext context)
+		{
+			CudaStream stream;
+
+			if (RegisteredStreamsByContext.TryGetValue(context, out stream))
+			{
+				return stream;
+			}
+
+			throw new InvalidOperationException($"No stream is registered for context with id {context.DeviceId}.");
 		}
 
 		/// <summary>

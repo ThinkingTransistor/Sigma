@@ -259,7 +259,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			if (_initialisedInContext && !_flagHostModified)
 			{
 				copy.InitialiseCudaBuffer(copyHostToDevice: false);
-				copy._cudaBuffer.PeerCopyToDevice(CudaContext, _cudaBuffer, CudaContext);
+				copy._cudaBuffer.AsyncCopyToDevice(_cudaBuffer, CudaFloat32Handler.GetStreamForContext(CudaContext));
 
 				copy._flagHostModified = false;
 				copy._flagDeviceModified = true;
@@ -316,7 +316,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 				vData.InitialiseCudaBuffer(copyHostToDevice: false);
 
-				vData._cudaBuffer.CopyToDevice(_cudaBuffer.DevicePointer, new SizeT(startIndex * sizeof(float)), vData._cudaZero, vData._cudaLengthBytes);
+				vData._cudaBuffer.AsyncCopyToDevice(_cudaBuffer.DevicePointer, new SizeT(startIndex * sizeof(float)), vData._cudaZero, vData._cudaLengthBytes, 
+					CudaFloat32Handler.GetStreamForContext(CudaContext));
 
 				vData._flagHostModified = false;
 				vData._flagDeviceModified = false;

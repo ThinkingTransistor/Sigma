@@ -26,6 +26,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 	{
 		internal CudaBlas CudaBlasHandle;
 		internal readonly CudaContext CudaContext;
+		internal readonly CudaStream CudaStream;
 		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
 		private const int ThreadsPerBlock = 256;
@@ -35,6 +36,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{
 			CudaContext = new CudaContext(deviceId);
+			CudaStream = new CudaStream();
 
 			_kernelModule = CudaContext.LoadModulePTX("Dependencies/sigmakernels.ptx");
 			_loadedKernels = LoadKernels(_kernelModule);
@@ -80,21 +82,20 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				throw new InvalidOperationException($"Unable to run kernel, kernel with name {kernelName} is not loaded.");
 			}
 
-			// TODO optimise kernel runs using async CUDA streams (requiring less synchronisation), probably need to safe guard for that in CUDA sigma buffers (maybe not due to implicit sync)
-
 			CudaKernel kernel = _loadedKernels[kernelName];
 
 			kernel.BlockDimensions = ThreadsPerBlock;
 			kernel.GridDimensions = (elementCount + ThreadsPerBlock - 1) / ThreadsPerBlock;
 			kernel.DynamicSharedMemory = sharedMemoryBytes;
 
-			kernel.Run(kernelParameters);
+			kernel.RunAsync(CudaStream.Stream, kernelParameters);
 		}
 
 		internal void BindToContext()
 		{
 			CudaContext.SetCurrent();
 			CudaBlasHandle = new CudaBlas();
+			CudaBlasHandle.Stream = CudaStream.Stream;
 		}
 
 		/// <summary>
@@ -941,7 +942,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 				for (int i = 0; i < rows; i++)
 				{
-					resultBuffer.CopyToDevice(subBuffer, cudaSourceOffset, cudaDestOffset, subBuffer.SizeInBytes);
+					resultBuffer.AsyncCopyToDevice(subBuffer, cudaSourceOffset, cudaDestOffset, subBuffer.SizeInBytes, CudaStream);
 
 					cudaDestOffset += subBuffer.SizeInBytes;
 				}
