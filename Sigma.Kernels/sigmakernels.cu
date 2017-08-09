@@ -312,6 +312,9 @@ __global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adj
 	}
 
 	out[i] = outData[ti];
+
+	// TODO FIXME there appears to be some race condition here, see temp files on desktop
+	printf("[%d]=%f", i, out[i]);
 }
 
 

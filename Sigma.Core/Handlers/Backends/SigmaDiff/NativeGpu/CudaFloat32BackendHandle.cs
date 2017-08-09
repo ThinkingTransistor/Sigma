@@ -212,7 +212,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				sumBuffer.FlagDeviceModified();
 
 				op.AttachInfo("prevMaxs", maxBuffer);
-				op.AttachInfo("prevMaxIndices", maxBuffer);
+				op.AttachInfo("prevMaxIndices", maxIndicesBuffer);
 				op.AttachInfo("prevSums", sumBuffer);
 			}
 
@@ -246,10 +246,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				CudaSigmaDiffDataBuffer<float> adjointData = _InternalInternalise(adjoint);
 				CudaSigmaDiffDataBuffer<float> primalData = _InternalInternalise(primal);
 				CudaSigmaDiffDataBuffer<float> maxBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevMaxs");
-				CudaSigmaDiffDataBuffer<float> maxIndicesBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevMaxIndices"); ;
+				CudaSigmaDiffDataBuffer<float> maxIndicesBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevMaxIndices");
 				CudaSigmaDiffDataBuffer<float> sumBuffer = op.GetInfo<CudaSigmaDiffDataBuffer<float>>("prevSums");
 
-				// TODO refactor x.GetContextPointer() into single method for convenience
 				RunKernel("Softmax_Rowwise_M_Backward", len, ThreadsPerBlock * sizeof(float) * 5, originData.GetContextPointer(), adjointData.GetContextPointer(),
 					primalData.GetContextPointer(), maxBuffer.GetContextPointer(), maxIndicesBuffer.GetContextPointer(), 
 					sumBuffer.GetContextPointer(), rData.GetContextPointer(), origin.Rows, origin.Cols, ArrayUtils.NextHighestPowerOf2(origin.Cols), len);

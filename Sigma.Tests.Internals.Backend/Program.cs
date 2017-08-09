@@ -224,6 +224,7 @@ namespace Sigma.Tests.Internals.Backend
 		private static void SampleMnist()
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
+			sigma.SetRandomSeed(0);
 
 			IDataset dataset = Defaults.Datasets.Mnist();
 
@@ -249,16 +250,16 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
-				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true));
+				//.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
 			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10), TimeStep.Every(1, TimeScale.Epoch)));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), 32));
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
+			//trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), 32));
+			//trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
 
 			sigma.PrepareAndRun();
