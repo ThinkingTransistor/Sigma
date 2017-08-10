@@ -11,14 +11,7 @@
 .address_size 64
 
 	// .globl	_Z7Sub_V_SPffi
-.extern .func  (.param .b32 func_retval0) vprintf
-(
-	.param .b64 vprintf_param_0,
-	.param .b64 vprintf_param_1
-)
-;
 .extern .shared .align 4 .b8 sdata[];
-.global .align 1 .b8 $str[8] = {91, 37, 100, 93, 61, 37, 102, 0};
 
 .visible .entry _Z7Sub_V_SPffi(
 	.param .u64 _Z7Sub_V_SPffi_param_0,
@@ -1495,15 +1488,15 @@ func_end14:
 	.param .u32 _Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii_param_10
 )
 {
-	.local .align 8 .b8 	__local_depot15[24];
+	.local .align 4 .b8 	__local_depot15[4];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
-	.reg .pred 	%p<17>;
-	.reg .b16 	%rs<3>;
-	.reg .f32 	%f<40>;
-	.reg .b32 	%r<41>;
-	.reg .f64 	%fd<7>;
-	.reg .b64 	%rd<109>;
+	.reg .pred 	%p<19>;
+	.reg .b16 	%rs<5>;
+	.reg .f32 	%f<39>;
+	.reg .b32 	%r<40>;
+	.reg .f64 	%fd<6>;
+	.reg .b64 	%rd<103>;
 
 
 	.loc 1 254 1
@@ -1512,8 +1505,8 @@ func_begin15:
 
 	.loc 1 254 1
 
-	mov.u64 	%rd108, __local_depot15;
-	cvta.local.u64 	%SP, %rd108;
+	mov.u64 	%rd102, __local_depot15;
+	cvta.local.u64 	%SP, %rd102;
 	ld.param.u64 	%rd6, [_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii_param_0];
 	ld.param.u64 	%rd7, [_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii_param_1];
 	ld.param.u64 	%rd8, [_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii_param_2];
@@ -1597,18 +1590,19 @@ tmp173:
 tmp174:
 	.loc	1 273 1
 	setp.lt.s32	%p4, %r3, %r14;
-	mov.pred 	%p16, 0;
+	mov.pred 	%p18, 0;
 	not.pred 	%p5, %p4;
 	@%p5 bra 	BB15_2;
 	bra.uni 	BB15_1;
 
 BB15_1:
-	setp.lt.s32	%p16, %r2, %r1;
+	setp.lt.s32	%p18, %r2, %r1;
 
 BB15_2:
-	selp.u16	%rs1, 1, 0, %p16;
+	selp.u16	%rs1, 1, 0, %p18;
+	selp.u16	%rs2, 1, 0, %p18;
 tmp175:
-	and.b16  	%rs2, %rs1, 255;
+	and.b16  	%rs3, %rs2, 255;
 	.loc	1 275 1
 	cvt.s64.s32	%rd24, %r4;
 	shl.b64 	%rd25, %rd24, 2;
@@ -1641,7 +1635,7 @@ tmp180:
 	mov.f32 	%f2, %f8;
 tmp181:
 	.loc	1 279 1
-	setp.ne.s16	%p6, %rs2, 0;
+	setp.ne.s16	%p6, %rs3, 0;
 	not.pred 	%p7, %p6;
 	@%p7 bra 	BB15_4;
 	bra.uni 	BB15_3;
@@ -1761,12 +1755,12 @@ tmp192:
 
 	.loc	1 296 1
 tmp193:
-	div.s32 	%r40, %r13, 2;
+	div.s32 	%r39, %r13, 2;
 tmp194:
 
 BB15_7:
 	.loc	1 296 1
-	setp.gt.s32	%p8, %r40, 0;
+	setp.gt.s32	%p8, %r39, 0;
 	not.pred 	%p9, %p8;
 	@%p9 bra 	BB15_15;
 	bra.uni 	BB15_8;
@@ -1774,44 +1768,44 @@ BB15_7:
 BB15_8:
 	.loc	1 298 1
 tmp195:
-	setp.lt.s32	%p12, %r6, %r40;
-	not.pred 	%p13, %p12;
-	@%p13 bra 	BB15_13;
+	setp.lt.s32	%p14, %r6, %r39;
+	not.pred 	%p15, %p14;
+	@%p15 bra 	BB15_13;
 	bra.uni 	BB15_9;
 
 BB15_9:
 	.loc	1 300 1
 tmp196:
-	add.s32 	%r37, %r2, %r40;
-	div.s32 	%r38, %r37, %r12;
-	setp.eq.s32	%p14, %r38, %r5;
-	not.pred 	%p15, %p14;
-	@%p15 bra 	BB15_11;
+	add.s32 	%r36, %r2, %r39;
+	div.s32 	%r37, %r36, %r12;
+	setp.eq.s32	%p16, %r37, %r5;
+	not.pred 	%p17, %p16;
+	@%p17 bra 	BB15_11;
 	bra.uni 	BB15_10;
 
 BB15_10:
-	add.s32 	%r39, %r2, %r40;
-	cvt.s64.s32	%rd99, %r39;
-	shl.b64 	%rd100, %rd99, 2;
-	add.s64 	%rd101, %rd1, %rd100;
-	ld.f32 	%f39, [%rd101];
+	add.s32 	%r38, %r2, %r39;
+	cvt.s64.s32	%rd93, %r38;
+	shl.b64 	%rd94, %rd93, 2;
+	add.s64 	%rd95, %rd1, %rd94;
+	ld.f32 	%f38, [%rd95];
 	bra.uni 	BB15_12;
 
 BB15_11:
-	mov.f32 	%f39, 0f00000000;
+	mov.f32 	%f38, 0f00000000;
 
 BB15_12:
 tmp197:
 	.loc	1 302 1
-	cvt.s64.s32	%rd102, %r2;
-	shl.b64 	%rd103, %rd102, 2;
-	add.s64 	%rd104, %rd1, %rd103;
-	ld.f32 	%f37, [%rd104];
-	add.f32 	%f38, %f37, %f39;
-	cvt.s64.s32	%rd105, %r2;
-	shl.b64 	%rd106, %rd105, 2;
-	add.s64 	%rd107, %rd1, %rd106;
-	st.f32 	[%rd107], %f38;
+	cvt.s64.s32	%rd96, %r2;
+	shl.b64 	%rd97, %rd96, 2;
+	add.s64 	%rd98, %rd1, %rd97;
+	ld.f32 	%f36, [%rd98];
+	add.f32 	%f37, %f36, %f38;
+	cvt.s64.s32	%rd99, %r2;
+	shl.b64 	%rd100, %rd99, 2;
+	add.s64 	%rd101, %rd1, %rd100;
+	st.f32 	[%rd101], %f37;
 tmp198:
 
 BB15_13:
@@ -1820,7 +1814,7 @@ BB15_13:
 tmp199:
 
 	.loc	1 296 22
-	shr.s32 	%r40, %r40, 1;
+	shr.s32 	%r39, %r39, 1;
 tmp200:
 	bra.uni 	BB15_7;
 tmp201:
@@ -1853,6 +1847,15 @@ tmp203:
 
 BB15_17:
 	.loc	1 314 1
+	and.b16  	%rs4, %rs1, 255;
+	setp.ne.s16	%p12, %rs4, 0;
+	not.pred 	%p13, %p12;
+	@%p13 bra 	BB15_19;
+	bra.uni 	BB15_18;
+
+BB15_18:
+	.loc	1 316 1
+tmp204:
 	cvt.s64.s32	%rd87, %r2;
 	shl.b64 	%rd88, %rd87, 2;
 	add.s64 	%rd89, %rd5, %rd88;
@@ -1861,44 +1864,16 @@ BB15_17:
 	shl.b64 	%rd91, %rd90, 2;
 	add.s64 	%rd92, %rd12, %rd91;
 	st.f32 	[%rd92], %f34;
-	.loc	1 316 1
-	cvt.s64.s32	%rd93, %r3;
-	shl.b64 	%rd94, %rd93, 2;
-	add.s64 	%rd95, %rd12, %rd94;
-	ld.f32 	%f35, [%rd95];
-	cvt.f64.f32	%fd6, %f35;
-	st.u32 	[%SP+8], %r3;
-	st.f64 	[%SP+16], %fd6;
-	mov.u64 	%rd96, $str;
-	cvta.global.u64 	%rd97, %rd96;
-	add.u64 	%rd98, %SP, 8;
-	// Callseq Start 0
-	{
-	.reg .b32 temp_param_reg;
-	// <end>}
-	.param .b64 param0;
-	st.param.b64	[param0+0], %rd97;
-	.param .b64 param1;
-	st.param.b64	[param1+0], %rd98;
-	.param .b32 retval0;
-	call.uni (retval0), 
-	vprintf, 
-	(
-	param0, 
-	param1
-	);
-	ld.param.b32	%r36, [retval0+0];
-	
-	//{
-	}// Callseq End 0
-tmp204:
-	.loc	1 317 2
-	ret;
 tmp205:
+
+BB15_19:
+	.loc	1 318 2
+	ret;
+tmp206:
 func_end15:
 }
 
-	.file	1 "C:/Users/Flo/Documents/GitHub/Sigma/Sigma.Kernels/sigmakernels.cu", 1502307871, 6876
+	.file	1 "C:/Users/Flo/Documents/GitHub/Sigma/Sigma.Kernels/sigmakernels.cu", 1502383286, 6865
 	.file	2 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v8.0\\include\\device_functions.hpp", 1473086998, 168710
 	.file	3 "c:\\program files\\nvidia gpu computing toolkit\\cuda\\v8.0\\include\\math_functions.hpp", 1473086998, 105253
 
@@ -5260,15 +5235,15 @@ func_end15:
  .b8 11
 
  .b64 tmp161
+ .b64 tmp206
+ .b8 11
+
+ .b64 tmp161
  .b64 tmp205
  .b8 11
 
  .b64 tmp161
- .b64 tmp204
- .b8 11
-
- .b64 tmp161
- .b64 tmp204
+ .b64 tmp205
  .b8 12
 
  .b8 114
@@ -5577,7 +5552,7 @@ func_end15:
  .b32 7179
  .b8 6
  .b8 144
- .b8 177
+ .b8 178
  .b8 230
  .b8 201
  .b8 171
@@ -5829,7 +5804,7 @@ func_end15:
  .b32 206
  .b8 6
  .b8 144
- .b8 185
+ .b8 184
  .b8 230
  .b8 152
  .b8 171
@@ -6513,8 +6488,8 @@ func_end15:
  .b8 6
  .b8 0
  .b8 144
- .b8 176
- .b8 232
+ .b8 185
+ .b8 230
  .b8 200
  .b8 171
  .b8 2
@@ -6523,8 +6498,8 @@ func_end15:
  .b8 6
  .b8 0
  .b8 144
- .b8 176
- .b8 232
+ .b8 185
+ .b8 230
  .b8 200
  .b8 171
  .b8 2
@@ -6533,8 +6508,8 @@ func_end15:
  .b8 6
  .b8 0
  .b8 144
- .b8 176
- .b8 232
+ .b8 185
+ .b8 230
  .b8 200
  .b8 171
  .b8 2
