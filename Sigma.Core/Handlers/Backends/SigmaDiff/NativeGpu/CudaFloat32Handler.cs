@@ -246,12 +246,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		//public override unsafe void FillWithProbabilityMask(INDArray array, double probability)
-		//{
-		//	CudaFloat32NDArray internalArray = InternaliseArray(array);
+		public override unsafe void FillWithProbabilityMask(INDArray array, double probability)
+		{
+			CudaFloat32NDArray internalArray = InternaliseArray(array);
 
-		//	_cudaBackendHandle.FillWithProbabilityMask((Util.ISigmaDiffDataBuffer<float>) internalArray.Data, probability);
-		//}
+			_cudaBackendHandle.FillWithProbabilityMask((Util.ISigmaDiffDataBuffer<float>)internalArray.Data, probability);
+		}
 
 		/// <inheritdoc />
 		public override void MarkLimbo(INDArray array)

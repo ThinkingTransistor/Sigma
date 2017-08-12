@@ -14,9 +14,11 @@ using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
+using ManagedCuda.CudaRand;
 using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
@@ -29,7 +31,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaStream CudaStream;
 		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 
-		private const int ThreadsPerBlock = 256;
+		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
 		private CUmodule _kernelModule;
 		private IDictionary<string, CudaKernel> _loadedKernels;
 
@@ -50,6 +52,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			IDictionary<string, CudaKernel> loadedKernels = new Dictionary<string, CudaKernel>();
 
+			loadedKernels.Add("InitialiseRandomStates", new CudaKernel("_Z22InitialiseRandomStatesi", kernelModule, CudaContext));
+			loadedKernels.Add("FillWithProbabilityMask_V", new CudaKernel("_Z25FillWithProbabilityMask_VPffi", kernelModule, CudaContext));
 			loadedKernels.Add("Sub_V_S", new CudaKernel("_Z7Sub_V_SPffi", kernelModule, CudaContext));
 			loadedKernels.Add("Sub_S_V", new CudaKernel("_Z7Sub_S_VfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
@@ -96,6 +100,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaContext.SetCurrent();
 			CudaBlasHandle = new CudaBlas();
 			CudaBlasHandle.Stream = CudaStream.Stream;
+
+			RunKernel("InitialiseRandomStates", ThreadsPerBlock, Stopwatch.GetTimestamp());
 		}
 
 		/// <summary>
@@ -257,6 +263,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			rData.FlagDeviceModified();
 
 			return new ShapedDataBufferView<float>(rData, origin.Rows, origin.Cols);
+		}
+
+		/// <inheritdoc />
+		public void FillWithProbabilityMask(ISigmaDiffDataBuffer<float> a, double probability)
+		{
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			int len = (int) aData.Length;
+
+			RunKernel("FillWithProbabilityMask_V", len, aData.GetContextPointer(), (float) probability, len);
+
+			aData.FlagDeviceModified();
 		}
 
 		/// <inheritdoc />

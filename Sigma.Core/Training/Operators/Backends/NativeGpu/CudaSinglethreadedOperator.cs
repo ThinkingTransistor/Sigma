@@ -23,6 +23,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeGpu
 		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
 		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
 		/// </summary>
+		public CudaSinglethreadedOperator() : this(CudaContext.GetMaxGflopsDeviceId())
 		{
 		}
 

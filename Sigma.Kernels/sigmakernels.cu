@@ -1,6 +1,9 @@
-#include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include "cuda_runtime.h"
 #include "cublas_v2.h"
+#include "curand.h"
+#include "curand_kernel.h"
+#include "math.h"
 
 #include <stdio.h>
 
@@ -317,6 +320,29 @@ __global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adj
 	}
 }
 
+__device__ curandState randomStates[256];
+
+__global__ void InitialiseRandomStates(int seed) 
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+	
+	if (i < 256)
+	{
+		curand_init(seed + i, i, 0, &randomStates[i]);
+	}
+}
+
+__global__ void FillWithProbabilityMask_V(float* a, const float probability, int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+
+	if (i < n)
+	{
+		float rand = curand_uniform(&randomStates[i % 256]);
+
+		a[i] = rand < probability ? 1 : 0;
+	}
+}
 
 int main()
 {

@@ -268,7 +268,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 			else
 			{
-				Buffer.BlockCopy(Data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
+				OnReadAccess();
+
+				Buffer.BlockCopy(_data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
 			}
 
 			return copy;
