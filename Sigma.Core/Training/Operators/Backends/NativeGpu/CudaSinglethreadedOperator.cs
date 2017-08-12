@@ -6,6 +6,7 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
+using ManagedCuda;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Persistence.Selectors;
@@ -17,6 +18,13 @@ namespace Sigma.Core.Training.Operators.Backends.NativeGpu
 	public class CudaSinglethreadedOperator : BaseOperator
 	{
 		public int DeviceId { get; }
+
+		/// <summary>
+		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.
+		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
+		/// </summary>
+		{
+		}
 
 		/// <summary>
 		///     Create a new <see cref="BaseOperator" /> with a specified <see cref="IComputationHandler" />.

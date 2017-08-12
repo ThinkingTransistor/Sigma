@@ -20,6 +20,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 	[Serializable]
 	public class CudaSigmaDiffDataBuffer<T> : SigmaDiffDataBuffer<T>, ISerialisationNotifier where T : struct
 	{
+		internal SizeT CudaLengthBytes { get { return _cudaLengthBytes; } }
+
 		[NonSerialized]
 		internal CudaContext CudaContext;
 

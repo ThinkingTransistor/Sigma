@@ -25,8 +25,6 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 		public DNumber Handle { get; private set; }
 
 		[NonSerialized]
-		internal CudaDeviceVariable<float> CudaBuffer;
-		[NonSerialized]
 		internal CudaContext CudaContext;
 
 		private int _cudaContextDeviceId;
@@ -38,8 +36,6 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 
 			Handle = numberHandle;
 			CudaContext = context;
-			CudaBuffer = new CudaDeviceVariable<float>(context.AllocateMemory(new SizeT(4)));
-			CudaBuffer[0] = numberHandle.Value;
 
 			_cudaContextDeviceId = CudaContext.DeviceId;
 		}
@@ -51,9 +47,6 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 		{
 			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
 
-			CudaBuffer = new CudaDeviceVariable<float>(restoredContext.AllocateMemory(new SizeT(4)));
-			CudaBuffer[0] = Handle.Value;
-
 			_cudaContextDeviceId = restoredContext.DeviceId;
 
 			CudaContext = restoredContext;
@@ -64,7 +57,6 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu
 			base.SetValue(value);
 
 			Handle = new DNumber(value);
-			CudaBuffer[0] = value;
 		}
 
 		/// <summary>

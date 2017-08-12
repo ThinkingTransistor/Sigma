@@ -8,7 +8,9 @@ For full license see LICENSE in the root directory of this project.
 
 using System;
 using System.Runtime.CompilerServices;
+using DiffSharp;
 using DiffSharp.Interop.Float32;
+using log4net;
 using ManagedCuda;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
@@ -26,12 +28,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// </summary>
 		public int DeviceId { get; }
 
+		[NonSerialized]
+		private readonly ILog _logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private readonly CudaFloat32BackendHandle _cudaBackendHandle;
 
 		public CudaFloat32Handler(int deviceId = 0) : base(new CudaFloat32BackendHandle(deviceId, backendTag: -1))
 		{
 			_cudaBackendHandle = (CudaFloat32BackendHandle)DiffsharpBackendHandle;
 			DeviceId = _cudaBackendHandle.CudaContext.DeviceId;
+
+			CudaDeviceProperties deviceProperties = CudaContext.GetDeviceInfo(deviceId);
+			_logger.Info($"Using CUDA device {deviceProperties.DeviceName} with id {deviceId} (compute capability {deviceProperties.ComputeCapability}, " +
+						$"memory {deviceProperties.TotalGlobalMemory}).");
 
 			RegisterContext(_cudaBackendHandle.CudaContext, _cudaBackendHandle.CudaStream);
 		}
@@ -235,6 +244,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			arrayToFillData.CopyFromHostToDevice();
 		}
+
+		/// <inheritdoc />
+		//public override unsafe void FillWithProbabilityMask(INDArray array, double probability)
+		//{
+		//	CudaFloat32NDArray internalArray = InternaliseArray(array);
+
+		//	_cudaBackendHandle.FillWithProbabilityMask((Util.ISigmaDiffDataBuffer<float>) internalArray.Data, probability);
+		//}
 
 		/// <inheritdoc />
 		public override void MarkLimbo(INDArray array)

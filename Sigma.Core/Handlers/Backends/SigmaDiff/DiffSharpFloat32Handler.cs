@@ -909,7 +909,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		private uint _x = 123456789, _y = 362436069, _z = 521288629, _w = 88675123;
 
 		/// <inheritdoc />
-		public unsafe void FillWithProbabilityMask(INDArray array, double probability)
+		public virtual unsafe void FillWithProbabilityMask(INDArray array, double probability)
 		{
 			TNDArray internalArray = InternaliseArray(array);
 			float[] data = internalArray.Data.Data;
