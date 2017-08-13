@@ -121,10 +121,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
-			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, Length, _cudaLengthBytes);
+			bool initialisedToValue;
+			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, _cudaLengthBytes, out initialisedToValue);
 			_initialisedInContext = true;
 
-			if (copyHostToDevice)
+			if (copyHostToDevice && !initialisedToValue)
 			{
 				CopyFromHostToDevice();
 
@@ -236,8 +237,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (!_initialisedInContext)
 			{
-				InitialiseCudaBuffer();
+				InitialiseCudaBuffer(copyHostToDevice: false);
 			}
+
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+			backendHandle.MarkDeviceBufferModified((float[]) (object) _data);
 
 			_cudaBuffer.CopyToDevice(_data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
 		}
@@ -246,7 +250,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (!_initialisedInContext)
 			{
-				InitialiseCudaBuffer();
+				InitialiseCudaBuffer(copyHostToDevice: false);
 			}
 
 			_cudaBuffer.CopyToHost(_data, _cudaZero, _cudaOffsetBytes, _cudaLengthBytes);
@@ -261,6 +265,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			if (_initialisedInContext && !_flagHostModified)
 			{
 				copy.InitialiseCudaBuffer(copyHostToDevice: false);
+
 				copy._cudaBuffer.AsyncCopyToDevice(_cudaBuffer, CudaFloat32Handler.GetStreamForContext(CudaContext));
 
 				copy._flagHostModified = false;

@@ -133,7 +133,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(50, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 

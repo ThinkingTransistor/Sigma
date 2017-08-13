@@ -14,11 +14,7 @@ using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
-using ManagedCuda.CudaRand;
-using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
@@ -29,11 +25,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal CudaBlas CudaBlasHandle;
 		internal readonly CudaContext CudaContext;
 		internal readonly CudaStream CudaStream;
-		internal ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
+
+		private readonly ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
+		private readonly ConditionalWeakTable<float[], float[]> _preInitialisedHostArrays;
 
 		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
-		private CUmodule _kernelModule;
-		private IDictionary<string, CudaKernel> _loadedKernels;
+		private readonly CUmodule _kernelModule;
+		private readonly IDictionary<string, CudaKernel> _loadedKernels;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
 		{
@@ -44,6 +42,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_loadedKernels = LoadKernels(_kernelModule);
 
 			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
+			_preInitialisedHostArrays = new ConditionalWeakTable<float[], float[]>();
 
 			BindToContext();
 		}
@@ -109,36 +108,76 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// </summary>
 		/// <typeparam name="T">The buffer type (only float32 supported here).</typeparam>
 		/// <param name="hostData">The host version this data.</param>
-		/// <param name="hostLength">The length of the "actual" array part of the host array, starting at the host offset.</param>
-		/// <param name="cudaLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
+		/// <param name="requestedLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
 		/// <param name="hostOffset">The offset within the host array.</param>
+		/// <param name="initialisedToValue">Indicate whether the allocated device buffer was already pre-initialised to the value requested by a preceding Create call.</param>
 		/// <returns>A CUDA buffer corresponding to the host array of the required size (cached if already exists, otherwise newly allocated).</returns>
-		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, long hostLength, SizeT cudaLengthBytes) where T : struct
+		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, SizeT requestedLengthBytes, out bool initialisedToValue) where T : struct
 		{
 			// TODO this casting and type checking is absolutely horribly, need to improve the way the data buffer accesses this so that it can be either truly dynamic or fixed type
 			if (typeof(T) != typeof(float)) throw new InvalidOperationException($"{nameof(CudaFloat32BackendHandle)} can only allocate float32 device buffers, given type {typeof(T)} is not valid.");
-
+			
 			// The caching here works because I'm essentially tagging along with the system memory caching done in DiffSharpBackendHandle<T>.
 			// Basically, the idea is that every host array has a corresponding device buffer, and because the host arrays are already reused as necessary,
 			//  the device buffers are too as they are weakly associated with the host arrays in a weak table. This also automatically takes care of "freeing" device buffers.
 			CudaDeviceVariable<float> deviceBuffer;
 			if (_allocatedDeviceBuffers.TryGetValue(hostData, out deviceBuffer))
 			{
-				if (deviceBuffer.SizeInBytes == cudaLengthBytes)
+				float[] throwaway;
+				initialisedToValue = _preInitialisedHostArrays.TryGetValue((float[]) (object) hostData, out throwaway);
+
+				if (deviceBuffer.SizeInBytes == requestedLengthBytes)
 				{
 					return (CudaDeviceVariable<T>)(object)deviceBuffer;
 				}
 				else
 				{
-					return new CudaDeviceVariable<T>(deviceBuffer.DevicePointer + hostOffset * sizeof(float), cudaLengthBytes);
+					return new CudaDeviceVariable<T>(deviceBuffer.DevicePointer + hostOffset * sizeof(float), requestedLengthBytes);
 				}
 			}
 
-			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(cudaLengthBytes), true, cudaLengthBytes);
+			initialisedToValue = false;
 
+			SizeT totalSizeBytes = new SizeT(hostData.Length * sizeof(float));
+			deviceBuffer = new CudaDeviceVariable<float>(CudaContext.AllocateMemory(totalSizeBytes), true, totalSizeBytes);
 			_allocatedDeviceBuffers.Add(hostData, deviceBuffer);
 
+			if (deviceBuffer.SizeInBytes != requestedLengthBytes)
+			{
+				return new CudaDeviceVariable<T>(deviceBuffer.DevicePointer + hostOffset * sizeof(float), requestedLengthBytes);
+			}
+
 			return (CudaDeviceVariable<T>)(object)deviceBuffer;
+		}
+
+		/// <summary>
+		/// Mark the device buffer (corresponding to a certain host array) modified.
+		/// Note: This is used for optimising host / device synchronisation on initialisation.
+		/// </summary>
+		/// <param name="hostData">The corresponding host data.</param>
+		internal void MarkDeviceBufferModified(float[] hostData)
+		{
+			_preInitialisedHostArrays.Remove(hostData);
+		}
+
+		/// <summary>
+		/// Called when a value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="initialValue">The initial value.</param>
+		protected override unsafe void OnValueArrayCreated(float[] array, float initialValue)
+		{
+			CudaDeviceVariable<float> deviceBuffer;
+			if (_allocatedDeviceBuffers.TryGetValue(array, out deviceBuffer))
+			{
+				deviceBuffer.MemsetAsync(*(uint*) &initialValue, CudaStream.Stream);
+
+				float[] throwaway;
+				if (!_preInitialisedHostArrays.TryGetValue(array, out throwaway))
+				{
+					_preInitialisedHostArrays.Add(array, array);
+				}
+			}
 		}
 
 		/// <inheritdoc />

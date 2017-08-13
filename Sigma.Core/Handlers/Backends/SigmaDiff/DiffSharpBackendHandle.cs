@@ -194,7 +194,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				}
 			}
 
+			OnValueArrayCreated(array, initialValue);
+
 			return array;
+		}
+
+		/// <summary>
+		/// Called when a value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="initialValue">The initial value.</param>
+		protected virtual void OnValueArrayCreated(T[] array, T initialValue)
+		{
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);
