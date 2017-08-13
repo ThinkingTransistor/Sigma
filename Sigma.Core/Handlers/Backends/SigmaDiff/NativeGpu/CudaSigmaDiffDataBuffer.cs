@@ -121,7 +121,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
-			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, _cudaLengthBytes);
+			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, Length, _cudaLengthBytes);
 			_initialisedInContext = true;
 
 			if (copyHostToDevice)

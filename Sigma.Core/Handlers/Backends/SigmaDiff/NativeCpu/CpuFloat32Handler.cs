@@ -11,6 +11,7 @@ using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using System;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 {
@@ -45,7 +46,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		public override INDArray NDArray(params long[] shape)
 		{
-			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, 
+				(IDataBuffer<float>) DiffsharpBackendHandle.CreateDataBuffer(DiffsharpBackendHandle.CreateZeroArray((int) ArrayUtils.Product(shape))), shape).SetAssociatedHandler(this));
 		}
 
 		/// <inheritdoc />

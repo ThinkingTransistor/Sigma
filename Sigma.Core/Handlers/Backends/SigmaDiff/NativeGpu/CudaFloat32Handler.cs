@@ -110,9 +110,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override INDArray NDArray(params long[] shape)
 		{
-			long backendTag = _cudaBackendHandle.BackendTag;
-
-			return AssignTag(new CudaFloat32NDArray(new CudaSigmaDiffDataBuffer<float>(ArrayUtils.Product(shape), backendTag, _cudaBackendHandle.CudaContext), shape));
+			return AssignTag(new CudaFloat32NDArray((CudaSigmaDiffDataBuffer<float>) _cudaBackendHandle.CreateDataBuffer(_cudaBackendHandle.CreateZeroArray((int) ArrayUtils.Product(shape))), shape));
 		}
 
 		/// <inheritdoc />

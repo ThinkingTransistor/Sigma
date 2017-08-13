@@ -109,9 +109,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// </summary>
 		/// <typeparam name="T">The buffer type (only float32 supported here).</typeparam>
 		/// <param name="hostData">The host version this data.</param>
+		/// <param name="hostLength">The length of the "actual" array part of the host array, starting at the host offset.</param>
 		/// <param name="cudaLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
+		/// <param name="hostOffset">The offset within the host array.</param>
 		/// <returns>A CUDA buffer corresponding to the host array of the required size (cached if already exists, otherwise newly allocated).</returns>
-		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, SizeT cudaLengthBytes) where T : struct
+		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, long hostLength, SizeT cudaLengthBytes) where T : struct
 		{
 			// TODO this casting and type checking is absolutely horribly, need to improve the way the data buffer accesses this so that it can be either truly dynamic or fixed type
 			if (typeof(T) != typeof(float)) throw new InvalidOperationException($"{nameof(CudaFloat32BackendHandle)} can only allocate float32 device buffers, given type {typeof(T)} is not valid.");
@@ -122,14 +124,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaDeviceVariable<float> deviceBuffer;
 			if (_allocatedDeviceBuffers.TryGetValue(hostData, out deviceBuffer))
 			{
-				// TODO temp fix to make sure the returned data is of the right size, maybe manage offset / length separately for host data, unfortunately cuda doesn't support buffer overlap					 
 				if (deviceBuffer.SizeInBytes == cudaLengthBytes)
 				{
 					return (CudaDeviceVariable<T>)(object)deviceBuffer;
 				}
 				else
 				{
-					_allocatedDeviceBuffers.Remove(hostData);
+					return new CudaDeviceVariable<T>(deviceBuffer.DevicePointer + hostOffset * sizeof(float), cudaLengthBytes);
 				}
 			}
 
