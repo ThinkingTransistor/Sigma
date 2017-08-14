@@ -128,6 +128,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				_InternalAddToCurrentSession(array);
 			}
 
+			OnUninitialisedArrayCreated(array);
+				
 			return array;
 		}
 
@@ -197,6 +199,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			OnValueArrayCreated(array, initialValue);
 
 			return array;
+		}
+
+		/// <summary>
+		/// Called when an uninitialised value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		protected virtual void OnUninitialisedArrayCreated(T[] array)
+		{
 		}
 
 		/// <summary>

@@ -35,6 +35,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private int _cudaContextDeviceId;
 
 		[NonSerialized]
+		private CudaSigmaDiffDataBuffer<T> _underlyingCudaBuffer;
+		[NonSerialized]
 		private CudaDeviceVariable<T> _cudaBuffer;
 		[NonSerialized]
 		private SizeT _cudaZero;
@@ -96,6 +98,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_cudaLengthBytes = new SizeT(length * Type.SizeBytes);
 
 			_cudaContextDeviceId = cudaContext.DeviceId;
+			_underlyingCudaBuffer = GetUnderlyingBuffer() as CudaSigmaDiffDataBuffer<T>;
 		}
 
 		/// <summary>
@@ -119,17 +122,31 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 
-			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
-
-			bool initialisedToValue;
-			_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, _cudaLengthBytes, out initialisedToValue);
-			_initialisedInContext = true;
-
-			if (copyHostToDevice && !initialisedToValue)
+			if (_underlyingCudaBuffer != null)
 			{
-				CopyFromHostToDevice();
+				if (!_underlyingCudaBuffer._initialisedInContext)
+				{
+					_underlyingCudaBuffer.InitialiseCudaBuffer(copyHostToDevice);
+				}
 
-				_flagHostModified = false;
+				_cudaBuffer = new CudaDeviceVariable<T>(_underlyingCudaBuffer._cudaBuffer.DevicePointer + _cudaOffsetBytes, _cudaLengthBytes);
+
+				_initialisedInContext = true;
+			}
+			else
+			{
+				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+
+				bool initialisedToValue;
+				_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, _cudaLengthBytes, out initialisedToValue);
+				_initialisedInContext = true;
+
+				if (copyHostToDevice && !initialisedToValue)
+				{
+					CopyFromHostToDevice();
+
+					_flagHostModified = false;
+				}
 			}
 		}
 

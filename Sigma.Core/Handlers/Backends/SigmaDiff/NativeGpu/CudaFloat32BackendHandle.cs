@@ -161,6 +161,23 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <summary>
+		/// Called when an uninitialised value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		protected override void OnUninitialisedArrayCreated(float[] array)
+		{
+			CudaDeviceVariable<float> deviceBuffer;
+			if (_allocatedDeviceBuffers.TryGetValue(array, out deviceBuffer))
+			{
+				float[] throwaway;
+				if (!_preInitialisedHostArrays.TryGetValue(array, out throwaway))
+				{
+					_preInitialisedHostArrays.Add(array, array);
+				}
+			}
+		}
+
+		/// <summary>
 		/// Called when a value array is "created" (from cache or allocated).
 		/// </summary>
 		/// <param name="array">The array.</param>
