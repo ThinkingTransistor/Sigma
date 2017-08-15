@@ -76,6 +76,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPKfPfS1_S1_iiiS1_i", kernelModule, CudaContext));
 			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
 
+			loadedKernels.Add("RepeatReshapeCopy_V_MRows", new CudaKernel("_Z25RepeatReshapeCopy_V_MRowsPKfPfiii", kernelModule, CudaContext));
+
 			return loadedKernels;
 		}
 
@@ -1054,7 +1056,6 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <inheritdoc />
 		public override unsafe ShapedDataBufferView<float> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<float> row)
 		{
-			// TODO optimise with CUDA in device copies (if applicable)
 			if (row.Length == 0)
 			{
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
@@ -1082,17 +1083,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				resultData.InitialiseCudaBuffer(copyHostToDevice: false);
 
-				CudaDeviceVariable<float> subBuffer = rowSubData.GetContextBuffer();
-				CudaDeviceVariable<float> resultBuffer = resultData.GetContextBuffer();
-				SizeT cudaSourceOffset = new SizeT(0);
-				SizeT cudaDestOffset = new SizeT(0);
-
-				for (int i = 0; i < rows; i++)
-				{
-					resultBuffer.AsyncCopyToDevice(subBuffer, cudaSourceOffset, cudaDestOffset, subBuffer.SizeInBytes, CudaStream);
-
-					cudaDestOffset += subBuffer.SizeInBytes;
-				}
+				RunKernel("RepeatReshapeCopy_V_MRows", rowLength, rowSubData.GetContextPointer(), resultData.GetContextPointer(), rows, rowLength, result.Length);
 
 				resultData.FlagDeviceModified();
 			}

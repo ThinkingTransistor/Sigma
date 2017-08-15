@@ -406,6 +406,19 @@ __global__ void Add_M_Rowwise_V_InPlace(const float* a, const int rows, const in
 	}
 }
 
+__global__ void RepeatReshapeCopy_V_MRows(const float* a, float* b, const int rows, const int cols, const int n)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+
+	float value = a[i % cols];
+	while (i < n)
+	{
+		b[i] = value;
+
+		i += blockDim.x;
+	}
+}
+
 __device__ curandState randomStates[256];
 
 __global__ void InitialiseRandomStates(int seed) 
