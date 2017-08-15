@@ -821,7 +821,38 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public override ISigmaDiffDataBuffer<float> Add_M_Colwise_V_InPlace(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
 		{
-			throw new NotImplementedException();
+			float[] aData = a.DataBuffer.Data, bData = b.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.Offset;
+			int cols = a.Cols, len = b.Length;
+
+			// Use SIMD instructions to multiply two arrays element-wise.
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			{
+				int simdLength = Vector<float>.Count, i;
+
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> vb = new Vector<float>(bData, i + bOffset);
+
+					for (int y = 0; y < a.Rows; y++)
+					{
+						vb += new Vector<float>(aData, i + aOffset + y * cols);
+					}
+
+					vb.CopyTo(bData, i + bOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					for (int y = 0; y < a.Rows; y++)
+					{
+						bref[i] += aref[i + y * cols];
+					}
+				}
+			}
+
+			return b;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Had_M_M"/>
