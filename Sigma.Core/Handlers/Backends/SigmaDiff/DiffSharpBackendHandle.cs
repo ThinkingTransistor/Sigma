@@ -252,6 +252,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> Mul_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Mul_S_M(T a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Mul_M_M_Add_V_MCols(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b, ISigmaDiffDataBuffer<T> obj2);
+		public abstract ISigmaDiffDataBuffer<T> Add_M_Colwise_V_InPlace(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ShapedDataBufferView<T> Mul_Had_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract FSharpOption<ShapedDataBufferView<T>> Inverse_M(ShapedDataBufferView<T> a);
 		public abstract FSharpOption<T> Det_M(ShapedDataBufferView<T> a);

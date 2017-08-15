@@ -819,6 +819,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			throw new NotImplementedException();
 		}
 
+		public override ISigmaDiffDataBuffer<float> Add_M_Colwise_V_InPlace(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Had_M_M"/>
 		public override unsafe ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
