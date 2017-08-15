@@ -14,6 +14,7 @@ using DiffSharp.Backend;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
+using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
@@ -29,6 +30,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private readonly ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 		private readonly ConditionalWeakTable<float[], float[]> _preInitialisedHostArrays;
 
+		private const int BlocksPerGridDimensions = 65535;
 		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
 		private readonly CUmodule _kernelModule;
 		private readonly IDictionary<string, CudaKernel> _loadedKernels;
@@ -95,8 +97,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaKernel kernel = _loadedKernels[kernelName];
 
+			int primaryGridDimensions = Math.Min(BlocksPerGridDimensions, (threadCount + ThreadsPerBlock - 1) / ThreadsPerBlock);
+			int secondaryGridDimensions = (threadCount + primaryGridDimensions * ThreadsPerBlock - 1) / (primaryGridDimensions * ThreadsPerBlock);
+
+			if (secondaryGridDimensions > BlocksPerGridDimensions)
+			{
+				throw new InvalidOperationException($"Attempted to spawn unsupported amount of threads: {threadCount}, " +
+													$"maximum per block is {ThreadsPerBlock} and blocks per grid dimensions (x, y) is {BlocksPerGridDimensions}.");
+			}
+
 			kernel.BlockDimensions = ThreadsPerBlock;
-			kernel.GridDimensions = (threadCount + ThreadsPerBlock - 1) / ThreadsPerBlock;
+			kernel.GridDimensions = new dim3(primaryGridDimensions, secondaryGridDimensions, 1);
 			kernel.DynamicSharedMemory = sharedMemoryBytes;
 
 			kernel.RunAsync(CudaStream.Stream, kernelParameters);

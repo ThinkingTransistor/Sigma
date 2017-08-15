@@ -9,7 +9,8 @@
 
 __global__ void Sub_V_S(const float *a, const float b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -19,7 +20,8 @@ __global__ void Sub_V_S(const float *a, const float b, float* out, const int n)
 
 __global__ void Sub_S_V(const float a, float* b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -29,7 +31,8 @@ __global__ void Sub_S_V(const float a, float* b, float* out, const int n)
 
 __global__ void Add_V_S(const float* a, const float b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -39,7 +42,8 @@ __global__ void Add_V_S(const float* a, const float b, float* out, const int n)
 
 __global__ void Add_V_V_InPlace(const float* a, int aOffset, float* b, int bOffset, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -49,7 +53,8 @@ __global__ void Add_V_V_InPlace(const float* a, int aOffset, float* b, int bOffs
 
 __global__ void Mul_Had_V_V(const float* a, const float* b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -59,7 +64,8 @@ __global__ void Mul_Had_V_V(const float* a, const float* b, float* out, const in
 
 __global__ void Div_S_V(const float a, const float* b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -69,7 +75,8 @@ __global__ void Div_S_V(const float a, const float* b, float* out, const int n)
 
 __global__ void Div_V_V(const float* a, const float* b, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -79,7 +86,8 @@ __global__ void Div_V_V(const float* a, const float* b, float* out, const int n)
 
 __global__ void Exp_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -89,7 +97,8 @@ __global__ void Exp_V(const float* a, float* out, const int n)
 
 __global__ void Sqrt_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -99,7 +108,8 @@ __global__ void Sqrt_V(const float* a, float* out, const int n)
 
 __global__ void Sign_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -109,7 +119,8 @@ __global__ void Sign_V(const float* a, float* out, const int n)
 
 __global__ void Rel_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -119,7 +130,8 @@ __global__ void Rel_V(const float* a, float* out, const int n)
 
 __global__ void Log_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -129,7 +141,8 @@ __global__ void Log_V(const float* a, float* out, const int n)
 
 __global__ void Sigmoid_V(const float* a, float* out, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x;
 
 	if (i < n)
 	{
@@ -141,7 +154,8 @@ __global__ void Sum_V(const float* a, float* partial_sums, const int n)
 {
 	 extern __shared__ float sdata[]; 
 
-	 int i = threadIdx.x + blockIdx.x * blockDim.x;
+	 int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	 int i = blockId * blockDim.x + threadIdx.x;
 	 int ti = threadIdx.x;
 
 	 // move global input data to shared memory, pad with zeros
@@ -181,7 +195,8 @@ __global__ void Softmax_Rowwise_M(const float* a, float* maxPerRow, float* maxPe
 	int unusedPerBlock = blockDim.x - usedPerBlock;
 
 	int ti = threadIdx.x;
-	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x - (unusedPerBlock * blockId);
 	int ri = i / cols;
 	int riLocal = ri % rowsPerBlock;
 	int tiLocal = ti - riLocal * cols;
@@ -269,7 +284,8 @@ __global__ void Softmax_Rowwise_M_Backward(const float* origin, const float* adj
 	int unusedPerBlock = blockDim.x - usedPerBlock;
 
 	int ti = threadIdx.x;
-	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x - (unusedPerBlock * blockId);	
 	int ri = i / cols;
 	int riLocal = ri % rowsPerBlock;
 	int tiLocal = ti - riLocal * cols;
@@ -329,7 +345,8 @@ __global__ void Sum_M_Rowwise(const float* a, const int rows, const int cols, co
 	int unusedPerBlock = blockDim.x - usedPerBlock;
 
 	int ti = threadIdx.x;
-	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x - (unusedPerBlock * blockId);	
 	int ri = i / cols;
 	int riLocal = ri % rowsPerBlock;
 	int tiLocal = ti - riLocal * cols;
@@ -372,7 +389,8 @@ __global__ void Add_M_Rowwise_V_InPlace(const float* a, const int rows, const in
 	int unusedPerBlock = blockDim.x - usedPerBlock;
 
 	int ti = threadIdx.x;
-	int i = ti + blockIdx.x * blockDim.x - (unusedPerBlock * blockIdx.x);
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x - (unusedPerBlock * blockId);	
 	int ri = i / cols;
 	int riLocal = ri % rowsPerBlock;
 	int tiLocal = ti - riLocal * cols;
@@ -408,7 +426,8 @@ __global__ void Add_M_Rowwise_V_InPlace(const float* a, const int rows, const in
 
 __global__ void RepeatReshapeCopy_V_MRows(const float* a, float* b, const int rows, const int cols, const int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x; 
 	
 	if (i < rows)
 	{
@@ -427,7 +446,8 @@ __device__ curandState randomStates[256];
 
 __global__ void InitialiseRandomStates(int seed) 
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
+	int i = blockId * blockDim.x + threadIdx.x; 
 	
 	if (i < 256)
 	{
@@ -437,7 +457,8 @@ __global__ void InitialiseRandomStates(int seed)
 
 __global__ void FillWithProbabilityMask_V(float* a, const float probability, int n)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x; 
+	int blockId = blockIdx.y * gridDim.x + blockIdx.x;
+	int i = blockId * blockDim.x + threadIdx.x; 
 
 	if (i < n)
 	{
