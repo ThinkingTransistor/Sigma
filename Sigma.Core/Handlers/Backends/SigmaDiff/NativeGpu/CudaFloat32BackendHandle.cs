@@ -54,26 +54,26 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("InitialiseRandomStates", new CudaKernel("_Z22InitialiseRandomStatesi", kernelModule, CudaContext));
 			loadedKernels.Add("FillWithProbabilityMask_V", new CudaKernel("_Z25FillWithProbabilityMask_VPffi", kernelModule, CudaContext));
 
-			loadedKernels.Add("Sub_V_S", new CudaKernel("_Z7Sub_V_SPffi", kernelModule, CudaContext));
-			loadedKernels.Add("Sub_S_V", new CudaKernel("_Z7Sub_S_VfPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPffi", kernelModule, CudaContext));
-			loadedKernels.Add("Add_V_V", new CudaKernel("_Z7Add_V_VPKfiPfii", kernelModule, CudaContext));
-			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Div_S_V", new CudaKernel("_Z7Div_S_VfPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Div_V_V", new CudaKernel("_Z7Div_V_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sub_V_S", new CudaKernel("_Z7Sub_V_SPKffPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sub_S_V", new CudaKernel("_Z7Sub_S_VfPfS_i", kernelModule, CudaContext));
+			loadedKernels.Add("Add_V_S", new CudaKernel("_Z7Add_V_SPKffPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Add_V_V", new CudaKernel("_Z15Add_V_V_InPlacePKfiPfii", kernelModule, CudaContext));
+			loadedKernels.Add("Mul_Had_V_V", new CudaKernel("_Z11Mul_Had_V_VPKfS0_Pfi", kernelModule, CudaContext));
+			loadedKernels.Add("Div_S_V", new CudaKernel("_Z7Div_S_VfPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Div_V_V", new CudaKernel("_Z7Div_V_VPKfS0_Pfi", kernelModule, CudaContext));
 
-			loadedKernels.Add("Exp_V", new CudaKernel("_Z5Exp_VPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Log_V", new CudaKernel("_Z5Log_VPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Sqrt_V", new CudaKernel("_Z6Sqrt_VPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPfi", kernelModule, CudaContext));
-			loadedKernels.Add("Sigmoid_V", new CudaKernel("_Z9Sigmoid_VPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Exp_V", new CudaKernel("_Z5Exp_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Log_V", new CudaKernel("_Z5Log_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sqrt_V", new CudaKernel("_Z6Sqrt_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sign_V", new CudaKernel("_Z6Sign_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Rel_V", new CudaKernel("_Z5Rel_VPKfPfi", kernelModule, CudaContext));
+			loadedKernels.Add("Sigmoid_V", new CudaKernel("_Z9Sigmoid_VPKfPfi", kernelModule, CudaContext));
 
 			loadedKernels.Add("Sum_V", new CudaKernel("_Z5Sum_VPKfPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Sum_M_Rowwise", new CudaKernel("_Z13Sum_M_RowwisePKfiiiPfi", kernelModule, CudaContext));
 			loadedKernels.Add("Add_M_Rowwise_V_InPlace", new CudaKernel("_Z23Add_M_Rowwise_V_InPlacePKfiiiPfi", kernelModule, CudaContext));
 
-			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPfS_S_S_iiii", kernelModule, CudaContext));
+			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPKfPfS1_S1_iiiS1_i", kernelModule, CudaContext));
 			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
 
 			return loadedKernels;
@@ -262,8 +262,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			int len = a.Length;
-			a = a.DeepCopy();
-
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
 			if (op.Type == CustomOpType.RowWiseSoftmax)
@@ -278,7 +278,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				int numBlocks = (len + elementsPerBlock - 1) / elementsPerBlock;
 
 				RunKernel("Softmax_Rowwise_M", numBlocks * ThreadsPerBlock, ThreadsPerBlock * sizeof(float) * 2, aData.GetContextPointer(), maxBuffer.GetContextPointer(),
-					maxIndicesBuffer.GetContextPointer(), sumBuffer.GetContextPointer(), a.Rows, a.Cols, colsNextPowerOf2, len);
+					maxIndicesBuffer.GetContextPointer(), sumBuffer.GetContextPointer(), a.Rows, a.Cols, colsNextPowerOf2, rData.GetContextPointer(), len);
 
 				maxBuffer.FlagDeviceModified();
 				maxIndicesBuffer.FlagDeviceModified();
@@ -289,9 +289,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				op.AttachInfo("prevSums", sumBuffer);
 			}
 
-			aData.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return a;
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -571,60 +571,65 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			a = a.DeepCopy();
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
-			if (!_InternalOptimisedMap_F_M(mapOp, a))
+			if (!_InternalOptimisedMap_F_M(mapOp, a, result))
 			{
 				int upper = a.DataBuffer.Offset + a.DataBuffer.Length;
-				float[] data = a.DataBuffer.Data;
+				float[] aData = a.DataBuffer.Data, rData = result.DataBuffer.Data;
 
 				for (int i = a.DataBuffer.Offset; i < upper; i++)
 				{
-					data[i] = f.Invoke(data[i]);
+					rData[i] = f.Invoke(aData[i]);
 				}
 			}
+			else
+			{
+				_InternalInternalise(result).FlagDeviceModified();
+			}
 
-			return a;
+			return result;
 		}
 
-		private bool _InternalOptimisedMap_F_M(MapOp mapOp, ShapedDataBufferView<float> a)
+		private bool _InternalOptimisedMap_F_M(MapOp mapOp, ShapedDataBufferView<float> a, ShapedDataBufferView<float> result)
 		{
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			int len = (int)aData.Length;
 
 			if (mapOp.IsExp)
 			{
-				RunKernel("Exp_V", len, aData.GetContextPointer(), len);
+				RunKernel("Exp_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
 			else if (mapOp.IsSqrt)
 			{
-				RunKernel("Sqrt_V", len, aData.GetContextPointer(), len);
+				RunKernel("Sqrt_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
 			else if (mapOp.IsSign)
 			{
-				RunKernel("Sign_V", len, aData.GetContextPointer(), len);
+				RunKernel("Sign_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
 			else if (mapOp.IsReL)
 			{
-				RunKernel("Rel_V", len, aData.GetContextPointer(), len);
+				RunKernel("Rel_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
 			else if (mapOp.IsLog)
 			{
-				RunKernel("Log_V", len, aData.GetContextPointer(), len);
+				RunKernel("Log_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
 			else if (mapOp.IsSigmoid)
 			{
-				RunKernel("Sigmoid_V", len, aData.GetContextPointer(), len);
+				RunKernel("Sigmoid_V", len, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				return true;
 			}
@@ -650,10 +655,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			if (mapOp.IsDiv)
 			{
-				a = a.DeepCopy();
+				ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 				CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+				CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 
-				RunKernel("Div_S_V", len, other, aData.GetContextPointer(), len);
+				RunKernel("Div_S_V", len, other, aData.GetContextPointer(), rData.GetContextPointer(), len);
+
+				a = result;
 
 				return true;
 			}
@@ -678,35 +686,39 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return b;
 			}
 
-			b = b.DeepCopy();
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
-			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data;
-			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset;
+			float[] aData = a.DataBuffer.Data, bData = b.DataBuffer.Data, rData = result.DataBuffer.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.DataBuffer.Offset, rOffset = result.DataBuffer.Offset;
 
 			fixed (float* aref = &aData[aOffset])
 			fixed (float* bref = &bData[bOffset])
+			fixed (float* resref = &rData[rOffset])
 			{
 				for (int i = 0; i < a.Length; i++)
 				{
-					bref[i] = f.Invoke(aref[i]).Invoke(bData[i]);
+					resref[i] = f.Invoke(aref[i]).Invoke(bref[i]);
 				}
 			}
 
-			return b;
+			return result;
 		}
 
 		private bool _InternalOptimisedMapOp_F_M_M(MapOp mapOp, ShapedDataBufferView<float> a, ref ShapedDataBufferView<float> b)
 		{
 			int len = b.Length;
 
-			b = b.DeepCopy();
-
 			if (mapOp.IsDiv)
 			{
+				ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+
 				CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 				CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
+				CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 
-				RunKernel("Div_V_V", len, aData.GetContextPointer(), bData.GetContextPointer(), len);
+				RunKernel("Div_V_V", len, aData.GetContextPointer(), bData.GetContextPointer(), rData.GetContextPointer(), len);
+
+				b = result;
 
 				return true;
 			}
@@ -774,15 +786,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			int len = a.Length;
 
-			a = a.DeepCopy();
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 
-			RunKernel("Add_V_S", len, aData.GetContextPointer(), other, len);
+			RunKernel("Add_V_S", len, aData.GetContextPointer(), other, rData.GetContextPointer(), len);
 
-			aData.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return a;
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -819,16 +832,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			a = a.DeepCopy();
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[]) a.Shape.Clone());
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
 			int len = (int)aData.Length;
 
-			RunKernel("Sub_V_S", len, aData.GetContextPointer(), b, len);
+			RunKernel("Sub_V_S", len, aData.GetContextPointer(), b, rData.GetContextPointer(), len);
 
-			aData.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return a;
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -839,16 +853,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			a = a.DeepCopy();
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
 			int len = (int)aData.Length;
 
-			RunKernel("Sub_S_V", len, other, aData.GetContextPointer(), len);
+			RunKernel("Sub_S_V", len, other, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
-			aData.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return a;
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -957,16 +972,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 
 			int len = Math.Min(a.Length, b.Length);
-			b = b.DeepCopy();
-
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(b.Length)), (long[])b.Shape.Clone());
+			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 			CudaSigmaDiffDataBuffer<float> bData = _InternalInternalise(b);
 
-			RunKernel("Mul_Had_V_V", len, aData.GetContextPointer(), bData.GetContextPointer(), len);
+			RunKernel("Mul_Had_V_V", len, aData.GetContextPointer(), bData.GetContextPointer(), rData.GetContextPointer(), len);
 
-			bData.FlagDeviceModified();
+			rData.FlagDeviceModified();
 
-			return b;
+			return result;
 		}
 
 		/// <inheritdoc />
@@ -989,7 +1004,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			ShapedDataBufferView<float> transposed = a.DeepCopy();
+			ShapedDataBufferView<float> transposed = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 
 			for (int i = 0; i < transposed.Shape.Length; i++)
 			{
@@ -1002,7 +1017,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			float alpha = 1.0f, beta = 0.0f;
 			int m = a.Rows, n = a.Cols;
 
-			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.GetContextBuffer(), n, tData.GetContextBuffer(), m, beta, tData.GetContextBuffer(), m);
+			CudaBlasHandle.Geam(Operation.Transpose, Operation.NonTranspose, m, n, alpha, aData.GetContextBuffer(), n, aData.GetContextBuffer(), m, beta, tData.GetContextBuffer(), m);
 
 			tData.FlagDeviceModified();
 

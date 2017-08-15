@@ -7,37 +7,37 @@
 
 #include <stdio.h>
 
-__global__ void Sub_V_S(float *a, const float b, const int n)
+__global__ void Sub_V_S(const float *a, const float b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = a[i] - b;
+		out[i] = a[i] - b;
 	}
 }
 
-__global__ void Sub_S_V(const float a, float* b, const int n)
+__global__ void Sub_S_V(const float a, float* b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		b[i] = a - b[i];
+		out[i] = a - b[i];
 	}
 }
 
-__global__ void Add_V_S(float* a, const float b, const int n)
+__global__ void Add_V_S(const float* a, const float b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = a[i] + b;
+		out[i] = a[i] + b;
 	}
 }
 
-__global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, const int n)
+__global__ void Add_V_V_InPlace(const float* a, int aOffset, float* b, int bOffset, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -47,93 +47,93 @@ __global__ void Add_V_V(const float* a, int aOffset, float* b, int bOffset, cons
 	}
 }
 
-__global__ void Mul_Had_V_V(const float* a, float* b, const int n)
+__global__ void Mul_Had_V_V(const float* a, const float* b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		b[i] = a[i] * b[i];
+		out[i] = a[i] * b[i];
 	}
 }
 
-__global__ void Div_S_V(const float a, float* b, const int n)
+__global__ void Div_S_V(const float a, const float* b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		b[i] = a / b[i];
+		out[i] = a / b[i];
 	}
 }
 
-__global__ void Div_V_V(const float* a, float* b, const int n)
+__global__ void Div_V_V(const float* a, const float* b, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		b[i] = a[i] / b[i];
+		out[i] = a[i] / b[i];
 	}
 }
 
-__global__ void Exp_V(float* a, const int n)
+__global__ void Exp_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = __expf(a[i]);
+		out[i] = __expf(a[i]);
 	}
 }
 
-__global__ void Sqrt_V(float* a, const int n)
+__global__ void Sqrt_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = sqrtf(a[i]);
+		out[i] = sqrtf(a[i]);
 	}
 }
 
-__global__ void Sign_V(float* a, const int n)
+__global__ void Sign_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = copysignf(1.0f, a[i]);
+		out[i] = copysignf(1.0f, a[i]);
 	}
 }
 
-__global__ void Rel_V(float* a, const int n)
+__global__ void Rel_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = (fabsf(a[i]) + a[i]) / 2.0f;
+		out[i] = (fabsf(a[i]) + a[i]) / 2.0f;
 	}
 }
 
-__global__ void Log_V(float* a, const int n)
+__global__ void Log_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = __logf(a[i]);
+		out[i] = __logf(a[i]);
 	}
 }
 
-__global__ void Sigmoid_V(float* a, const int n)
+__global__ void Sigmoid_V(const float* a, float* out, const int n)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (i < n)
 	{
-		a[i] = 1.0f / (1.0f + __expf(-a[i]));
+		out[i] = 1.0f / (1.0f + __expf(-a[i]));
 	}
 }
 
@@ -171,7 +171,7 @@ __global__ void Sum_V(const float* a, float* partial_sums, const int n)
 	 }
 }
 
-__global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* maxPerRowIndices, float* sumPerRow, const int rows, const int cols, const int cols2, const int n)
+__global__ void Softmax_Rowwise_M(const float* a, float* maxPerRow, float* maxPerRowIndices, float* sumPerRow, const int rows, const int cols, const int cols2, float* out, const int n)
 {
 	extern __shared__ float sdata[];
 	float* rowBuffer = &sdata[blockDim.x];
@@ -245,7 +245,7 @@ __global__ void Softmax_Rowwise_M(float* a, float* maxPerRow, float* maxPerRowIn
 
 	if (inData)
 	{
-		a[i] = sdata[ti] / rowBuffer[riLocal * cols];
+		out[i] = sdata[ti] / rowBuffer[riLocal * cols];
 
 		if (tiLocal == 0)
 		{
