@@ -14,6 +14,7 @@ using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
 using Sigma.Core.Data;
 using Sigma.Core.Persistence;
+using Sigma.Core.Utils;
 
 namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 {
@@ -135,7 +136,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			}
 			else
 			{
-				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
 				bool initialisedToValue;
 				_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, _cudaLengthBytes, out initialisedToValue);
@@ -257,8 +258,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				InitialiseCudaBuffer(copyHostToDevice: false);
 			}
 
-			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle) SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
-			backendHandle.MarkDeviceBufferModified((float[]) (object) _data);
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+			backendHandle.MarkDeviceBufferModified((float[])(object)_data);
 
 			_cudaBuffer.CopyToDevice(_data, _cudaOffsetBytes, _cudaZero, _cudaLengthBytes);
 		}
@@ -293,6 +294,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				OnReadAccess();
 
 				Buffer.BlockCopy(_data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
+
+				copy._flagHostModified = true;
 			}
 
 			return copy;
@@ -342,7 +345,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 				vData.InitialiseCudaBuffer(copyHostToDevice: false);
 
-				vData._cudaBuffer.AsyncCopyToDevice(_cudaBuffer.DevicePointer, new SizeT(startIndex * sizeof(float)), vData._cudaZero, vData._cudaLengthBytes, 
+				vData._cudaBuffer.AsyncCopyToDevice(_cudaBuffer.DevicePointer, new SizeT(startIndex * sizeof(float)), vData._cudaZero, vData._cudaLengthBytes,
 					CudaFloat32Handler.GetStreamForContext(CudaContext));
 
 				vData._flagHostModified = false;
