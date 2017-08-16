@@ -254,7 +254,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
 				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
-			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
+			var validationTimeStep = TimeStep.Every(4, TimeScale.Epoch);
 
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10), TimeStep.Every(1, TimeScale.Epoch)));

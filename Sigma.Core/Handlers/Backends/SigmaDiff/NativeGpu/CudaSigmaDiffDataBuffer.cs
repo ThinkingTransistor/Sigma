@@ -107,6 +107,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// </summary>
 		public void OnSerialising()
 		{
+			OnReadAccess();
 		}
 
 		/// <summary>
@@ -116,7 +117,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			CudaContext restoredContext = CudaFloat32Handler.GetContextForDeviceId(_cudaContextDeviceId);
 
-			PrepareCudaBuffer(restoredContext, Data, Offset, Length);
+			PrepareCudaBuffer(restoredContext, _data, Offset, Length);
+
+			_flagDeviceModified = false;
+			_flagHostModified = true;
 		}
 
 		internal void InitialiseCudaBuffer(bool copyHostToDevice = true)
