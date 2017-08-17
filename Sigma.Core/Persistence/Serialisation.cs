@@ -174,6 +174,8 @@ namespace Sigma.Core.Persistence
 		/// <param name="action">The action to take on each object given the parent object, corresponding field info and value in parent object.</param>
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
+			if (root == null) return;
+
 			Type type = root.GetType();
 
 			traversedObjects.Add(root);
