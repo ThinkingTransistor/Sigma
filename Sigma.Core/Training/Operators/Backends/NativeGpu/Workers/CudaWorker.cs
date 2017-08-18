@@ -52,8 +52,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeGpu.Workers
 			}
 
 			base.DoWork();
-
-			//System.GC.Collect(); TODO maybe force stricter GCing in CUDA workers? default GC seems a little lazy with cleanup on the cuda buffers
 		}
 
 		/// <summary>

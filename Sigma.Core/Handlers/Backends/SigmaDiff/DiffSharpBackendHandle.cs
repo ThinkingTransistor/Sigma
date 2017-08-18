@@ -26,7 +26,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	{
 		private IDictionary<int, IList<T[]>> _bufferedSessionArrays;
 		private IDictionary<int, IList<T[]>> _currentSessionArrays;
-		private ISet<T[]> _limboSessionArrays; // arrays that aren't automatically freed at the end of a session, have to be especially marked (e.g. for parameters)
+		private readonly ISet<T[]> _limboSessionArrays; // arrays that aren't automatically freed at the end of a session (for reuse), have to be especially marked (e.g. for parameters)
 
 		public bool BufferSessions { get; set; }
 		public long BackendTag { get; set; }
@@ -69,14 +69,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		internal void ClearSessionBuffers()
+		internal virtual void ClearSessionBuffers()
 		{
 			_bufferedSessionArrays.Clear();
 			_currentSessionArrays.Clear();
 			_limboSessionArrays.Clear();
 		}
 
-		internal void TransferSessionBuffers()
+		internal virtual void TransferSessionBuffers()
 		{
 			_bufferedSessionArrays.Clear();
 			_bufferedSessionArrays.AddAll(_currentSessionArrays);
@@ -216,6 +216,39 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		/// <param name="initialValue">The initial value.</param>
 		protected virtual void OnValueArrayCreated(T[] array, T initialValue)
 		{
+		}
+
+		/// <summary>
+		/// Check if a certain array is in any way registered (or buffered) in this backend.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating whether or not the given array is buffered in this backend.</returns>
+		protected bool IsRegistered(T[] array)
+		{
+			int length = array.Length;
+
+			if (_currentSessionArrays.ContainsKey(length))
+			{
+				if (_currentSessionArrays[length].Contains(array))
+				{
+					return true;
+				}
+			}
+
+			if (_bufferedSessionArrays.ContainsKey(length))
+			{
+				if (_bufferedSessionArrays[length].Contains(array))
+				{
+					return true;
+				}
+			}
+
+			if (_limboSessionArrays.Contains(array))
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);

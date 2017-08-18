@@ -7,8 +7,10 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using DiffSharp.Backend;
 using ManagedCuda;
@@ -28,11 +30,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaStream CudaStream;
 
 		private readonly ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
-		private readonly ConditionalWeakTable<float[], float[]> _preInitialisedHostArrays;
+		private readonly ConditionalWeakTable<float[], object> _preInitialisedHostDatas;
 
 		private const int BlocksPerGridDimensions = 65535;
 		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
+		private readonly object _throwawayObject = new object();
 		private readonly CUmodule _kernelModule;
+		private readonly IDictionary<int, int> _bufferReferenceCounts;
+		private readonly ISet<float[]>_pendingBufferDisposals;
 		private readonly IDictionary<string, CudaKernel> _loadedKernels;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
@@ -44,7 +49,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_loadedKernels = LoadKernels(_kernelModule);
 
 			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
-			_preInitialisedHostArrays = new ConditionalWeakTable<float[], float[]>();
+			_preInitialisedHostDatas = new ConditionalWeakTable<float[], object>();
+			_bufferReferenceCounts = new ConcurrentDictionary<int, int>();
+			_pendingBufferDisposals = new HashSet<float[]>();
 
 			BindToContext();
 		}
@@ -127,23 +134,27 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// </summary>
 		/// <typeparam name="T">The buffer type (only float32 supported here).</typeparam>
 		/// <param name="hostData">The host version this data.</param>
-		/// <param name="requestedLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
 		/// <param name="hostOffset">The offset within the host array.</param>
+		/// <param name="requestedLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
 		/// <param name="initialisedToValue">Indicate whether the allocated device buffer was already pre-initialised to the value requested by a preceding Create call.</param>
 		/// <returns>A CUDA buffer corresponding to the host array of the required size (cached if already exists, otherwise newly allocated).</returns>
-		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, SizeT requestedLengthBytes, out bool initialisedToValue) where T : struct
+		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, SizeT requestedLengthBytes, out bool initialisedToValue) 
+			where T : struct
 		{
 			// TODO this casting and type checking is absolutely horribly, need to improve the way the data buffer accesses this so that it can be either truly dynamic or fixed type
 			if (typeof(T) != typeof(float)) throw new InvalidOperationException($"{nameof(CudaFloat32BackendHandle)} can only allocate float32 device buffers, given type {typeof(T)} is not valid.");
 
-			// The caching here works because I'm essentially tagging along with the system memory caching done in DiffSharpBackendHandle<T>.
-			// Basically, the idea is that every host array has a corresponding device buffer, and because the host arrays are already reused as necessary,
-			//  the device buffers are too as they are weakly associated with the host arrays in a weak table. This also automatically takes care of "freeing" device buffers.
+			IncreaseReferenceCount(hostData);
+
+			// The caching here works because we're essentially tagging along with the in-system memory / host caching done by defaul tin DiffSharpBackendHandle<T>.
+			// The idea is that every host array has a corresponding device buffer, and because the host arrays are already reused as necessary,
+			//  the device buffers are too as they are weakly associated with the host arrays. 
+			//  This (in theory) also automatically takes care of "freeing" device buffers when the owning host array is finalised.
 			CudaDeviceVariable<float> deviceBuffer;
 			if (_allocatedDeviceBuffers.TryGetValue(hostData, out deviceBuffer))
 			{
-				float[] throwaway;
-				initialisedToValue = _preInitialisedHostArrays.TryGetValue((float[])(object)hostData, out throwaway);
+				object throwaway;
+				initialisedToValue = _preInitialisedHostDatas.TryGetValue((float[])(object)hostData, out throwaway);
 
 				if (deviceBuffer.SizeInBytes == requestedLengthBytes)
 				{
@@ -170,13 +181,95 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <summary>
+		/// Increase the reference count for a certain host data (notify that a new device buffer is referencing this host buffer).
+		/// Note: This is used for automatically disposing stale buffers
+		/// </summary>
+		/// <typeparam name="T">The host data type.</typeparam>
+		/// <param name="hostData">The host data to which a new device "reference" has been established.</param>
+		internal void IncreaseReferenceCount<T>(T[] hostData) where T : struct
+		{
+			int bufferReferenceId = hostData.GetHashCode(); // this seems particularly unsafe
+
+			int bufferReferenceCount;
+			if (!_bufferReferenceCounts.TryGetValue(bufferReferenceId, out bufferReferenceCount))
+			{
+				_bufferReferenceCounts[bufferReferenceId] = 1;
+			}
+			else
+			{
+				_bufferReferenceCounts[bufferReferenceId] = bufferReferenceCount + 1;
+			}
+		}
+
+		/// <summary>
+		/// Notify that a device buffer associated with a certain host array is to be freed.
+		/// Note: The actual underlying device buffer is not immediately freed. Rather, a reference counter ensures that no other buffers reference this buffer's memory.
+		/// </summary>
+		/// <param name="hostData">The host data.</param>
+		internal void NotifyFreeDeviceBuffer(float[] hostData)
+		{
+			int bufferReferenceId = hostData.GetHashCode();
+
+			if (_bufferReferenceCounts.ContainsKey(bufferReferenceId))
+			{
+				int bufferReferenceCount = _bufferReferenceCounts[bufferReferenceId] - 1;
+
+				if (bufferReferenceCount <= 0)
+				{
+					CudaDeviceVariable<float> buffer;
+
+					if (_allocatedDeviceBuffers.TryGetValue(hostData, out buffer))
+					{
+						lock (_pendingBufferDisposals)
+						{
+							_pendingBufferDisposals.Add(hostData);
+						}
+					}
+
+					_bufferReferenceCounts.Remove(bufferReferenceId);
+				}
+				else
+				{
+					_bufferReferenceCounts[bufferReferenceId] = bufferReferenceCount;
+				}
+			}
+		}
+
+		internal override void TransferSessionBuffers()
+		{
+			base.TransferSessionBuffers();
+
+			lock (_pendingBufferDisposals)
+			{
+				foreach (float[] pendingHostData in _pendingBufferDisposals)
+				{
+					int bufferReferenceId = pendingHostData.GetHashCode();
+
+					if (!IsRegistered(pendingHostData) && !_bufferReferenceCounts.ContainsKey(bufferReferenceId))
+					{
+						CudaDeviceVariable<float> pendingBuffer;
+
+						if (_allocatedDeviceBuffers.TryGetValue(pendingHostData, out pendingBuffer))
+						{
+							pendingBuffer.Dispose();
+
+							_allocatedDeviceBuffers.Remove(pendingHostData);
+						}
+					}
+				}
+
+				_pendingBufferDisposals.Clear();
+			}
+		}
+
+		/// <summary>
 		/// Mark the device buffer (corresponding to a certain host array) modified.
 		/// Note: This is used for optimising host / device synchronisation on initialisation.
 		/// </summary>
 		/// <param name="hostData">The corresponding host data.</param>
 		internal void MarkDeviceBufferModified(float[] hostData)
 		{
-			_preInitialisedHostArrays.Remove(hostData);
+			_preInitialisedHostDatas.Remove(hostData);
 		}
 
 		/// <summary>
@@ -188,10 +281,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaDeviceVariable<float> deviceBuffer;
 			if (_allocatedDeviceBuffers.TryGetValue(array, out deviceBuffer))
 			{
-				float[] throwaway;
-				if (!_preInitialisedHostArrays.TryGetValue(array, out throwaway))
+				object throwaway;
+				if (!_preInitialisedHostDatas.TryGetValue(array, out throwaway))
 				{
-					_preInitialisedHostArrays.Add(array, array);
+					_preInitialisedHostDatas.Add(array, _throwawayObject);
 				}
 			}
 		}
@@ -208,10 +301,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			{
 				deviceBuffer.MemsetAsync(*(uint*)&initialValue, CudaStream.Stream);
 
-				float[] throwaway;
-				if (!_preInitialisedHostArrays.TryGetValue(array, out throwaway))
+				object throwaway;
+				if (!_preInitialisedHostDatas.TryGetValue(array, out throwaway))
 				{
-					_preInitialisedHostArrays.Add(array, array);
+					_preInitialisedHostDatas.Add(array, _throwawayObject);
 				}
 			}
 		}

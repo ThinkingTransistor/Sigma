@@ -127,6 +127,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		{
 			if (CudaContext == null) throw new InvalidOperationException($"Cannot initialise cuda buffer, cuda context is invalid (null).");
 
+			CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+
 			if (_underlyingCudaBuffer != null)
 			{
 				if (!_underlyingCudaBuffer._initialisedInContext)
@@ -135,12 +137,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				}
 
 				_cudaBuffer = new CudaDeviceVariable<T>(_underlyingCudaBuffer._cudaBuffer.DevicePointer + _cudaOffsetBytes, _cudaLengthBytes);
+				backendHandle.IncreaseReferenceCount(_data);
 
 				_initialisedInContext = true;
 			}
 			else
 			{
-				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 
 				bool initialisedToValue;
 				_cudaBuffer = backendHandle.AllocateDeviceBuffer(_data, Offset, _cudaLengthBytes, out initialisedToValue);
@@ -152,6 +154,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 					_flagHostModified = false;
 				}
+			}
+		}
+
+		~CudaSigmaDiffDataBuffer()
+		{
+			if (_initialisedInContext)
+			{
+				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
+
+				backendHandle.NotifyFreeDeviceBuffer((float[]) (object) _data);
 			}
 		}
 
