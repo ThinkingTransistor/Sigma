@@ -205,7 +205,7 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <param name="array">The array to get a permuted copy of.</param>
 		/// <param name="rearrangedDimensions">The permutation array, how each dimension should be rearranged.</param>
-		/// <returns>A permuted copy of the given array according to the permutation array (rearrangedDimensions).</returns>
+		/// <returns>A permuted COPY of the given array according to the permutation array (rearrangedDimensions).</returns>
 		public static long[] PermuteArray(long[] array, int[] rearrangedDimensions)
 		{
 			int length = array.Length;

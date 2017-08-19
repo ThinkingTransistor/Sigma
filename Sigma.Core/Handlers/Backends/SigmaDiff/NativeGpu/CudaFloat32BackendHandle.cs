@@ -18,6 +18,7 @@ using ManagedCuda.BasicTypes;
 using ManagedCuda.CudaBlas;
 using ManagedCuda.VectorTypes;
 using Microsoft.FSharp.Core;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
@@ -32,7 +33,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private readonly ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 		private readonly ConditionalWeakTable<float[], object> _preInitialisedHostDatas;
 
-		private const int BlocksPerGridDimensions = 65535;
+		private const int BlocksPerGridDimension = 65535;
 		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
 		private readonly object _throwawayObject = new object();
 		private readonly CUmodule _kernelModule;
@@ -85,6 +86,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			loadedKernels.Add("Softmax_Rowwise_M", new CudaKernel("_Z17Softmax_Rowwise_MPKfPfS1_S1_iiiS1_i", kernelModule, CudaContext));
 			loadedKernels.Add("Softmax_Rowwise_M_Backward", new CudaKernel("_Z26Softmax_Rowwise_M_BackwardPKfS0_S0_S0_S0_S0_Pfiiii", kernelModule, CudaContext));
 
+			loadedKernels.Add("Permute_M", new CudaKernel("_Z9Permute_MPKfS0_S0_PfS0_ii", kernelModule, CudaContext));
 			loadedKernels.Add("RepeatReshapeCopy_V_MRows", new CudaKernel("_Z25RepeatReshapeCopy_V_MRowsPKfPfiii", kernelModule, CudaContext));
 
 			return loadedKernels;
@@ -104,13 +106,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 			CudaKernel kernel = _loadedKernels[kernelName];
 
-			int primaryGridDimensions = Math.Min(BlocksPerGridDimensions, (threadCount + ThreadsPerBlock - 1) / ThreadsPerBlock);
+			int primaryGridDimensions = Math.Min(BlocksPerGridDimension, (threadCount + ThreadsPerBlock - 1) / ThreadsPerBlock);
 			int secondaryGridDimensions = (threadCount + primaryGridDimensions * ThreadsPerBlock - 1) / (primaryGridDimensions * ThreadsPerBlock);
 
-			if (secondaryGridDimensions > BlocksPerGridDimensions)
+			if (secondaryGridDimensions > BlocksPerGridDimension)
 			{
 				throw new InvalidOperationException($"Attempted to spawn unsupported amount of threads: {threadCount}, " +
-													$"maximum per block is {ThreadsPerBlock} and blocks per grid dimensions (x, y) is {BlocksPerGridDimensions}.");
+													$"maximum per block is {ThreadsPerBlock} and blocks per grid dimensions (x, y) is {BlocksPerGridDimension}.");
 			}
 
 			kernel.BlockDimensions = ThreadsPerBlock;
@@ -1131,9 +1133,51 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
-		public override ShapedDataBufferView<float> Permute_M(ShapedDataBufferView<float> array, int[] rearrangedDimensions)
+		public override unsafe ShapedDataBufferView<float> Permute_M(ShapedDataBufferView<float> a, int[] rearrangedDimensions)
 		{
-			throw new NotImplementedException();
+			if (a.Length == 0)
+			{
+				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
+			}
+
+			int rank = a.Shape.Length, len = a.Length;
+
+			float[] rearrangedDimensionsFloat = CreateUninitialisedArray(rank);
+
+			for (int i = 0; i < rearrangedDimensionsFloat.Length; i++)
+			{
+				rearrangedDimensionsFloat[i] = rearrangedDimensions[i];
+			}
+
+			ShapedDataBufferView<float> permuted = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), ArrayUtils.PermuteArray(a.Shape, rearrangedDimensions));
+
+			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
+			CudaSigmaDiffDataBuffer<float> pData = _InternalInternalise(permuted);
+
+			CudaSigmaDiffDataBuffer<float> permutedDimensions = _InternalInternalise(CreateDataBuffer(rearrangedDimensionsFloat));
+			CudaSigmaDiffDataBuffer<float> originalStrides = _InternalInternalise(CreateDataBuffer(GetFloatStrides(a.Shape)));
+			CudaSigmaDiffDataBuffer<float> permutedStrides = _InternalInternalise(CreateDataBuffer(GetFloatStrides(permuted.Shape)));
+
+			RunKernel("Permute_M", len, (uint)rank * 2 * ThreadsPerBlock * sizeof(float), aData.GetContextPointer(), permutedDimensions.GetContextPointer(), originalStrides.GetContextPointer(),
+				pData.GetContextPointer(), permutedStrides.GetContextPointer(), rank, len);
+
+			pData.FlagDeviceModified();
+
+			return permuted;
+		}
+
+		private float[] GetFloatStrides(long[] shape)
+		{
+			float[] strides = new float[shape.Length];
+
+			long currentStride = 1;
+			for (int i = shape.Length - 1; i >= 0; i--)
+			{
+				strides[i] = currentStride;
+				currentStride *= shape[i];
+			}
+
+			return strides;
 		}
 
 		/// <inheritdoc />

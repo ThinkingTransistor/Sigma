@@ -29,6 +29,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Sigma.Core.Handlers.Backends.Debugging;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Layers.Recurrent;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
@@ -70,7 +71,7 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("hutter");
 
 			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(256) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
+			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
 			trainer.Operator = new CudaSinglethreadedOperator();
@@ -254,14 +255,14 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
 				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
 
-			var validationTimeStep = TimeStep.Every(4, TimeScale.Epoch);
+			var validationTimeStep = TimeStep.Every(1, TimeScale.Epoch);
 
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10), TimeStep.Every(1, TimeScale.Epoch)));
 
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), 32));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
-			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
+			trainer.AddHook(new StopTrainingHook(atEpoch: 10));
 
 			sigma.PrepareAndRun();
 		}
@@ -354,7 +355,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SamplePermute()
 		{
-			IComputationHandler handler = new CpuFloat32Handler();
+			IComputationHandler handler = new CudaFloat32Handler();
 
 			INDArray array = handler.NDArray(ArrayUtils.Range(1, 30), 5L, 3L, 2L);
 

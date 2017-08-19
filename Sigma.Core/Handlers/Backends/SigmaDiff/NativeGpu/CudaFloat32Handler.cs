@@ -39,8 +39,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			DeviceId = _cudaBackendHandle.CudaContext.DeviceId;
 
 			CudaDeviceProperties deviceProperties = CudaContext.GetDeviceInfo(deviceId);
-			_logger.Info($"Using CUDA device {deviceProperties.DeviceName} with id {deviceId} (compute capability {deviceProperties.ComputeCapability}, " +
-						$"memory {deviceProperties.TotalGlobalMemory}).");
+			_logger.Info($"Using CUDA device {deviceProperties.DeviceName} with device id {deviceId} (compute capability {deviceProperties.ComputeCapability}, " +
+						$"memory {deviceProperties.TotalGlobalMemory / (1024 * 1024)}MB).");
 
 			RegisterContext(_cudaBackendHandle.CudaContext, _cudaBackendHandle.CudaStream);
 		}
