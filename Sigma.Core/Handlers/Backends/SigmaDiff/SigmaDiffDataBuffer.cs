@@ -7,6 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Sigma.Core.Data;
 using static DiffSharp.Util;
 
@@ -17,7 +19,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	internal class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
+	public class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
 	{
 		public long BackendTag { get; set; }
 
@@ -80,7 +82,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ISigmaDiffDataBuffer<T>)GetValues(startIndex, length);
 		}
 
-		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		public virtual ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
@@ -100,23 +102,38 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
-			T[] copyData = _InternalGetSubData();
-
-			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
+			return _InternalDeepCopy();
 		}
 
-		private T[] _InternalGetSubData()
+		protected virtual ISigmaDiffDataBuffer<T> _InternalDeepCopy()
 		{
-			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
-			
-			Buffer.BlockCopy(Data, (int) (Offset * Type.SizeBytes), copyData, 0, (int) (Length * Type.SizeBytes));
+			T[] copyData = _InternalGetSubData();
 
-			return copyData;
+			return _InternalDeepCopy(copyData);
+		}
+
+		protected virtual ISigmaDiffDataBuffer<T> _InternalDeepCopy(T[] copyData)
+		{
+			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.ShallowCopy()
 		{
+			return _InternalShallowCopy();
+		}
+
+		protected virtual ISigmaDiffDataBuffer<T> _InternalShallowCopy()
+		{
 			return new SigmaDiffDataBuffer<T>(this, BackendTag);
+		}
+
+		protected virtual T[] _InternalGetSubData()
+		{
+			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
+
+			Buffer.BlockCopy(Data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
+
+			return copyData;
 		}
 
 		#endregion

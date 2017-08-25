@@ -19,6 +19,25 @@ namespace Sigma.Core.Utils
 	public static class ArrayUtils
 	{
 		/// <summary>
+		/// Get the next highest power of 2 for a given integer.
+		/// </summary>
+		/// <param name="value">The value.</param>
+		/// <returns>The next highest power of 2.</returns>
+		public static int NextHighestPowerOf2(int value)
+		{
+			// bit twiddling hacks to get next highest power of 2 for integer
+			// see https://web.archive.org/web/20160703165415/https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+			value--;
+			value |= value >> 1;
+			value |= value >> 2;
+			value |= value >> 4;
+			value |= value >> 8;
+			value |= value >> 16;
+
+			return value + 1;
+		}
+
+		/// <summary>
 		/// Concatenate two given arrays into one result array (b is appended after a).
 		/// </summary>
 		/// <typeparam name="T">The array element type.</typeparam>
@@ -186,7 +205,7 @@ namespace Sigma.Core.Utils
 		/// </summary>
 		/// <param name="array">The array to get a permuted copy of.</param>
 		/// <param name="rearrangedDimensions">The permutation array, how each dimension should be rearranged.</param>
-		/// <returns>A permuted copy of the given array according to the permutation array (rearrangedDimensions).</returns>
+		/// <returns>A permuted COPY of the given array according to the permutation array (rearrangedDimensions).</returns>
 		public static long[] PermuteArray(long[] array, int[] rearrangedDimensions)
 		{
 			int length = array.Length;

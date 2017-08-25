@@ -206,6 +206,11 @@ namespace Sigma.Core.Handlers.Backends.Debugging
 			return UnderlyingHandler.GetSizeBytes(array);
 		}
 
+		public bool IsOwnFormat(INDArray array)
+		{
+			return UnderlyingHandler.IsOwnFormat(array);
+		}
+
 		public bool IsInterchangeable(IComputationHandler otherHandler)
 		{
 			return UnderlyingHandler.IsInterchangeable(otherHandler);

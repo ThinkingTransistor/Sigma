@@ -9,9 +9,11 @@ For full license see LICENSE in the root directory of this project.
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
 using Sigma.Core.Handlers;
+using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
@@ -20,6 +22,9 @@ namespace Sigma.Core.Training.Operators.Workers
 {
 	public abstract class BaseWorker : IWorker
 	{
+		private ILog Logger => _logger ?? (_logger = LogManager.GetLogger(GetType()));
+		private ILog _logger;
+
 		/// <summary>
 		/// The priority with which the <see cref="WorkerThread"/> will be started. 
 		/// <see cref="ThreadPriority.Highest"/> per default.
@@ -43,6 +48,7 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// </summary>
 		protected Thread WorkerThread { get; set; }
 
+		private IEnumerator<IDictionary<string, INDArray>> _epochBlockYield;
 		private readonly List<IHook> _bufferHooksToInvoke;
 		private readonly IList<IHook> _bufferHooksToInvokeInBackground;
 		private readonly ISet<string> _bufferRegistryEntries;
@@ -219,12 +225,74 @@ namespace Sigma.Core.Training.Operators.Workers
 		/// <summary>
 		/// This method will be called every time the worker will start from a full stop.
 		/// </summary>
-		protected abstract void Initialise();
+		protected virtual void Initialise()
+		{
+			Logger.Debug($"Initialising worker {this}...");
+
+			IEnumerable<IDictionary<string, INDArray>> blockYieldEnumerable = LocalTrainingDataIterator?.Yield(Operator.Handler, Operator.Sigma);
+
+			if (blockYieldEnumerable == null)
+			{
+				_logger.Warn($"Unable to yield block enumerable from local training iterator {LocalTrainingDataIterator} in worker {this}");
+
+				return;
+			}
+
+			_epochBlockYield = blockYieldEnumerable.GetEnumerator();
+
+			Logger.Debug($"Done initialising worker {this}.");
+		}
 
 		/// <summary>
 		/// This method gets updated as long as this worker is not paused or stopped. Maybe only once. 
 		/// </summary>
-		protected abstract void DoWork();
+		protected virtual void DoWork()
+		{
+			if (_epochBlockYield == null)
+			{
+				throw new InvalidOperationException($"Unable to do work in worker {this}, worker was not initialised successfully (epoch yield is null).");
+			}
+
+			// no more blocks in this yield, therefore epoch is done
+			if (!_epochBlockYield.MoveNext())
+			{
+				InvokeTimeScaleEvent(TimeScale.Epoch);
+
+				Logger.Debug($"Completed epoch {LocalEpochNumber} at iteration {LocalIterationNumber} in worker {this}.");
+
+				LocalEpochNumber++;
+				LocalIterationNumber = 0;
+
+				_epochBlockYield = LocalTrainingDataIterator.Yield(Operator.Handler, Operator.Sigma).GetEnumerator();
+				_epochBlockYield.MoveNext();
+			}
+
+			if (_epochBlockYield.Current == null)
+			{
+				throw new InvalidOperationException($"Unable to do work in worker {this} because current epoch block yield is null.");
+			}
+
+			Operator.PullProgress(this);
+
+			bool useSessions = Operator.UseSessions;
+
+			if (useSessions) Operator.Handler.BeginSession();
+
+			Operator.Trainer.ProvideExternalInputData(LocalNetwork, _epochBlockYield.Current);
+			Operator.Trainer.RunTrainingIteration(LocalNetwork, LocalOptimiser, GetPopulatedBufferRegistry(), Operator.Handler);
+			Operator.Trainer.ProvideExternalOutputData(LocalNetwork, _epochBlockYield.Current);
+
+			if (useSessions) Operator.Handler.EndSession();
+
+			InvokeTimeScaleEvent(TimeScale.Iteration);
+
+			//_logger.Debug($"Worker {this} done with iteration {LocalIterationNumber} in epoch {LocalEpochNumber} at cost:\t{LocalOptimiser.Registry.Get<INumber>("total_cost").Value}");
+
+			LocalIterationNumber++;
+
+			// push progress for this iteration
+			Operator.PushProgress(this);
+		}
 
 		/// <summary>
 		/// This method gets called when the worker is about to pause. It will also be called when the worker

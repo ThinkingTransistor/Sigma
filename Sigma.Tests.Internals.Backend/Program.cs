@@ -29,10 +29,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Sigma.Core.Handlers.Backends.Debugging;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Layers.Recurrent;
 using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.Monitors;
 using Sigma.Core.Training.Hooks.Saviors;
+using Sigma.Core.Training.Operators.Backends.NativeGpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
@@ -45,7 +47,7 @@ namespace Sigma.Tests.Internals.Backend
 			SigmaEnvironment.EnableLogging(xml: true);
 			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
 
-			SampleMnist();
+			SampleHutter();
 
 			Console.WriteLine("Program ended, waiting for termination, press any key...");
 			Console.ReadKey();
@@ -69,9 +71,10 @@ namespace Sigma.Tests.Internals.Backend
 			ITrainer trainer = sigma.CreateTrainer("hutter");
 
 			trainer.Network.Architecture = InputLayer.Construct(256) + RecurrentLayer.Construct(256) + OutputLayer.Construct(256) + SoftMaxCrossEntropyCostLayer.Construct();
-			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
+			trainer.TrainingDataIterator = new MinibatchIterator(32, dataset);
 			trainer.AddNamedDataIterator("validation", new MinibatchIterator(100, dataset));
-			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.07);
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
@@ -89,7 +92,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			RawDataset dataset = new RawDataset("xor");
 			dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
-			dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
+			dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
 
 			ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
@@ -97,6 +100,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
@@ -131,7 +135,7 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.TrainingDataIterator = new MinibatchIterator(50, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.06);
-			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
@@ -149,8 +153,8 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(599, TimeScale.Iteration), 128));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 
-			Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
-			trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
+			//Serialisation.WriteBinaryFile(trainer, "trainer.sgtrainer");
+			//trainer = Serialisation.ReadBinaryFile<ITrainer>("trainer.sgtrainer");
 
 			sigma.AddTrainer(trainer);
 
@@ -222,6 +226,7 @@ namespace Sigma.Tests.Internals.Backend
 		private static void SampleMnist()
 		{
 			SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
+			sigma.SetRandomSeed(0);
 
 			IDataset dataset = Defaults.Datasets.Mnist();
 
@@ -242,7 +247,7 @@ namespace Sigma.Tests.Internals.Backend
 			//trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 			//trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
@@ -255,9 +260,9 @@ namespace Sigma.Tests.Internals.Backend
 			trainer.AddHook(new MultiClassificationAccuracyReporter("validation", validationTimeStep, tops: new[] { 1, 2, 3 }));
 			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(0, 10), 10), TimeStep.Every(1, TimeScale.Epoch)));
 
-			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(600, TimeScale.Iteration), 128));
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), 32));
 			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
-			trainer.AddHook(new StopTrainingHook(atEpoch: 4));
+			trainer.AddHook(new StopTrainingHook(atEpoch: 10));
 
 			sigma.PrepareAndRun();
 		}
@@ -350,7 +355,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void SamplePermute()
 		{
-			IComputationHandler handler = new CpuFloat32Handler();
+			IComputationHandler handler = new CudaFloat32Handler();
 
 			INDArray array = handler.NDArray(ArrayUtils.Range(1, 30), 5L, 3L, 2L);
 

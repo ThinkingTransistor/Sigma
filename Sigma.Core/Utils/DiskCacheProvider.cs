@@ -97,7 +97,7 @@ namespace Sigma.Core.Utils
 
 			using (fileStream)
 			{
-				_serialisationFormatter.Serialize(fileStream, data);
+				Serialisation.Write(data, fileStream, Serialisers.BinarySerialiser);
 			}
 
 			_logger.Debug($"Done caching object {data} with identifier \"{identifier}\" to disk to \"{RootDirectory + identifier}\".");
@@ -127,7 +127,7 @@ namespace Sigma.Core.Utils
 			{
 				try
 				{
-					T obj = (T) _serialisationFormatter.Deserialize(fileStream);
+					T obj = Serialisation.Read<T>(fileStream, Serialisers.BinarySerialiser);
 
 					_logger.Debug($"Done loading cache object with identifier \"{identifier}\" from disk \"{RootDirectory + identifier + CacheFileExtension}\".");
 
@@ -137,7 +137,8 @@ namespace Sigma.Core.Utils
 				}
 				catch (Exception e)
 				{
-					_logger.Warn($"Failed to load cache entry for identifier \"{identifier}\" with error \"{e}\", returning default value for type.");
+					_logger.Warn($"Failed to load cache entry for identifier \"{identifier}\" with error \"{e.GetType()}\", returning default value for type.");
+					_logger.Debug(e);
 
 					SigmaEnvironment.TaskManager.CancelTask(task);
 

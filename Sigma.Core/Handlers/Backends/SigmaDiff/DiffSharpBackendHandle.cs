@@ -26,20 +26,13 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	{
 		private IDictionary<int, IList<T[]>> _bufferedSessionArrays;
 		private IDictionary<int, IList<T[]>> _currentSessionArrays;
-		private ISet<T[]> _limboSessionArrays; // arrays that aren't automatically freed at the end of a session, have to be especially marked (e.g. for parameters)
+		private readonly ISet<T[]> _limboSessionArrays; // arrays that aren't automatically freed at the end of a session (for reuse), have to be especially marked (e.g. for parameters)
 
 		public bool BufferSessions { get; set; }
 		public long BackendTag { get; set; }
-		public IBlasBackend BlasBackend { get; set; }
-		public ILapackBackend LapackBackend { get; set; }
 
-		internal DiffSharpBackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag)
+		internal DiffSharpBackendHandle(long backendTag)
 		{
-			if (blasBackend == null) throw new ArgumentNullException(nameof(blasBackend));
-			if (lapackBackend == null) throw new ArgumentNullException(nameof(lapackBackend));
-
-			BlasBackend = blasBackend;
-			LapackBackend = lapackBackend;
 			BackendTag = backendTag;
 
 			_bufferedSessionArrays = new Dictionary<int, IList<T[]>>();
@@ -76,14 +69,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 		}
 
-		internal void ClearSessionBuffers()
+		internal virtual void ClearSessionBuffers()
 		{
 			_bufferedSessionArrays.Clear();
 			_currentSessionArrays.Clear();
 			_limboSessionArrays.Clear();
 		}
 
-		internal void TransferSessionBuffers()
+		internal virtual void TransferSessionBuffers()
 		{
 			_bufferedSessionArrays.Clear();
 			_bufferedSessionArrays.AddAll(_currentSessionArrays);
@@ -135,6 +128,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				_InternalAddToCurrentSession(array);
 			}
 
+			OnUninitialisedArrayCreated(array);
+				
 			return array;
 		}
 
@@ -201,7 +196,59 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				}
 			}
 
+			OnValueArrayCreated(array, initialValue);
+
 			return array;
+		}
+
+		/// <summary>
+		/// Called when an uninitialised value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		protected virtual void OnUninitialisedArrayCreated(T[] array)
+		{
+		}
+
+		/// <summary>
+		/// Called when a value array is "created" (from cache or allocated).
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="initialValue">The initial value.</param>
+		protected virtual void OnValueArrayCreated(T[] array, T initialValue)
+		{
+		}
+
+		/// <summary>
+		/// Check if a certain array is in any way registered (or buffered) in this backend.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating whether or not the given array is buffered in this backend.</returns>
+		protected bool IsRegistered(T[] array)
+		{
+			int length = array.Length;
+
+			if (_currentSessionArrays.ContainsKey(length))
+			{
+				if (_currentSessionArrays[length].Contains(array))
+				{
+					return true;
+				}
+			}
+
+			if (_bufferedSessionArrays.ContainsKey(length))
+			{
+				if (_bufferedSessionArrays[length].Contains(array))
+				{
+					return true;
+				}
+			}
+
+			if (_limboSessionArrays.Contains(array))
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		public abstract ISigmaDiffDataBuffer<T> CreateDataBuffer(T[] values);
@@ -238,6 +285,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> Mul_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Mul_S_M(T a, ShapedDataBufferView<T> b);
 		public abstract ShapedDataBufferView<T> Mul_M_M_Add_V_MCols(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b, ISigmaDiffDataBuffer<T> obj2);
+		public abstract ISigmaDiffDataBuffer<T> Add_M_Colwise_V_InPlace(ShapedDataBufferView<T> a, ISigmaDiffDataBuffer<T> b);
 		public abstract ShapedDataBufferView<T> Mul_Had_M_M(ShapedDataBufferView<T> a, ShapedDataBufferView<T> b);
 		public abstract FSharpOption<ShapedDataBufferView<T>> Inverse_M(ShapedDataBufferView<T> a);
 		public abstract FSharpOption<T> Det_M(ShapedDataBufferView<T> a);
@@ -247,6 +295,9 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public abstract ShapedDataBufferView<T> ReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> value);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MRows(int rows, ISigmaDiffDataBuffer<T> row);
 		public abstract ShapedDataBufferView<T> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<T> value);
+		public abstract ShapedDataBufferView<T> CustomOp_DM_Forward(ShapedDataBufferView<T> value, object customInfo);
+		public abstract ShapedDataBufferView<T> CustomOp_DM_Backward(ShapedDataBufferView<T> origin, ShapedDataBufferView<T> adjoint, ShapedDataBufferView<T> primal, object customInfo);
+
 		public abstract ISigmaDiffDataBuffer<T> Map_F_V(MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Map_F_S_V(T other, MapOp mapOp, FSharpFunc<T, T> function, ISigmaDiffDataBuffer<T> value);
 		public abstract ISigmaDiffDataBuffer<T> Map2_F_V_V(MapOp mapOp, FSharpFunc<T, FSharpFunc<T, T>> function, ISigmaDiffDataBuffer<T> a, ISigmaDiffDataBuffer<T> b);

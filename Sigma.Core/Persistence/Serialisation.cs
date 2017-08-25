@@ -174,6 +174,8 @@ namespace Sigma.Core.Persistence
 		/// <param name="action">The action to take on each object given the parent object, corresponding field info and value in parent object.</param>
 		internal static void TraverseObjectGraph(object root, ISet<object> traversedObjects, Action<object, FieldInfo, object> action)
 		{
+			if (root == null) return;
+
 			Type type = root.GetType();
 
 			traversedObjects.Add(root);
@@ -197,7 +199,7 @@ namespace Sigma.Core.Persistence
 					{
 						// Note: I am completely aware how awful this "optimisation" is, but it works and there currently is no time to implement a better system.
 						string ns = value.GetType().Namespace;
-						bool boringType = ns.StartsWith("System") && !ns.StartsWith("System.Collections") || ns.StartsWith("log4net");
+						bool boringType = ns == null || (ns.StartsWith("System") && !ns.StartsWith("System.Collections") || ns.StartsWith("log4net"));
 
 						if (!boringType && !traversedObjects.Contains(value) && !Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
 						{

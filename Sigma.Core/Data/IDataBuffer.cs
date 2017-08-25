@@ -71,7 +71,7 @@ namespace Sigma.Core.Data
 		/// <param name="startIndex">The start index referring to this buffer (not underlying).</param>
 		/// <param name="length">The length.</param>
 		/// <returns>A new data buffer of the given type with a COPY of the specified range.</returns>
-		IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length);
+		IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length) where TOther : struct;
 
 		/// <summary>
 		/// Get a COPY of the underlying data within the given range. 

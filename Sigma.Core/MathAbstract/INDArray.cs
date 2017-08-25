@@ -63,7 +63,7 @@ namespace Sigma.Core.MathAbstract
 		/// </summary>
 		/// <typeparam name="TOther">The type the buffer should have.</typeparam>
 		/// <returns>The data buffer with the given data type.</returns>
-		IDataBuffer<TOther> GetDataAs<TOther>();
+		IDataBuffer<TOther> GetDataAs<TOther>() where TOther : struct;
 
 		/// <summary>
 		/// Get a value at a certain index as a certain type.

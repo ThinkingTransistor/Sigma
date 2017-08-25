@@ -190,10 +190,13 @@
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32BackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaSigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
-    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CpuFloat32Handler.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
@@ -212,7 +215,9 @@
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\ArrayPool.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
-    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADNDFloat32Array.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32NDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeGpu\CudaFloat32NDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeGpu\CudaFloat32Number.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
@@ -292,6 +297,8 @@
     <Compile Include="Training\Modifiers\ScaleValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\CudaSinglethreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\Workers\CudaWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
@@ -347,6 +354,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Dependencies\sigmakernels.ptx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="libopenblas.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

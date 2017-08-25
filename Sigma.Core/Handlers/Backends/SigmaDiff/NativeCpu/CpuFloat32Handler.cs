@@ -10,7 +10,6 @@ using DiffSharp.Interop.Float32;
 using Sigma.Core.Data;
 using Sigma.Core.MathAbstract;
 using System;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Utils;
 
@@ -20,7 +19,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 	/// A computation handler that runs computations on the CPU with 32-bit floating point precision. 
 	/// </summary>
 	[Serializable]
-	public class CpuFloat32Handler : DiffSharpFloat32Handler
+	public class CpuFloat32Handler : DiffSharpFloat32Handler<ADFloat32NDArray, ADFloat32Number>
 	{
 		/// <inheritdoc />
 		public CpuFloat32Handler() : base(new OpenBlasBlasBackend(), new OpenBlasLapackBackend())
@@ -29,6 +28,14 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 		/// <inheritdoc />
 		public override IDataType DataType => DataTypes.Float32;
+
+		/// <summary>
+		/// Called after this object was de-serialised. 
+		/// </summary>
+		public override void OnDeserialised()
+		{
+			InitialiseBackend(new DiffSharpFloat32BackendHandle(BlasBackend, LapackBackend, backendTag: -1));
+		}
 
 		/// <inheritdoc />
 		public override IDataBuffer<T> DataBuffer<T>(T[] values)
@@ -39,7 +46,8 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		/// <inheritdoc />
 		public override INDArray NDArray(params long[] shape)
 		{
-			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, 
+				(IDataBuffer<float>) DiffsharpBackendHandle.CreateDataBuffer(DiffsharpBackendHandle.CreateZeroArray((int) ArrayUtils.Product(shape))), shape).SetAssociatedHandler(this));
 		}
 
 		/// <inheritdoc />
@@ -50,16 +58,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 			for (int i = 0; i < values.Length; i++)
 			{
-				convertedValues[i] = (float) System.Convert.ChangeType(values[i], floatType);
+				convertedValues[i] = (float)System.Convert.ChangeType(values[i], floatType);
 			}
 
-			return AssignTag(new ADNDFloat32Array(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
+			return AssignTag(new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, convertedValues, shape)).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
 		public override INumber Number(object value)
 		{
-			return new ADFloat32Number((float) System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
+			return new ADFloat32Number((float)System.Convert.ChangeType(value, typeof(float))).SetAssociatedHandler(this);
 		}
 
 		/// <inheritdoc />
@@ -67,16 +75,16 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			ADFloat32Number internalNumber = InternaliseNumber(number);
 
-			return AssignTag(new ADNDFloat32Array(DNDArray.OfDNumber(internalNumber._adNumberHandle, DiffsharpBackendHandle)));
+			return AssignTag(new ADFloat32NDArray(DNDArray.OfDNumber(internalNumber.Handle, DiffsharpBackendHandle)));
 		}
 
 		/// <inheritdoc />
 		public override INumber AsNumber(INDArray array, params long[] indices)
 		{
-			ADNDFloat32Array internalArray = InternaliseArray(array);
+			ADFloat32NDArray internalArray = InternaliseArray(array);
 			long flatIndex = NDArrayUtils.GetFlatIndex(array.Shape, array.Strides, indices);
 
-			return new ADFloat32Number(DNDArray.ToDNumber(internalArray._adArrayHandle, (int) flatIndex));
+			return new ADFloat32Number(DNDArray.ToDNumber(internalArray.Handle, (int)flatIndex));
 		}
 
 		/// <inheritdoc />
@@ -93,7 +101,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 
 			foreach (INDArray array in arrays)
 			{
-				long sizeBytes = 52L; // let's just assume 52bytes of base fluff, I really have no idea
+				long sizeBytes = 32L; // let's just assume this many bytes of base fluff, I really have no idea
 
 				sizeBytes += array.Length * DataType.SizeBytes;
 				sizeBytes += (array.Shape.Length) * 8L * 2;
@@ -102,6 +110,12 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			}
 
 			return totalSizeBytes;
+		}
+
+		/// <inheritdoc />
+		public override bool IsOwnFormat(INDArray array)
+		{
+			return array is ADFloat32NDArray;
 		}
 
 		/// <inheritdoc />
@@ -130,7 +144,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 			IDataBuffer<float> fillerData = InternaliseArray(filler).Data;
 
-			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, arrayToFillData.Offset, Math.Min(arrayToFill.Length, filler.Length));
+			arrayToFillData.SetValues(fillerData.Data, fillerData.Offset, 0, Math.Min(arrayToFill.Length, filler.Length));
 		}
 
 		/// <inheritdoc />
@@ -138,7 +152,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			float floatValue = (float) System.Convert.ChangeType(value, typeof(float));
+			float floatValue = (float)System.Convert.ChangeType(value, typeof(float));
 
 			for (int i = 0; i < arrayToFillData.Length; i++)
 			{
@@ -152,10 +166,10 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 			IDataBuffer<float> fillerData = InternaliseArray(filler).Data;
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			int sourceOffset = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceBeginIndices);
-			int sourceLength = (int) NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices) - sourceOffset + 1; // +1 because end is inclusive
-			int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-			int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // same here
+			int sourceOffset = (int)NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceBeginIndices);
+			int sourceLength = (int)NDArrayUtils.GetFlatIndex(filler.Shape, filler.Strides, sourceEndIndices) - sourceOffset + 1; // +1 because end is inclusive
+			int destinationOffset = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
+			int destinationLength = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // same here
 
 			if (sourceLength < 0) throw new ArgumentOutOfRangeException($"Source begin indices must be smaller than source end indices, but source length was {sourceLength}.");
 			if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
@@ -169,12 +183,34 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu
 		{
 			IDataBuffer<float> arrayToFillData = InternaliseArray(arrayToFill).Data;
 
-			int destinationOffset = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
-			int destinationLength = (int) NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
+			int destinationOffset = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationBeginIndices);
+			int destinationLength = (int)NDArrayUtils.GetFlatIndex(arrayToFill.Shape, arrayToFill.Strides, destinationEndIndices) - destinationOffset + 1; // +1 because end is inclusive
 
 			if (destinationLength < 0) throw new ArgumentOutOfRangeException($"Destination begin indices must be smaller than destination end indices, but destination length was {destinationLength}.");
 
 			Array.Copy(filler, 0, arrayToFillData.Data, destinationOffset, destinationLength);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32NDArray CreateArrayFromHandle(DNDArray handle)
+		{
+			return new ADFloat32NDArray(handle);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32Number CreateNumberFromHandle(DNumber handle)
+		{
+			return new ADFloat32Number(handle);
+		}
+
+		/// <inheritdoc />
+		protected override ADFloat32NDArray ConvertInternal(INDArray array)
+		{
+			ADFloat32NDArray @internal = array as ADFloat32NDArray;
+
+			if (@internal != null) return @internal;
+
+			return new ADFloat32NDArray(DiffsharpBackendHandle.BackendTag, array.GetDataAs<float>(), array.Shape);
 		}
 	}
 }

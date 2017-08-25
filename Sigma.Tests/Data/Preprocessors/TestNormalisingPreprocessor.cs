@@ -22,7 +22,7 @@ namespace Sigma.Tests.Data.Preprocessors
 	{
 		private static Dictionary<string, INDArray> GetNamedArrayTestData()
 		{
-			return new Dictionary<string, INDArray>() { ["test"] = new ADNDFloat32Array(-1L, new float[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 1, 1, 9)};
+			return new Dictionary<string, INDArray>() { ["test"] = new ADFloat32NDArray(-1L, new float[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, 1, 1, 9)};
 		}
 
 		[TestCase]

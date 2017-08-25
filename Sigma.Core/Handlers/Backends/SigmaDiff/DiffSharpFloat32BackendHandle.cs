@@ -7,14 +7,10 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Numerics;
-using DiffSharp;
 using DiffSharp.Backend;
 using Microsoft.FSharp.Core;
 using Sigma.Core.MathAbstract;
-using Sigma.Core.MathAbstract.Backends.SigmaDiff;
 using Sigma.Core.Utils;
 using static DiffSharp.Util;
 
@@ -25,14 +21,22 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	public unsafe class DiffSharpFloat32BackendHandle : DiffSharpBackendHandle<float>
 	{
+		public IBlasBackend BlasBackend { get; }
+		public ILapackBackend LapackBackend { get; }
+
 		/// <summary>
 		/// Create a DiffSharpFloat32BackendHandle with a certain BLAS and LAPACK backend and an associated handle tag. 
 		/// </summary>
 		/// <param name="blasBackend">The BLAS backend to use (must use 32-bit floats).</param>
 		/// <param name="lapackBackend">The LAPACK backend to use (must use 32-bit floats).</param>
 		/// <param name="backendTag">The backend tag to use.</param>
-		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(blasBackend, lapackBackend, backendTag)
+		public DiffSharpFloat32BackendHandle(IBlasBackend blasBackend, ILapackBackend lapackBackend, long backendTag) : base(backendTag)
 		{
+			if (blasBackend == null) throw new ArgumentNullException(nameof(blasBackend));
+			if (lapackBackend == null) throw new ArgumentNullException(nameof(lapackBackend));
+
+			BlasBackend = blasBackend;
+			LapackBackend = lapackBackend;
 		}
 
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CreateDataBuffer"/>
@@ -461,7 +465,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return CreateDataBuffer(new float[0]);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Rows]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(a.Rows));
 
 			fixed (float* aref = &a.DataBuffer.Data[a.DataBuffer.Offset])
 			fixed (float* bref = &b.Data[b.Offset])
@@ -498,7 +502,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return CreateDataBuffer(new float[0]);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[b.Rows]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(b.Rows));
 
 			fixed (float* aref = &a.Data[a.Offset])
 			fixed (float* bref = &b.DataBuffer.Data[b.DataBuffer.Offset])
@@ -563,11 +567,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		{
 			if (a.Length == 0)
 			{
-				return Map2_F_V_V(mapOp, function, CreateDataBuffer(new float[b.Length]), b);
+				return Map2_F_V_V(mapOp, function, CreateDataBuffer(CreateZeroArray(b.Length)), b);
 			}
 			if (b.Length == 0)
 			{
-				return Map2_F_V_V(mapOp, function, a, CreateDataBuffer(new float[a.Length]));
+				return Map2_F_V_V(mapOp, function, a, CreateDataBuffer(CreateZeroArray(a.Length)));
 			}
 
 			b = b.DeepCopy();
@@ -588,7 +592,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(new float[a.Length * b.Length]);
+			ISigmaDiffDataBuffer<float> z = CreateDataBuffer(CreateZeroArray(a.Length * b.Length));
 			int m = b.Length, n = a.Length;
 
 			fixed (float* aref = &a.Data[a.Offset])
@@ -815,16 +819,52 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			throw new NotImplementedException();
 		}
 
+		public override ISigmaDiffDataBuffer<float> Add_M_Colwise_V_InPlace(ShapedDataBufferView<float> a, ISigmaDiffDataBuffer<float> b)
+		{
+			float[] aData = a.DataBuffer.Data, bData = b.Data;
+			int aOffset = a.DataBuffer.Offset, bOffset = b.Offset;
+			int cols = a.Cols, len = b.Length;
+
+			// Use SIMD instructions to multiply two arrays element-wise.
+			fixed (float* aref = &aData[aOffset])
+			fixed (float* bref = &bData[bOffset])
+			{
+				int simdLength = Vector<float>.Count, i;
+
+				for (i = 0; i <= len - simdLength; i += simdLength)
+				{
+					Vector<float> vb = new Vector<float>(bData, i + bOffset);
+
+					for (int y = 0; y < a.Rows; y++)
+					{
+						vb += new Vector<float>(aData, i + aOffset + y * cols);
+					}
+
+					vb.CopyTo(bData, i + bOffset);
+				}
+
+				for (; i < len; ++i)
+				{
+					for (int y = 0; y < a.Rows; y++)
+					{
+						bref[i] += aref[i + y * cols];
+					}
+				}
+			}
+
+			return b;
+		}
+
 		/// <inheritdoc cref="DiffSharpBackendHandle{T}.Mul_Had_M_M"/>
 		public override unsafe ShapedDataBufferView<float> Mul_Had_M_M(ShapedDataBufferView<float> a, ShapedDataBufferView<float> b)
 		{
 			if (a.Length == 0)
 			{
-				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[b.Length]), b.Shape);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(CreateZeroArray(b.Length)), b.Shape);
 			}
 			if (b.Length == 0)
 			{
-				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[a.Length]), a.Shape);
+				return new ShapedDataBufferView<float>(CreateDataBuffer(CreateZeroArray(a.Length)), a.Shape);
 			}
 
 			int len = Math.Min(a.Length, b.Length);
@@ -966,7 +1006,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 						int resultIndex = (int)NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
 
-						Buffer.BlockCopy(aData, aOffset * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
+						Buffer.BlockCopy(aData, (i + aOffset) * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
 					}
 				}
 				else
@@ -1482,6 +1522,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<float> value)
 		{
 			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CustomOp_DM_Forward"/>
+		public override ShapedDataBufferView<float> CustomOp_DM_Forward(ShapedDataBufferView<float> value, object customInfo)
+		{
+			throw new NotImplementedException($"Custom DM ops are not supported in default {nameof(DiffSharpFloat32BackendHandle)} implementation.");
+		}
+
+		/// <inheritdoc cref="DiffSharpBackendHandle{T}.CustomOp_DM_Backward"/>
+		public override ShapedDataBufferView<float> CustomOp_DM_Backward(ShapedDataBufferView<float> origin, 
+			ShapedDataBufferView<float> adjoint, ShapedDataBufferView<float> primal, object customInfo)
+		{
+			throw new NotImplementedException($"Custom DM ops are not supported in default {nameof(DiffSharpFloat32BackendHandle)} implementation.");
 		}
 	}
 }
