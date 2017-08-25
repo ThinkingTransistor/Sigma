@@ -1006,7 +1006,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 						int resultIndex = (int)NDArrayUtils.GetFlatIndex(permutedShape, permutedStrides, bufferIndices);
 
-						Buffer.BlockCopy(aData, aOffset * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
+						Buffer.BlockCopy(aData, (i + aOffset) * sizeof(float), resData, (resultIndex + resOffset) * sizeof(float), unitSizeBytes);
 					}
 				}
 				else
