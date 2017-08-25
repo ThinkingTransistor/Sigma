@@ -270,6 +270,18 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 				return internalArray;
 			}
 
+			return _RowWiseDirect(array, internalArray, function);
+		}
+
+		/// <summary>
+		/// Use the <see cref="RowWise"/> operation directly and internally without any optimisation fallbacks.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <param name="internalArray">The array as an internal array handle.</param>
+		/// <param name="function">The function to apply row-wise.</param>
+		/// <returns></returns>
+		protected virtual INDArray _RowWiseDirect(INDArray array, TNDArray internalArray, Func<INDArray, INDArray> function)
+		{
 			INDArray[] rows = SliceRowWise(array, internalArray);
 
 			for (int i = 0; i < rows.Length; i++)

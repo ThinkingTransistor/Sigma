@@ -268,6 +268,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		}
 
 		/// <inheritdoc />
+		protected override INDArray _RowWiseDirect(INDArray array, CudaFloat32NDArray internalArray, Func<INDArray, INDArray> function)
+		{
+			INDArray result = base._RowWiseDirect(array, internalArray, function);
+
+			// TODO optimise ofRows operation for CUDA on device
+			//  flag host array modified because for some reason the host modification logic isn't triggered from F# SigmaDiff when appling ofRows (using System.Array.Copy)
+			CudaSigmaDiffDataBuffer<float> resultBuffer = (CudaSigmaDiffDataBuffer<float>)InternaliseArray(result).Data;
+			resultBuffer.FlagHostModified();
+
+			return result;
+		}
+
+		/// <inheritdoc />
 		protected override bool _RowWiseOptimised(ref CudaFloat32NDArray array, Func<INDArray, INDArray> function)
 		{
 			if (function == SoftMax)
