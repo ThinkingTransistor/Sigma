@@ -431,7 +431,7 @@ __global__ void RepeatReshapeCopy_V_MRows(const float* a, float* b, const int ro
 	
 	if (i < cols)
 	{
-		float value = a[i % cols];
+		float value = a[i];
 
 		while (i < n)
 		{
@@ -459,7 +459,7 @@ __global__ void Permute_M(const float* a, const float* permutedDimensions, const
 
 		for (int y = 0; y < rank; y++)
 		{
-			bufferIndices[y] = flatIndex / originalStrides[y];
+			bufferIndices[y] = (int) (flatIndex / originalStrides[y]);
 			flatIndex -= bufferIndices[y] * originalStrides[y];
 		}
 
