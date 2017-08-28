@@ -96,14 +96,14 @@ namespace Sigma.Core.Training.Hooks.Processors
 						.Outputs["external_default"].Get<INDArray>("activations");
 					currentTargets = handler.RowWise(handler.FlattenTimeAndFeatures(currentTargets), handler.SoftMax);
 
-					INDArray logPredictions = handler.Log(currentTargets);
-					INDArray a = handler.Multiply(desiredTargets, logPredictions);
+					//INDArray logPredictions = handler.Log(currentTargets);
+					//INDArray a = handler.Multiply(desiredTargets, logPredictions);
 
-					INDArray inverseTargets = handler.Subtract(1, desiredTargets);
-					INDArray inversePredictions = handler.Subtract(1 + 1e-6, currentTargets);
-					INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
+					//INDArray inverseTargets = handler.Subtract(1, desiredTargets);
+					//INDArray inversePredictions = handler.Subtract(1 + 1e-6, currentTargets);
+					//INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
 
-					INumber cost = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
+					INumber cost = handler.Sum(handler.Pow(handler.Subtract(currentTargets, desiredTargets), 2));
 					//INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -currentTargets.Shape[0]); // TODO change to softmax ce cost, not sure why it doesn't work right now
 																											   // (it's even using the same optimiser?)
 
