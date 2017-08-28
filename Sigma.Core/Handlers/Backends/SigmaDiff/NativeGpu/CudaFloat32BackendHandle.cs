@@ -46,7 +46,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			CudaContext = new CudaContext(deviceId);
 			CudaStream = new CudaStream();
 
-			_kernelModule = CudaContext.LoadModulePTX("Dependencies/sigmakernels.ptx");
+			_kernelModule = CudaContext.LoadModulePTX("sigmakernels.ptx");
 			_loadedKernels = LoadKernels(_kernelModule);
 
 			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
