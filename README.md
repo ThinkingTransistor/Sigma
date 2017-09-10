@@ -124,7 +124,7 @@ trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.E
 trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), averageSpan: 32));
 trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), averageSpan: 4));
 
-WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("My first Sigma application", DemoMode.Language));
+WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("My first Sigma application"));
 gui.AddTabs("Overview", "Validation");
 gui.ColourManager.Dark = true;
 
@@ -133,8 +133,10 @@ gui.WindowDispatcher(window =>
 	window.TabControl["Overview"].GridSize = new GridSize(2, 3);
 	window.TabControl["Overview"].AddPanel(new ControlPanel("Control", trainer), 0, 0, 2);
 
-	var cost = CreateChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer,
-	"optimiser.cost_total", TimeStep.Every(25, TimeScale.Iteration)).Fast().Linearify();
+	var cost = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer,
+		"optimiser.cost_total", TimeStep.Every(25, TimeScale.Iteration)).Fast().Linearify();
+	cost.MaxPoints = 50;
+
 	var accuracy = new AccuracyPanel("Validation Accuracy", trainer, TimeStep.Every(1, TimeScale.Epoch), null, 1, 2);
 
 	window.TabControl["Overview"].AddPanel(cost, 0, 1, 1, 2);
