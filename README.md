@@ -18,7 +18,7 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 The recommended way to use the latest version of Sigma is adding the NuGet package to your project. 
 You can either include the core framework (command line only) [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core) or the WPF visualiser (only works on Windows) which also references the core framework [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF). 
 
-In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6** before installing the NuGet packages.
+In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6 before** installing the NuGet packages.
 
 ### From source
 
@@ -37,10 +37,13 @@ nuget restore Sigma.sln
 
 You can then integrate Sigma directly into your program as a project reference.
 
-## First program - Classic MNIST
-An example trainer to classify handwritten digits from the MNIST dataset, using dense (fullyconnected) and dropout layers with a Softmax / Cross Entropy cost layer. Using a GTX 1080 and the CUDA backend, this simple trainer reaches 94.7% test accuracy after ~4 seconds (1 epoch), 97.0% after ~25 seconds (5 epochs + test time) and peaks at 97.6% after ~50 seconds (10 epochs + test time).  
+## First program - Classic MNIST (Sigma.Core)
+An example trainer to classify handwritten digits from the MNIST dataset, using dense (fullyconnected) and dropout layers with a Softmax / Cross Entropy cost layer. Using a GTX 1080 and the CUDA backend, this simple trainer reaches 94.7% test accuracy after ~4 seconds (1 epoch), 97.0% after ~25 seconds (5 epochs + test time) and peaks at 97.6% after ~50 seconds (10 epochs + test time). 
+
+For this program, the Sigma.Core NUGET package is requird.
 
 ```
+SigmaEnvironment.EnableLogging();
 SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
 IDataset dataset = Defaults.Datasets.Mnist(); // datasets are automatically downloaded and unpacked if not on disk
 ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
@@ -58,8 +61,8 @@ trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
 trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 
-// Uncomment the following line to use CUDA (default is single-threaded CPU operator)
-// trainer.Operator = new CudaSinglethreadedOperator();
+trainer.Operator = new CpuSinglethreadedOperator(); // change this line to a new CudaSinglethreadedOperator() if you have an NVIDIA GPU
+// Of course, CUDA has to be installed in order to work.
 
 trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
@@ -75,6 +78,80 @@ trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 10));
 
 sigma.PrepareAndRun();
 ```
+
+## First program - Classic MNIST (Sigma.Core.WPF)
+This is the same program as above, only with visualisation activated.
+
+For this program, the Sigma.Core.WPF NUGET package is requird.
+
+```
+SigmaEnvironment.EnableLogging();
+SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
+IDataset dataset = Defaults.Datasets.Mnist(); // datasets are automatically downloaded and unpacked if not on disk
+ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
+
+trainer.Network.Architecture = InputLayer.Construct(28, 28)
+								+ DropoutLayer.Construct(0.2)
+								+ FullyConnectedLayer.Construct(1000, activation: "rel")
+								+ DropoutLayer.Construct(0.4)
+								+ FullyConnectedLayer.Construct(800, activation: "rel")
+								+ DropoutLayer.Construct(0.4)
+								+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
+								+ OutputLayer.Construct(10)
+								+ SoftMaxCrossEntropyCostLayer.Construct();
+trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
+trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
+trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
+
+trainer.Operator = new CpuSinglethreadedOperator(); // change this line to a new CudaSinglethreadedOperator() if you have an NVIDIA GPU
+													// Of course, CUDA has to be installed in order to work.
+
+
+trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
+trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
+
+trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+	.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2, 3 }));
+
+trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), averageSpan: 32));
+trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), averageSpan: 4));
+
+WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("My first Sigma application", DemoMode.Language));
+gui.AddTabs("Overview", "Validation");
+gui.ColourManager.Dark = true;
+
+gui.WindowDispatcher(window =>
+{
+	window.TabControl["Overview"].GridSize = new GridSize(2, 3);
+	window.TabControl["Overview"].AddPanel(new ControlPanel("Control", trainer), 0, 0, 2);
+
+	var cost = CreateChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer,
+	"optimiser.cost_total", TimeStep.Every(25, TimeScale.Iteration)).Fast().Linearify();
+	var accuracy = new AccuracyPanel("Validation Accuracy", trainer, TimeStep.Every(1, TimeScale.Epoch), null, 1, 2);
+
+	window.TabControl["Overview"].AddPanel(cost, 0, 1, 1, 2);
+	window.TabControl["Overview"].AddPanel(accuracy, 1, 1, 1, 2);
+
+	NumberPanel outputpanel = new NumberPanel("Numbers", trainer);
+	DrawPanel drawPanel = new DrawPanel("Draw", trainer, 560, 560, 20, outputpanel);
+
+	window.TabControl["Validation"].GridSize = new GridSize(2, 4);
+	window.TabControl["Validation"].AddCumulativePanel(drawPanel, 2, 3);
+	window.TabControl["Validation"].AddCumulativePanel(outputpanel, 2);
+});
+
+// the operators should not run instantly but when the user clicks play
+sigma.StartOperatorsOnRun = false;
+
+sigma.PrepareAndRun();
+```
+
+### Output
+![Example output of overview panel](https://sigma.rocks/static/Example_Overview_Panel.PNG)
+![Example output of validation panel](https://sigma.rocks/static/Example_Draw_Panel.PNG)
+
 
 ## Documentation - how do I? 
 The API-Documentation (of the master-branch) is always available at our [Github-Page](https://thinkingtransistor.github.io/Sigma/). If you want it locally available, clone the gh-pages branch.
