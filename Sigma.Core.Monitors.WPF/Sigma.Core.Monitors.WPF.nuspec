@@ -16,11 +16,15 @@
 		<tags>machine-learning neural-network artificial-intelligence artificial-neural-networks framework</tags>
 	  
 		<dependencies>
-			<dependency id="Sigma.Core" version="0.3" />
-			<dependency id="Dragablz" version="0.0.3.186" />
-			<dependency id="LiveCharts.Wpf" version="0.9.3.5" />
-			<dependency id="MahApps.Metro.Resources" version="0.6.1" />
-			<dependency id="MaterialDesignThemes.MahApps" version="0.0.10" />
+			<group targetFramework="net452">
+				<dependency id="Sigma.Core" version="0.4" />
+			</group>
+			<group targetFramework="net46">
+				<dependency id="Dragablz" version="0.0.3.186" />
+				<dependency id="LiveCharts.Wpf" version="0.9.3.5" />
+				<dependency id="MahApps.Metro.Resources" version="0.6.1" />
+				<dependency id="MaterialDesignThemes.MahApps" version="0.0.10" />
+			</group>
 		</dependencies>
 
 		<frameworkAssemblies>

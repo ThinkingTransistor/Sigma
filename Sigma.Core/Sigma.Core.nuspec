@@ -16,11 +16,11 @@
 		<tags>machine-learning neural-network artificial-intelligence artificial-neural-networks framework</tags>
 	  
 		<dependencies>
-			<dependency id="log4net" version="2.0.7" />
+			<dependency id="log4net" version="2.0.8" />
 			<dependency id="SharpZipLib" version="0.86.0" />
-			<dependency id="ManagedCuda-75-x64" version="7.5.5" />
-			<dependency id="ManagedCuda-80" version="8.0.13" />
-			<dependency id="ManagedCuda-CUBLAS" version="8.0.13" />
+			<dependency id="ManagedCuda-75-x64" version="7.5.7" />
+			<dependency id="ManagedCuda-80" version="8.0.22" />
+			<dependency id="ManagedCuda-CUBLAS" version="8.0.22" />
 		</dependencies>
 
 		<references>
@@ -32,15 +32,18 @@
 	<files>
 		<file src="build\Sigma.Core.targets" target="build" />
 	
+		<!-- These files only copy to build because of targets file -->
 		<file src="libgcc_s_seh-1.dll" target="build" />
   		<file src="libgfortran-3.dll" target="build" />
   		<file src="libopenblas.dll" target="build" />
-  		<file src="libopenblas.so" target="build" />
  		<file src="libquadmath-0.dll" target="build" />
+		<file src="libopenblas.so" target="build" />
+		<file src="sigmakernels.ptx" target="build" />
 	
 		<file src="Dependencies\DiffSharp.dll" target="lib" />
-	
+
 		<file src="*.so" target="content" />
+		<file src="*.ptx" target="content" />
 		
 		<!-- TODO: relative path-->
 		<file src="bin\x64\Release\Sigma.Core.XML" target="lib" />

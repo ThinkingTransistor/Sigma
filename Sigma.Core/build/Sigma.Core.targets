@@ -17,6 +17,10 @@
 			<Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Include="$(MSBuildThisFileDirectory)\sigmakernels.ptx">
+			<Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Include="$(MSBuildThisFileDirectory)\libquadmath-0.dll">
 			<Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>

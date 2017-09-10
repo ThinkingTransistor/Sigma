@@ -37,18 +37,47 @@ nuget restore Sigma.sln
 
 You can then integrate Sigma directly into your program as a project reference.
 
-## First program - handwriting recognition with MNIST
-Very short first sample program to demonstrate capabilities, link to Samples project
+## First program - Classic MNIST
+An example trainer to classify handwritten digits from the MNIST dataset, using dense (fullyconnected) and dropout layers with a Softmax / Cross Entropy cost layer. Using a GTX 1080 and the CUDA backend, this simple trainer reaches 94.7% test accuracy after ~4 seconds (1 epoch), 97.0% after ~25 seconds (5 epochs + test time) and peaks at 97.6% after ~50 seconds (10 epochs + test time).  
+
+```
+SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
+IDataset dataset = Defaults.Datasets.Mnist(); // datasets are automatically downloaded and unpacked if not on disk
+ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
+
+trainer.Network.Architecture = InputLayer.Construct(28, 28)
+				+ DropoutLayer.Construct(0.2)
+				+ FullyConnectedLayer.Construct(1000, activation: "rel")
+				+ DropoutLayer.Construct(0.4)
+				+ FullyConnectedLayer.Construct(800, activation: "rel")
+				+ DropoutLayer.Construct(0.4)
+				+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
+				+ OutputLayer.Construct(10)
+				+ SoftMaxCrossEntropyCostLayer.Construct();
+trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
+trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
+trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
+
+// Uncomment the following line to use CUDA (default is single-threaded CPU operator)
+// trainer.Operator = new CudaSinglethreadedOperator();
+
+trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
+trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
+
+trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+	.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: new[] { 1, 2, 3 }));
+
+trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), averageSpan: 32));
+trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), averageSpan: 4));
+trainer.AddGlobalHook(new StopTrainingHook(atEpoch: 10));
+
+sigma.PrepareAndRun();
+```
 
 ## Documentation - how do I? 
 The API-Documentation (of the master-branch) is always available at our [Github-Page](https://thinkingtransistor.github.io/Sigma/). If you want it locally available, clone the gh-pages branch.
-
-How and what short overview, link to API and internal documentation
-
-## Contribute
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat-square)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CQ2TPRV8Y6J9U)
-
-Contribution guidelines, issue tracking, versioning (?), style requirements, also refer to internal documentation for backend modifications
 
 ## Acknowledgements 
 
@@ -56,7 +85,9 @@ The completion of this project would not have been possible without the assistan
 
 - Prof. Dr. Patrick van der Smagt, thank you. Thank you for your continued support and never-ending assistance. Thank you for your heartfelt encouragement and inspirational enthusiasm. Thank you for helping us out at midnight on a Saturday evening---we deeply appreciate your time, kindness, and efforts as our advisor. 
 
--	To our family, friends, and loved ones, we thank you for your support and gratefully acknowledge your assistance in making this project become a reality. 
+- To our family, friends, and loved ones, we thank you for your support and gratefully acknowledge your assistance in making this project become a reality. 
+
+- To NVIDIA, for generously supporting us with two GTX 1080 for developing a CUDA backend operator. 
 	
 *We thank you.*
 
