@@ -18,7 +18,13 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 The recommended way to use the latest version of Sigma is adding the NuGet package to your project. 
 You can either include the core framework (command line only) [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core) or the WPF visualiser (only works on Windows) which also references the core framework [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF). 
 
-In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6 before** installing the NuGet packages.
+In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6 before** installing the NuGet packages. 
+
+#### Change .NET Version (Visual Studio)
+Right click the project in the solution explorer and click **Properties**. Then in the tab **Application**, change the **Target framework** to .NET 4.6. 
+
+#### Change to x64 (Visual Studio)
+In the navigation bar, click on **Any CPU** and select **Configuration Manager**. In the configuration manager, click the **Platform dropdown** and choose **new**. Change the **New platform** to **x64** and click **OK** and **close**.
 
 ### From source
 
