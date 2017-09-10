@@ -17,7 +17,7 @@
 	  
 		<dependencies>
 			<group targetFramework="net452">
-				<dependency id="Sigma.Core" version="0.4" />
+				<dependency id="Sigma.Core" version="0.5" />
 			</group>
 			<group targetFramework="net46">
 				<dependency id="Dragablz" version="0.0.3.186" />
