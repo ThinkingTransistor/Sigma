@@ -6,16 +6,13 @@ using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
-using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
-using Sigma.Core.Data.Preprocessors;
-using Sigma.Core.Data.Readers;
-using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF;
@@ -29,7 +26,6 @@ using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
-using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Processors;
@@ -42,7 +38,6 @@ using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
-using Sigma.Core.Layers.Regularisation;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -222,8 +217,6 @@ namespace Sigma.Tests.Internals.WPF
 				//{
 				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
 				//}
-
-				window.IsInitializing = false;
 			});
 
 			if (DemoMode == DemoType.Mnist)
@@ -236,7 +229,9 @@ namespace Sigma.Tests.Internals.WPF
 
 			sigma.Prepare();
 
-			sigma.Run();
+			sigma.RunAsync();
+
+			gui.WindowDispatcher(window => window.IsInitializing = false);
 		}
 
 		private static ITrainer CreateXorTrainer(SigmaEnvironment sigma)
