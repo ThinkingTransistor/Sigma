@@ -43,6 +43,7 @@ using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using Sigma.Core.Layers.Regularisation;
+using Sigma.Core.Training.Operators.Backends.NativeGpu;
 
 namespace Sigma.Tests.Internals.WPF
 {
@@ -369,18 +370,17 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.Network = new Network();
 			trainer.Network.Architecture = InputLayer.Construct(28, 28)
 											+ DropoutLayer.Construct(0.2)
-											+ FullyConnectedLayer.Construct(1000, activation: "tanh")
+											+ FullyConnectedLayer.Construct(1000, activation: "rel")
 											+ DropoutLayer.Construct(0.4)
-											+ FullyConnectedLayer.Construct(800, activation: "tanh")
+											+ FullyConnectedLayer.Construct(800, activation: "rel")
 											+ DropoutLayer.Construct(0.4)
 											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
 											+ OutputLayer.Construct(10)
 											+ SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
-
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.Operator = new CudaSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
