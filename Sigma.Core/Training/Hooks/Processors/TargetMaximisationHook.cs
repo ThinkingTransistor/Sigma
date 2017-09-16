@@ -88,31 +88,24 @@ namespace Sigma.Core.Training.Hooks.Processors
 					uint traceTag = handler.BeginTrace();
 					block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] {1L, 1L}, inputShape)), traceTag);
 
+					handler.BeginSession();
+
 					DataUtils.ProvideExternalInputData(network, block);
 					network.Run(handler, trainingPass: false);
 
 					// fetch current outputs and optimise against them (towards desired targets)
-					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(buffer => buffer.ExternalOutputs.Contains("external_default"))
+					INDArray currentTargets = network.YieldExternalOutputsLayerBuffers().First(b => b.ExternalOutputs.Contains("external_default"))
 						.Outputs["external_default"].Get<INDArray>("activations");
-					currentTargets = handler.RowWise(handler.FlattenTimeAndFeatures(currentTargets), handler.SoftMax);
+					INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
 
-					//INDArray logPredictions = handler.Log(currentTargets);
-					//INDArray a = handler.Multiply(desiredTargets, logPredictions);
+					handler.ComputeDerivativesTo(squaredDifference);
 
-					//INDArray inverseTargets = handler.Subtract(1, desiredTargets);
-					//INDArray inversePredictions = handler.Subtract(1 + 1e-6, currentTargets);
-					//INDArray b = handler.Multiply(inverseTargets, handler.Log(inversePredictions));
-
-					INumber cost = handler.Sum(handler.Pow(handler.Subtract(currentTargets, desiredTargets), 2));
-					//INumber cost = handler.Divide(handler.Sum(handler.Add(a, b)), -currentTargets.Shape[0]); // TODO change to softmax ce cost, not sure why it doesn't work right now
-																											   // (it's even using the same optimiser?)
-
-					handler.ComputeDerivativesTo(cost);
+					handler.EndSession();
 
 					INDArray gradient = handler.GetDerivative(block["inputs"]);
 					maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));
 
-					currentCost = cost.GetValueAs<double>();
+					currentCost = squaredDifference.GetValueAs<double>();
 
 					if (currentCost <= desiredCost)
 					{

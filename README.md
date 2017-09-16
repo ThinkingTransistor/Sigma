@@ -18,7 +18,13 @@ Short overview about why anyone would use this, how it came to be (even shorter)
 The recommended way to use the latest version of Sigma is adding the NuGet package to your project. 
 You can either include the core framework (command line only) [![Nuget (PreRelease)](https://img.shields.io/nuget/vpre/Sigma.Core.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core) or the WPF visualiser (only works on Windows) which also references the core framework [![Nuget (PreRelease WPF)](https://img.shields.io/nuget/vpre/Sigma.Core.Monitors.WPF.svg?style=flat-square)](https://www.nuget.org/packages/Sigma.Core.Monitors.WPF). 
 
-In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6 before** installing the NuGet packages.
+In both cases, you can use any project with a main (e.g. ConsoleApplication) but you have to change the project settings to x64 (since **Sigma only supports 64bit mode**) and change the target framework to **.NET 4.6 before** installing the NuGet packages. 
+
+#### Change .NET Version (Visual Studio)
+Right click the project in the solution explorer and click **Properties**. Then in the tab **Application**, change the **Target framework** to .NET 4.6. 
+
+#### Change to x64 (Visual Studio)
+In the navigation bar, click on **Any CPU** and select **Configuration Manager**. In the configuration manager, click the **Platform dropdown** and choose **new**. Change the **New platform** to **x64** and click **OK** and **close**.
 
 ### From source
 
@@ -118,7 +124,7 @@ trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.E
 trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(10, TimeScale.Iteration), averageSpan: 32));
 trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), averageSpan: 4));
 
-WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("My first Sigma application", DemoMode.Language));
+WPFMonitor gui = sigma.AddMonitor(new WPFMonitor("My first Sigma application"));
 gui.AddTabs("Overview", "Validation");
 gui.ColourManager.Dark = true;
 
@@ -127,8 +133,10 @@ gui.WindowDispatcher(window =>
 	window.TabControl["Overview"].GridSize = new GridSize(2, 3);
 	window.TabControl["Overview"].AddPanel(new ControlPanel("Control", trainer), 0, 0, 2);
 
-	var cost = CreateChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer,
-	"optimiser.cost_total", TimeStep.Every(25, TimeScale.Iteration)).Fast().Linearify();
+	var cost = new TrainerChartPanel<CartesianChart, GLineSeries, GearedValues<double>, double>("Cost / Epoch", trainer,
+		"optimiser.cost_total", TimeStep.Every(25, TimeScale.Iteration)).Fast().Linearify();
+	cost.MaxPoints = 50;
+
 	var accuracy = new AccuracyPanel("Validation Accuracy", trainer, TimeStep.Every(1, TimeScale.Epoch), null, 1, 2);
 
 	window.TabControl["Overview"].AddPanel(cost, 0, 1, 1, 2);

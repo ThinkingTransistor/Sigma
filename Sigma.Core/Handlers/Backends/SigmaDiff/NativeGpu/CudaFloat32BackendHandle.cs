@@ -770,6 +770,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				RunKernel("Div_S_V", len, other, aData.GetContextPointer(), rData.GetContextPointer(), len);
 
 				a = result;
+				rData.FlagDeviceModified();
 
 				return true;
 			}
