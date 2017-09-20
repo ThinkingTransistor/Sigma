@@ -9,7 +9,16 @@
 
 Rocket powered machine learning. Create, compare, adapt, improve - neural networks at the speed of thought.
 
-Short overview about why anyone would use this, how it came to be (even shorter) and who is supporting it for the future
+Sigma was created to be a more plain and understandable machine learning framework. This is what it can do:
+
+* Input, Output, Dense, Dropout, Recurrent, SoftmaxCE / SquaredDiff cost layers
+* Gradient descent, Momentum, Adadelta, Adagrad optimisers
+* Hooks for storing / restoring checkpoints, timekeeping, stopping (or doing other things) on certain criteria, computing and reporting runtime metrics
+* Easy addition of new layers with functional automatic differentiation
+* Linear and non-linear networks with arbitrarily connected constructs
+* Distributed multi- and single- CPU and GPU (CUDA) backends 
+* Native graphical interface where parameters can be set and monitored in real-time
+
 
 ## Installation
 
