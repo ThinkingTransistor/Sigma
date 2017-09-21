@@ -46,6 +46,13 @@ namespace Sigma.Core.Handlers
 		long GetSizeBytes(params INDArray[] array);
 
 		/// <summary>
+		/// Check whether a certain ndarray is of this handler's format.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		/// <returns>A boolean indicating whether the given ndarray is of this handler's format.</returns>
+		bool IsOwnFormat(INDArray array);
+
+		/// <summary>
 		/// Check whether this handler and another handler and its contents are interchangeable (i.e. same format). 
 		/// </summary>
 		/// <param name="otherHandler">The other handler to check for.</param>
@@ -53,7 +60,7 @@ namespace Sigma.Core.Handlers
 		bool IsInterchangeable(IComputationHandler otherHandler);
 
 		/// <summary>
-		/// Create an ndarray of a certain shape.
+		/// Create an ndarray of a certain shape (zeroed out).
 		/// This is not a traceable operation. 
 		/// </summary>
 		/// <param name="shape">The ndarray shape.</param>
@@ -133,27 +140,27 @@ namespace Sigma.Core.Handlers
 		/// <param name="arrayToFill">The ndarray to fill.</param>
 		void Fill(INDArray filler, INDArray arrayToFill);
 
-	    /// <summary>
-	    /// Fill an ndarray with the contents of another ndarray within a specific range.
-	    /// Note: The index ranges must be of the same size (in source and destination).
-	    /// </summary>
-	    /// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
-	    /// <param name="arrayToFill">The array to fill within the specified range.</param>
-	    /// <param name="sourceBeginIndices">The begin indices in the filler array.</param>
-	    /// <param name="sourceEndIndices">The end indices in the filler array.</param>
-	    /// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
-	    /// <param name="destinationEndIndices">The end indices in the array to fill.</param>
-	    void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices);
+		/// <summary>
+		/// Fill an ndarray with the contents of another ndarray within a specific range.
+		/// Note: The index ranges must be of the same size (in source and destination).
+		/// </summary>
+		/// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
+		/// <param name="arrayToFill">The array to fill within the specified range.</param>
+		/// <param name="sourceBeginIndices">The begin indices in the filler array.</param>
+		/// <param name="sourceEndIndices">The end indices in the filler array.</param>
+		/// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
+		/// <param name="destinationEndIndices">The end indices in the array to fill.</param>
+		void Fill(INDArray filler, INDArray arrayToFill, long[] sourceBeginIndices, long[] sourceEndIndices, long[] destinationBeginIndices, long[] destinationEndIndices);
 
-	    /// <summary>
-	    /// Fill an ndarray with the contents of another ndarray within a specific range.
-	    /// Note: The index ranges must be of the same size (in source and destination).
-	    /// </summary>
-	    /// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
-	    /// <param name="arrayToFill">The array to fill within the specified range.</param>
-	    /// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
-	    /// <param name="destinationEndIndices">The end indices in the array to fill.</param>
-	    void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices);
+		/// <summary>
+		/// Fill an ndarray with the contents of another ndarray within a specific range.
+		/// Note: The index ranges must be of the same size (in source and destination).
+		/// </summary>
+		/// <param name="filler">The filler ndarray (from which the values will be copied in the specified range).</param>
+		/// <param name="arrayToFill">The array to fill within the specified range.</param>
+		/// <param name="destinationBeginIndices">The begin indices in the array to fill.</param>
+		/// <param name="destinationEndIndices">The end indices in the array to fill.</param>
+		void Fill<T>(T[] filler, INDArray arrayToFill, long[] destinationBeginIndices, long[] destinationEndIndices);
 
 		/// <summary>
 		/// Fill an ndarray with a single value.
@@ -197,6 +204,13 @@ namespace Sigma.Core.Handlers
 		INDArray FlattenAllButLast(INDArray array);
 
 		/// <summary>
+		/// Get an ndarray with the time and batch dimensions permuted.
+		/// </summary>
+		/// <param name="array"></param>
+		/// <returns>A version of the given ndarray with the batch dimension permuted (data is affected).</returns>
+		INDArray PermuteBatchAndTime(INDArray array);
+
+		/// <summary>
 		/// Transform an ndarray row-wise to another type (may also be ndarray).
 		/// This is not required to be a traceable operation (and typically isn't).
 		/// Note: Traceability should be consistent independent of type of <see cref="TOther"/>.  
@@ -225,6 +239,14 @@ namespace Sigma.Core.Handlers
 		/// <param name="columnLength">The column length (dimension 1 length).</param>
 		/// <returns>A slice of the given ndarray along the given range.</returns>
 		INDArray GetSlice(INDArray array, int rowIndex, int columnIndex, int rowLength, int columnLength);
+
+		/// <summary>
+		/// Get a traceable matrix stack of (identical) ndarray rows.
+		/// </summary>
+		/// <param name="numberRows">The number of rows.</param>
+		/// <param name="row">The ndarray row.</param>
+		/// <returns>A matrix stack with numberRows rows of the given row.</returns>
+		INDArray StackRows(int numberRows, INDArray row);
 
 		#endregion
 
@@ -802,6 +824,44 @@ namespace Sigma.Core.Handlers
 		/// <param name="traceable">The traceable.</param>
 		/// <returns>The derivative of the given traceable with as computed in the preceding <see cref="ComputeDerivativesTo"/> operation, or null if no derivatives were computed.</returns>
 		TTraceable GetDerivative<TTraceable>(TTraceable traceable) where TTraceable : ITraceable;
+
+		#endregion
+
+		#region Sessions / caching
+
+		/// <summary>
+		/// Begin a continous computation "session" (typically optimisation iteration). 
+		/// Optionally generate session data (i.e. caches) to speed up future sessions.
+		/// </summary>
+		void BeginSession();
+
+		/// <summary>
+		/// End a continous computation "session" (typically optimisation iteration).
+		/// Any potentially generated session data will persist until <see cref="ClearSession"/> is called.
+		/// </summary>
+		void EndSession();
+
+		/// <summary>
+		/// Clear all generated session data.
+		/// Note: While this may free memory, it might also slow down future sessions.
+		/// </summary>
+		void ClearSession();
+
+		/// <summary>
+		/// Mark an ndarray to be placed into session "limbo". 
+		/// The array will not be automatically reused until explicitly freed using <see cref="FreeLimbo"/>.
+		/// Note: If sessions are not enabled, this has no effect.
+		/// <param name="array">The array.</param>
+		/// </summary>
+		void MarkLimbo(INDArray array);
+
+		/// <summary>
+		/// Free an ndarray from the session "limbo".
+		/// The array will now be automatically reused.
+		/// Note: If sessions are not enabled, this has no effect.
+		/// </summary>
+		/// <param name="array">The array.</param>
+		void FreeLimbo(INDArray array);
 
 		#endregion
 

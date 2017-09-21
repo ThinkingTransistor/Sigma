@@ -19,6 +19,25 @@ namespace Sigma.Core.Utils
 	public static class ArrayUtils
 	{
 		/// <summary>
+		/// Get the next highest power of 2 for a given integer.
+		/// </summary>
+		/// <param name="value">The value.</param>
+		/// <returns>The next highest power of 2.</returns>
+		public static int NextHighestPowerOf2(int value)
+		{
+			// bit twiddling hacks to get next highest power of 2 for integer
+			// see https://web.archive.org/web/20160703165415/https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+			value--;
+			value |= value >> 1;
+			value |= value >> 2;
+			value |= value >> 4;
+			value |= value >> 8;
+			value |= value >> 16;
+
+			return value + 1;
+		}
+
+		/// <summary>
 		/// Concatenate two given arrays into one result array (b is appended after a).
 		/// </summary>
 		/// <typeparam name="T">The array element type.</typeparam>
@@ -161,11 +180,32 @@ namespace Sigma.Core.Utils
 		}
 
 		/// <summary>
+		/// Permute an array in-place according to the rearranged dimension array (the permutation array).
+		/// </summary>
+		/// <param name="array">The array to permute.</param>
+		/// <param name="buffer">A buffer array of the same size (this can be reused).</param>
+		/// <param name="rearrangedDimensions">The permutation array, how each dimension should be rearranged.</param>
+		/// <returns>The given array (for convenience), permuted according to the permutation array (rearrangedDimensions).</returns>
+		public static long[] PermuteArrayInPlace(long[] array, long[] buffer, int[] rearrangedDimensions)
+		{
+			int length = array.Length;
+
+			System.Array.Copy(array, 0, buffer, 0, length);
+
+			for (int i = 0; i < length; i++)
+			{
+				array[i] = buffer[rearrangedDimensions[i]];
+			}
+
+			return array;
+		}
+
+		/// <summary>
 		/// Get a permuted COPY of an array according to the rearranged dimension array (the permutation array).
 		/// </summary>
 		/// <param name="array">The array to get a permuted copy of.</param>
 		/// <param name="rearrangedDimensions">The permutation array, how each dimension should be rearranged.</param>
-		/// <returns>A permuted copy of the given array according to the permutation array (rearrangedDimensions).</returns>
+		/// <returns>A permuted COPY of the given array according to the permutation array (rearrangedDimensions).</returns>
 		public static long[] PermuteArray(long[] array, int[] rearrangedDimensions)
 		{
 			int length = array.Length;
@@ -406,6 +446,29 @@ namespace Sigma.Core.Utils
 			result[hotIndex] = 1;
 
 			return result;
+		}
+
+		/// <summary>
+		/// Shift an array left in-place by a certain offset, optionally fill the right remainder with a certain value (otherwise default for given type).
+		/// </summary>
+		/// <typeparam name="T">The array type.</typeparam>
+		/// <param name="array">The array to shift back.</param>
+		/// <param name="offset">The offset by which to shift the array to the left.</param>
+		/// <param name="fillValue">The optional value to fill the right remainder of the array with.</param>
+		/// <returns>The given array (for convenience).</returns>
+		public static T[] ShiftLeftInPlace<T>(T[] array, int offset, T fillValue = default(T))
+		{
+			if (offset < 0) throw new ArgumentOutOfRangeException($"Array shift-back offset must be non-negative but was {offset}.");
+			if (offset == 0) return array;
+
+			System.Array.Copy(array, offset, array, 0, array.Length - offset);
+
+			for (var i = array.Length - offset; i < array.Length; i++)
+			{
+				array[i] = fillValue;
+			}
+
+			return array;
 		}
 	}
 }

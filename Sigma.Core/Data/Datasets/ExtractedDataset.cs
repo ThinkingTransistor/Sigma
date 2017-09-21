@@ -83,13 +83,16 @@ namespace Sigma.Core.Data.Datasets
 		/// <inheritdoc />
 		public long MaxBytesInCache { get; set; } = long.MaxValue;
 
-		public ISet<IRecordExtractor> RecordExtractors { get; }
-
 		/// <summary>
 		/// Indicate whether this dataset should cache the raw reader data. 
 		/// If disabled, only extracted data will be cached and once processed, it might be impossible to retrieve preceding record blocks (reader streams are assumed to be non-seekable).
 		/// </summary>
 		public bool AllowRawReadDataCaching { get; set; } = true;
+
+		public ISet<IRecordExtractor> RecordExtractors
+		{
+			get { return _recordExtractors; }
+		}
 
 		private readonly Dictionary<int, ISet<RecordBlock>> _activeBlocks;
 		private readonly Dictionary<int, ISet<WeakRecordBlock>> _cachedBlocks;
@@ -98,7 +101,8 @@ namespace Sigma.Core.Data.Datasets
 		private int _lastReadRawDataBlockIndex = -1;
 		private long _totalCachedBlockSizeBytes;
 		private int _lastAvailableBlockIndex = int.MaxValue;
-
+		
+		private readonly ISet<IRecordExtractor> _recordExtractors;
 		private readonly bool _autoSetBlockSize;
 		private bool _autoSetExternalChangeBlockSize;
 
@@ -136,7 +140,7 @@ namespace Sigma.Core.Data.Datasets
 		/// <param name="flushCache">Indicate whether the cache provider should be flushed (cleared) before use. Only disable if block size and extractors used do not change (otherwise undefined behaviour).</param>
 		/// <param name="recordExtractors">The record extractors to fetch the data from, which provide the dataset with ready to use record blocks.</param>
 		public ExtractedDataset(string name, int blockSizeRecords, bool flushCache, params IRecordExtractor[] recordExtractors)
-			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), true, recordExtractors)
+			: this(name, blockSizeRecords, new DiskCacheProvider(SigmaEnvironment.Globals.Get<string>("cache_path") + name), flushCache, recordExtractors)
 		{
 		}
 
@@ -181,7 +185,7 @@ namespace Sigma.Core.Data.Datasets
 					const long estimatedRecordSizeBytes = 1024;
 					const double memoryToConsume = 0.2f;
 					const long optimalNumberBlocks = 8;
-					const int maxBlockSizeRecords = 4096;
+					const int maxBlockSizeRecords = 65536;
 					long availableSystemMemory = SystemInformationUtils.GetAvailablePhysicalMemoryBytes();
 
 					TargetBlockSizeRecords = Math.Min(maxBlockSizeRecords, (int)(availableSystemMemory * memoryToConsume / estimatedRecordSizeBytes / optimalNumberBlocks));
@@ -204,7 +208,7 @@ namespace Sigma.Core.Data.Datasets
 			AnalyseExtractors(recordExtractors);
 
 			_cacheProvider = cacheProvider;
-			RecordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
+			_recordExtractors = new HashSet<IRecordExtractor>(recordExtractors);
 
 			_availableBlocksSemaphore = new Semaphore(MaxConcurrentActiveBlocks, MaxConcurrentActiveBlocks);
 			_availableBlocksSemaphoreState = MaxConcurrentActiveBlocks;
@@ -357,6 +361,7 @@ namespace Sigma.Core.Data.Datasets
 				}
 
 				RegisterActiveBlock(block, blockIndex, handler);
+				CacheBlockConstrained(block, blockIndex, handler);
 
 				return block;
 			}
@@ -477,6 +482,7 @@ namespace Sigma.Core.Data.Datasets
 				if (block != null)
 				{
 					RegisterActiveBlock(block, blockIndex, handler);
+					CacheBlockConstrained(block, blockIndex, handler);
 
 					return block;
 				}
@@ -562,13 +568,27 @@ namespace Sigma.Core.Data.Datasets
 				{
 					Dictionary<string, INDArray> block = _cacheProvider.Load<Dictionary<string, INDArray>>(blockIdentifierInCache);
 
-					//if its != null we could read it correctly in the right format
+					//if its != null we could read it correctly with the right data type
 					if (block != null)
 					{
-						//register this cache entry as a properly loaded block in case the cache wasn't flushed and the cache map is outdated
-						RegisterCachedBlock(block, blockIndex, handler, keepReference: false);
+						if (handler.IsOwnFormat(block.First().Value))
+						{
+							return block;
+						}
+						else
+						{
+							Dictionary<string, INDArray> convertedBlock = ConvertNamedBlocks(block, handler);
 
-						return block;
+							if (convertedBlock != null)
+							{
+								_cacheProvider.Store(blockIdentifierInCache, convertedBlock); // overwrite version in cache with converted and more recent version 
+
+								//register this cache entry as a properly loaded block in case the cache wasn't flushed and the cache map is outdated
+								RegisterCachedBlock(convertedBlock, blockIndex, handler, keepReference: false);
+
+								return convertedBlock;
+							}
+						}
 					}
 				}
 			}
@@ -674,7 +694,7 @@ namespace Sigma.Core.Data.Datasets
 
 			PrepareExtractors();
 
-			foreach (IRecordExtractor extractor in RecordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				object data;
 
@@ -717,7 +737,7 @@ namespace Sigma.Core.Data.Datasets
 			ITaskObserver extractTask = SigmaEnvironment.TaskManager.BeginTask(TaskType.Extract, $"extracting block {blockIndex} for dataset \"{Name}\"", indeterminate: true);
 
 			int extractorIndex = 0;
-			foreach (IRecordExtractor extractor in RecordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				_logger.Debug($"Extracting hierarchically from extractor {extractor} at index {extractorIndex}...");
 
@@ -728,7 +748,7 @@ namespace Sigma.Core.Data.Datasets
 				{
 					_lastAvailableBlockIndex = blockIndex - 1;
 
-					_logger.Debug($"Cannot  extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
+					_logger.Debug($"Cannot extract block {blockIndex} for handler {handler}, the underlying stream for extractor {extractor} is unable to retrieve any more records. End of stream most likely reached.");
 
 					SigmaEnvironment.TaskManager.CancelTask(extractTask);
 
@@ -840,7 +860,7 @@ namespace Sigma.Core.Data.Datasets
 
 		private void PrepareExtractors()
 		{
-			foreach (IRecordExtractor extractor in RecordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				lock (extractor)
 				{
@@ -910,7 +930,7 @@ namespace Sigma.Core.Data.Datasets
 
 		public void Dispose()
 		{
-			foreach (IRecordExtractor extractor in RecordExtractors)
+			foreach (IRecordExtractor extractor in _recordExtractors)
 			{
 				extractor.Dispose();
 				extractor.Reader?.Dispose();

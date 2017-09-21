@@ -207,7 +207,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// <param name="green">The function that defines the green value.</param>
 		/// <param name="blue">The function that defines the blue value.</param>
 		/// <param name="alpha">The function that defines the alpha value.</param>
-		public void Render<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		public void Render<T>(T[] data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha) where T : struct
 		{
 			IsBitmapLoaded();
 			Bitmap.Render(data, blue, green, red, alpha);
@@ -232,7 +232,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// <param name="green">The function that defines the green value.</param>
 		/// <param name="blue">The function that defines the blue value.</param>
 		/// <param name="alpha">The function that defines the alpha value.</param>
-		public void Render<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha)
+		public void Render<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha) where T : struct
 		{
 			IsBitmapLoaded();
 			Bitmap.Render(data, blue, green, red, alpha);
@@ -292,7 +292,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Controls
 		/// <param name="green">The function that defines the green value.</param>
 		/// <param name="blue">The function that defines the blue value.</param>
 		/// <param name="alpha">The function that defines the alpha value.</param>
-		public void RenderRectangle<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset, int yOffset)
+		public void RenderRectangle<T>(INDArray data, Func<T, byte> red, Func<T, byte> green, Func<T, byte> blue, Func<T, byte> alpha, int xOffset, int yOffset) where T : struct
 		{
 			IsBitmapLoaded();
 			Bitmap.RenderRectangle(data, xOffset, yOffset, blue, green, red, alpha);

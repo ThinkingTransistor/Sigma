@@ -51,6 +51,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 			ParameterRegistry["max_optimisation_attempts"] = 2;
 			ParameterRegistry["shared_result_input_key"] = sharedResultInputKey;
 			ParameterRegistry["shared_result_success_key"] = sharedResultSuccessKey;
+
+			InvokePriority = 10000;
 		}
 
 		/// <summary>
@@ -62,15 +64,13 @@ namespace Sigma.Core.Training.Hooks.Processors
 		{
 			// we need copies of network and optimiser as to not affect the current internal state
 			INetwork network = (INetwork)resolver.ResolveGetSingle<INetwork>("network.self").DeepCopy();
-			BaseGradientOptimiser optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
+			BaseGradientOptimiser optimiser = (BaseGradientOptimiser) resolver.ResolveGetSingle<BaseGradientOptimiser>("optimiser.self").ShallowCopy(); 
 			INDArray desiredTargets = ParameterRegistry.Get<INDArray>("desired_targets");
 			IComputationHandler handler = new DebugHandler(Operator.Handler);
 
 			long[] inputShape = network.YieldExternalInputsLayerBuffers().First().Parameters.Get<long[]>("shape");
 
-			IDictionary<string, INDArray> block = new Dictionary<string, INDArray>();
-
-			block["targets"] = desiredTargets; // desired targets don't change during execution
+			IDictionary<string, INDArray> block = DataUtils.MakeBlock("targets", desiredTargets); // desired targets don't change during execution
 
 			double desiredCost = ParameterRegistry.Get<double>("desired_cost"), currentCost = Double.MaxValue;
 			int maxOptimisationAttempts = ParameterRegistry.Get<int>("max_optimisation_attempts");
@@ -88,7 +88,9 @@ namespace Sigma.Core.Training.Hooks.Processors
 					uint traceTag = handler.BeginTrace();
 					block["inputs"] = handler.Trace(maximisedInputs.Reshape(ArrayUtils.Concatenate(new[] {1L, 1L}, inputShape)), traceTag);
 
-					DataProviderUtils.ProvideExternalInputData(network, block);
+					handler.BeginSession();
+
+					DataUtils.ProvideExternalInputData(network, block);
 					network.Run(handler, trainingPass: false);
 
 					// fetch current outputs and optimise against them (towards desired targets)
@@ -97,6 +99,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 					INumber squaredDifference = handler.Sum(handler.Pow(handler.Subtract(handler.FlattenTimeAndFeatures(currentTargets), desiredTargets), 2));
 
 					handler.ComputeDerivativesTo(squaredDifference);
+
+					handler.EndSession();
 
 					INDArray gradient = handler.GetDerivative(block["inputs"]);
 					maximisedInputs = handler.ClearTrace(optimiser.Optimise("inputs", block["inputs"], gradient, handler));

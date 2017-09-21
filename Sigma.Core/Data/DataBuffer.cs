@@ -25,15 +25,30 @@ namespace Sigma.Core.Data
 		[NonSerialized]
 		private readonly IDataBuffer<T> _underlyingRootBuffer;
 
+		protected internal readonly T[] _data;
+
+		/// <inheritdoc />
 		public long Length { get; }
 
+		/// <inheritdoc />
 		public long Offset { get; }
 
+		/// <inheritdoc />
 		public long RelativeOffset { get; }
 
+		/// <inheritdoc />
 		public IDataType Type { get; }
 
-		public T[] Data { get; }
+		/// <inheritdoc />
+		public T[] Data
+		{
+			get
+			{
+				OnReadWriteAccess();
+
+				return _data;
+			}
+		}
 
 		/// <summary>
 		/// Create a data buffer of a certain type with a certain underlying buffer.
@@ -54,7 +69,7 @@ namespace Sigma.Core.Data
 			RelativeOffset = offset;
 			Offset = offset + underlyingBuffer.Offset;
 
-			Data = underlyingBuffer.Data;
+			_data = underlyingBuffer.Data;
 			Type = underlyingBuffer.Type;
 			_underlyingBuffer = underlyingBuffer;
 			_underlyingRootBuffer = underlyingBuffer.GetUnderlyingRootBuffer() == null ? underlyingBuffer : underlyingBuffer.GetUnderlyingRootBuffer();
@@ -85,7 +100,7 @@ namespace Sigma.Core.Data
 
 			CheckBufferBounds(offset, length, offset + length, data.Length);
 
-			Data = data;
+			_data = data;
 			Length = length;
 			RelativeOffset = offset;
 			Offset = offset;
@@ -106,7 +121,7 @@ namespace Sigma.Core.Data
 			}
 
 			Length = length;
-			Data = new T[length];
+			_data = new T[length];
 
 			Type = InferDataType(underlyingType);
 		}
@@ -120,7 +135,7 @@ namespace Sigma.Core.Data
 			_underlyingBuffer = other._underlyingBuffer;
 			_underlyingRootBuffer = other._underlyingRootBuffer;
 			Type = other.Type;
-			Data = other.Data;
+			_data = other.Data;
 			Offset = other.Offset;
 			RelativeOffset = other.RelativeOffset;
 			Length = other.Length;
@@ -161,39 +176,60 @@ namespace Sigma.Core.Data
 			}
 		}
 
+		/// <inheritdoc />
 		public virtual IDataBuffer<T> ShallowCopy()
 		{
+			OnReadAccess();
+
 			return new DataBuffer<T>(this);
 		}
 
+		/// <inheritdoc />
 		public virtual object DeepCopy()
 		{
+			OnReadAccess();
+
 			// not sure if entire data or just subsection should be copied
 			return new DataBuffer<T>((T[]) Data.Clone(), Offset, Length, Type);
 		}
 
+		/// <inheritdoc />
 		public T GetValue(long index)
 		{
+			OnReadAccess();
+
 			return Data[Offset + index];
 		}
 
+		/// <inheritdoc />
 		public TOther GetValueAs<TOther>(long index)
 		{
+			OnReadAccess();
+
 			return (TOther) Convert.ChangeType(Data.GetValue(Offset + index), typeof(TOther));
 		}
 
+		/// <inheritdoc />
 		public virtual IDataBuffer<T> GetValues(long startIndex, long length)
 		{
+			OnReadAccess();
+
 			return new DataBuffer<T>(this, startIndex, length);
 		}
 
-		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length)
+		/// <inheritdoc />
+		public virtual IDataBuffer<TOther> GetValuesAs<TOther>(long startIndex, long length) where TOther : struct
 		{
+			OnReadAccess();
+
 			return new DataBuffer<TOther>(GetValuesArrayAs<TOther>(startIndex, length), 0L, length);
 		}
 
+		/// <inheritdoc />
 		public T[] GetValuesArray(long startIndex, long length)
 		{
+			OnReadAccess();;
+
 			T[] valuesArray = new T[length];
 
 			System.Array.Copy(Data, Offset + startIndex, valuesArray, 0, length);
@@ -201,8 +237,11 @@ namespace Sigma.Core.Data
 			return valuesArray;
 		}
 
+		/// <inheritdoc />
 		public TOther[] GetValuesArrayAs<TOther>(long startIndex, long length)
 		{
+			OnReadAccess();
+
 			TOther[] otherData = new TOther[length];
 
 			long absoluteStart = Offset + startIndex;
@@ -216,26 +255,37 @@ namespace Sigma.Core.Data
 			return otherData;
 		}
 
+		/// <inheritdoc />
 		public void SetValue(T value, long index)
 		{
+			OnWriteAccess();
+
 			Data.SetValue(value, index + Offset);
 		}
 
+		/// <inheritdoc />
 		public void SetValues(IDataBuffer<T> buffer, long sourceStartIndex, long destStartIndex, long length)
 		{
+			OnWriteAccess();;
+
 			System.Array.Copy(buffer.Data, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
+		/// <inheritdoc />
 		public void SetValues(T[] values, long sourceStartIndex, long destStartIndex, long length)
 		{
+			OnWriteAccess();
+
 			System.Array.Copy(values, sourceStartIndex, Data, Offset + destStartIndex, length);
 		}
 
+		/// <inheritdoc />
 		public IDataBuffer<T> GetUnderlyingBuffer()
 		{
 			return _underlyingBuffer;
 		}
 
+		/// <inheritdoc />
 		public IDataBuffer<T> GetUnderlyingRootBuffer()
 		{
 			return _underlyingRootBuffer;
@@ -245,6 +295,8 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < Length; i++)
 			{
+				OnReadAccess();
+
 				yield return Data[i + Offset];
 			}
 		}
@@ -253,12 +305,38 @@ namespace Sigma.Core.Data
 		{
 			for (long i = 0; i < Length; i++)
 			{
+				OnReadAccess();
+
 				yield return Data[i + Offset];
 			}
 		}
 
+		/// <summary>
+		/// Called before any operation that reads from the local data.
+		/// </summary>
+		protected virtual void OnReadAccess()
+		{
+		}
+
+		/// <summary>
+		/// Called before any operation that writes to the local data.
+		/// </summary>
+		protected virtual void OnWriteAccess()
+		{
+		}
+
+		/// <summary>
+		/// Called before any operation that reads from and writes to the local data.
+		/// </summary>
+		protected virtual void OnReadWriteAccess()
+		{
+		}
+
+		/// <inheritdoc />
 		public override string ToString()
 		{
+			OnReadAccess();
+
 			return $"databuffer {Type}x{Length}: " + "[" + string.Join(",", Data.SubArray((int) Offset, (int) Length)) + "]";
 		}
 	}

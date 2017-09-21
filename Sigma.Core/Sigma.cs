@@ -6,14 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -29,6 +21,14 @@ using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Operators;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sigma.Core
 {
@@ -102,7 +102,7 @@ namespace Sigma.Core
 			ParameterisationManager = new ParameterisationManager();
 			SynchronisationHandler = new SynchronisationHandler(this);
 
-			SetRandomSeed((int) (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
+			SetRandomSeed((int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond));
 
 			_monitors = new HashSet<IMonitor>();
 			_globalHooksToAttach = new ConcurrentQueue<KeyValuePair<IHook, IOperator>>();
@@ -140,7 +140,7 @@ namespace Sigma.Core
 		/// <param name="seed"></param>
 		public void SetRandomSeed(int seed)
 		{
-			_logger.Debug($"Using random initial seed {seed} in sigma environment \"{Name}\".");
+			_logger.Info($"Using random initial seed {seed} for sigma environment \"{Name}\".");
 
 			RandomSeed = seed;
 			Random = new Random(seed);
@@ -279,21 +279,17 @@ namespace Sigma.Core
 		/// </summary>
 		public void Run()
 		{
-			_logger.Info($"Starting sigma environment \"{Name}\"...");
+			StartSigmaEnvironment();
 
+			UpdateSigmaEnvironment();
+		}
+
+		/// <summary>
+		/// Update the sigma environment and keep everything up and running.
+		/// </summary>
+		private void UpdateSigmaEnvironment()
+		{
 			bool shouldRun = true;
-
-			Running = true;
-
-			InitialiseTrainers();
-			FetchRunningOperators();
-			if (StartOperatorsOnRun)
-			{
-				StartRunningOperators();
-			}
-
-			_logger.Info($"Started sigma environment \"{Name}\".");
-
 			while (shouldRun)
 			{
 				_logger.Debug("Waiting for processing queue event to signal state change....");
@@ -323,11 +319,33 @@ namespace Sigma.Core
 		}
 
 		/// <summary>
+		/// This method starts the Sigma Environment
+		/// </summary>
+		private void StartSigmaEnvironment()
+		{
+			_logger.Info($"Starting sigma environment \"{Name}\"...");
+
+
+			Running = true;
+
+			InitialiseTrainers();
+			FetchRunningOperators();
+
+			if (StartOperatorsOnRun)
+			{
+				StartRunningOperators();
+			}
+
+			_logger.Info($"Started sigma environment \"{Name}\".");
+		}
+
+		/// <summary>
 		/// Run this environment asynchronously. Execute all registered options until stop is requested.
 		/// </summary>
 		public async Task RunAsync()
 		{
-			await Task.Run(() => Run());
+			StartSigmaEnvironment();
+			await Task.Run(() => UpdateSigmaEnvironment());
 		}
 
 		/// <summary>
@@ -641,7 +659,7 @@ namespace Sigma.Core
 			else
 			{
 				// see https://stackoverflow.com/questions/37213848/best-way-to-access-to-log4net-wrapper-app-config
-				Hierarchy hierarchy = (Hierarchy) LogManager.GetRepository();
+				Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
 				PatternLayout patternLayout = new PatternLayout
 				{
@@ -781,6 +799,6 @@ namespace Sigma.Core
 			ActiveSigmaEnvironments.Clear();
 		}
 
-#endregion static
+		#endregion static
 	}
 }

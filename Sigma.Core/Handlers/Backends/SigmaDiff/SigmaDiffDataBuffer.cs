@@ -7,6 +7,8 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using Sigma.Core.Data;
 using static DiffSharp.Util;
 
@@ -17,11 +19,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	[Serializable]
-	internal class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
+	public class SigmaDiffDataBuffer<T> : DataBuffer<T>, ISigmaDiffDataBuffer<T>
 	{
 		public long BackendTag { get; set; }
 
-		#region DiffSharp SigmaDiffDataBuffer interop properties
+		#region DiffSharp <=> SigmaDiffDataBuffer interop properties
 
 		int ISigmaDiffDataBuffer<T>.Length => (int)Length;
 
@@ -29,7 +31,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		T[] ISigmaDiffDataBuffer<T>.Data => Data;
 
-		T[] ISigmaDiffDataBuffer<T>.SubData => DataBufferSubDataUtils.SubData(Data, (int)Offset, (int)Length);
+		T[] ISigmaDiffDataBuffer<T>.SubData => _InternalGetSubData(); 
 
 		#endregion
 
@@ -80,18 +82,19 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return (ISigmaDiffDataBuffer<T>)GetValues(startIndex, length);
 		}
 
-		public ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
+		public virtual ISigmaDiffDataBuffer<T> GetStackedValues(int totalRows, int totalCols, int rowStart, int rowFinish, int colStart, int colFinish)
 		{
 			int colLength = colFinish - colStart + 1;
 			int newSize = (rowFinish - rowStart + 1) * colLength;
-			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(new T[newSize], BackendTag);
+			T[] stackedData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)newSize);
+			SigmaDiffDataBuffer<T> values = new SigmaDiffDataBuffer<T>(stackedData, BackendTag);
 
 			for (int m = rowStart; m <= rowFinish; m++)
 			{
 				long sourceIndex = Offset + m * totalCols + colStart;
 				long destinationIndex = (m - rowStart) * colLength;
 
-				System.Array.Copy(Data, sourceIndex, values.Data, destinationIndex, colLength);
+				Buffer.BlockCopy(Data, (int)(sourceIndex * Type.SizeBytes), values.Data, (int)(destinationIndex * Type.SizeBytes), colLength * Type.SizeBytes);
 			}
 
 			return values;
@@ -99,16 +102,38 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.DeepCopy()
 		{
-			T[] copyData = new T[Length];
-			System.Array.Copy(Data, Offset, copyData, 0, Length);
+			return _InternalDeepCopy();
+		}
 
-			// deep copy only core data for diffsharp
+		protected virtual ISigmaDiffDataBuffer<T> _InternalDeepCopy()
+		{
+			T[] copyData = _InternalGetSubData();
+
+			return _InternalDeepCopy(copyData);
+		}
+
+		protected virtual ISigmaDiffDataBuffer<T> _InternalDeepCopy(T[] copyData)
+		{
 			return new SigmaDiffDataBuffer<T>(copyData, 0L, Length, BackendTag, Type);
 		}
 
 		ISigmaDiffDataBuffer<T> ISigmaDiffDataBuffer<T>.ShallowCopy()
 		{
+			return _InternalShallowCopy();
+		}
+
+		protected virtual ISigmaDiffDataBuffer<T> _InternalShallowCopy()
+		{
 			return new SigmaDiffDataBuffer<T>(this, BackendTag);
+		}
+
+		protected virtual T[] _InternalGetSubData()
+		{
+			T[] copyData = SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle.CreateUninitialisedArray((int)Length);
+
+			Buffer.BlockCopy(Data, (int)(Offset * Type.SizeBytes), copyData, 0, (int)(Length * Type.SizeBytes));
+
+			return copyData;
 		}
 
 		#endregion

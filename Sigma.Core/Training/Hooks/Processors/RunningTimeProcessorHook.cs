@@ -9,6 +9,7 @@ For full license see LICENSE in the root directory of this project.
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sigma.Core.Training.Hooks.Processors
 {
@@ -33,7 +34,8 @@ namespace Sigma.Core.Training.Hooks.Processors
 		/// <param name="timeScale">The time scale.</param>
 		/// <param name="averageSpan">The interval span to average over.</param>
 		/// <param name="sharedResultBaseKey">The shared result base key (under which results will be available).</param>
-		public RunningTimeProcessorHook(TimeScale timeScale, int averageSpan, string sharedResultBaseKey) : base(Utils.TimeStep.Every(1, timeScale))
+		/// <param name="removeExtremas"></param>
+		public RunningTimeProcessorHook(TimeScale timeScale, int averageSpan, string sharedResultBaseKey, bool removeExtremas = true) : base(Utils.TimeStep.Every(1, timeScale))
 		{
 			if (sharedResultBaseKey == null) throw new ArgumentNullException(nameof(sharedResultBaseKey));
 
@@ -42,6 +44,7 @@ namespace Sigma.Core.Training.Hooks.Processors
 			ParameterRegistry.Set("average_span", averageSpan, typeof(int));
 			ParameterRegistry.Set("shared_result_base_key", sharedResultBaseKey, typeof(string));
 			ParameterRegistry.Set("last_running_times", new LinkedList<long>());
+			ParameterRegistry.Set("remove_extremas", removeExtremas, typeof(bool));
 		}
 
 		/// <summary>
@@ -53,6 +56,7 @@ namespace Sigma.Core.Training.Hooks.Processors
 		{
 			if (ParameterRegistry.ContainsKey("last_time"))
 			{
+				bool removeExtremas = ParameterRegistry.Get<bool>("remove_extremas");
 				long lastTime = ParameterRegistry.Get<long>("last_time");
 				long currentTime = Operator.RunningTimeMilliseconds;
 				long elapsedTime = currentTime - lastTime;
@@ -68,19 +72,33 @@ namespace Sigma.Core.Training.Hooks.Processors
 				if (numberRunningTimes > averageSpan)
 				{
 					lastRunningTimes.RemoveFirst();
+					numberRunningTimes--;
 				}
 
-				long averageTime = 0L;
+				long averageTime = lastRunningTimes.Sum();
 
-				foreach (long pastTime in lastRunningTimes)
+				if (removeExtremas)
 				{
-					averageTime += pastTime;
+					LinkedList<long> runningTimesCopy = new LinkedList<long>(lastRunningTimes);
+					int timesToRemove = (int) Math.Sqrt(lastRunningTimes.Count / 2.0f); // TODO magic number
+
+					while (timesToRemove-- > 0)
+					{
+						long removedTime = timesToRemove % 2 == 0 ? runningTimesCopy.Max() : runningTimesCopy.Min();
+
+						runningTimesCopy.Remove(removedTime);
+					}
+
+					averageTime = runningTimesCopy.Sum();
+					numberRunningTimes = runningTimesCopy.Count;
 				}
 
 				averageTime /= numberRunningTimes;
 
 				resolver.ResolveSet(sharedResultBaseKey + "_last", elapsedTime, addIdentifierIfNotExists: true);
 				resolver.ResolveSet(sharedResultBaseKey + "_average", averageTime, addIdentifierIfNotExists: true);
+				resolver.ResolveSet(sharedResultBaseKey + "_min", lastRunningTimes.Min(), addIdentifierIfNotExists: true);
+				resolver.ResolveSet(sharedResultBaseKey + "_max", lastRunningTimes.Max(), addIdentifierIfNotExists: true);
 			}
 
 			ParameterRegistry["last_time"] = Operator.RunningTimeMilliseconds;

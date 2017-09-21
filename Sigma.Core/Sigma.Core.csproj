@@ -75,9 +75,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CudaBlas, Version=8.0.13.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
-      <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.13\lib\net45\CudaBlas.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="CudaBlas, Version=8.0.22.0, Culture=neutral, PublicKeyToken=539d54d12e99fedb, processorArchitecture=AMD64">
+      <HintPath>..\packages\ManagedCuda-CUBLAS.8.0.22\lib\net45\CudaBlas.dll</HintPath>
     </Reference>
     <Reference Include="CudaFFT, Version=7.5.7.0, Culture=neutral, PublicKeyToken=f066edfa1acb2f23, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\CudaFFT.dll</HintPath>
@@ -107,17 +106,18 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="log4net, Version=2.0.7.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.7\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="ManagedCuda, Version=8.0.13.0, Culture=neutral, PublicKeyToken=242d898828717aa0, processorArchitecture=MSIL">
-      <HintPath>..\packages\ManagedCuda-80.8.0.13\lib\net45\ManagedCuda.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ManagedCuda, Version=8.0.22.0, Culture=neutral, PublicKeyToken=242d898828717aa0, processorArchitecture=MSIL">
+      <HintPath>..\packages\ManagedCuda-80.8.0.22\lib\net45\ManagedCuda.dll</HintPath>
     </Reference>
     <Reference Include="NPP, Version=7.5.7.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\NPP.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="NVRTC, Version=7.5.7.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\ManagedCuda-75-x64.7.5.7\lib\net45\x64\NVRTC.dll</HintPath>
@@ -125,6 +125,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.3.0\lib\portable-net45+win8+wp8+wpa81\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -150,7 +153,7 @@
     <Compile Include="Data\Datasets\IDataset.cs" />
     <Compile Include="Data\Datasets\RawDataset.cs" />
     <Compile Include="Data\Extractors\BaseExtractor.cs" />
-    <Compile Include="Data\Extractors\ByteRecordExtractor.cs" />
+    <Compile Include="Data\Extractors\ArrayRecordExtractor.cs" />
     <Compile Include="Data\Extractors\CSVRecordExtractor.cs" />
     <Compile Include="Data\Extractors\IRecordExtractor.cs" />
     <Compile Include="Data\IDataBuffer.cs" />
@@ -168,8 +171,10 @@
     <Compile Include="Data\Preprocessors\NormalisingPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\OneHotPreprocessor.cs" />
     <Compile Include="Data\Preprocessors\PerIndexNormalisingPreprocessor.cs" />
+    <Compile Include="Data\Preprocessors\PermutePreprocessor.cs" />
     <Compile Include="Data\Preprocessors\ShufflePreprocessor.cs" />
     <Compile Include="Data\Readers\ByteRecordReader.cs" />
+    <Compile Include="Data\Readers\CharacterRecordReader.cs" />
     <Compile Include="Data\Readers\CSVRecordReader.cs" />
     <Compile Include="Data\Readers\IRecordReader.cs" />
     <Compile Include="Data\Sources\CompressedSource.cs" />
@@ -185,10 +190,13 @@
     <Compile Include="Handlers\Backends\SigmaDiff\DiffSharpFloat32BackendHandle.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasBlasBackend.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\OpenBlasLapackBackend.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32BackendHandle.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeGpu\CudaSigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\PlatformDependentUtils.cs" />
     <Compile Include="Handlers\Backends\IBlasBackend.cs" />
     <Compile Include="Handlers\Backends\ILapackBackend.cs" />
-    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CPUFloat32Handler.cs" />
+    <Compile Include="Handlers\Backends\SigmaDiff\NativeCpu\CpuFloat32Handler.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffDataBuffer.cs" />
     <Compile Include="Handlers\Backends\SigmaDiff\SigmaDiffSharpBackendProvider.cs" />
     <Compile Include="Handlers\IComputationHandler.cs" />
@@ -203,10 +211,13 @@
     <Compile Include="Layers\External\OutputLayer.cs" />
     <Compile Include="Layers\External\InputLayer.cs" />
     <Compile Include="Layers\InternalLayerBuffer.cs" />
+    <Compile Include="Layers\Recurrent\RecurrentLayer.cs" />
     <Compile Include="Layers\Regularisation\DropoutLayer.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\ArrayPool.cs" />
     <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32Number.cs" />
-    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADNDFloat32Array.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeCpu\ADFloat32NDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeGpu\CudaFloat32NDArray.cs" />
+    <Compile Include="MathAbstract\Backends\SigmaDiff\NativeGpu\CudaFloat32Number.cs" />
     <Compile Include="MathAbstract\NDArrayUtils.cs" />
     <Compile Include="MathAbstract\INDArray.cs" />
     <Compile Include="MathAbstract\INumber.cs" />
@@ -253,6 +264,7 @@
     <Compile Include="Training\Hooks\Modifiers\ApplyModifierHook.cs" />
     <Compile Include="Training\Hooks\Processors\RunningTimeProcessorHook.cs" />
     <Compile Include="Training\Hooks\Processors\TargetMaximisationHook.cs" />
+    <Compile Include="Training\Hooks\Processors\TimeSeriesGeneratorHook.cs" />
     <Compile Include="Training\Hooks\Reporters\TargetMaximisationReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\UniClassificationAccuracyReporter.cs" />
     <Compile Include="Training\Hooks\Reporters\ValueReporter.cs" />
@@ -285,6 +297,8 @@
     <Compile Include="Training\Modifiers\ScaleValueModifier.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\CpuMultithreadedOperator.cs" />
     <Compile Include="Training\Operators\Backends\NativeCpu\Workers\CpuWorker.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\CudaSinglethreadedOperator.cs" />
+    <Compile Include="Training\Operators\Backends\NativeGpu\Workers\CudaWorker.cs" />
     <Compile Include="Training\Operators\BaseOperator.cs" />
     <Compile Include="Training\Operators\IOperator.cs" />
     <Compile Include="Training\ITrainer.cs" />
@@ -294,6 +308,7 @@
     <Compile Include="Training\Optimisers\Gradient\Memory\AdadeltaOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\AdagradOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\BaseGradientOptimiser.cs" />
+    <Compile Include="Training\Optimisers\Gradient\Memory\BaseArrayMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\Memory\BaseMemoryGradientOptimiser.cs" />
     <Compile Include="Training\Optimisers\Gradient\GradientDescentOptimiser.cs" />
     <Compile Include="Training\Optimisers\IOptimiser.cs" />
@@ -302,7 +317,7 @@
     <Compile Include="Training\Providers\IDataProvider.cs" />
     <Compile Include="Training\Trainer.cs" />
     <Compile Include="Utils\ArrayUtils.cs" />
-    <Compile Include="Utils\DataProviderUtils.cs" />
+    <Compile Include="Utils\DataUtils.cs" />
     <Compile Include="Utils\Defaults.cs" />
     <Compile Include="Utils\DictionaryUtils.cs" />
     <Compile Include="Utils\DiskCacheProvider.cs" />
@@ -334,12 +349,14 @@
   <ItemGroup>
     <Folder Include="Layers\Convolutional\" />
     <Folder Include="Layers\Normalisation\" />
-    <Folder Include="Layers\Recurrent\" />
     <Folder Include="Persistence\Selectors\Environment\" />
     <Folder Include="Training\Supervisors\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="sigmakernels.ptx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="libopenblas.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -98,10 +98,7 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		///     Create a new <see cref="CpuMultithreadedOperator" /> using the default <see cref="IComputationHandler" /> (<see cref="CpuFloat32Handler"/>).
 		///     The <see cref="ThreadPriority" /> will receive its default value (<see cref="ThreadPriority.Highest" />).
 		/// </summary>
-		/// <param name="workerCount">
-		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
-		///     parallel.
-		/// </param>
+		/// <param name="workerCount">The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in parallel.</param>
 		public CpuMultithreadedOperator(int workerCount) : this(new CpuFloat32Handler(), workerCount, ThreadPriority.Highest)
 		{
 		}
@@ -111,14 +108,8 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		///     <see cref="ThreadPriority" />.
 		///     The <see cref="IComputationHandler" /> will <c>not</c> be modified by the <see cref="ITrainer" />.
 		/// </summary>
-		/// <param name="handler">
-		///     The <see cref="IComputationHandler" /> that will be assigned to the
-		///     <see cref="IComputationHandler" />
-		/// </param>
-		/// <param name="workerCount">
-		///     The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in
-		///     parallel.
-		/// </param>
+		/// <param name="handler">The <see cref="IComputationHandler" /> that will be assigned to the <see cref="IComputationHandler"/></param>
+		/// <param name="workerCount">The number of <see cref="IWorker" />s (threads) used in this <see cref="IOperator" /> in parallel.</param>
 		/// <param name="priority">The <see cref="ThreadPriority" /> with which newly created Threads will be started.</param>
 		public CpuMultithreadedOperator(IComputationHandler handler, int workerCount, ThreadPriority priority)
 			: base(handler, workerCount)
@@ -134,46 +125,6 @@ namespace Sigma.Core.Training.Operators.Backends.NativeCpu
 		protected override IWorker CreateWorker()
 		{
 			return new CpuWorker(this, Handler, WorkerPriority);
-		}
-
-		/// <inheritdoc />
-		protected override void StartWorker(IWorker worker)
-		{
-			Logger.Debug($"Starting worker {worker} in operator {this}...");
-
-			worker.Start();
-		}
-
-		/// <inheritdoc />
-		protected override void RunWorkerOnce(IWorker worker)
-		{
-			Logger.Debug($"Running worker {worker} once in operator {this}...");
-
-			worker.RunOnce();
-		}
-
-		/// <inheritdoc />
-		protected override void PauseWorker(IWorker worker)
-		{
-			Logger.Debug($"Signalling pause to worker {worker} in operator {this}...");
-
-			worker.SignalPause();
-		}
-
-		/// <inheritdoc />
-		protected override void ResumeWorker(IWorker worker)
-		{
-			Logger.Debug($"Signalling resume to worker {worker} in operator {this}...");
-
-			worker.SignalResume();
-		}
-
-		/// <inheritdoc />
-		protected override void StopWorker(IWorker worker)
-		{
-			Logger.Debug($"Stopping worker {worker} in operator {this}...");
-
-			worker.SignalStop();
 		}
 
 		/// <summary>

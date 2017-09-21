@@ -37,5 +37,29 @@ namespace Sigma.Core.Training.Optimisers
 		/// <param name="network">The network to optimise.</param>
 		/// <param name="handler">The computation handler to use.</param>
 		void Run(INetwork network, IComputationHandler handler);
+
+		/// <summary>
+		/// Add a specific filter mask ("freeze" a specific part of the model).
+		/// Filter masks are registry resolve strings for the model, e.g. layer1.*, *.weights.
+		/// </summary>
+		/// <param name="filterMask">The filter mask to add ("freeze").</param>
+		void AddFilter(string filterMask);
+
+		/// <summary>
+		/// Remove a specific filter mask ("unfreeze" a specific part of the model).
+		/// </summary>
+		/// <param name="filterMask">The filter mask to remove ("unfreeze").</param>
+		void RemoveFilter(string filterMask);
+
+		/// <summary>
+		/// Clear all existing filter masks ("unfreeze" the entire model).
+		/// </summary>
+		void ClearFilters();
+
+		/// <summary>
+		/// Get a shallow copy of this optimiser with the same parameters (etc. learning / decay rates, filters).		
+		/// </summary>
+		/// <returns>A shallow copy of this optimiser.</returns>
+		IOptimiser ShallowCopy();
 	}
 }

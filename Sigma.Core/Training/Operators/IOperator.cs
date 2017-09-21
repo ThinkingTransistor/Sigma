@@ -103,6 +103,12 @@ namespace Sigma.Core.Training.Operators
 		int EpochNumber { get; }
 
 		/// <summary>
+		///		Enable the use of sessions in this operator. 
+		///		Computation handlers will attempt to speed up computation sessions at the possible expense of higher memory requirements.
+		/// </summary>
+		bool UseSessions { get; set; }
+
+		/// <summary>
 		///     Attach a local hook to this operator (if no functionally equivalent hook is already attached).
 		/// </summary>
 		/// <param name="hook">The hook to attach.</param>

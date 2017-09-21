@@ -6,16 +6,13 @@ using MaterialDesignColors;
 using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
-using Sigma.Core.Data.Extractors;
 using Sigma.Core.Data.Iterators;
-using Sigma.Core.Data.Preprocessors;
-using Sigma.Core.Data.Readers;
-using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.Monitors;
 using Sigma.Core.Monitors.WPF;
@@ -31,7 +28,6 @@ using Sigma.Core.Monitors.WPF.Panels.Parameterisation;
 using Sigma.Core.Monitors.WPF.Utils;
 using Sigma.Core.Monitors.WPF.Utils.Defaults.MNIST;
 using Sigma.Core.Monitors.WPF.View.Parameterisation;
-using Sigma.Core.Persistence;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Processors;
@@ -39,6 +35,7 @@ using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Operators.Backends.NativeGpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
@@ -118,7 +115,7 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "NetView", "Reproduction");
+			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction", "NetView", "Update");
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -130,6 +127,7 @@ namespace Sigma.Tests.Internals.WPF
 				window.TabControl["Validation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
 				window.TabControl["Reproduction"].GridSize = new GridSize(2, 5);
+				window.TabControl["Update"].GridSize = new GridSize(1, 1);
 
 				window.TabControl["Overview"].GridSize.Rows -= 1;
 				window.TabControl["Overview"].GridSize.Columns -= 1;
@@ -176,6 +174,9 @@ namespace Sigma.Tests.Internals.WPF
 				var learningBlock = (UserControlParameterVisualiser)parameter.Content.Add("Learning rate", typeof(double), trainer.Operator.Registry, "optimiser.learning_rate");
 				learningBlock.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Epoch));
 
+				var paramCount = (UserControlParameterVisualiser)parameter.Content.Add("Parameter count", typeof(long), trainer.Operator.Registry, "network.parameter_count");
+				paramCount.AutoPollValues(trainer, TimeStep.Every(1, TimeScale.Start));
+
 				window.TabControl["Overview"].AddCumulativePanel(cost1, 1, 2, legend: iris);
 				window.TabControl["Overview"].AddCumulativePanel(parameter);
 				if (DemoMode != DemoType.TicTacToe)
@@ -188,7 +189,7 @@ namespace Sigma.Tests.Internals.WPF
 				//window.TabControl["Metrics"].AddCumulativePanel(cost2, legend: iris);
 				//window.TabControl["Metrics"].AddCumulativePanel(weightAverage, legend: iris);
 				//window.TabControl["Metrics"].AddCumulativePanel(biasesAverage, legend: iris);
-				window.TabControl["Metrics"].AddCumulativePanel(updateAverage, legend: iris);
+				window.TabControl["Update"].AddCumulativePanel(updateAverage, legend: iris);
 				if (accuracy2 != null)
 				{
 					window.TabControl["Metrics"].AddCumulativePanel(accuracy2, legend: iris);
@@ -209,7 +210,7 @@ namespace Sigma.Tests.Internals.WPF
 
 					for (int i = 0; i < 10; i++)
 					{
-						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Start)));
+						window.TabControl["Maximisation"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation {i}", i, trainer, TimeStep.Every(1, TimeScale.Epoch)));
 					}
 				}
 
@@ -232,7 +233,10 @@ namespace Sigma.Tests.Internals.WPF
 					window.TabControl["Overview"].AddCumulativePanel(new TicTacToePanel("Play TicTacToe!", trainer));
 				}
 
-				window.IsInitializing = false;
+				//for (int i = 0; i < 10; i++)
+				//{
+				//	window.TabControl["Reproduction"].AddCumulativePanel(new MnistBitmapHookPanel($"Target Maximisation 7-{i}", 8, 28, 28, trainer, TimeStep.Every(1, TimeScale.Start)));
+				//}
 			});
 
 			if (DemoMode == DemoType.Mnist)
@@ -245,7 +249,9 @@ namespace Sigma.Tests.Internals.WPF
 
 			sigma.Prepare();
 
-			sigma.Run();
+			sigma.RunAsync();
+
+			gui.WindowDispatcher(window => window.IsInitializing = false);
 		}
 
 		private static ITrainer CreateXorTrainer(SigmaEnvironment sigma)
@@ -365,40 +371,38 @@ namespace Sigma.Tests.Internals.WPF
 
 
 		/// <summary>
-		/// Create a MNIST trainer (writing recognition) will be added to an environemnt.
+		/// Create a MNIST trainer (writing recognition) that will be added to an environemnt.
 		/// </summary>
 		/// <param name="sigma">The sigma environemnt this trainer will be assigned to.</param>
 		/// <returns>The newly created trainer.</returns>
 		private static ITrainer CreateMnistTrainer(SigmaEnvironment sigma)
 		{
-			ByteRecordReader mnistImageReader = new ByteRecordReader(headerLengthBytes: 16, recordSizeBytes: 28 * 28, source: new CompressedSource(new MultiSource(new FileSource("train-images-idx3-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz"))));
-			IRecordExtractor mnistImageExtractor = mnistImageReader.Extractor("inputs", new[] { 0L, 0L }, new[] { 28L, 28L }).Preprocess(new NormalisingPreprocessor(0, 255));
+			IDataset dataset = Defaults.Datasets.Mnist();
 
-			ByteRecordReader mnistTargetReader = new ByteRecordReader(headerLengthBytes: 8, recordSizeBytes: 1, source: new CompressedSource(new MultiSource(new FileSource("train-labels-idx1-ubyte.gz"), new UrlSource("http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"))));
-			IRecordExtractor mnistTargetExtractor = mnistTargetReader.Extractor("targets", new[] { 0L }, new[] { 1L }).Preprocess(new OneHotPreprocessor(minValue: 0, maxValue: 9));
+			ITrainer trainer = sigma.CreateTrainer("mnist-trainer");
 
-			IDataset dataset = new ExtractedDataset("mnist", ExtractedDataset.BlockSizeAuto, false, mnistImageExtractor, mnistTargetExtractor);
-			ITrainer trainer = sigma.CreateTrainer("test");
-
-			trainer.Network = new Network
-			{
-				Architecture = InputLayer.Construct(28, 28)
-								+ FullyConnectedLayer.Construct(28 * 28)
-								+ FullyConnectedLayer.Construct(10)
-								+ OutputLayer.Construct(10)
-								+ SoftMaxCrossEntropyCostLayer.Construct()
-			};
-			trainer.Network = Serialisation.ReadBinaryFileIfExists("mnist.sgnet", trainer.Network);
-
+			trainer.Network = new Network();
+			trainer.Network.Architecture = InputLayer.Construct(28, 28)
+											+ DropoutLayer.Construct(0.2)
+											+ FullyConnectedLayer.Construct(1000, activation: "rel")
+											+ DropoutLayer.Construct(0.4)
+											+ FullyConnectedLayer.Construct(800, activation: "rel")
+											+ DropoutLayer.Construct(0.4)
+											+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
+											+ OutputLayer.Construct(10)
+											+ SoftMaxCrossEntropyCostLayer.Construct();
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
-			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
-			trainer.Optimiser = new MomentumGradientOptimiser(learningRate: 0.01, momentum: 0.9);
-			trainer.Operator = new CpuSinglethreadedOperator();
+			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
+			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
+			trainer.Operator = new CudaSinglethreadedOperator();
 
-			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1f));
-			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.1f, mean: 0.03f));
+			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
+			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
 
-			//trainer.AddGlobalHook(new TargetMaximisationReporter(trainer.Operator.Handler.NDArray(ArrayUtils.OneHot(3, 10), 10L), TimeStep.Every(1, TimeScale.Start)));
+			trainer.AddLocalHook(new ValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Iteration), reportEpochIteration: true)
+				.On(new ExtremaCriteria("optimiser.cost_total", ExtremaTarget.Min)));
+
+			trainer.AddLocalHook(new RunningTimeReporter(TimeStep.Every(1, TimeScale.Epoch), 4));
 
 			return trainer;
 		}

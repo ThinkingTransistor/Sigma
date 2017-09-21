@@ -189,7 +189,7 @@ namespace Sigma.Core.Monitors.WPF.Panels.Games.TicTacToe
 			{
 				SetIndexFast(row, column, move);
 				TicTacToePlayer winner;
-
+				
 				if (GameOver(row, column, out winner))
 				{
 					//TODO: fix cast

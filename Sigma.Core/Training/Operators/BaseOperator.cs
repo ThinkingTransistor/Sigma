@@ -95,6 +95,12 @@ namespace Sigma.Core.Training.Operators
 		public int EpochNumber { get; protected set; }
 
 		/// <summary>
+		///		Enable the use of sessions in this operator. 
+		///		Computation handlers will attempt to speed up computation sessions at the possible expense of higher memory requirements.
+		/// </summary>
+		public bool UseSessions { get; set; } = true;
+
+		/// <summary>
 		///     All local <see cref="IHook" />s that are attached to this <see cref="IOperator" />.
 		/// </summary>
 		public IReadOnlyCollection<IHook> AttachedLocalHooks { get; }
@@ -550,6 +556,7 @@ namespace Sigma.Core.Training.Operators
 			}
 		}
 
+		// TODO possible allow hook invoke priorities to "carry" up to all hooks depending on them?
 		private void RebuildHookInvocationCache(IEnumerable<IHook> hooks, IDictionary<IHook, uint> hookInvocationIndices, IDictionary<IHook, uint> hookInvocationTargets)
 		{
 			hookInvocationIndices.Clear();
@@ -565,7 +572,6 @@ namespace Sigma.Core.Training.Operators
 			{
 				IHook hook = hooksToTraverse.First();
 
-				// check if any sub required hook was already added to the order, if so, remove and readd them to queue so the ordering works
 				if (hook.RequiredHooks.Count > 0)
 				{
 					alreadyAddedRequiredHooks.Clear();
@@ -576,6 +582,7 @@ namespace Sigma.Core.Training.Operators
 						hookInvocationIndices.Remove(toRemove);
 						hookInvocationTargets.Remove(toRemove);
 						hooksToTraverse.Add(toRemove);
+						//hooksToTraverse.Sort((s, o) => s.InvokePriority - o.InvokePriority);
 					}
 				}
 
@@ -903,8 +910,8 @@ namespace Sigma.Core.Training.Operators
 			{
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
-				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, its only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = (IOptimiser)Trainer?.Optimiser?.DeepCopy();
+				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, it's only to pass operator/worker tests without trainer
+				workers[i].LocalOptimiser = Trainer?.Optimiser?.ShallowCopy(); 
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}
@@ -976,7 +983,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1001,7 +1008,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("started");
+				ReportBadStateRequested("started");
 			}
 		}
 
@@ -1031,7 +1038,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("paused");
+				ReportBadStateRequested("paused");
 			}
 		}
 
@@ -1059,7 +1066,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("resumed");
+				ReportBadStateRequested("resumed");
 			}
 		}
 
@@ -1091,7 +1098,7 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("stopped");
+				ReportBadStateRequested("stopped");
 			}
 		}
 
@@ -1144,17 +1151,18 @@ namespace Sigma.Core.Training.Operators
 			}
 			else
 			{
-				ThrowBadState("reset");
+				ReportBadStateRequested("reset");
 			}
 		}
 
 		/// <summary>
+		///		Report a bad proposed target state.
 		/// </summary>
-		/// <param name="targetState"></param>
+		/// <param name="targetState">The bad target state.</param>
 		/// <exception cref="InvalidOperationException"></exception>
-		private void ThrowBadState(string targetState)
+		private void ReportBadStateRequested(string targetState)
 		{
-			throw new InvalidOperationException($"The operator cannot be {targetState} because the current state is: {State}!");
+			_logger.Warn($"The operator cannot be {targetState} because the current state is {State.ToString().ToLower()}!");
 		}
 
 		#endregion
@@ -1237,8 +1245,6 @@ namespace Sigma.Core.Training.Operators
 		/// <returns>The selector for this operator.</returns>
 		public abstract IOperatorSelector<IOperator> Select();
 
-		#region AbstractWorkerMethods
-
 		/// <summary>
 		///     This method creates an <see cref="IWorker" />.
 		/// </summary>
@@ -1249,35 +1255,58 @@ namespace Sigma.Core.Training.Operators
 		///     This method starts a worker.
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		protected abstract void StartWorker(IWorker worker);
+		protected virtual void StartWorker(IWorker worker)
+		{
+			Logger.Debug($"Starting worker {worker} in operator {this}...");
+
+			worker.Start();
+		}
 
 		/// <summary>
 		///     This method starts a worker for a single iteration.
 		/// </summary>
 		/// <param name="worker">The worker that will be started.</param>
-		protected abstract void RunWorkerOnce(IWorker worker);
+		protected virtual void RunWorkerOnce(IWorker worker)
+		{
+			Logger.Debug($"Running worker {worker} once in operator {this}...");
+
+			worker.RunOnce();
+		}
 
 		/// <summary>
 		///     This method pauses a worker. It will also be
 		///     called if the worker is stopped.
 		/// </summary>
 		/// <param name="worker">The worker that will be paused.</param>
-		protected abstract void PauseWorker(IWorker worker);
+		protected virtual void PauseWorker(IWorker worker)
+		{
+			Logger.Debug($"Signalling pause to worker {worker} in operator {this}...");
+
+			worker.SignalPause();
+		}
 
 		/// <summary>
 		///     This method resumes a worker from it's paused state.
 		/// </summary>
 		/// <param name="worker">The worker that will be resumed.</param>
-		protected abstract void ResumeWorker(IWorker worker);
+		protected virtual void ResumeWorker(IWorker worker)
+		{
+			Logger.Debug($"Signalling resume to worker {worker} in operator {this}...");
+
+			worker.SignalResume();
+		}
 
 		/// <summary>
 		///     This method stops a worker. All resources should
 		///     be freed.
 		/// </summary>
 		/// <param name="worker">The worker that will be paused and stopped.</param>
-		protected abstract void StopWorker(IWorker worker);
+		protected virtual void StopWorker(IWorker worker)
+		{
+			Logger.Debug($"Stopping worker {worker} in operator {this}...");
 
-		#endregion AbstractWorkerMethods
+			worker.SignalStop();
+		}
 
 		/// <summary>
 		/// A hook that invokes a callback as soon as possible

@@ -7,6 +7,7 @@ For full license see LICENSE in the root directory of this project.
 */
 
 using System;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -29,24 +30,32 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 		[NonSerialized]
 		private IComputationHandler _associatedHandler;
 
+		/// <inheritdoc />
 		public IComputationHandler AssociatedHandler
 		{
 			get { return _associatedHandler;}
 			set { _associatedHandler = value; }
 		}
 
+		/// <inheritdoc />
 		public long Length { get; private set; }
 
+		/// <inheritdoc />
 		public int Rank { get; private set; }
 
+		/// <inheritdoc />
 		public long[] Shape { get; private set; }
 
+		/// <inheritdoc />
 		public long[] Strides { get; private set; }
 
+		/// <inheritdoc />
 		public bool IsScalar { get; private set; }
 
+		/// <inheritdoc />
 		public bool IsVector { get; private set; }
 
+		/// <inheritdoc />
 		public bool IsMatrix { get; private set; }
 
 		/// <summary>
@@ -148,26 +157,31 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			IsMatrix = Rank == 2 && shape[0] >= 1 && shape[1] >= 1;
 		}
 
+		/// <inheritdoc />
 		protected virtual void Reinitialise(long[] shape, long[] strides)
 		{
 			Initialise(shape, strides);
 		}
 
-		public IDataBuffer<TOther> GetDataAs<TOther>()
+		/// <inheritdoc />
+		public IDataBuffer<TOther> GetDataAs<TOther>() where TOther : struct
 		{
 			return Data.GetValuesAs<TOther>(0L, Data.Length);
 		}
 
+		/// <inheritdoc />
 		public TOther GetValue<TOther>(params long[] indices)
 		{
 			return Data.GetValueAs<TOther>(NDArrayUtils.GetFlatIndex(Shape, Strides, indices));
 		}
 
+		/// <inheritdoc />
 		public void SetValue<TOther>(TOther value, params long[] indices)
 		{
 			Data.SetValue((T) Convert.ChangeType(value, Data.Type.UnderlyingType), NDArrayUtils.GetFlatIndex(Shape, Strides, indices));
 		}
 
+		/// <inheritdoc />
 		protected long[] GetSlicedShape(long[] beginIndices, long[] endIndices)
 		{
 			if (beginIndices.Length != endIndices.Length)
@@ -190,6 +204,7 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			return slicedShape;
 		}
 
+		/// <inheritdoc />
 		public virtual INDArray Slice(long[] beginIndices, long[] endIndices)
 		{
 			long[] slicedShape = GetSlicedShape(beginIndices, endIndices);
@@ -204,31 +219,37 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			return new ADNDArray<T>(new DataBuffer<T>(Data, absoluteBeginOffset, length), slicedShape);
 		}
 
+		/// <inheritdoc />
 		public INDArray Flatten()
 		{
 			return Reshape(0, Length);
 		}
 
+		/// <inheritdoc />
 		public INDArray FlattenSelf()
 		{
 			return ReshapeSelf(0, Length);
 		}
 
+		/// <inheritdoc />
 		public virtual INDArray Reshape(params long[] newShape)
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
-				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
+				throw new ArgumentException($"Reshaping cannot change total ndarray length ({Length}), only array shape" +
+											$" (attempted change from [{string.Join(", ", Shape)}] to [{string.Join(", ", newShape)}]).");
 			}
 
 			return new ADNDArray<T>(Data, newShape);
 		}
 
+		/// <inheritdoc />
 		public virtual INDArray ReshapeSelf(params long[] newShape)
 		{
 			if (Length != ArrayUtils.Product(newShape))
 			{
-				throw new ArgumentException("Reshaping cannot change total ndarray length, only array shape.");
+				throw new ArgumentException($"Reshaping cannot change total ndarray length ({Length}), only array shape" +
+											$" (attempted change from [{string.Join(", ", Shape)}] to [{string.Join(", ", newShape)}]).");
 			}
 
 			Reinitialise(NDArrayUtils.CheckShape(newShape), NDArrayUtils.GetStrides(newShape));
@@ -236,8 +257,14 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			return this;
 		}
 
+		/// <inheritdoc />
 		public virtual INDArray Permute(params int[] rearrangedDimensions)
 		{
+			if (rearrangedDimensions.Length != Rank)
+			{
+				throw new ArgumentException($"Array of rearranged dimensions must be of same length as ndarray rank ({Rank}) but was {rearrangedDimensions.Length}.");
+			}
+
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
 			{
@@ -259,11 +286,21 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
 
-			return Reshape(newShape);
+			ADNDArray<T> permuted = (ADNDArray<T>) Reshape(newShape);
+			
+			_InternalPermuteSelf(Data.Data, (int) Data.Offset, (int) Data.Length, rearrangedDimensions, Shape, newShape);
+
+			return permuted;
 		}
 
+		/// <inheritdoc />
 		public virtual INDArray PermuteSelf(params int[] rearrangedDimensions)
 		{
+			if (rearrangedDimensions.Length != Rank)
+			{
+				throw new ArgumentException($"Array of rearranged dimensions must be of same length as ndarray rank ({Rank}) but was {rearrangedDimensions.Length}.");
+			}
+
 			bool sameOrder = true;
 			for (int i = 0; i < rearrangedDimensions.Length; i++)
 			{
@@ -284,20 +321,72 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			CheckRearrangedDimensions(rearrangedDimensions);
 
 			long[] newShape = ArrayUtils.PermuteArray(Shape, rearrangedDimensions);
+
+			_InternalPermuteSelf(Data.Data, (int)Data.Offset, (int)Data.Length, rearrangedDimensions, Shape, newShape);
 
 			ReshapeSelf(newShape);
 
 			return this;
 		}
 
+		/// <inheritdoc />
 		public INDArray Transpose()
 		{
 			return Permute(ArrayUtils.Range(Rank - 1, 0));
 		}
 
+		/// <inheritdoc />
 		public INDArray TransposeSelf()
 		{
 			return PermuteSelf(ArrayUtils.Range(Rank - 1, 0));
+		}
+
+		/// <summary>
+		/// Permute this ndarray's data according to rearranged dimensions in place. 
+		/// Note: Arguments are not checked for correctness (and are asssumed to be correct).
+		/// </summary>
+		/// <param name="rearrangedDimensions">The re-arranged dimensions (numbered 0 to rank - 1).</param>
+		/// <param name="originalShape">The original shape.</param>
+		/// <param name="rearrangedShape">The new, re-arranged shape.</param>
+		/// <param name="data">The data array.</param>
+		/// <param name="offset">The data array offset.</param>
+		/// <param name="length">The data array length.</param>
+		internal static void _InternalPermuteSelf(T[] data, int offset, int length, int[] rearrangedDimensions, long[] originalShape, long[] rearrangedShape)
+		{
+			// TODO optimise heavily
+			long[] originalStrides = NDArrayUtils.GetStrides(originalShape);
+			long[] rearrangedStrides = NDArrayUtils.GetStrides(rearrangedShape);
+
+			long[] bufferIndices = new long[rearrangedDimensions.Length];
+			BitArray traversedIndicies = new BitArray(length);
+
+			for (int i = 0; i < length; i++)
+			{
+				int currentIndex = i;
+				T previousValue = data[offset + currentIndex];
+
+				if (traversedIndicies[i]) continue;
+
+				do
+				{
+					NDArrayUtils.GetIndices(currentIndex, originalShape, originalStrides, bufferIndices);
+
+					bufferIndices = ArrayUtils.PermuteArray(bufferIndices, rearrangedDimensions);
+
+					int swapIndex = (int) NDArrayUtils.GetFlatIndex(rearrangedShape, rearrangedStrides, bufferIndices);
+
+					T nextPreviousValue = data[offset + swapIndex];
+					if (swapIndex != currentIndex)
+					{
+						data[offset + swapIndex] = previousValue;
+					}
+					previousValue = nextPreviousValue;
+
+					traversedIndicies[currentIndex] = true;
+
+					currentIndex = swapIndex;
+				} while (i != currentIndex && !traversedIndicies[currentIndex]);
+			}
 		}
 
 		private void CheckRearrangedDimensions(int[] rearrangedDimensions)
@@ -326,11 +415,17 @@ namespace Sigma.Core.MathAbstract.Backends.SigmaDiff
 			}
 		}
 
+		/// <inheritdoc />
 		public override string ToString()
 		{
 			return ToString(element => element.ToString());
 		}
 
+		/// <summary>
+		/// A function that maps an element to a string.
+		/// </summary>
+		/// <param name="element">The element.</param>
+		/// <returns>The string.</returns>
 		public delegate string ToStringElement(T element);
 
 		/// <summary>
