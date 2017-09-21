@@ -7,7 +7,6 @@ using Sigma.Core;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Datasets;
 using Sigma.Core.Data.Iterators;
-using Sigma.Core.Handlers.Backends.Debugging;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
@@ -35,7 +34,6 @@ using Sigma.Core.Training.Hooks.Reporters;
 using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
-using Sigma.Core.Training.Operators.Backends.NativeGpu;
 using Sigma.Core.Training.Optimisers.Gradient;
 using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
@@ -80,12 +78,12 @@ namespace Sigma.Tests.Internals.WPF
 			internal static readonly DemoType Mnist = new DemoType("MNIST", true, CreateMnistTrainer);
 			internal static readonly DemoType Iris = new DemoType("IRIS", false, CreateIrisTrainer);
 			internal static readonly DemoType Xor = new DemoType("XOR", false, CreateXorTrainer);
-			internal static readonly DemoType Wdbc = new DemoType("WDBC", false, CreateWdbcTrainer);
+			internal static readonly DemoType Wdbc = new DemoType("WDBC", false, CreateWdbcTrainer, MaterialDesignValues.Pink, "en-US", false);
 			internal static readonly DemoType Parkinsons = new DemoType("Parkinsons", false, CreateParkinsonsTrainer, MaterialDesignValues.LightBlue);
 			internal static readonly DemoType TicTacToe = new DemoType("Tic-Tac-Toe", false, CreateTicTacToeTrainer, MaterialDesignValues.BlueGrey);
 		}
 
-		private static readonly DemoType DemoMode = DemoType.Mnist;
+		private static readonly DemoType DemoMode = DemoType.Xor;
 
 		private static void Main()
 		{
@@ -115,7 +113,12 @@ namespace Sigma.Tests.Internals.WPF
 			gui.AddLegend(general);
 
 			// create a tab
-			gui.AddTabs("Overview", "Metrics", "Validation", "Maximisation", "Reproduction", "NetView", "Update");
+			gui.AddTabs("Overview", "Metrics", "NetView", "Update");
+
+			if (DemoMode == DemoType.Mnist)
+			{
+				gui.AddTabs("Validation", "Maximisation");
+			}
 
 			// access the window inside the ui thread
 			gui.WindowDispatcher(window =>
@@ -123,12 +126,14 @@ namespace Sigma.Tests.Internals.WPF
 				// enable initialisation
 				window.IsInitializing = true;
 
-				window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
-				window.TabControl["Validation"].GridSize = new GridSize(2, 5);
-				window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
-				window.TabControl["Reproduction"].GridSize = new GridSize(2, 5);
-				window.TabControl["Update"].GridSize = new GridSize(1, 1);
+				if (DemoMode == DemoType.Mnist)
+				{
+					window.TabControl["Validation"].GridSize = new GridSize(1, 3);
+					window.TabControl["Maximisation"].GridSize = new GridSize(2, 5);
+				}
 
+				window.TabControl["Metrics"].GridSize = new GridSize(2, 4);
+				window.TabControl["Update"].GridSize = new GridSize(1, 1);
 				window.TabControl["Overview"].GridSize.Rows -= 1;
 				window.TabControl["Overview"].GridSize.Columns -= 1;
 
@@ -205,7 +210,7 @@ namespace Sigma.Tests.Internals.WPF
 					NumberPanel outputpanel = new NumberPanel("Numbers", trainer);
 					DrawPanel drawPanel = new DrawPanel("Draw", trainer, 560, 560, 20, outputpanel);
 
-					window.TabControl["Validation"].AddCumulativePanel(drawPanel);
+					window.TabControl["Validation"].AddCumulativePanel(drawPanel, 1, 2);
 					window.TabControl["Validation"].AddCumulativePanel(outputpanel);
 
 					for (int i = 0; i < 10; i++)
@@ -258,21 +263,17 @@ namespace Sigma.Tests.Internals.WPF
 		{
 			RawDataset dataset = new RawDataset("xor");
 			dataset.AddRecords("inputs", new[] { 0, 0 }, new[] { 0, 1 }, new[] { 1, 0 }, new[] { 1, 1 });
-			dataset.AddRecords("targets", new[] { 0 }, new[] { 1 }, new[] { 1 }, new[] { 0 });
+			dataset.AddRecords("targets", new[] { 0 }, new[] { 0 }, new[] { 0 }, new[] { 1 });
 
 			ITrainer trainer = sigma.CreateTrainer("xor-trainer");
 
-			trainer.Network = new Network();
-			trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
-			trainer.TrainingDataIterator = new UndividedIterator(dataset);
+			trainer.Network.Architecture = InputLayer.Construct(2) + FullyConnectedLayer.Construct(2) + FullyConnectedLayer.Construct(1) + OutputLayer.Construct(1) + SquaredDifferenceCostLayer.Construct();
+			trainer.TrainingDataIterator = new MinibatchIterator(1, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
+			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.1);
 			trainer.Operator = new CpuSinglethreadedOperator();
-			trainer.Optimiser = new GradientDescentOptimiser(learningRate: 0.01);
 
-			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
-
-			trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
-			trainer.AddLocalHook(new ValueReporter("network.layers.1-fullyconnected._outputs.default.activations", TimeStep.Every(1, TimeScale.Epoch)));
+			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.05));
 
 			return trainer;
 		}
@@ -359,7 +360,7 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.TrainingDataIterator = new MinibatchIterator(10, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(dataset));
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.01);
-			trainer.Operator = new CpuSinglethreadedOperator(new DebugHandler(new CpuFloat32Handler()));
+			trainer.Operator = new CpuSinglethreadedOperator(new CpuFloat32Handler());
 
 			trainer.AddInitialiser("*.*", new GaussianInitialiser(standardDeviation: 0.1));
 
@@ -394,7 +395,7 @@ namespace Sigma.Tests.Internals.WPF
 			trainer.TrainingDataIterator = new MinibatchIterator(100, dataset);
 			trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
 			trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
-			trainer.Operator = new CudaSinglethreadedOperator();
+			trainer.Operator = new CpuSinglethreadedOperator();
 
 			trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 			trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
