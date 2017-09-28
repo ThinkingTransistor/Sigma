@@ -8,49 +8,252 @@ using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
+using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Layers.Cost;
 using Sigma.Core.Layers.External;
 using Sigma.Core.Layers.Feedforward;
+using Sigma.Core.Layers.Recurrent;
+using Sigma.Core.Layers.Regularisation;
 using Sigma.Core.MathAbstract;
 using Sigma.Core.MathAbstract.Backends.SigmaDiff;
-using Sigma.Core.Persistence;
+using Sigma.Core.Monitors;
 using Sigma.Core.Training;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Hooks.Reporters;
+using Sigma.Core.Training.Hooks.Saviors;
 using Sigma.Core.Training.Hooks.Stoppers;
 using Sigma.Core.Training.Initialisers;
 using Sigma.Core.Training.Mergers;
+using Sigma.Core.Training.Operators;
 using Sigma.Core.Training.Operators.Backends.NativeCpu;
+using Sigma.Core.Training.Operators.Backends.NativeGpu;
+using Sigma.Core.Training.Optimisers;
+using Sigma.Core.Training.Optimisers.Gradient;
+using Sigma.Core.Training.Optimisers.Gradient.Memory;
 using Sigma.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Sigma.Core.Handlers.Backends.Debugging;
-using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
-using Sigma.Core.Layers.Recurrent;
-using Sigma.Core.Layers.Regularisation;
-using Sigma.Core.Monitors;
-using Sigma.Core.Training.Hooks.Saviors;
-using Sigma.Core.Training.Operators.Backends.NativeGpu;
-using Sigma.Core.Training.Optimisers.Gradient;
-using Sigma.Core.Training.Optimisers.Gradient.Memory;
 
 namespace Sigma.Tests.Internals.Backend
 {
 	public static class Program
 	{
+		public class StopEnvironmentHook : StopTrainingHook
+		{
+			private readonly SigmaEnvironment sigmaEnvironment;
+
+			/// <summary>
+			/// Create a hook that will stop training when a certain custom criteria is met.
+			/// Note: The time step defaults to every epoch for convenience, if that is not enough, use <see cref="StopTrainingHook(HookInvokeCriteria, TimeStep)"/>.
+			/// </summary>
+			/// <param name="criteria">The custom criteria at which training shall be stopped.</param>
+			public StopEnvironmentHook(SigmaEnvironment env, HookInvokeCriteria criteria) : base(criteria)
+			{
+				sigmaEnvironment = env;
+			}
+
+			/// <summary>
+			/// Create a hook that will stop training when a certain custom criteria is met with a custom time step.
+			/// </summary>
+			/// <param name="criteria">The custom criteria at which training shall be stopped.</param>
+			/// <param name="timeStep">The time step of this hook (see <see cref="IHook"/>).</param>
+			public StopEnvironmentHook(SigmaEnvironment env, HookInvokeCriteria criteria, TimeStep timeStep) : base(criteria, timeStep)
+			{
+				sigmaEnvironment = env;
+			}
+
+			/// <summary>
+			/// Create a hook that will stop training after <see cref="atEpoch"/> epochs.
+			/// </summary>
+			public StopEnvironmentHook(SigmaEnvironment env, int atEpoch) : base(atEpoch)
+			{
+				sigmaEnvironment = env;
+			}
+
+			/// <summary>
+			/// Internal constructor for custom training hook derivatives with additional requirements.
+			/// </summary>
+			/// <param name="timeStep"></param>
+			public StopEnvironmentHook(SigmaEnvironment env, TimeStep timeStep) : base(timeStep)
+			{
+				sigmaEnvironment = env;
+			}
+
+			protected override void Stop()
+			{
+				sigmaEnvironment.SignalStop();
+			}
+		}
+
+		public class TestCase
+		{
+			struct NamedIterator
+			{
+				public readonly string Name;
+				public readonly IDataIterator Iterator;
+
+				public NamedIterator(string namedDataIteratorName, IDataIterator dataIterator)
+				{
+					Name = namedDataIteratorName;
+					Iterator = dataIterator;
+				}
+			}
+
+			private readonly List<NamedIterator> _namedIterators = new List<NamedIterator>();
+
+			public bool IsCudaOperator { get; set; }
+			public IOptimiser Optimiser { get; set; } = new AdagradOptimiser(0.02);
+
+			public string Name { get; set; }
+			private int _batchSize;
+
+			public float Threshold { get; set; } = 0.98f;
+
+			public int BatchSize
+			{
+				get => _batchSize;
+				set
+				{
+					_batchSize = value;
+					DataIterator = new MinibatchIterator(_batchSize, DataIterator.UnderlyingDataset);
+				}
+			}
+
+			public IDataIterator DataIterator { get; set; }
+			public INetworkArchitecture NetworkArchitecture { get; }
+
+			public TestCase(string name, IDataset dataSet, int batchSize, INetworkArchitecture networkArchitecture)
+			{
+				Name = name;
+
+				DataIterator = new MinibatchIterator(batchSize, dataSet);
+				_batchSize = batchSize;
+
+				NetworkArchitecture = networkArchitecture;
+			}
+
+			public ITrainer CreateTrainer(SigmaEnvironment env)
+			{
+				ITrainer trainer = env.CreateTrainer(Name);
+
+				trainer.Network.Architecture = NetworkArchitecture;
+
+				trainer.Operator = IsCudaOperator ? new CudaSinglethreadedOperator() : (IOperator)new CpuSinglethreadedOperator();
+				trainer.Optimiser = Optimiser;
+
+				trainer.TrainingDataIterator = DataIterator;
+				foreach (NamedIterator namedIterator in _namedIterators) { trainer.AddNamedDataIterator(namedIterator.Name, namedIterator.Iterator); }
+
+				trainer.AddInitialiser("*.*", new GaussianInitialiser(0.05));
+
+				trainer.AddHook(new MultiClassificationAccuracyReporter("validation", TimeStep.Every(1, TimeScale.Epoch), tops: 1));
+				trainer.AddHook(new StopEnvironmentHook(env, new ThresholdCriteria("shared.classification_accuracy_top1", ComparisonTarget.GreaterThanEquals, Threshold)));
+
+				return trainer;
+			}
+
+			public void AddNamedDataIterator(string namedDataIteratorName, IDataIterator iterator)
+			{
+				_namedIterators.Add(new NamedIterator(namedDataIteratorName, iterator));
+			}
+		}
+
+		public class TestResult
+		{
+			public string Name { get; set; }
+			public bool IsCuda { get; set; }
+			//public float TimePerEpoch { get; set; }
+			//public float TimePerIteration { get; set; }
+			public int BatchSize { get; set; }
+			public float Threshold { get; set; }
+
+			public TestResult() { }
+
+
+			public TestResult(TestCase testCase)
+			{
+				Name = testCase.Name;
+				IsCuda = testCase.IsCudaOperator;
+				BatchSize = testCase.BatchSize;
+				Threshold = testCase.Threshold;
+
+				// TODO: time per epoch, time per iteration ...
+			}
+
+			private string CreateCsvHeader()
+			{
+				return "Name, IsCuda, BatchSize, Threshold";
+			}
+
+			public void Write(string file)
+			{
+				if (!File.Exists(file))
+				{
+					File.WriteAllText(file, CreateCsvHeader());
+				}
+
+				File.AppendAllText(file, $"\n{Name}, {IsCuda}, {BatchSize}, {Threshold}");
+			}
+		}
+
+		private static readonly INetworkArchitecture TestMnistArchitecture = InputLayer.Construct(28, 28)
+													+ DropoutLayer.Construct(0.2)
+													+ FullyConnectedLayer.Construct(1000, activation: "rel")
+													+ DropoutLayer.Construct(0.4)
+													+ FullyConnectedLayer.Construct(800, activation: "rel")
+													+ DropoutLayer.Construct(0.4)
+													+ FullyConnectedLayer.Construct(10, activation: "sigmoid")
+													+ OutputLayer.Construct(10)
+													+ SoftMaxCrossEntropyCostLayer.Construct();
+
+		private static readonly TestCase[] TestCases = { CreateMnistTestCase(100, TestMnistArchitecture) };
+
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging(xml: true);
-			SigmaEnvironment.Globals["web_proxy"] = WebUtils.GetProxyFromFileOrDefault(".customproxy");
+			SigmaEnvironment.EnableLogging(true);
+			foreach (TestCase testCase in TestCases)
+			{
+				SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
+				env.SetRandomSeed(0);
 
-			SampleMnist();
+				//testCase.IsCudaOperator = true;
+				testCase.Threshold = 0.9f;
+				ITrainer trainer = testCase.CreateTrainer(env);
 
-			Console.WriteLine("Program ended, waiting for termination, press any key...");
-			Console.ReadKey();
+				trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+
+
+				//TODO: Add runtime reporter or manually calculate?
+				//TODO: more test result data
+
+				env.PrepareAndRun();
+				new TestResult(testCase).Write(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/benchmark.csv");
+			}
+		}
+
+		private static void PerformTest(TestCase testCase)
+		{
+
+		}
+
+		private static TestCase CreateMnistTestCase(int batchSize, INetworkArchitecture networkArchitecture)
+		{
+			TestCase testCase = new TestCase("MNIST", Defaults.Datasets.Mnist(), batchSize, networkArchitecture);
+
+			testCase.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datasets.MnistValidation()));
+
+
+			return testCase;
+		}
+
+		private static TestCase CreateIrisTestCase(int batchSize, INetworkArchitecture networkArchitecture)
+		{
+			return new TestCase("IRIS", Defaults.Datasets.Iris(), batchSize, networkArchitecture);
 		}
 
 		private static void SampleHutter()

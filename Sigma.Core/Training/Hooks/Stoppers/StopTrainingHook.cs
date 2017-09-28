@@ -6,10 +6,10 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
 using log4net;
 using Sigma.Core.Training.Hooks.Processors;
 using Sigma.Core.Utils;
+using System;
 
 namespace Sigma.Core.Training.Hooks.Stoppers
 {
@@ -72,7 +72,7 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 			{
 				_logger.Info($"Stopping training because condition {InvokeCriteria} was met.");
 
-				Operator.SignalStop();
+				Stop();
 
 				ParameterRegistry["requested_stop"] = true;
 			}
@@ -80,6 +80,11 @@ namespace Sigma.Core.Training.Hooks.Stoppers
 			{
 				_logger.Debug($"Should stop training but stop signal was already sent.");
 			}
+		}
+
+		protected virtual void Stop()
+		{
+			Operator.SignalStop();
 		}
 	}
 
