@@ -7,6 +7,7 @@ using Sigma.Core.Data.Preprocessors;
 using Sigma.Core.Data.Readers;
 using Sigma.Core.Data.Sources;
 using Sigma.Core.Handlers;
+using Sigma.Core.Handlers.Backends.SigmaDiff;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeCpu;
 using Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu;
 using Sigma.Core.Layers.Cost;
@@ -38,8 +39,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using log4net.Repository.Hierarchy;
-using Sigma.Core.Handlers.Backends.SigmaDiff;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -218,7 +217,7 @@ namespace Sigma.Tests.Internals.Backend
 				MillisecondsPerIteration = testCase.IterationTimer.AverageTime;
 			}
 
-			private string CreateCsvHeader()
+			private static string CreateCsvHeader()
 			{
 				return "Name, OperatorType, BatchSize, StopCriteria, MillisPerEpoch, MillisPerIteration";
 			}
@@ -248,7 +247,7 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void Main(string[] args)
 		{
-			//SigmaEnvironment.EnableLogging(true);
+			SigmaEnvironment.EnableLogging(true);
 
 			int[] testBatchSizes = ArrayUtils.Range(50, 1000, 10000);
 
@@ -259,36 +258,38 @@ namespace Sigma.Tests.Internals.Backend
 				TestCases.Add(CreateMnistTestCase("mnist-mini" + testBatchSize, testBatchSize, "cuda-float32", TestMnistArchitecture));
 			}
 
-			for (var index = 0; index < TestCases.Count; index++)
+			for (int index = 0; index < TestCases.Count; index++)
 			{
-				{
-					TestCase testCase = TestCases[index];
-					GC.Collect();
+				TestCase testCase = TestCases[index];
+				GC.Collect();
 
-					Console.WriteLine("Running test in environment \"" + testCase.Name + "\"");
+				Console.WriteLine($"Running test in environment \"{testCase.Name}\" ({index + 1}/{TestCases.Count})");
 
-					Console.WriteLine(" -> creating environment...");
+				Console.WriteLine(" -> creating environment...");
 
-					SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
-					env.SetRandomSeed(0);
+				SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
+				env.SetRandomSeed(0);
 
-					ITrainer trainer = testCase.CreateAndAssignTrainer(env);
+				ManualResetEvent onShutdownEvent = new ManualResetEvent(false);
 
-					Console.WriteLine(" -> running environment...");
+				env.OnShutdown(dynEnv => onShutdownEvent.Set());
 
-					env.PrepareAndRun();
+				ITrainer trainer = testCase.CreateAndAssignTrainer(env);
 
-					foreach (IOperator @operator in env.RunningOperatorsByTrainer.Values)
-					{
-						@operator.WaitForStateChanged();
-					}
+				Console.WriteLine(" -> running environment...");
 
-					Console.WriteLine(" -> cleaning up...");
+				env.PrepareAndRun();
 
-					env = null;
-					testCase = null;
-					TestCases[index] = null;
-				}
+				Console.WriteLine(" -> check environment stop...");
+
+				onShutdownEvent.WaitOne();
+
+				Console.WriteLine(" -> finished waiting, cleaning up...");
+
+				env = null;
+				testCase = null;
+				TestCases[index] = null;
+
 
 				SigmaDiffSharpBackendProvider.ClearInstance();
 				SigmaEnvironment.Clear();

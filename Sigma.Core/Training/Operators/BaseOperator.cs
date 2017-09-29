@@ -6,12 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -24,6 +18,12 @@ using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using static Sigma.Core.Utils.ThreadUtils;
 
 namespace Sigma.Core.Training.Operators
@@ -328,7 +328,7 @@ namespace Sigma.Core.Training.Operators
 		/// <param name="timeScale"></param>
 		protected void DispatchInvokeTimeScaleEvent(TimeScale timeScale)
 		{
-			ThreadPool.QueueUserWorkItem(ts => InvokeTimeScaleEvent((TimeScale) ts), timeScale);
+			ThreadPool.QueueUserWorkItem(ts => InvokeTimeScaleEvent((TimeScale)ts), timeScale);
 		}
 
 		/// <summary>
@@ -879,6 +879,20 @@ namespace Sigma.Core.Training.Operators
 		}
 
 		/// <summary>
+		///     This method blocks until the last worker state change has been fully performed.
+		///     Returns immediately if not implemented.
+		/// </summary>
+		public void WaitForWorkersStateChanged()
+		{
+			if (Workers == null)
+			{
+				throw new NullReferenceException();
+			}
+
+			foreach (IWorker worker in Workers) { worker.WaitForStateChanged(); }
+		}
+
+		/// <summary>
 		/// This method assures that <see cref="Workers"/> is initialised (with <see cref="InitialiseWorkers"/>)
 		/// and checks if all required parameters are set. 
 		/// </summary>
@@ -911,7 +925,7 @@ namespace Sigma.Core.Training.Operators
 				workers[i] = CreateWorker();
 				workers[i].LocalEpochNumber = EpochNumber;
 				workers[i].LocalTrainingDataIterator = Trainer?.TrainingDataIterator?.ShallowCopy(); // TODO remove null conditional access, it's only to pass operator/worker tests without trainer
-				workers[i].LocalOptimiser = Trainer?.Optimiser?.ShallowCopy(); 
+				workers[i].LocalOptimiser = Trainer?.Optimiser?.ShallowCopy();
 
 				workerIndicesByWorkers.Add(workers[i], i);
 			}

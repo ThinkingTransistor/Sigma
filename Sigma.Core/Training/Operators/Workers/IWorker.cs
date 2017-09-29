@@ -65,6 +65,12 @@ namespace Sigma.Core.Training.Operators.Workers
 		int LocalIterationNumber { get; }
 
 		/// <summary>
+		///     This method blocks until the last state change has been fully performed.
+		///     Returns immediately if not implemented.
+		/// </summary>
+		void WaitForStateChanged();
+
+		/// <summary>
 		///     Start this worker and start training the network as defined in the trainer and ordered by the operator.
 		/// </summary>
 		void Start();

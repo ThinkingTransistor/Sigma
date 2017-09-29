@@ -6,9 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using log4net;
 using Sigma.Core.Architecture;
 using Sigma.Core.Data.Iterators;
@@ -17,6 +14,9 @@ using Sigma.Core.MathAbstract;
 using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Optimisers;
 using Sigma.Core.Utils;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Sigma.Core.Training.Operators.Workers
 {
@@ -292,6 +292,15 @@ namespace Sigma.Core.Training.Operators.Workers
 
 			// push progress for this iteration
 			Operator.PushProgress(this);
+		}
+
+		/// <summary>
+		///     This method blocks until the last state change has been fully performed.
+		///     Returns immediately if not implemented.
+		/// </summary>
+		public void WaitForStateChanged()
+		{
+			lock (_stateLock) { }
 		}
 
 		/// <summary>

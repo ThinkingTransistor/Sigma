@@ -6,7 +6,6 @@ Copyright (c) 2016-2017 Florian Cäsar, Michael Plainer
 For full license see LICENSE in the root directory of this project. 
 */
 
-using System.Collections.Generic;
 using Sigma.Core.Architecture;
 using Sigma.Core.Handlers;
 using Sigma.Core.Persistence.Selectors;
@@ -14,6 +13,7 @@ using Sigma.Core.Training.Hooks;
 using Sigma.Core.Training.Mergers;
 using Sigma.Core.Training.Operators.Workers;
 using Sigma.Core.Utils;
+using System.Collections.Generic;
 
 namespace Sigma.Core.Training.Operators
 {
@@ -258,6 +258,12 @@ namespace Sigma.Core.Training.Operators
 		///     Returns immediately if not implemented.
 		/// </summary>
 		void WaitForStateChanged();
+
+		/// <summary>
+		///     This method blocks until the last worker state change has been fully performed.
+		///     Returns immediately if not implemented.
+		/// </summary>
+		void WaitForWorkersStateChanged();
 
 		/// <summary>
 		///		Populate a registry using a certain worker's local values.

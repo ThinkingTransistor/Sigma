@@ -92,7 +92,15 @@ namespace Sigma.Core
 		/// </summary>
 		public ISynchronisationHandler SynchronisationHandler { get; }
 
+		/// <summary>
+		/// The seed for all random objects.
+		/// </summary>
 		public int RandomSeed { get; private set; }
+
+		/// <summary>
+		/// These actions will be performed once the environment has shut down.
+		/// </summary>
+		private Queue<Action<SigmaEnvironment>> _shutdownActions;
 
 		private SigmaEnvironment(string name)
 		{
@@ -271,7 +279,21 @@ namespace Sigma.Core
 			_logger.Debug($"Removed trainer {trainer} from sigma environment \"{Name}\".");
 		}
 
+		/// <summary>
+		/// Add a method, that will be executed on shutdown.
+		/// </summary>
+		/// <param name="action">An action that will be performed on shutdown.</param>
+		public void OnShutdown(Action<SigmaEnvironment> action)
+		{
+			if (action == null) throw new ArgumentNullException(nameof(action));
 
+			if (_shutdownActions == null)
+			{
+				_shutdownActions = new Queue<Action<SigmaEnvironment>>();
+			}
+
+			_shutdownActions.Enqueue(action);
+		}
 
 		/// <summary>
 		/// Run this environment. Execute all registered options until stop is requested.
@@ -313,7 +335,21 @@ namespace Sigma.Core
 
 			StopRunningOperators();
 
+			if (_shutdownActions != null)
+			{
+				foreach (IOperator @operator in RunningOperatorsByTrainer.Values)
+				{
+					@operator.WaitForStateChanged();
+					@operator.WaitForWorkersStateChanged();
+				}
+			}
+
 			Running = false;
+
+			if (_shutdownActions != null)
+			{
+				foreach (Action<SigmaEnvironment> shutdownAction in _shutdownActions) { shutdownAction(this); }
+			}
 
 			_logger.Info($"Stopped sigma environment \"{Name}\".");
 		}
@@ -490,7 +526,7 @@ namespace Sigma.Core
 		/// <param name="trainerName">The trainer name whose trainer's operator the hook should be attached to.</param>
 		public void RequestAttachLocalHook(IHook hook, string trainerName)
 		{
-			if (!_trainersByName.ContainsKey((trainerName)))
+			if (!_trainersByName.ContainsKey(trainerName))
 			{
 				throw new ArgumentException($"Trainer with name {trainerName} is not registered in this environment ({Name}).");
 			}
