@@ -54,6 +54,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			return tag;
 		}
 
+		public bool IsBackendRegisterd(long backendTag)
+		{
+			return _registeredBackendConfigs.ContainsKey(backendTag);
+		}
+
 		public BackendConfig<T> GetBackend<T>(long backendTag)
 		{
 			return (BackendConfig<T>)_registeredBackendConfigs[backendTag];
@@ -75,6 +80,11 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 			}
 
 			throw new InvalidOperationException($"Cannot get backend for unknown object {obj} of type {obj.GetType()}, object is neither a known type nor a backend mapped type.");
+		}
+
+		public static void ClearInstance()
+		{
+			_instance = null;
 		}
 	}
 }

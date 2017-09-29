@@ -159,7 +159,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 
 		~CudaSigmaDiffDataBuffer()
 		{
-			if (_initialisedInContext)
+			if (_initialisedInContext && SigmaDiffSharpBackendProvider.Instance.IsBackendRegisterd(BackendTag))
 			{
 				CudaFloat32BackendHandle backendHandle = (CudaFloat32BackendHandle)SigmaDiffSharpBackendProvider.Instance.GetBackend<T>(BackendTag).BackendHandle;
 

@@ -39,6 +39,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using log4net.Repository.Hierarchy;
+using Sigma.Core.Handlers.Backends.SigmaDiff;
 
 namespace Sigma.Tests.Internals.Backend
 {
@@ -87,6 +88,8 @@ namespace Sigma.Tests.Internals.Backend
 
 			protected override void Stop()
 			{
+				base.Stop();
+
 				sigmaEnvironment.SignalStop();
 			}
 		}
@@ -136,7 +139,7 @@ namespace Sigma.Tests.Internals.Backend
 
 			public string OperatorType { get; set; }
 			public IOptimiser Optimiser { get; set; } = new AdagradOptimiser(0.02);
-			public HookInvokeCriteria StopCriteria { get; set; } = new ThresholdCriteria("epoch", ComparisonTarget.Equals, 6, false);
+			public HookInvokeCriteria StopCriteria { get; set; } = new ThresholdCriteria("epoch", ComparisonTarget.Equals, 3, false);
 			public string Name { get; set; }
 			public IDataIterator DataIterator { get; set; }
 			public INetworkArchitecture NetworkArchitecture { get; }
@@ -224,17 +227,10 @@ namespace Sigma.Tests.Internals.Backend
 			{
 				if (!File.Exists(file))
 				{
-					File.Create(file);
-					WriteInternal(file, CreateCsvHeader());
+					File.WriteAllText(file, CreateCsvHeader());
 				}
 
-				WriteInternal(file, $"\n{Name}, {OperatorType}, {BatchSize}, {StopCriteria}, {MillisecondsPerEpoch}, {MillisecondsPerIteration}\n");
-			}
-
-			private void WriteInternal(string file, string text)
-			{
-				File.AppendAllText(file, text);
-				Console.WriteLine(text);
+				File.WriteAllText(file, $"\n{Name}, {OperatorType}, {BatchSize}, {StopCriteria}, {MillisecondsPerEpoch}, {MillisecondsPerIteration}\n");
 			}
 		}
 
@@ -252,32 +248,53 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging(true);
+			//SigmaEnvironment.EnableLogging(true);
 
-			int[] testBatchSizes = ArrayUtils.Range(50, 1000, 100);
+			int[] testBatchSizes = ArrayUtils.Range(50, 1000, 10000);
+
+			Console.WriteLine("Starting benchmarking");
 
 			foreach (int testBatchSize in testBatchSizes)
 			{
 				TestCases.Add(CreateMnistTestCase("mnist-mini" + testBatchSize, testBatchSize, "cuda-float32", TestMnistArchitecture));
 			}
 
-			foreach (TestCase testCase in TestCases)
+			for (var index = 0; index < TestCases.Count; index++)
 			{
-				Console.WriteLine("Running test in environment \"" + testCase.Name + "\"...");
+				{
+					TestCase testCase = TestCases[index];
+					GC.Collect();
 
-				SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
-				env.SetRandomSeed(0);
+					Console.WriteLine("Running test in environment \"" + testCase.Name + "\"");
 
-				ITrainer trainer = testCase.CreateAndAssignTrainer(env);
+					Console.WriteLine(" -> creating environment...");
 
-				trainer.AddLocalHook(new AccumulatedValueReporter("optimiser.cost_total", TimeStep.Every(1, TimeScale.Epoch), reportEpochIteration: true));
+					SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
+					env.SetRandomSeed(0);
 
-				//TODO: Add runtime reporter or manually calculate?
-				//TODO: more test result data
+					ITrainer trainer = testCase.CreateAndAssignTrainer(env);
 
-				env.PrepareAndRun();
+					Console.WriteLine(" -> running environment...");
 
-				new TestResult(testCase).Write(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/sigma_benchmark.csv");
+					env.PrepareAndRun();
+
+					foreach (IOperator @operator in env.RunningOperatorsByTrainer.Values)
+					{
+						@operator.WaitForStateChanged();
+					}
+
+					Console.WriteLine(" -> cleaning up...");
+
+					env = null;
+					testCase = null;
+					TestCases[index] = null;
+				}
+
+				SigmaDiffSharpBackendProvider.ClearInstance();
+				SigmaEnvironment.Clear();
+				GC.Collect();
+
+				Console.WriteLine(" -> done");
 			}
 
 			Console.WriteLine("Finished benchmarking. Press any key to exit.");

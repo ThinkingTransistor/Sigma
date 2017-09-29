@@ -89,7 +89,7 @@ namespace Sigma.Core.Training.Operators.Workers
 
 		private void ThrowBadState(string currentState)
 		{
-			throw new InvalidOperationException($"The {nameof(BaseWorker)} cannot be {currentState} because the state is: {State}!");
+			_logger.Warn($"The {nameof(BaseWorker)} cannot be {currentState} because the state is: {State}!");
 		}
 
 		protected virtual Thread CreateThread(ThreadStart start)

@@ -30,7 +30,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		internal readonly CudaContext CudaContext;
 		internal readonly CudaStream CudaStream;
 
-		private readonly ConditionalWeakTable<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
+		private readonly IDictionary<object, CudaDeviceVariable<float>> _allocatedDeviceBuffers;
 		private readonly ConditionalWeakTable<float[], object> _preInitialisedHostDatas;
 
 		private const int BlocksPerGridDimension = 65535;
@@ -38,7 +38,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private readonly object _throwawayObject = new object();
 		private readonly CUmodule _kernelModule;
 		private readonly IDictionary<int, int> _bufferReferenceCounts;
-		private readonly ISet<float[]>_pendingBufferDisposals;
+		private readonly ISet<float[]> _pendingBufferDisposals;
 		private readonly IDictionary<string, CudaKernel> _loadedKernels;
 
 		public CudaFloat32BackendHandle(int deviceId, long backendTag) : base(backendTag)
@@ -49,7 +49,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			_kernelModule = CudaContext.LoadModulePTX("sigmakernels.ptx");
 			_loadedKernels = LoadKernels(_kernelModule);
 
-			_allocatedDeviceBuffers = new ConditionalWeakTable<object, CudaDeviceVariable<float>>();
+			_allocatedDeviceBuffers = new Dictionary<object, CudaDeviceVariable<float>>();
 			_preInitialisedHostDatas = new ConditionalWeakTable<float[], object>();
 			_bufferReferenceCounts = new ConcurrentDictionary<int, int>();
 			_pendingBufferDisposals = new HashSet<float[]>();
@@ -140,7 +140,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		/// <param name="requestedLengthBytes">The length in bytes as a SizeT struct (if allocation is required).</param>
 		/// <param name="initialisedToValue">Indicate whether the allocated device buffer was already pre-initialised to the value requested by a preceding Create call.</param>
 		/// <returns>A CUDA buffer corresponding to the host array of the required size (cached if already exists, otherwise newly allocated).</returns>
-		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, SizeT requestedLengthBytes, out bool initialisedToValue) 
+		internal CudaDeviceVariable<T> AllocateDeviceBuffer<T>(T[] hostData, long hostOffset, SizeT requestedLengthBytes, out bool initialisedToValue)
 			where T : struct
 		{
 			// TODO this casting and type checking is absolutely horribly, need to improve the way the data buffer accesses this so that it can be either truly dynamic or fixed type
@@ -941,7 +941,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 				return new ShapedDataBufferView<float>(CreateDataBuffer(new float[0]), 0L, 0L);
 			}
 
-			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[]) a.Shape.Clone());
+			ShapedDataBufferView<float> result = new ShapedDataBufferView<float>(CreateDataBuffer(CreateUninitialisedArray(a.Length)), (long[])a.Shape.Clone());
 			CudaSigmaDiffDataBuffer<float> rData = _InternalInternalise(result);
 			CudaSigmaDiffDataBuffer<float> aData = _InternalInternalise(a);
 
@@ -1050,17 +1050,17 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 			int rowsPerBlock = ThreadsPerBlock / a.Rows;
 			int elementsPerBlock = rowsPerBlock * a.Rows;
 			int numBlocks = (len + elementsPerBlock - 1) / elementsPerBlock;
-			CudaSigmaDiffDataBuffer<float> sumBuffer = (CudaSigmaDiffDataBuffer<float>) CreateDataBuffer(CreateUninitialisedArray(numBlocks * rowsPerBlock));
+			CudaSigmaDiffDataBuffer<float> sumBuffer = (CudaSigmaDiffDataBuffer<float>)CreateDataBuffer(CreateUninitialisedArray(numBlocks * rowsPerBlock));
 
-			RunKernel("Sum_M_Rowwise", numBlocks * ThreadsPerBlock, (uint) ThreadsPerBlock * sizeof(float), tData.GetContextPointer(), a.Cols, a.Rows, 
+			RunKernel("Sum_M_Rowwise", numBlocks * ThreadsPerBlock, (uint)ThreadsPerBlock * sizeof(float), tData.GetContextPointer(), a.Cols, a.Rows,
 				ArrayUtils.NextHighestPowerOf2(a.Rows), sumBuffer.GetContextPointer(), len);
 
-			int sumLen = (int) sumBuffer.Length;
+			int sumLen = (int)sumBuffer.Length;
 			int sumRowsPerBlock = ThreadsPerBlock / rowsPerBlock;
 			int sumElementsPerBlock = sumRowsPerBlock * rowsPerBlock;
 			int sumNumBlocks = (sumLen + sumElementsPerBlock - 1) / sumElementsPerBlock;
 
-			RunKernel("Add_M_Rowwise_V_InPlace", sumNumBlocks * ThreadsPerBlock, (uint) ThreadsPerBlock * sizeof(float), sumBuffer.GetContextPointer(), numBlocks, 
+			RunKernel("Add_M_Rowwise_V_InPlace", sumNumBlocks * ThreadsPerBlock, (uint)ThreadsPerBlock * sizeof(float), sumBuffer.GetContextPointer(), numBlocks,
 				rowsPerBlock, ArrayUtils.NextHighestPowerOf2(rowsPerBlock), bData.GetContextPointer(), sumLen);
 
 			bData.FlagDeviceModified();
@@ -1244,6 +1244,15 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		public override ShapedDataBufferView<float> RepeatReshapeCopy_V_MCols(int cols, ISigmaDiffDataBuffer<float> value)
 		{
 			throw new NotImplementedException();
+		}
+
+		~CudaFloat32BackendHandle()
+		{
+			// forcibly dispose all device buffers, not sure if this is such a great idea
+			foreach (CudaDeviceVariable<float> deviceBuffer in _allocatedDeviceBuffers.Values)
+			{
+				deviceBuffer.Dispose();
+			}
 		}
 	}
 }
