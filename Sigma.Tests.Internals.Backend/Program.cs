@@ -222,14 +222,16 @@ namespace Sigma.Tests.Internals.Backend
 				return "Name, OperatorType, BatchSize, StopCriteria, MillisPerEpoch, MillisPerIteration";
 			}
 
-			public void Write(string file)
+			public void Write(string path)
 			{
-				if (!File.Exists(file))
+				if (!File.Exists(path))
 				{
-					File.WriteAllText(file, CreateCsvHeader());
+					FileInfo file = new FileInfo(path);
+					file.Directory.Create(); 
+					File.AppendAllText(file.FullName, CreateCsvHeader());
 				}
 
-				File.WriteAllText(file, $"\n{Name}, {OperatorType}, {BatchSize}, {StopCriteria}, {MillisecondsPerEpoch}, {MillisecondsPerIteration}\n");
+				File.AppendAllText(path, $"\n{Name}, {OperatorType}, {BatchSize}, {StopCriteria}, {MillisecondsPerEpoch}, {MillisecondsPerIteration}");
 			}
 		}
 
@@ -247,49 +249,52 @@ namespace Sigma.Tests.Internals.Backend
 
 		private static void Main(string[] args)
 		{
-			SigmaEnvironment.EnableLogging(true);
+			//SigmaEnvironment.EnableLogging(true);
 
-			int[] testBatchSizes = ArrayUtils.Range(50, 1000, 10000);
+			int[] testBatchSizes = ArrayUtils.Range(50, 500, 50);
 
 			Console.WriteLine("Starting benchmarking");
 
 			foreach (int testBatchSize in testBatchSizes)
 			{
-				TestCases.Add(CreateMnistTestCase("mnist-mini" + testBatchSize, testBatchSize, "cuda-float32", TestMnistArchitecture));
+				TestCases.Add(CreateMnistTestCase("mnist-mini" + testBatchSize, testBatchSize, "cpu-float32", (INetworkArchitecture) TestMnistArchitecture.DeepCopy()));
 			}
 
 			for (int index = 0; index < TestCases.Count; index++)
 			{
-				TestCase testCase = TestCases[index];
-				GC.Collect();
+				{
+					TestCase testCase = TestCases[index];
+					GC.Collect();
 
-				Console.WriteLine($"Running test in environment \"{testCase.Name}\" ({index + 1}/{TestCases.Count})");
+					Console.WriteLine($"[{index + 1}/{TestCases.Count}] Executing test environment \"{testCase.Name}\"");
 
-				Console.WriteLine(" -> creating environment...");
+					Console.WriteLine(" -> creating environment...");
 
-				SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
-				env.SetRandomSeed(0);
+					SigmaEnvironment env = SigmaEnvironment.Create(testCase.Name);
+					env.SetRandomSeed(0);
 
-				ManualResetEvent onShutdownEvent = new ManualResetEvent(false);
+					ManualResetEvent onShutdownEvent = new ManualResetEvent(false);
 
-				env.OnShutdown(dynEnv => onShutdownEvent.Set());
+					env.OnShutdown(dynEnv => onShutdownEvent.Set());
 
-				ITrainer trainer = testCase.CreateAndAssignTrainer(env);
+					testCase.CreateAndAssignTrainer(env);
 
-				Console.WriteLine(" -> running environment...");
+					Console.WriteLine(" -> running environment...");
 
-				env.PrepareAndRun();
+					env.PrepareAndRun();
 
-				Console.WriteLine(" -> check environment stop...");
+					onShutdownEvent.WaitOne();
+					Thread.Sleep(1000);
 
-				onShutdownEvent.WaitOne();
+					new TestResult(testCase).Write(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/sigma_benchmark.csv");
 
-				Console.WriteLine(" -> finished waiting, cleaning up...");
+					Console.WriteLine(" -> cleaning up...");
 
-				env = null;
-				testCase = null;
-				TestCases[index] = null;
+					env = null;
+					testCase = null;
 
+					TestCases[index] = null;
+				}
 
 				SigmaDiffSharpBackendProvider.ClearInstance();
 				SigmaEnvironment.Clear();
@@ -299,6 +304,8 @@ namespace Sigma.Tests.Internals.Backend
 			}
 
 			Console.WriteLine("Finished benchmarking. Press any key to exit.");
+			Console.ReadKey();
+			Console.ReadKey();
 			Console.ReadKey();
 		}
 

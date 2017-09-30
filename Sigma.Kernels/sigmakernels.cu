@@ -479,14 +479,14 @@ __global__ void Permute_M(const float* a, const float* permutedDimensions, const
 	}
 }
 
-__device__ curandState randomStates[256];
+__device__ curandState randomStates[512];
 
 __global__ void InitialiseRandomStates(int seed) 
 {
 	int blockId = blockIdx.y * gridDim.x + blockIdx.x; 
 	int i = blockId * blockDim.x + threadIdx.x; 
 	
-	if (i < 256)
+	if (i < 512)
 	{
 		curand_init(seed + i, i, 0, &randomStates[i]);
 	}
@@ -499,7 +499,7 @@ __global__ void FillWithProbabilityMask_V(float* a, const float probability, int
 
 	if (i < n)
 	{
-		float rand = curand_uniform(&randomStates[i % 256]);
+		float rand = curand_uniform(&randomStates[i % 512]);
 
 		a[i] = rand < probability ? 1 : 0;
 	}

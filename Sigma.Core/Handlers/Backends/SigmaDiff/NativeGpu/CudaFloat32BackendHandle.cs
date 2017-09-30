@@ -34,7 +34,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff.NativeGpu
 		private readonly ConditionalWeakTable<float[], object> _preInitialisedHostDatas;
 
 		private const int BlocksPerGridDimension = 65535;
-		private const int ThreadsPerBlock = 256; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
+		private const int ThreadsPerBlock = 512; // TODO if this constant is changed, the sigmakernels.cu file has to be updated and recompiled with a different number for curandStates
 		private readonly object _throwawayObject = new object();
 		private readonly CUmodule _kernelModule;
 		private readonly IDictionary<int, int> _bufferReferenceCounts;

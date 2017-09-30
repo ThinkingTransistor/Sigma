@@ -84,6 +84,7 @@ namespace Sigma.Core.Handlers.Backends.SigmaDiff
 
 		public static void ClearInstance()
 		{
+			_instance?._registeredBackendConfigs.Clear();
 			_instance = null;
 		}
 	}
