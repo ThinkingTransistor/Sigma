@@ -182,7 +182,9 @@ The completion of this project would not have been possible without the assistan
 - To our family, friends, and loved ones, we thank you for your support and gratefully acknowledge your assistance in making this project become a reality. 
 
 - To NVIDIA, for generously supporting us with two GTX 1080 for developing a CUDA backend operator. 
-	
+
+- To JetBrains, for granting an open source license, allowing us to improve code quality with Resharper.
+
 *We thank you.*
 
 ## Used libraries
