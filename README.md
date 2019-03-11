@@ -166,8 +166,8 @@ sigma.PrepareAndRun();
 ```
 
 ### Output
-![Example output of overview panel](https://sigma.rocks/static/Example_Overview_Panel.PNG)
-![Example output of validation panel](https://sigma.rocks/static/Example_Draw_Panel.PNG)
+![Example output of overview panel](https://i.imgur.com/g9Qxwhk.png)
+![Example output of validation panel](https://i.imgur.com/Kd1q8WI.png)
 
 
 ## Documentation - how do I? 
