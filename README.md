@@ -57,7 +57,7 @@ An example trainer to classify handwritten digits from the MNIST dataset, using 
 
 For this program, the Sigma.Core NUGET package is requird.
 
-```
+```C#
 SigmaEnvironment.EnableLogging();
 SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
 IDataset dataset = Defaults.Datasets.Mnist(); // datasets are automatically downloaded and unpacked if not on disk
@@ -99,7 +99,7 @@ This is the same program as above, only with visualisation activated.
 
 For this program, the Sigma.Core.WPF NUGET package is requird.
 
-```
+```C#
 SigmaEnvironment.EnableLogging();
 SigmaEnvironment sigma = SigmaEnvironment.Create("mnist");
 IDataset dataset = Defaults.Datasets.Mnist(); // datasets are automatically downloaded and unpacked if not on disk
@@ -119,8 +119,7 @@ trainer.AddNamedDataIterator("validation", new UndividedIterator(Defaults.Datase
 trainer.Optimiser = new AdagradOptimiser(baseLearningRate: 0.02);
 
 trainer.Operator = new CpuSinglethreadedOperator(); // change this line to a new CudaSinglethreadedOperator() if you have an NVIDIA GPU
-													// Of course, CUDA has to be installed in order to work.
-
+// Of course, CUDA has to be installed in order to work.
 
 trainer.AddInitialiser("*.weights", new GaussianInitialiser(standardDeviation: 0.1));
 trainer.AddInitialiser("*.bias*", new GaussianInitialiser(standardDeviation: 0.05));
